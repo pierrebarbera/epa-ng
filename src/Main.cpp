@@ -17,10 +17,8 @@ int main(int argc, char** argv)
 
 	(void) argc;
 	(void) argv;
-	// parse inputs
-
-	// epa call: object generation (static functions in epa.h?), includes sanitation
-	auto tree_file = new string("abc");
+	
+  auto tree_file = new string("abc");
 	auto msa_file = new string("def");
 	epa(tree_file, msa_file);
 	// status callback?

@@ -1,6 +1,8 @@
-#include <iostream>
-
 #define DEFAULT_BRANCH_LENGTH 0.000001
+
+//TODO find a better place for these. possible candidates for compile flag variation: DNA vs protein
+#define STATES    4
+#define RATE_CATS 4
 
 // attribution!
 
@@ -33,9 +35,3 @@ static void set_missing_branch_length(pll_utree_t * tree, double length)
   set_missing_branch_length_recursive(tree, length);
   set_missing_branch_length_recursive(tree->back, length);
 };
-
-static void error(char* format_string)
-{
-  std::cout << format_string << "\n";
-  exit(EXIT_FAILURE);
-}

@@ -2,14 +2,14 @@ BIN=../bin
 
 CC=clang++
 DEFS=
-WARNINGS= -Weverything -Wno-c++98-compat
-CFLAGS= $(WARNINGS) -I../../libpll/src -std=c++11
+WARNINGS= -Wall -Wextra -Wno-c++98-compat
+CFLAGS= $(WARNINGS) -std=c++11
 LINKFLAGS= -L/usr/local/lib/
 
 TARGET=$(BIN)/epa
 
 LIBS=-lpll -lm
-OBJS=epa.o Main.o 
+OBJS=Main.o MSA.o Tree.o 
 OUT_OBJS=$(addprefix $(BIN)/,$(OBJS))
 
 all:  $(TARGET)
