@@ -1,9 +1,5 @@
 #define DEFAULT_BRANCH_LENGTH 0.000001
 
-//TODO find a better place for these. possible candidates for compile flag variation: DNA vs protein
-#define STATES    4
-#define RATE_CATS 4
-
 // attribution!
 
 static void set_missing_branch_length_recursive(pll_utree_t * tree, 

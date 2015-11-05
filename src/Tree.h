@@ -1,28 +1,29 @@
-#include <string>
-#include <assert.h>
-#include <stdexcept>
+#include "stdinc.h"
 
 #ifndef __PLL__
 #define __PLL__
+extern "C" {
 #include "pll.h"
+}
 #endif
 
 #include "util.h"
 #include "MSA.h"
+#include "Model.h"
 
 
 /* Encapsulates the pll data structures for ML computation */
 class Tree
 {
 public:
-  Tree(const std::string& tree_file, const std::string& msa_file);
+  Tree(const std::string& tree_file, const std::string& msa_file, Model& model);
   ~Tree();
 
 private:
-  int num_tip_nodes;
   pll_partition_t * partition;
   MSA* msa;
+  Model model;
 
-  void build_partition_from_file(const std::string& tree_file, pll_utree_t * (*tree_parse_f) (const char*, int*) );
-  MSA* read_msa(const std::string& msa_file); 
+  void build_partition_from_file(const std::string& tree_file);
+  void precompute_clvs();
 };

@@ -1,0 +1,70 @@
+
+
+Using BFGS method to optimize GTR rate parameters, to disable this specify "--no-bfgs" 
+
+Found a total of 8 taxa in tree file ref.tre
+
+
+This is RAxML version 8.1.17 released by Alexandros Stamatakis on February 5 2015.
+
+With greatly appreciated code contributions by:
+Andre Aberer      (HITS)
+Simon Berger      (HITS)
+Alexey Kozlov     (HITS)
+Kassian Kobert    (HITS)
+David Dao         (KIT and HITS)
+Nick Pattengale   (Sandia)
+Wayne Pfeiffer    (SDSC)
+Akifumi S. Tanabe (NRIFS)
+
+Alignment has 358 distinct alignment patterns
+
+Proportion of gaps and completely undetermined characters in this alignment: 2.21%
+
+RAxML likelihood-based placement algorithm
+
+Using 1 distinct models/data partitions with joint branch length optimization
+
+
+All free model parameters will be estimated by RAxML
+GAMMA model of rate heteorgeneity, ML estimate of alpha-parameter
+
+Partition: 0
+Alignment Patterns: 358
+Name: No Name Provided
+DataType: DNA
+Substitution Matrix: GTR
+
+
+
+
+RAxML was called as follows:
+
+../raxmlHPC-PTHREADS-AVX -f v -s aln.phy -t ref.tre -n epa -m GTRGAMMA 
+
+
+RAxML placement algorithm: You provided a reference tree with 8 taxa; alignmnet has 10 taxa
+2 query taxa will be placed using maximum likelihood
+
+RAxML Evolutionary Placement Algorithm
+
+Likelihood of reference tree: -4079.157130
+
+RAxML will place 2 Query Sequences into the 13 branches of the reference tree with 8 taxa
+
+Overall Classification time: 0.077352
+
+
+
+Labelled reference tree including branch labels and query sequences written to file: /home/alex/projects/hits/raxml/epa_test/RAxML_labelledTree.epa
+
+Labelled reference tree with branch labels (without query sequences) written to file: /home/alex/projects/hits/raxml/epa_test/RAxML_originalLabelledTree.epa
+
+Labelled reference tree with branch labels in portable pplacer/EPA format (without query sequences) written to file: /home/alex/projects/hits/raxml/epa_test/RAxML_portableTree.epa.jplace
+
+Classification result file written to file: /home/alex/projects/hits/raxml/epa_test/RAxML_classification.epa
+
+Classification result file using likelihood weights written to file: /home/alex/projects/hits/raxml/epa_test/RAxML_classificationLikelihoodWeights.epa
+
+Classification entropy result file using likelihood weights written to file: /home/alex/projects/hits/raxml/epa_test/RAxML_entropy.epa
+

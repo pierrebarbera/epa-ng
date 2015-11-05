@@ -1,27 +1,35 @@
 BIN=../bin
+TEST=../test
+TESTINPUT= $(TEST)/ref.tre $(TEST)/aln.fasta
 
 CC=clang++
 DEFS=
-WARNINGS= -Wall -Wextra -Wno-c++98-compat
-CFLAGS= $(WARNINGS) -std=c++11
-LINKFLAGS= -L/usr/local/lib/
+WARNINGS= -Wall -Wextra -Wno-c++98-compat 
+CFLAGS= $(WARNINGS) -std=c++11 -g 
+LINKFLAGS= 
 
 TARGET=$(BIN)/epa
 
-LIBS=-lpll -lm
-OBJS=Main.o MSA.o Tree.o 
+LIBS=-lm -lpll 
+OBJS=Main.o MSA.o Tree.o Model.o
 OUT_OBJS=$(addprefix $(BIN)/,$(OBJS))
 
 all:  $(TARGET)
 
-run: $(TARGET)
-	$(TARGET)
+test: $(TARGET)
+	$(TARGET) $(TESTINPUT)
+
+valgrind: $(TARGET)
+	valgrind $(TARGET) $(TESTINPUT)
+
+gdb: $(TARGET)
+	gdb --args $(TARGET) $(TESTINPUT)
 
 $(TARGET): $(OUT_OBJS)
-	$(CC) $(LINKFLAGS) $(LIBS) -o $@ $+ 
+	$(CC) $(LINKFLAGS) -o $@ $+ $(LIBS) 
 
 $(OUT_OBJS): $(BIN)/%.o: %.cpp $(DEPS)
-	$(CC) -c -o $@ $< $(CFLAGS)
+	$(CC) $(CFLAGS) -c -o $@ $< 
 
 .PHONY: clean 
 
