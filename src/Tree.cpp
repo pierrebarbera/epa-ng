@@ -14,7 +14,7 @@ Tree::Tree(const string& tree_file, const string& msa_file, Model& model) : mode
 
 Tree::~Tree()
 {
-	pll_partition_destroy(Tree::partition);
+	pll_partition_destroy(partition);
   delete msa;
 }
 
@@ -38,27 +38,9 @@ void Tree::build_partition_from_file(const string& tree_file)
   num_nodes = num_inner_nodes + num_tip_nodes;
   num_branches = num_nodes - 1;
 
-  // next, we obtain pointers to all tip nodes
-  auto tip_nodes = new pll_utree_t*[num_tip_nodes];
-  pll_utree_query_tipnodes(tree, tip_nodes);
+  
 
-  /* create a libc hash table of size num_tip_nodes */
-  int tmp = num_tip_nodes;
-  hcreate(tmp);
-
-  /* populate a libc hash table with tree tip labels */
-  auto data = new int[num_tip_nodes];
-  for (int i = 0; i < num_tip_nodes; ++i)
-  {
-    data[i] = i;
-    ENTRY entry;
-    entry.key = tip_nodes[i]->label;
-    entry.data = (void *)(data+i);
-    hsearch(entry, ENTER);
-  }
-
-
-  Tree::partition = pll_partition_create(num_tip_nodes,
+  partition = pll_partition_create(num_tip_nodes,
                                    num_inner_nodes,
                                    STATES,
                                    msa->num_sites,
@@ -84,13 +66,60 @@ void Tree::build_partition_from_file(const string& tree_file)
   /* set rate categories */
   pll_set_category_rates(partition, rate_cats);
 
+  link_tree_msa(num_tip_nodes, tree);
+
+  //TODO reference part of the MSA can now be freed
+}
+
+void Tree::link_tree_msa(const int num_tip_nodes, pll_utree_t* tree)
+{
+  // next, we obtain pointers to all tip nodes
+  auto tip_nodes = new pll_utree_t*[num_tip_nodes];
+  pll_utree_query_tipnodes(tree, tip_nodes);
+
+  /*
+  // and associate the sequences from the MSA file with the correct tips
+  // TODO this is n^2. potential performance hog
+  bool found = false;
+  for (int i = 0; i < num_tip_nodes; ++i)
+  {
+    string header, sequence;
+    tie(header, sequence) = msa->get(i);
+
+    for (int j = 0; j < num_tip_nodes && !found; ++j)
+    {
+      if(header.compare(tip_nodes[j]->label) == 0)
+      {
+        found = true;
+        pll_set_tip_states(partition, j, pll_map_nt, sequence.c_str());
+      }
+    }
+    if (!found)
+      throw runtime_error{string("Sequence with header does not appear in the tree: ") + header};
+    found = false;
+  }*/
+
+  /* create a libc hash table of size num_tip_nodes */
+  hcreate(num_tip_nodes);
+
+  /* populate a libc hash table with tree tip labels */
+  auto data = new int[num_tip_nodes];
+  for (int i = 0; i < num_tip_nodes; ++i)
+  {
+    data[i] = i;
+    ENTRY entry;
+    entry.key = tip_nodes[i]->label;
+    entry.data = (void *)(&data[i]);
+    hsearch(entry, ENTER);
+  }
+
   /* find sequences in hash table and link them with the corresponding taxa */
   for (int i = 0; i < num_tip_nodes; ++i)
   {
     string header, sequence;
     tie(header, sequence) = msa->get(i);
     ENTRY query;
-    query.key = &header[0];
+    query.key = &(header[0]); //to get char* from std::string
     ENTRY * found = NULL;
 
     found = hsearch(query,FIND);
@@ -107,11 +136,9 @@ void Tree::build_partition_from_file(const string& tree_file)
   hdestroy();
   delete [] tip_nodes;
   delete [] data;
-
-  //TODO reference part of the MSA can now be freed
 }
 
-void precompute_clvs()
+void Tree::precompute_clvs()
 {
 
 }
