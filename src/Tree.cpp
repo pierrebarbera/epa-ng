@@ -1,14 +1,33 @@
 #include "Tree.h"
 
+#include <string>
+#include <stdexcept>
+#include <search.h>
+#include <tuple>
+
+
+#ifndef __PLL__
+#define __PLL__
+extern "C" {
+#include "pll.h"
+}
+#endif
+
+#include "util.h"
+#include "MSA.h"
+#include "Model.h"
+
 using namespace std;
 
 Tree::Tree(const string& tree_file, const string& msa_file, Model& model) : model(model)
-{ 
+{
 
   //TODO handle filetypes other than newick/fasta
 
+
   //parse, build tree
   msa = new MSA(msa_file);
+  
   build_partition_from_file(tree_file);
 }
 
@@ -18,13 +37,11 @@ Tree::~Tree()
   delete msa;
 }
 
-
-//TODO too long, refactor
 void Tree::build_partition_from_file(const string& tree_file)
 {
   int num_tip_nodes, num_nodes, num_branches, num_inner_nodes;
 
-  /* first we call the appropriate pll parsing function to obtain a pll_utree structure, 
+  /* first we call the appropriate pll parsing function to obtain a pll_utree structure,
     on which our partition object will be based */
   auto tree = pll_utree_parse_newick(tree_file.c_str(), &num_tip_nodes);
 
@@ -38,16 +55,14 @@ void Tree::build_partition_from_file(const string& tree_file)
   num_nodes = num_inner_nodes + num_tip_nodes;
   num_branches = num_nodes - 1;
 
-  
-
   partition = pll_partition_create(num_tip_nodes,
-                                   num_inner_nodes,
+                                   num_inner_nodes * 3, //number of extra clv buffers: 3 for every direction on the node
                                    STATES,
                                    msa->num_sites,
                                    1,
                                    num_branches,
                                    RATE_CATS,
-                                   num_inner_nodes,
+                                   num_inner_nodes * 3,
                                    PLL_ATTRIB_ARCH_SSE);
 
   double rate_cats[RATE_CATS] = {0};
@@ -69,6 +84,8 @@ void Tree::build_partition_from_file(const string& tree_file)
   link_tree_msa(num_tip_nodes, tree);
 
   //TODO reference part of the MSA can now be freed
+
+  precompute_clvs(num_tip_nodes, tree);
 }
 
 void Tree::link_tree_msa(const int num_tip_nodes, pll_utree_t* tree)
@@ -126,7 +143,7 @@ void Tree::link_tree_msa(const int num_tip_nodes, pll_utree_t* tree)
 
     if (!found)
       throw runtime_error{string("Sequence with header does not appear in the tree: ") + header};
-        
+
     int tip_clv_index = *((int *)(found->data));
 
     pll_set_tip_states(partition, tip_clv_index, pll_map_nt, sequence.c_str());
@@ -138,8 +155,85 @@ void Tree::link_tree_msa(const int num_tip_nodes, pll_utree_t* tree)
   delete [] data;
 }
 
-void Tree::precompute_clvs()
+void Tree::precompute_clvs(int num_tip_nodes, pll_utree_t* tree)
 {
+  //rederive the numbers
+  int num_inner_nodes = num_tip_nodes - 2;
+  int num_nodes = num_inner_nodes + num_tip_nodes;
+  int num_branches = num_nodes - 1;
+  int num_matrices, num_ops;
+
+  /* buffer for creating a postorder traversal structure */
+  auto travbuffer = new pll_utree_t*[num_nodes];
+
+
+  auto branch_lengths = new double[num_branches];
+  auto matrix_indices = new int[num_branches];
+  auto operations = new pll_operation_t[num_inner_nodes];
+
+  /* adjust clv indices such that every direction has its own */
+  set_unique_clv_indices(tree, num_tip_nodes);
+
+  /* Uncomment to display the parsed tree ASCII tree together with information
+     as to which CLV index, branch length and label is associated with each
+     node. The code will also write (and print on screen) the newick format
+     of the tree.
+
+  pll_utree_show_ascii(tree, PLL_UTREE_SHOW_LABEL |
+                             PLL_UTREE_SHOW_BRANCH_LENGTH |
+                             PLL_UTREE_SHOW_CLV_INDEX);
+  char * newick = pll_utree_export_newick(tree);
+  printf("%s\n", newick);
+  free(newick);
+
+  return;
+  */
+  /* perform a postorder traversal of the unrooted tree */
+
+  int traversal_size = pll_utree_traverse(tree,
+                                          cb_full_traversal,
+                                          travbuffer);
+  if (traversal_size == -1)
+    throw runtime_error{"Function pll_utree_traverse() requires inner nodes as parameters"};
+
+  /* given the computed traversal descriptor, generate the operations
+     structure, and the corresponding probability matrix indices that
+     may need recomputing */
+  pll_utree_create_operations(travbuffer,
+                              traversal_size,
+                              branch_lengths,
+                              matrix_indices,
+                              operations,
+                              &num_matrices,
+                              &num_ops);
+
+  pll_update_prob_matrices(partition,
+                           0,             // use model 0
+                           matrix_indices,// matrices to update
+                           branch_lengths,
+                           num_matrices); // how many should be updated
+
+
+  /* use the operations array to compute all num_ops inner CLVs. Operations
+     will be carried out sequentially starting from operation 0 towrds num_ops-1 */
+  pll_update_partials(partition, operations, num_ops);
+
+  /* compute the likelihood on an edge of the unrooted tree by specifying
+     the CLV indices at the two end-point of the branch, the probability matrix
+     index for the concrete branch length, and the index of the model of whose
+     frequency vector is to be used */
+  double logl = pll_compute_edge_loglikelihood(partition,
+                                               tree->clv_index,
+                                               tree->scaler_index,
+                                               tree->back->clv_index,
+                                               tree->back->scaler_index,
+                                               tree->pmatrix_index,
+                                               0);
+
+
+  delete [] travbuffer;
+  delete [] branch_lengths;
+  delete [] matrix_indices;
+  delete [] operations;
 
 }
-

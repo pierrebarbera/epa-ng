@@ -1,12 +1,5 @@
-#include "stdinc.h"
-
-#ifndef __PLL__
-#define __PLL__
-extern "C" {
-#include "pll.h"
-}
-#endif
-
+#include <vector>
+#include <string>
 
 class MSA
 {

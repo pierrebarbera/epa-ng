@@ -1,6 +1,6 @@
-#include "stdinc.h"
+#include <string>
 
-#include "tree.h"
+#include "Tree.h"
 
 static void epa(std::string& tree_file, std::string& msa_file, vector<double> base_frequencies, vector<double> substitution_rates)
 {

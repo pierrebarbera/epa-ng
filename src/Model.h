@@ -1,6 +1,4 @@
-#include "stdinc.h"
-
-using namespace std;
+#include <vector>
 
 //TODO find a better place for these. possible candidates for compile flag variation: DNA vs protein
 #define STATES    4
@@ -11,10 +9,10 @@ using namespace std;
 class Model
 {
 public:
-	Model(vector<double> base_frequencies, vector<double> substitution_rates);
+	Model(std::vector<double> base_frequencies, std::vector<double> substitution_rates);
 	~Model();
 
-  vector<double> base_frequencies;
-  vector<double> substitution_rates;
+  std::vector<double> base_frequencies;
+  std::vector<double> substitution_rates;
 
 };

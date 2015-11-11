@@ -1,5 +1,8 @@
 #include "Model.h"
 
+#include <vector>
+#include <stdexcept>
+
 Model::Model(vector<double> base_frequencies, vector<double> substitution_rates)
   : base_frequencies(base_frequencies), substitution_rates(substitution_rates)
 {

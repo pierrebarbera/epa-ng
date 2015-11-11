@@ -1,5 +1,17 @@
 #include "MSA.h"
 
+#ifndef __PLL__
+#define __PLL__
+extern "C" {
+#include "pll.h"
+}
+#endif
+
+#include <vector>
+#include <string>
+#include <stdexcept>
+#include <tuple>
+
 using namespace std;
 
 MSA::MSA(const string& msa_file)
