@@ -40,7 +40,7 @@ public:
 private:
   // Data Members
   int num_sites_;
-  std::vector<Sequence> sequence_list;
+  std::vector<Sequence> sequence_list_;
 };
 
 #endif

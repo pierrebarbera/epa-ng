@@ -28,10 +28,10 @@ MSA::~MSA()
 
 Sequence MSA::get(const int i) const
 {
-  if((size_t) i >= sequence_list.size() || i < 0)
+  if((size_t) i >= sequence_list_.size() || i < 0)
     throw runtime_error{string("Trying to access MSA entry out of bounds. i = ") + to_string(i) };
 
-  return sequence_list[i];
+  return sequence_list_[i];
 }
 
 void MSA::append(const string& header, const string& sequence)
@@ -40,30 +40,30 @@ void MSA::append(const string& header, const string& sequence)
     throw runtime_error{string("Tried to insert sequence to MSA of unequal length: ") + sequence};
 
   // sequence_list.push_back(Sequence(header, sequence));
-  sequence_list.emplace_back(header, sequence);
+  sequence_list_.emplace_back(header, sequence);
 }
 
 void MSA::append(Sequence s)
 {
-  sequence_list.push_back(s);
+  sequence_list_.push_back(s);
 }
 
 MSA::iterator MSA::begin()
 {
-    return sequence_list.begin();
+    return sequence_list_.begin();
 }
 
 MSA::iterator MSA::end()
 {
-    return sequence_list.end();
+    return sequence_list_.end();
 }
 
 MSA::const_iterator MSA::cbegin()
 {
-    return sequence_list.cbegin();
+    return sequence_list_.cbegin();
 }
 
 MSA::const_iterator MSA::cend()
 {
-    return sequence_list.cend();
+    return sequence_list_.cend();
 }
