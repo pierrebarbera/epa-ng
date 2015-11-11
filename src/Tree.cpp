@@ -65,10 +65,10 @@ void Tree::build_partition_from_file(const string& tree_file)
   pll_compute_gamma_cats(1, 4, rate_cats);
 
   /* set frequencies at model with index 0 */
-  pll_set_frequencies(partition, 0, &(model.base_frequencies[0]));
+  pll_set_frequencies(partition, 0, &(model.base_frequencies()[0]));
 
   /* set substitution parameters at model with index 0 */
-  pll_set_subst_params(partition, 0, &(model.substitution_rates[0]));
+  pll_set_subst_params(partition, 0, &(model.substitution_rates()[0]));
 
   /* set rate categories */
   pll_set_category_rates(partition, rate_cats);
