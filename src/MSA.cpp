@@ -1,7 +1,7 @@
 #include "MSA.h"
 
-#ifndef __PLL__
-#define __PLL__
+#ifndef PLL_H_
+#define PLL_H_
 extern "C" {
 #include "pll.h"
 }
@@ -43,7 +43,7 @@ void MSA::build_from_file(const string& msa_file)
 
   /* read sequences and make sure they are all of the same length */
   int num_sites = 0;
-  
+
   while (pll_fasta_getnext(file, &header, &header_length, &sequence, &sequence_length, &sequence_number))
   {
 

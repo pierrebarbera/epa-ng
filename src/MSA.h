@@ -1,3 +1,6 @@
+#ifndef EPA_MSA_H_
+#define EPA_MSA_H_
+
 #include <vector>
 #include <string>
 
@@ -16,3 +19,5 @@ private:
   std::vector<std::string> headers;
   std::vector<std::string> sequences;
 };
+
+#endif

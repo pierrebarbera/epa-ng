@@ -2,8 +2,8 @@
 #include <string>
 #include "epa.h"
 
-#ifndef __PLL__
-#define __PLL__
+#ifndef PLL_H_
+#define PLL_H_
 extern "C" {
 #include "pll.h"
 }
@@ -14,7 +14,7 @@ using namespace std;
 void plltest();
 
 int main(int argc, char** argv)
-{ 
+{
   string tree_file = "";
   string msa_file = "";
 
@@ -27,11 +27,11 @@ int main(int argc, char** argv)
   }
 
 	//plltest();
-	
+
   //auto tree_file = new string("abc");
 	//auto msa_file = new string("def");
-	epa(tree_file, 
-      msa_file, 
+	epa(tree_file,
+      msa_file,
       {0.25, 0.25, 0.25, 0.25},
       {1,1,1,1,1,1});
 	// status callback?
@@ -64,9 +64,9 @@ void plltest()
  /* set substitution parameters */
  pll_set_subst_params(tree, 0, subst_params);
 
- double rate_cats[4] = {	0.13695378267140107,  
-                         0.47675185617665189,  
-                         0.99999999997958422,  
+ double rate_cats[4] = {	0.13695378267140107,
+                         0.47675185617665189,
+                         0.99999999997958422,
                          2.38629436117236260};
  /* set rate categories */
  pll_set_category_rates(tree, rate_cats);

@@ -1,3 +1,6 @@
+#ifndef EPA_MODEL_H_
+#define EPA_MODEL_H_
+
 #include <vector>
 
 //TODO find a better place for these. possible candidates for compile flag variation: DNA vs protein
@@ -16,3 +19,5 @@ public:
   std::vector<double> substitution_rates;
 
 };
+
+#endif

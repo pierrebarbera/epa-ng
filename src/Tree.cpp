@@ -6,8 +6,8 @@
 #include <tuple>
 
 
-#ifndef __PLL__
-#define __PLL__
+#ifndef PLL_H_
+#define PLL_H_
 extern "C" {
 #include "pll.h"
 }
@@ -27,7 +27,7 @@ Tree::Tree(const string& tree_file, const string& msa_file, Model& model) : mode
 
   //parse, build tree
   msa = new MSA(msa_file);
-  
+
   build_partition_from_file(tree_file);
 }
 
