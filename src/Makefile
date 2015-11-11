@@ -4,14 +4,14 @@ TESTINPUT= $(TEST)/ref.tre $(TEST)/aln.fasta
 
 CC=clang++
 DEFS=
-WARNINGS= -Wall -Wextra -Wno-c++98-compat 
-CFLAGS= $(WARNINGS) -std=c++11 -g 
-LINKFLAGS= 
+WARNINGS= -Wall -Wextra -Wno-c++98-compat
+CFLAGS= $(WARNINGS) -std=c++11 -g
+LINKFLAGS=
 
 TARGET=$(BIN)/epa
 
-LIBS=-lm -lpll 
-OBJS=Main.o MSA.o Tree.o Model.o
+LIBS=-lm -lpll
+OBJS=Main.o MSA.o Tree.o Model.o file_io.o
 OUT_OBJS=$(addprefix $(BIN)/,$(OBJS))
 
 all:  $(TARGET)
@@ -26,12 +26,12 @@ gdb: $(TARGET)
 	gdb --args $(TARGET) $(TESTINPUT)
 
 $(TARGET): $(OUT_OBJS)
-	$(CC) $(LINKFLAGS) -o $@ $+ $(LIBS) 
+	$(CC) $(LINKFLAGS) -o $@ $+ $(LIBS)
 
 $(OUT_OBJS): $(BIN)/%.o: %.cpp $(DEPS)
-	$(CC) $(CFLAGS) -c -o $@ $< 
+	$(CC) $(CFLAGS) -c -o $@ $<
 
-.PHONY: clean 
+.PHONY: clean
 
 clean:
 	rm -f $(BIN)/*.o

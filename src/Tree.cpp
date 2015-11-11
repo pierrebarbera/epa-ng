@@ -5,15 +5,9 @@
 #include <search.h>
 #include <tuple>
 
-
-#ifndef PLL_H_
-#define PLL_H_
-extern "C" {
-#include "pll.h"
-}
-#endif
-
+#include "pllhead.h"
 #include "util.h"
+#include "file_io.h"
 #include "MSA.h"
 #include "Model.h"
 
@@ -26,7 +20,7 @@ Tree::Tree(const string& tree_file, const string& msa_file, Model& model) : mode
 
 
   //parse, build tree
-  msa = new MSA(msa_file);
+  msa = build_MSA_from_file(msa_file);
 
   build_partition_from_file(tree_file);
 }

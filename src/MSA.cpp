@@ -1,22 +1,16 @@
 #include "MSA.h"
 
-#ifndef PLL_H_
-#define PLL_H_
-extern "C" {
-#include "pll.h"
-}
-#endif
-
 #include <vector>
-#include <string>
-#include <stdexcept>
 #include <tuple>
+#include <stdexcept>
 
 using namespace std;
 
-MSA::MSA(const string& msa_file)
+// Invariant: all contained sequences shall have the same length (num_sites)
+MSA::MSA(const int num_sites) : num_sites(num_sites)
 {
-  build_from_file(msa_file);
+  if(num_sites <= 0)
+    throw runtime_error{"Number of sites in MSA cannot be zero or negative."};
 }
 
 MSA::~MSA()
@@ -24,52 +18,40 @@ MSA::~MSA()
   // vectors are self deleting
 }
 
-/* reads in sequences from a file
-  msa_file: string specifying the file path
-*/
-void MSA::build_from_file(const string& msa_file)
+
+tuple<string, string> MSA::get(const int i) const
 {
+  if(i >= sequence_list.size() || i < 0)
+    throw runtime_error{"Trying to access MSA entry out of bounds"};
 
-  /* open the file */
-  auto file = pll_fasta_open(msa_file.c_str(), pll_map_fasta);
-  if (!file)
-    throw runtime_error{string("Cannot open file") + msa_file};
-
-  char * sequence = NULL;
-  char * header = NULL;
-  long sequence_length;
-  long header_length;
-  long sequence_number;
-
-  /* read sequences and make sure they are all of the same length */
-  int num_sites = 0;
-
-  while (pll_fasta_getnext(file, &header, &header_length, &sequence, &sequence_length, &sequence_number))
-  {
-
-    if (num_sites && num_sites != sequence_length)
-      throw runtime_error{"MSA file does not contain equal size sequences"};
-
-    if (!num_sites) num_sites = sequence_length;
-
-    headers.push_back(header);
-    sequences.push_back(sequence);
-  }
-
-  if (pll_errno != PLL_ERROR_FILE_EOF)
-    throw runtime_error{string("Error while reading file:") +  msa_file};
-
-  pll_fasta_close(file);
-
-  if (num_sites == -1)
-    throw runtime_error{"Unable to read MSA file"};
-
-  MSA::num_sites = num_sites;
-
-
+  return make_tuple(sequence_list[i].header, sequence_list[i].sequence);
 }
 
-tuple<string, string> MSA::get(int i)
+template <typename T, typename D>
+void MSA::append(T header, D sequence)
 {
-  return make_tuple(headers[i], sequences[i]);
+  if(sequence.length() != num_sites)
+    throw runtime_error{string("Tried to insert sequence to MSA of unequal length: ") + sequence};
+
+  sequence_list.push_back(Sequence(header, sequence));
+}
+
+MSA::iterator MSA::begin()
+{
+    return sequence_list.begin();
+}
+
+MSA::iterator MSA::end()
+{
+    return sequence_list.end();
+}
+
+MSA::const_iterator MSA::cbegin()
+{
+    return sequence_list.cbegin();
+}
+
+MSA::const_iterator MSA::cend()
+{
+    return sequence_list.cend();
 }

@@ -3,13 +3,7 @@
 
 #include <string>
 
-#ifndef PLL_H_
-#define PLL_H_
-extern "C" {
-#include "pll.h"
-}
-#endif
-
+#include "pllhead.h"
 #include "MSA.h"
 #include "Model.h"
 

@@ -2,22 +2,33 @@
 #define EPA_MSA_H_
 
 #include <vector>
-#include <string>
+
+#include "Sequence.h"
 
 class MSA
 {
 public:
-  MSA(const std::string& msa_file);
-  ~MSA();
-  std::tuple<std::string, std::string> get(int i);
+  typedef Sequence                                        value_type;
+  typedef typename std::vector<Sequence>::iterator        iterator;
+  typedef typename std::vector<Sequence>::const_iterator  const_iterator;
 
-  int num_sites;
+  MSA(const int num_sites);
+  ~MSA();
+  std::tuple<std::string, std::string> get(const int i) const;
+
+  template <typename T, typename D>
+  void append(T header, D sequence);
+
+
+  iterator begin();
+  iterator end();
+  const_iterator cbegin();
+  const_iterator cend();
+
+  const int num_sites;
 
 private:
-  void build_from_file(const std::string& msa_file);
-
-  std::vector<std::string> headers;
-  std::vector<std::string> sequences;
+  std::vector<Sequence> sequence_list;
 };
 
 #endif
