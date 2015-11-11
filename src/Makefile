@@ -1,6 +1,6 @@
 BIN=../bin
 TEST=../test
-TESTINPUT= $(TEST)/ref.tre $(TEST)/aln.fasta
+TESTINPUT= $(TEST)/ref.tre $(TEST)/aln.fasta $(TEST)/query.fasta
 
 CC=clang++
 DEFS=
@@ -11,7 +11,7 @@ LINKFLAGS=
 TARGET=$(BIN)/epa
 
 LIBS=-lm -lpll
-OBJS=Main.o MSA.o Tree.o Model.o file_io.o
+OBJS=Main.o MSA.o Tree.o Model.o file_io.o Sequence.o
 OUT_OBJS=$(addprefix $(BIN)/,$(OBJS))
 
 all:  $(TARGET)

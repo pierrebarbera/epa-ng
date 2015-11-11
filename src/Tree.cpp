@@ -1,15 +1,13 @@
 #include "Tree.h"
 
-#include <string>
 #include <stdexcept>
 #include <search.h>
-#include <tuple>
 
-#include "pllhead.h"
 #include "util.h"
 #include "file_io.h"
-#include "MSA.h"
-#include "Model.h"
+#include "Sequence.h"
+
+#include <iostream>
 
 using namespace std;
 
@@ -28,7 +26,7 @@ Tree::Tree(const string& tree_file, const string& msa_file, Model& model) : mode
 Tree::~Tree()
 {
 	pll_partition_destroy(partition);
-  delete msa;
+
 }
 
 void Tree::build_partition_from_file(const string& tree_file)
@@ -52,7 +50,7 @@ void Tree::build_partition_from_file(const string& tree_file)
   partition = pll_partition_create(num_tip_nodes,
                                    num_inner_nodes * 3, //number of extra clv buffers: 3 for every direction on the node
                                    STATES,
-                                   msa->num_sites,
+                                   msa.num_sites(),
                                    1,
                                    num_branches,
                                    RATE_CATS,
@@ -125,22 +123,20 @@ void Tree::link_tree_msa(const int num_tip_nodes, pll_utree_t* tree)
   }
 
   /* find sequences in hash table and link them with the corresponding taxa */
-  for (int i = 0; i < num_tip_nodes; ++i)
+  for (auto s : msa)
   {
-    string header, sequence;
-    tie(header, sequence) = msa->get(i);
     ENTRY query;
-    query.key = &(header[0]); //to get char* from std::string
+    query.key = &(s.header()[0]); //to get char* from std::string
     ENTRY * found = NULL;
 
     found = hsearch(query,FIND);
 
     if (!found)
-      throw runtime_error{string("Sequence with header does not appear in the tree: ") + header};
+      throw runtime_error{string("Sequence with header does not appear in the tree: ") + s.header()};
 
     int tip_clv_index = *((int *)(found->data));
 
-    pll_set_tip_states(partition, tip_clv_index, pll_map_nt, sequence.c_str());
+    pll_set_tip_states(partition, tip_clv_index, pll_map_nt, s.sequence().c_str());
   }
 
   /* destroy hash table and free related data */
@@ -216,13 +212,13 @@ void Tree::precompute_clvs(int num_tip_nodes, pll_utree_t* tree)
      the CLV indices at the two end-point of the branch, the probability matrix
      index for the concrete branch length, and the index of the model of whose
      frequency vector is to be used */
-  double logl = pll_compute_edge_loglikelihood(partition,
-                                               tree->clv_index,
-                                               tree->scaler_index,
-                                               tree->back->clv_index,
-                                               tree->back->scaler_index,
-                                               tree->pmatrix_index,
-                                               0);
+  // double logl = pll_compute_edge_loglikelihood(partition,
+  //                                              tree->clv_index,
+  //                                              tree->scaler_index,
+  //                                              tree->back->clv_index,
+  //                                              tree->back->scaler_index,
+  //                                              tree->pmatrix_index,
+  //                                              0);
 
 
   delete [] travbuffer;
@@ -230,4 +226,8 @@ void Tree::precompute_clvs(int num_tip_nodes, pll_utree_t* tree)
   delete [] matrix_indices;
   delete [] operations;
 
+}
+
+void Tree::place(Sequence s) {
+  (void) s;
 }

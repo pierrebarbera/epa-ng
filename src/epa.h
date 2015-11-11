@@ -2,17 +2,22 @@
 #include <vector>
 
 #include "Tree.h"
+#include "MSA.h"
+#include "file_io.h"
 
-static void epa(std::string& tree_file, std::string& msa_file,
+static void epa(std::string& tree_file, std::string& reference_msa_file, std::string& query_msa_file,
                 std::vector<double> base_frequencies, std::vector<double> substitution_rates)
 {
-	(void) tree_file;
-	(void) msa_file;
 	// sanitize input, detect file formats
 
 	// call tree object, it builds itself from file
 	auto model = Model(base_frequencies, substitution_rates);
-	auto tree = new Tree(tree_file, msa_file, model);
+	auto tree = Tree(tree_file, reference_msa_file, model);
+
+  auto query_reads = build_MSA_from_file(query_msa_file);
+
+
+  tree.place(query_reads.get(0));
 
 	// for scalability...
 		// stream? then probably conjuntion between pll datatype and my wrapper needed

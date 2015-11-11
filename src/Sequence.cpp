@@ -4,9 +4,13 @@
 
 using namespace std;
 
-template<typename T, typename D>
-Sequence::Sequence(T header, D sequence)
-        : sequence(sequence), header(header)
+Sequence::Sequence(const Sequence& s)
+  : header_(s.header())
+  , sequence_(s.sequence())
+{}
+
+Sequence::Sequence(string header, string sequence)
+          : header_(header), sequence_(sequence)
 {
 
 }

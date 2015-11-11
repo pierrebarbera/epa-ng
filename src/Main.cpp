@@ -10,12 +10,14 @@ void plltest();
 int main(int argc, char** argv)
 {
   string tree_file = "";
-  string msa_file = "";
+  string reference_file = "";
+  string query_file = "";
 
   if(argc != 0)
   {
     tree_file = string(argv[1]);
-    msa_file = string(argv[2]);
+    reference_file = string(argv[2]);
+    query_file = string(argv[3]);
   } else {
     exit(EXIT_FAILURE);
   }
@@ -25,7 +27,8 @@ int main(int argc, char** argv)
   //auto tree_file = new string("abc");
 	//auto msa_file = new string("def");
 	epa(tree_file,
-      msa_file,
+      reference_file,
+      query_file,
       {0.25, 0.25, 0.25, 0.25},
       {1,1,1,1,1,1});
 	// status callback?

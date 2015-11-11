@@ -13,21 +13,33 @@ public:
   typedef typename std::vector<Sequence>::const_iterator  const_iterator;
 
   MSA(const int num_sites);
+  MSA();
+  // MSA(const MSA& other);
+  // MSA operator= (MSA other);
+  // MSA operator= (const MSA& other) = delete;
   ~MSA();
-  std::tuple<std::string, std::string> get(const int i) const;
+  // swap(const MSA& other);
+  void append(const std::string& header, const std::string& sequence);
+  void append(Sequence s);
 
-  template <typename T, typename D>
-  void append(T header, D sequence);
+  //Member access
+  inline int num_sites() const
+  {
+    return num_sites_;
+  }
+  Sequence get(const int i) const;
 
-
+  //Iterator Compatability
   iterator begin();
   iterator end();
   const_iterator cbegin();
   const_iterator cend();
 
-  const int num_sites;
+
 
 private:
+  // Data Members
+  int num_sites_;
   std::vector<Sequence> sequence_list;
 };
 

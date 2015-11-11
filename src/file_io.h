@@ -8,6 +8,6 @@ class MSA;
 /* reads in sequences from a file
   msa_file: string specifying the file path
 */
-MSA* build_MSA_from_file(const std::string& msa_file);
+MSA build_MSA_from_file(const std::string& msa_file);
 
 #endif
