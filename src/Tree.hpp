@@ -19,6 +19,7 @@ public:
 
 private:
   pll_partition_t * partition;
+  pll_utree_t * tree;
   MSA msa;
   Model model;
 

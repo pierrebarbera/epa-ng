@@ -23,6 +23,9 @@ Tree::Tree(const string& tree_file, const string& msa_file, Model& model) : mode
 
 Tree::~Tree()
 {
+  // free data segment of tree nodes
+  free_node_data(tree);
+
 	pll_partition_destroy(partition);
 
 }
@@ -33,7 +36,7 @@ void Tree::build_partition_from_file(const string& tree_file)
 
   /* first we call the appropriate pll parsing function to obtain a pll_utree structure,
     on which our partition object will be based */
-  auto tree = pll_utree_parse_newick(tree_file.c_str(), &num_tip_nodes);
+  tree = pll_utree_parse_newick(tree_file.c_str(), &num_tip_nodes);
 
   if (num_tip_nodes < 3)
     throw runtime_error{"Number of tip nodes too small"};
@@ -149,7 +152,7 @@ void Tree::precompute_clvs(int num_tip_nodes, pll_utree_t* tree)
   auto num_inner_nodes = num_tip_nodes - 2;
   auto num_nodes = num_inner_nodes + num_tip_nodes;
   auto num_branches = num_nodes - 1;
-  
+
   int num_matrices, num_ops;
 
   /* buffer for creating a postorder traversal structure */
@@ -215,6 +218,7 @@ void Tree::place(const Sequence &s) const
 /* Compute loglikelihood of a Sequence, when placed on the edge defined by node */
 double Tree::place_on_edge(Sequence& s, pll_utree_t * node)
 {
+  s.sequence();
   // create new tiny tree including the given nodes and a new node for the sequence s
 
   // compute the loglikelihood

@@ -106,3 +106,18 @@ static int cb_partial_traversal(pll_utree_t * node)
 
   return 1;
 };
+
+static void free_node_data(pll_utree_t * node)
+{
+  free(node->data);
+
+  if (node->next) // we are at a inner node
+  {
+    // free all memory behind data of current node triple
+    free(node->next->data);
+    free(node->next->next->data);
+    // recurse to sub trees
+    free_node_data(node->next->back);
+    free_node_data(node->next->next->back);
+  }
+};
