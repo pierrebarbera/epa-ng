@@ -12,7 +12,7 @@ using namespace std;
 Tree::Tree(const string& tree_file, const string& msa_file, Model& model) : model(model)
 {
 
-  //TODO handle filetypes other than newick/fasta
+  // TODO handle filetypes other than newick/fasta
 
 
   //parse, build tree
@@ -73,7 +73,7 @@ void Tree::build_partition_from_file(const string& tree_file)
 
   link_tree_msa(num_tip_nodes, tree);
 
-  //TODO reference part of the MSA can now be freed
+  // TODO reference part of the MSA can now be freed
 
   precompute_clvs(num_tip_nodes, tree);
 }
@@ -146,9 +146,10 @@ void Tree::link_tree_msa(const int num_tip_nodes, pll_utree_t* tree)
 void Tree::precompute_clvs(int num_tip_nodes, pll_utree_t* tree)
 {
   //rederive the numbers
-  int num_inner_nodes = num_tip_nodes - 2;
-  int num_nodes = num_inner_nodes + num_tip_nodes;
-  int num_branches = num_nodes - 1;
+  auto num_inner_nodes = num_tip_nodes - 2;
+  auto num_nodes = num_inner_nodes + num_tip_nodes;
+  auto num_branches = num_nodes - 1;
+  
   int num_matrices, num_ops;
 
   /* buffer for creating a postorder traversal structure */
@@ -166,16 +167,12 @@ void Tree::precompute_clvs(int num_tip_nodes, pll_utree_t* tree)
   /* adjust clv indices such that every direction has its own */
   set_unique_clv_indices(tree, num_tip_nodes);
 
-  auto trav_cb = cb_full_traversal;
   for (int i = 0; i < num_tip_nodes; ++i)
   {
-    /* perform a postorder traversal of the unrooted tree,
-      complete for i = 0, afterwards partial*/
-    if (i > 0)
-      trav_cb = cb_partial_traversal;
+    /* perform a partial postorder traversal of the unrooted tree */
 
     int traversal_size = pll_utree_traverse(tip_nodes[i]->back,
-                                            trav_cb,
+                                            cb_partial_traversal,
                                             travbuffer);
     if (traversal_size == -1)
       throw runtime_error{"Function pll_utree_traverse() requires inner nodes as parameters"};
@@ -201,18 +198,6 @@ void Tree::precompute_clvs(int num_tip_nodes, pll_utree_t* tree)
        will be carried out sequentially starting from operation 0 towrds num_ops-1 */
     pll_update_partials(partition, operations, num_ops);
   }
-  /* compute the likelihood on an edge of the unrooted tree by specifying
-     the CLV indices at the two end-point of the branch, the probability matrix
-     index for the concrete branch length, and the index of the model of whose
-     frequency vector is to be used */
-  // double logl = pll_compute_edge_loglikelihood(partition,
-  //                                              tree->clv_index,
-  //                                              tree->scaler_index,
-  //                                              tree->back->clv_index,
-  //                                              tree->back->scaler_index,
-  //                                              tree->pmatrix_index,
-  //                                              0);
-
 
   delete [] travbuffer;
   delete [] branch_lengths;
