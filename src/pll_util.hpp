@@ -68,13 +68,6 @@ static void set_unique_clv_indices(pll_utree_t * tree, const int num_tip_nodes)
   set_unique_clv_indices_recursive(tree->back, num_tip_nodes);
 };
 
-/* a callback function for performing a full traversal */
-static int cb_full_traversal(pll_utree_t * node)
-{
-  (void) node;
-  return 1;
-};
-
 /* a callback function for performing a partial traversal */
 static int cb_partial_traversal(pll_utree_t * node)
 {
@@ -110,13 +103,6 @@ static int cb_partial_traversal(pll_utree_t * node)
 
   /* otherwise, set orientation on selected direction */
   node_info->clv_valid = 1;
-
-  /* reset orientation on the other two directions and return 1 (i.e. traverse
-     the subtree */
-  node_info = (node_info_t*) (node->next->data);
-  node_info->clv_valid = 0;
-  node_info = (node_info_t*) (node->next->next->data);
-  node_info->clv_valid = 0;
 
   return 1;
 };
