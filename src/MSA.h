@@ -27,7 +27,7 @@ public:
   {
     return num_sites_;
   }
-  Sequence get(const int i) const;
+  const Sequence& get(const int i) const;
 
   //Iterator Compatability
   iterator begin();

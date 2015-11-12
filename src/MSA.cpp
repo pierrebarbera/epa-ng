@@ -26,7 +26,7 @@ MSA::~MSA()
 }
 
 
-Sequence MSA::get(const int i) const
+const Sequence& MSA::get(const int i) const
 {
   if((size_t) i >= sequence_list_.size() || i < 0)
     throw runtime_error{string("Trying to access MSA entry out of bounds. i = ") + to_string(i) };

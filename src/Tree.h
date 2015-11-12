@@ -13,13 +13,16 @@ class Tree
 public:
   Tree(const std::string& tree_file, const std::string& msa_file, Model& model);
   ~Tree();
-  double place(Sequence s, pll_tree_t * first_subtree, pll_tree_t * second_subtree);
+  // TODO should return placement object
+  // TODO doesnt follow parallelization scheme: overload?
+  void place(const Sequence& s) const;
 
 private:
   pll_partition_t * partition;
   MSA msa;
   Model model;
 
+  double place_on_edge(Sequence& s, pll_utree_t * node);
   void build_partition_from_file(const std::string& tree_file);
   void link_tree_msa(const int num_tip_nodes, pll_utree_t* tree);
   void precompute_clvs(int num_tip_nodes, pll_utree_t* tree);

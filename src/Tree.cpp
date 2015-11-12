@@ -221,9 +221,17 @@ void Tree::precompute_clvs(int num_tip_nodes, pll_utree_t* tree)
 
 }
 
-/* Compute loglikelihood of a Sequence, when placed on the edge between two given nodes */
-double Tree::place(Sequence s, pll_tree_t * first_subtree, pll_tree_t * second_subtree) {
+void Tree::place(const Sequence &s) const
+{
+  s.sequence();
+  // place s on every edge
+}
+
+/* Compute loglikelihood of a Sequence, when placed on the edge defined by node */
+double Tree::place_on_edge(Sequence& s, pll_utree_t * node)
+{
   // create new tiny tree including the given nodes and a new node for the sequence s
 
   // compute the loglikelihood
+  return pll_compute_root_loglikelihood(partition, node->clv_index, node->scaler_index, 0);
 }
