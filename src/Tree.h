@@ -13,7 +13,7 @@ class Tree
 public:
   Tree(const std::string& tree_file, const std::string& msa_file, Model& model);
   ~Tree();
-  void place(Sequence s);
+  double place(Sequence s, pll_tree_t * first_subtree, pll_tree_t * second_subtree);
 
 private:
   pll_partition_t * partition;

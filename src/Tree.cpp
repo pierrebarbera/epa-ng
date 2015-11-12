@@ -3,11 +3,9 @@
 #include <stdexcept>
 #include <search.h>
 
-#include "util.h"
+#include "pll_util.h"
 #include "file_io.h"
 #include "Sequence.h"
-
-#include <iostream>
 
 using namespace std;
 
@@ -155,59 +153,54 @@ void Tree::precompute_clvs(int num_tip_nodes, pll_utree_t* tree)
 
   /* buffer for creating a postorder traversal structure */
   auto travbuffer = new pll_utree_t*[num_nodes];
-
-
   auto branch_lengths = new double[num_branches];
   auto matrix_indices = new int[num_branches];
-  auto operations = new pll_operation_t[num_inner_nodes];
+  auto operations = new pll_operation_t[num_nodes];
+  // TODO num_nodes too many? whats the upper bound considering tip traversal?
+
+  // get a list of all tip nodes
+  // TODO refactor candidate
+  auto tip_nodes = new pll_utree_t*[num_tip_nodes];
+  pll_utree_query_tipnodes(tree, tip_nodes);
 
   /* adjust clv indices such that every direction has its own */
   set_unique_clv_indices(tree, num_tip_nodes);
 
-  /* Uncomment to display the parsed tree ASCII tree together with information
-     as to which CLV index, branch length and label is associated with each
-     node. The code will also write (and print on screen) the newick format
-     of the tree.
+  auto trav_cb = cb_full_traversal;
+  for (int i = 0; i < num_tip_nodes; ++i)
+  {
+    /* perform a postorder traversal of the unrooted tree,
+      complete for i = 0, afterwards partial*/
+    if (i > 0)
+      trav_cb = cb_partial_traversal;
 
-  pll_utree_show_ascii(tree, PLL_UTREE_SHOW_LABEL |
-                             PLL_UTREE_SHOW_BRANCH_LENGTH |
-                             PLL_UTREE_SHOW_CLV_INDEX);
-  char * newick = pll_utree_export_newick(tree);
-  printf("%s\n", newick);
-  free(newick);
+    int traversal_size = pll_utree_traverse(tip_nodes[i]->back,
+                                            trav_cb,
+                                            travbuffer);
+    if (traversal_size == -1)
+      throw runtime_error{"Function pll_utree_traverse() requires inner nodes as parameters"};
 
-  return;
-  */
-  /* perform a postorder traversal of the unrooted tree */
+    /* given the computed traversal descriptor, generate the operations
+       structure, and the corresponding probability matrix indices that
+       may need recomputing */
+    pll_utree_create_operations(travbuffer,
+                                traversal_size,
+                                branch_lengths,
+                                matrix_indices,
+                                operations,
+                                &num_matrices,
+                                &num_ops);
 
-  int traversal_size = pll_utree_traverse(tree,
-                                          cb_full_traversal,
-                                          travbuffer);
-  if (traversal_size == -1)
-    throw runtime_error{"Function pll_utree_traverse() requires inner nodes as parameters"};
+    pll_update_prob_matrices(partition,
+                             0,             // use model 0
+                             matrix_indices,// matrices to update
+                             branch_lengths,
+                             num_matrices); // how many should be updated
 
-  /* given the computed traversal descriptor, generate the operations
-     structure, and the corresponding probability matrix indices that
-     may need recomputing */
-  pll_utree_create_operations(travbuffer,
-                              traversal_size,
-                              branch_lengths,
-                              matrix_indices,
-                              operations,
-                              &num_matrices,
-                              &num_ops);
-
-  pll_update_prob_matrices(partition,
-                           0,             // use model 0
-                           matrix_indices,// matrices to update
-                           branch_lengths,
-                           num_matrices); // how many should be updated
-
-
-  /* use the operations array to compute all num_ops inner CLVs. Operations
-     will be carried out sequentially starting from operation 0 towrds num_ops-1 */
-  pll_update_partials(partition, operations, num_ops);
-
+    /* use the operations array to compute all num_ops inner CLVs. Operations
+       will be carried out sequentially starting from operation 0 towrds num_ops-1 */
+    pll_update_partials(partition, operations, num_ops);
+  }
   /* compute the likelihood on an edge of the unrooted tree by specifying
      the CLV indices at the two end-point of the branch, the probability matrix
      index for the concrete branch length, and the index of the model of whose
@@ -228,6 +221,9 @@ void Tree::precompute_clvs(int num_tip_nodes, pll_utree_t* tree)
 
 }
 
-void Tree::place(Sequence s) {
-  (void) s;
+/* Compute loglikelihood of a Sequence, when placed on the edge between two given nodes */
+double Tree::place(Sequence s, pll_tree_t * first_subtree, pll_tree_t * second_subtree) {
+  // create new tiny tree including the given nodes and a new node for the sequence s
+
+  // compute the loglikelihood
 }
