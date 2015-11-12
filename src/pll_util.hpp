@@ -121,3 +121,17 @@ static void free_node_data(pll_utree_t * node)
     free_node_data(node->next->next->back);
   }
 };
+
+// TODO it hurts to have to traverse the full tree AGAIN
+static void utree_query_branches(pll_utree_t * node, pll_utree_t ** node_list)
+{
+  *node_list = node;
+
+  if (node->next) // inner node
+  {
+    // postorder traversal
+    utree_query_branches(node->next->back, ++node_list);
+    utree_query_branches(node->next->next->back, ++node_list);
+  }
+
+};

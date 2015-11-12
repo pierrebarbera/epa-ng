@@ -32,7 +32,7 @@ Tree::~Tree()
 
 void Tree::build_partition_from_file(const string& tree_file)
 {
-  int num_tip_nodes, num_nodes, num_branches, num_inner_nodes;
+  int num_tip_nodes, num_nodes, num_inner_nodes;
 
   /* first we call the appropriate pll parsing function to obtain a pll_utree structure,
     on which our partition object will be based */
@@ -151,7 +151,7 @@ void Tree::precompute_clvs(int num_tip_nodes, pll_utree_t* tree)
   //rederive the numbers
   auto num_inner_nodes = num_tip_nodes - 2;
   auto num_nodes = num_inner_nodes + num_tip_nodes;
-  auto num_branches = num_nodes - 1;
+  num_branches = num_nodes - 1;
 
   int num_matrices, num_ops;
 
@@ -213,6 +213,8 @@ void Tree::place(const Sequence &s) const
 {
   s.sequence();
   // place s on every edge
+  auto node_list = new pll_utree_t*[num_branches];
+  utree_query_branches(tree, node_list);
 }
 
 /* Compute loglikelihood of a Sequence, when placed on the edge defined by node */

@@ -20,6 +20,7 @@ public:
 private:
   pll_partition_t * partition;
   pll_utree_t * tree;
+  int num_branches;
   MSA msa;
   Model model;
 
