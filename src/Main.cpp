@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 
-#include "epa.h"
+#include "epa.hpp"
 
 using namespace std;
 

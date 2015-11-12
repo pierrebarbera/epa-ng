@@ -3,9 +3,9 @@
 
 #include <string>
 
-#include "pllhead.h"
-#include "MSA.h"
-#include "Model.h"
+#include "pllhead.hpp"
+#include "MSA.hpp"
+#include "Model.hpp"
 
 /* Encapsulates the pll data structures for ML computation */
 class Tree

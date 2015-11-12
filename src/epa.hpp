@@ -1,9 +1,9 @@
 #include <string>
 #include <vector>
 
-#include "Tree.h"
-#include "MSA.h"
-#include "file_io.h"
+#include "Tree.hpp"
+#include "MSA.hpp"
+#include "file_io.hpp"
 
 static void epa(std::string& tree_file, std::string& reference_msa_file, std::string& query_msa_file,
                 std::vector<double> base_frequencies, std::vector<double> substitution_rates)

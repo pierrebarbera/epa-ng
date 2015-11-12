@@ -1,4 +1,4 @@
-#include "Model.h"
+#include "Model.hpp"
 
 #include <vector>
 #include <stdexcept>

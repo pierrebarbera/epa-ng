@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "Sequence.h"
+#include "Sequence.hpp"
 
 class MSA
 {

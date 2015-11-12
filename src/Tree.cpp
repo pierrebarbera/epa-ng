@@ -1,11 +1,11 @@
-#include "Tree.h"
+#include "Tree.hpp"
 
 #include <stdexcept>
 #include <search.h>
 
-#include "pll_util.h"
-#include "file_io.h"
-#include "Sequence.h"
+#include "pll_util.hpp"
+#include "file_io.hpp"
+#include "Sequence.hpp"
 
 using namespace std;
 

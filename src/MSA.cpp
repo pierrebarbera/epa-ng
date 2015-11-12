@@ -1,10 +1,10 @@
-#include "MSA.h"
+#include "MSA.hpp"
 
 #include <vector>
 #include <tuple>
 #include <stdexcept>
 
-#include "Sequence.h"
+#include "Sequence.hpp"
 
 using namespace std;
 

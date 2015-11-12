@@ -1,10 +1,10 @@
-#include "file_io.h"
+#include "file_io.hpp"
 
 #include <stdexcept>
 #include <string>
 
-#include "pllhead.h"
-#include "MSA.h"
+#include "pllhead.hpp"
+#include "MSA.hpp"
 
 using namespace std;
 
