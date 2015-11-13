@@ -2,6 +2,7 @@
 #define EPA_TREE_H_
 
 #include <string>
+#include <functional>
 
 #include "pllhead.hpp"
 #include "MSA.hpp"
@@ -16,6 +17,8 @@ public:
   // TODO should return placement object
   // TODO doesnt follow parallelization scheme: overload?
   void place(const Sequence& s) const;
+  // TODO bad: breaks encapsulation
+  void visit(std::function<void(pll_partition_t *, pll_utree_t *)> f);
 
 private:
   pll_partition_t * partition;

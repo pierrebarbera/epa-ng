@@ -50,11 +50,11 @@ static void set_unique_clv_indices_recursive(pll_utree_t * tree, const int num_t
       the tip nodes only have one clv  */
     idx = (idx - num_tip_nodes) * 3 + num_tip_nodes;
     tree->clv_index = idx;
-    //tree->scaler_index = idx;
+    // tree->scaler_index = idx;
     tree->next->clv_index = ++idx;
-    //tree->next->scaler_index = idx;
+    // tree->next->scaler_index = idx;
     tree->next->next->clv_index = ++idx;
-    //tree->next->next->scaler_index = idx;
+    // tree->next->next->scaler_index = idx;
 
     // recurse
     set_unique_clv_indices_recursive(tree->next->back, num_tip_nodes);

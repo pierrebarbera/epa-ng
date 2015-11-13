@@ -226,3 +226,8 @@ double Tree::place_on_edge(Sequence& s, pll_utree_t * node)
   // compute the loglikelihood
   return pll_compute_root_loglikelihood(partition, node->clv_index, node->scaler_index, 0);
 }
+
+void Tree::visit(std::function<void(pll_partition_t *, pll_utree_t *)> f)
+{
+  f(partition, tree);
+}
