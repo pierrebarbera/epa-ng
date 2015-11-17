@@ -50,6 +50,7 @@ static void set_unique_clv_indices_recursive(pll_utree_t * tree, const int num_t
       the tip nodes only have one clv  */
     idx = (idx - num_tip_nodes) * 3 + num_tip_nodes;
     tree->clv_index = idx;
+    // TODO scaler indices needed for correctness, however allocation of extra not impl. in pll yet
     // tree->scaler_index = idx;
     tree->next->clv_index = ++idx;
     // tree->next->scaler_index = idx;
@@ -122,16 +123,34 @@ static void free_node_data(pll_utree_t * node)
   }
 };
 
-// TODO it hurts to have to traverse the full tree AGAIN
-static void utree_query_branches(pll_utree_t * node, pll_utree_t ** node_list)
+static void utree_query_branches_recursive(pll_utree_t * node, pll_utree_t ** node_list, int * index)
 {
-  *node_list = node;
+  // Postorder traversal
 
   if (node->next) // inner node
   {
-    // postorder traversal
-    utree_query_branches(node->next->back, ++node_list);
-    utree_query_branches(node->next->next->back, ++node_list);
+    utree_query_branches_recursive(node->next->back, node_list, index);
+    utree_query_branches_recursive(node->next->next->back, node_list, index);
   }
+  node_list[*index] = node;
+  *index = *index + 1;
+};
+
+// TODO it hurts to have to traverse the full tree AGAIN
+static int utree_query_branches(pll_utree_t * node, pll_utree_t ** node_list)
+{
+  int index = 0;
+
+  // assure that we start at inner node
+  if (!node->next) node = node->back;
+
+  // utree-function: we start at a trifucation
+  utree_query_branches_recursive(node->back, node_list, &index);
+  utree_query_branches_recursive(node->next->back, node_list, &index);
+  utree_query_branches_recursive(node->next->next->back, node_list, &index);
+
+  node_list[index++] = node;
+
+  return index;
 
 };
