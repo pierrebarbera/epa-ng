@@ -4,7 +4,7 @@ TESTINPUT= $(TEST)/ref.tre $(TEST)/aln.fasta $(TEST)/query.fasta
 
 CC=clang++
 DEFS=
-WARNINGS= -Wall -Wextra -Wno-c++98-compat
+WARNINGS= -Wall -Wextra -pedantic -pedantic-errors
 CFLAGS= $(WARNINGS) -std=c++11 -g
 LINKFLAGS=
 
