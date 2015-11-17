@@ -227,16 +227,31 @@ void Tree::place(const MSA &msa) const
 /* Compute loglikelihood of a Sequence, when placed on the edge defined by node */
 double Tree::place_on_edge(Sequence& s, pll_utree_t * node) const
 {
-  pll_utree * inner;
-  pll_utree * new_tip;
-  pll_utree * old_left = node;
-  pll_utree * old_right = node->back;
+  int new_tip_clv_index = 2;
+  int inner_clv_index = 3;
+  pll_utree_t * old_left = node;
+  pll_utree_t * old_right = node->back;
 
-  /* create new tiny tree including the given nodes and a new node for the sequence s */
+  /* create new tiny tree including the given nodes and a new node for the sequence s
+
+               [2]
+             new_tip
+                |
+                |
+              inner [3]
+             /     \
+            /       \
+      old_left     old_right
+        [0]           [1]
+
+    numbers in brackets are the node's clv indices
+  */
 
   // stack new partition with 3 tips, 1 inner node
+  //partition_create_stackd(tiny_partition,
   pll_partition_t * tiny_partition =
-  partition_create_stackd(3, // tips
+  pll_partition_create(
+                          3, // tips
                           1, // extra clv's
                           partition_->states,
                           partition_->sites,
@@ -246,11 +261,19 @@ double Tree::place_on_edge(Sequence& s, pll_utree_t * node) const
                           4, // number of scale buffers (one per node)
                           partition_->attributes);
 
+  // shallow copy model params
+  tiny_partition->rates = partition_->rates;
+  tiny_partition->subst_params = partition_->subst_params;
+  tiny_partition->frequencies = partition_->frequencies;
+
   // shallow copy 2 existing nodes
+  tiny_partition->clv[0] = partition_->clv[old_left->clv_index];
+  tiny_partition->clv[1] = partition_->clv[old_right->clv_index];
+
+  // get pointer to inner and new tip
 
   // init the new tip with s.sequence(), branch length
-  s.sequence();
-
+  pll_set_tip_states(tiny_partition, new_tip_clv_index, pll_map_nt, s.sequence().c_str());
 
   // init the new inner node with proper branch length indices
 
@@ -260,10 +283,10 @@ double Tree::place_on_edge(Sequence& s, pll_utree_t * node) const
 
   // compute the loglikelihood using inner node and new tip
   return pll_compute_edge_loglikelihood(tiny_partition,
-                                        inner->clv_index,
-                                        inner->scaler_index,
-                                        new_tip->clv_index,
-                                        new_tip->scaler_index,
+                                        new_tip_clv_index,
+                                        new_tip_clv_index,// scaler_index
+                                        inner_clv_index,
+                                        inner_clv_index,  // scaler_index
                                         0,// matrix index of branch
                                         0);// freq index
 }
