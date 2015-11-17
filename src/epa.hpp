@@ -7,7 +7,7 @@
 #include "MSA.hpp"
 #include "file_io.hpp"
 
-void check_clvs_zero(pll_partition_t * p, pll_utree_t * t)
+void check_clvs_computed(pll_partition_t * p, pll_utree_t * t)
 {
   // TODO garbage
   int tip_nodes_count = 8;
@@ -65,9 +65,9 @@ static void epa(std::string& tree_file, std::string& reference_msa_file, std::st
 
   auto query_reads = build_MSA_from_file(query_msa_file);
 
-  //tree.visit(&check_clvs_zero);
+  //tree.visit(&check_clvs_computed);
 
-  tree.place(query_reads.get(0));
+  tree.place(query_reads);
 
 	// for scalability...
 		// stream? then probably conjuntion between pll datatype and my wrapper needed
