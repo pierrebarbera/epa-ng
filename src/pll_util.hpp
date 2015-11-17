@@ -154,3 +154,16 @@ static int utree_query_branches(pll_utree_t * node, pll_utree_t ** node_list)
   return index;
 
 };
+
+#define partition_create_stackd(tips,\
+                                clv_buffers,\
+                                states,\
+                                sites,\
+                                rate_matrices,\
+                                prob_matrices,\
+                                rate_cats,\
+                                scale_buffers,\
+                                attributes) \
+{\
+  \
+}\

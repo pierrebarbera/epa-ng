@@ -227,11 +227,45 @@ void Tree::place(const MSA &msa) const
 /* Compute loglikelihood of a Sequence, when placed on the edge defined by node */
 double Tree::place_on_edge(Sequence& s, pll_utree_t * node) const
 {
-  s.sequence();
-  // create new tiny tree including the given nodes and a new node for the sequence s
+  pll_utree * inner;
+  pll_utree * new_tip;
+  pll_utree * old_left = node;
+  pll_utree * old_right = node->back;
 
-  // compute the loglikelihood
-  return pll_compute_root_loglikelihood(partition_, node->clv_index, node->scaler_index, 0);
+  /* create new tiny tree including the given nodes and a new node for the sequence s */
+
+  // stack new partition with 3 tips, 1 inner node
+  pll_partition_t * tiny_partition =
+  partition_create_stackd(3, // tips
+                          1, // extra clv's
+                          partition_->states,
+                          partition_->sites,
+                          partition_->rate_matrices,
+                          3, // number of prob. matrices (one per unique branch length)
+                          partition_->rate_cats,
+                          4, // number of scale buffers (one per node)
+                          partition_->attributes);
+
+  // shallow copy 2 existing nodes
+
+  // init the new tip with s.sequence(), branch length
+  s.sequence();
+
+
+  // init the new inner node with proper branch length indices
+
+  // create a single operation for the inner node computation
+
+  // use update_partials to compute the clv poinint toward the new tip
+
+  // compute the loglikelihood using inner node and new tip
+  return pll_compute_edge_loglikelihood(tiny_partition,
+                                        inner->clv_index,
+                                        inner->scaler_index,
+                                        new_tip->clv_index,
+                                        new_tip->scaler_index,
+                                        0,// matrix index of branch
+                                        0);// freq index
 }
 
 void Tree::visit(std::function<void(pll_partition_t *, pll_utree_t *)> f)
