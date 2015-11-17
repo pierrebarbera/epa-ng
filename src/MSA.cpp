@@ -58,6 +58,17 @@ MSA::iterator MSA::end()
     return sequence_list_.end();
 }
 
+
+MSA::const_iterator MSA::begin() const
+{
+    return sequence_list_.cbegin();
+}
+
+MSA::const_iterator MSA::end() const
+{
+    return sequence_list_.cend();
+}
+
 MSA::const_iterator MSA::cbegin()
 {
     return sequence_list_.cbegin();
