@@ -4,6 +4,7 @@
 #include <search.h>
 
 #include "pll_util.hpp"
+#include "tiny_partition_util.hpp"
 #include "file_io.hpp"
 #include "Sequence.hpp"
 
@@ -220,13 +221,15 @@ void Tree::place(const MSA &msa) const
   // place all s on every edge
   for (auto s : msa)
     for (int i = 0; i < num_traversed; ++i) {
-      place_on_edge(s, node_list[i]);
+      cout << place_on_edge(s, node_list[i]) << endl;
     }
 }
 
 /* Compute loglikelihood of a Sequence, when placed on the edge defined by node */
 double Tree::place_on_edge(Sequence& s, pll_utree_t * node) const
 {
+  int old_left_clv_index = 0;
+  int old_right_clv_index = 1;
   int new_tip_clv_index = 2;
   int inner_clv_index = 3;
   pll_utree_t * old_left = node;
@@ -244,14 +247,13 @@ double Tree::place_on_edge(Sequence& s, pll_utree_t * node) const
       old_left     old_right
         [0]           [1]
 
-    numbers in brackets are the node's clv indices
+    numbers in brackets are the nodes clv indices
   */
 
-  // stack new partition with 3 tips, 1 inner node
+  // stack (TODO) new partition with 3 tips, 1 inner node
   //partition_create_stackd(tiny_partition,
   pll_partition_t * tiny_partition =
-  pll_partition_create(
-                          3, // tips
+  pll_partition_create(   3, // tips
                           1, // extra clv's
                           partition_->states,
                           partition_->sites,
@@ -266,20 +268,54 @@ double Tree::place_on_edge(Sequence& s, pll_utree_t * node) const
   tiny_partition->subst_params = partition_->subst_params;
   tiny_partition->frequencies = partition_->frequencies;
 
-  // shallow copy 2 existing nodes
-  tiny_partition->clv[0] = partition_->clv[old_left->clv_index];
-  tiny_partition->clv[1] = partition_->clv[old_right->clv_index];
+  // shallow copy 2 existing nodes clvs
+  tiny_partition->clv[old_left_clv_index] =
+                          partition_->clv[old_left->clv_index];
+  tiny_partition->clv[old_right_clv_index] =
+                          partition_->clv[old_right->clv_index];
 
-  // get pointer to inner and new tip
+  // shallow copy scalers TODO is this right?
+  tiny_partition->scale_buffer[old_left_clv_index] =
+                          partition_->scale_buffer[old_left->scaler_index];
+  tiny_partition->scale_buffer[old_right_clv_index] =
+                          partition_->scale_buffer[old_right->scaler_index];
 
   // init the new tip with s.sequence(), branch length
   pll_set_tip_states(tiny_partition, new_tip_clv_index, pll_map_nt, s.sequence().c_str());
 
-  // init the new inner node with proper branch length indices
+  // set up branch lengths
+  //int num_unique_branch_lengths = 2;
+  /* heuristic insertion as described in EPA paper from 2011 (Berger et al.):
+    original branch, now split by "inner", or base, node of the inserted sequence,
+    defines the new branch lengths between inner and old left/right respectively
+    as old branch length / 2.
+    The new branch leading from inner to the new tip is initialized with length 0.9,
+    which is the default branch length in RAxML.
+    */
+  double branch_lengths[2] = { old_left->length / 2, 0.9};
+  int matrix_indices[2] = { 0, 1 };
 
-  // create a single operation for the inner node computation
+  // TODO Newton-Raphson
 
-  // use update_partials to compute the clv poinint toward the new tip
+  // use branch lengths to compute the probability matrices
+  pll_update_prob_matrices(tiny_partition, 0, matrix_indices,
+                      branch_lengths, 2);
+
+  /* Creating a single operation for the inner node computation.
+    Here we specify which clvs and pmatrices to use, so we don't need to mess with
+    what the internal tree structure points to */
+  pll_operation_t ops[1];
+  ops[0].parent_clv_index    = inner_clv_index;
+  ops[0].child1_clv_index    = old_left_clv_index;
+  ops[0].child2_clv_index    = old_right_clv_index;
+  ops[0].child1_matrix_index = 0;// TODO depends on NR vs heuristic
+  ops[0].child2_matrix_index = 0;// TODO depends on NR vs heuristic
+  ops[0].parent_scaler_index = PLL_SCALE_BUFFER_NONE;// TODO this should be inner_clv_index once scale buffers are fixed
+  ops[0].child1_scaler_index = old_left_clv_index;
+  ops[0].child2_scaler_index = old_right_clv_index;
+
+  // use update_partials to compute the clv poining toward the new tip
+  pll_update_partials(tiny_partition, ops, 1);
 
   // compute the loglikelihood using inner node and new tip
   return pll_compute_edge_loglikelihood(tiny_partition,
@@ -287,7 +323,7 @@ double Tree::place_on_edge(Sequence& s, pll_utree_t * node) const
                                         new_tip_clv_index,// scaler_index
                                         inner_clv_index,
                                         inner_clv_index,  // scaler_index
-                                        0,// matrix index of branch
+                                        1,// matrix index of branch TODO depends on NR
                                         0);// freq index
 }
 
