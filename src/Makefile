@@ -8,7 +8,7 @@ WARNINGS= -Wall -Wextra -pedantic -pedantic-errors
 CFLAGS= $(WARNINGS) -std=c++11 -g
 LINKFLAGS=
 
-TARGET=$(BIN)/epa
+TARGET=$(BIN)/epamk
 
 LIBS=-lm -lpll
 OBJS=Main.o MSA.o Tree.o Model.o file_io.o Sequence.o
