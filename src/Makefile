@@ -1,5 +1,5 @@
 BIN=../bin
-TEST=../test
+TEST=../test/data
 TESTINPUT= $(TEST)/ref.tre $(TEST)/aln.fasta $(TEST)/query.fasta
 
 CC=clang++

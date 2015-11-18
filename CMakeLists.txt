@@ -17,11 +17,14 @@ message (STATUS "Building ${CMAKE_BUILD_TYPE}")
 set (WARN_FLAGS              "-Wall -Wextra -pedantic -pedantic-errors")
 set (CMAKE_CXX_FLAGS         "-std=c++11 ${WARN_FLAGS}")
 
-set (CMAKE_CXX_FLAGS_DEBUG   "-g -ggdb3 -DDEBUG")
-set (CMAKE_CXX_FLAGS_RELEASE "-O3       -DNDEBUG")
+set (CMAKE_CXX_FLAGS_DEBUG   "-g")
+set (CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 #find_library(libpll)
 
 # include_directories("${PROJECT_BINARY_DIR}")
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/src)
+
+enable_testing()
+add_subdirectory(${PROJECT_SOURCE_DIR}/test/src)

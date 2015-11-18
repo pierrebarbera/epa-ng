@@ -1,8 +1,5 @@
 .PHONY: all, run_make, test, clean
 
-test: all
-	./bin/epa_test
-
 all: build/CMakeCache.txt run_make
 
 # Run cmake if not yet done or if CMakeLists.txt has changed.
@@ -19,3 +16,4 @@ clean:
 	@echo "Cleaning"
 	@rm -rf build
 	@rm -rf bin
+	@rm -rf test/bin
