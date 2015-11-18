@@ -4,7 +4,6 @@
 #include <search.h>
 
 #include "pll_util.hpp"
-#include "tiny_partition_util.hpp"
 #include "file_io.hpp"
 #include "Sequence.hpp"
 
