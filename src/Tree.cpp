@@ -221,7 +221,7 @@ void Tree::place(const MSA &msa) const
   // place all s on every edge
   for (auto s : msa)
     for (int i = 0; i < num_traversed; ++i) {
-      cout << place_on_edge(s, node_list[i]) << endl;
+      place_on_edge(s, node_list[i]);
     }
 }
 
