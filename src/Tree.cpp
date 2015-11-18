@@ -28,7 +28,7 @@ Tree::Tree(const string& tree_file, const string& msa_file, Model& model) : mode
 Tree::~Tree()
 {
   // free data segment of tree nodes
-  free_node_data(tree_);
+  utree_free_node_data(tree_);
 
 	pll_partition_destroy(partition_);
 
@@ -110,6 +110,7 @@ void Tree::link_tree_msa()
   }*/
 
   /* create a libc hash table of size num_tip_nodes_ */
+  // TODO I bet theres a cpp std implementation that is much better
   hcreate(num_tip_nodes_);
 
   /* populate a libc hash table with tree tip labels */
@@ -203,6 +204,7 @@ void Tree::precompute_clvs()
   }
 
   delete [] travbuffer;
+  delete [] tip_nodes;
   delete [] branch_lengths;
   delete [] matrix_indices;
   delete [] operations;
@@ -317,13 +319,15 @@ double Tree::place_on_edge(Sequence& s, pll_utree_t * node) const
   pll_update_partials(tiny_partition, ops, 1);
 
   // compute the loglikelihood using inner node and new tip
-  return pll_compute_edge_loglikelihood(tiny_partition,
+  double likelihood =  pll_compute_edge_loglikelihood(tiny_partition,
                                         new_tip_clv_index,
                                         new_tip_clv_index,// scaler_index
                                         inner_clv_index,
                                         inner_clv_index,  // scaler_index
                                         1,// matrix index of branch TODO depends on NR
                                         0);// freq index
+  //pll_partition_destroy(tiny_partition);
+  return likelihood;
 }
 
 void Tree::visit(std::function<void(pll_partition_t *, pll_utree_t *)> f)

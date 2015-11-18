@@ -110,11 +110,13 @@ static int cb_partial_traversal(pll_utree_t * node)
 
 static void free_node_data(pll_utree_t * node)
 {
-  free(node->data);
+
+  // currently we don't allocate a data struct at the tips
 
   if (node->next) // we are at a inner node
   {
-    // free all memory behind data of current node triple
+    // free all memory behind data of current node triplet
+    free(node->data);
     free(node->next->data);
     free(node->next->next->data);
     // recurse to sub trees
@@ -122,6 +124,17 @@ static void free_node_data(pll_utree_t * node)
     free_node_data(node->next->next->back);
   }
 };
+
+static int utree_free_node_data(pll_utree_t * node)
+{
+  if (!node->next) return 0; // not a inner node!
+
+  // we start at a trifurcation: call explicitly for this node and its adjacent node
+  free_node_data(node);
+  free_node_data(node->back);
+
+  return 1;
+}
 
 static void utree_query_branches_recursive(pll_utree_t * node, pll_utree_t ** node_list, int * index)
 {
