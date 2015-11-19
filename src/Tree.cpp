@@ -1,15 +1,15 @@
 #include "Tree.hpp"
 
 #include <stdexcept>
-#include <search.h>
 
 #include "pll_util.hpp"
+#include "epa_pll_util.hpp"
 #include "file_io.hpp"
 #include "Sequence.hpp"
 
 using namespace std;
 
-Tree::Tree(const string& tree_file, const string& msa_file, Model& model) : model_(model)
+Tree::Tree(const string& tree_file, const string& msa_file, const Model& model) : model_(model)
 {
 
   // TODO handle filetypes other than newick/fasta
@@ -20,7 +20,7 @@ Tree::Tree(const string& tree_file, const string& msa_file, Model& model) : mode
 
   build_partition_from_file(tree_file);
 
-  link_tree_msa();
+  link_tree_msa(tree_, partition_, ref_msa_, num_tip_nodes_);
 
   precompute_clvs();
 }
@@ -79,72 +79,6 @@ void Tree::build_partition_from_file(const string& tree_file)
   pll_set_category_rates(partition_, rate_cats);
 
   // TODO reference part of the MSA can now be freed
-}
-
-void Tree::link_tree_msa()
-{
-  // next, we obtain pointers to all tip nodes
-  auto tip_nodes = new pll_utree_t*[num_tip_nodes_];
-  pll_utree_query_tipnodes(tree_, tip_nodes);
-
-  /*
-  // and associate the sequences from the MSA file with the correct tips
-  // TODO this is n^2. potential performance hog
-  bool found = false;
-  for (int i = 0; i < num_tip_nodes_; ++i)
-  {
-    string header, sequence;
-    tie(header, sequence) = msa->get(i);
-
-    for (int j = 0; j < num_tip_nodes_ && !found; ++j)
-    {
-      if(header.compare(tip_nodes[j]->label) == 0)
-      {
-        found = true;
-        pll_set_tip_states(partition, j, pll_map_nt, sequence.c_str());
-      }
-    }
-    if (!found)
-      throw runtime_error{string("Sequence with header does not appear in the tree: ") + header};
-    found = false;
-  }*/
-
-  /* create a libc hash table of size num_tip_nodes_ */
-  // TODO I bet theres a cpp std implementation that is much better
-  hcreate(num_tip_nodes_);
-
-  /* populate a libc hash table with tree tip labels */
-  auto data = new int[num_tip_nodes_];
-  for (int i = 0; i < num_tip_nodes_; ++i)
-  {
-    data[i] = i;
-    ENTRY entry;
-    entry.key = tip_nodes[i]->label;
-    entry.data = (void *)(&data[i]);
-    hsearch(entry, ENTER);
-  }
-
-  /* find sequences in hash table and link them with the corresponding taxa */
-  for (auto s : ref_msa_)
-  {
-    ENTRY query;
-    query.key = &(s.header()[0]); //to get char* from std::string
-    ENTRY * found = NULL;
-
-    found = hsearch(query,FIND);
-
-    if (!found)
-      throw runtime_error{string("Sequence with header does not appear in the tree: ") + s.header()};
-
-    int tip_clv_index = *((int *)(found->data));
-
-    pll_set_tip_states(partition_, tip_clv_index, pll_map_nt, s.sequence().c_str());
-  }
-
-  /* destroy hash table and free related data */
-  hdestroy();
-  delete [] tip_nodes;
-  delete [] data;
 }
 
 void Tree::precompute_clvs()

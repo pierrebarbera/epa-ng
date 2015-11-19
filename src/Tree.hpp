@@ -12,7 +12,7 @@
 class Tree
 {
 public:
-  Tree(const std::string& tree_file, const std::string& msa_file, Model& model);
+  Tree(const std::string& tree_file, const std::string& msa_file, const Model& model);
   ~Tree();
   // TODO should return placement object
   // TODO doesnt follow parallelization scheme: overload?
@@ -35,7 +35,6 @@ private:
 
   double place_on_edge(Sequence& s, pll_utree_t * node) const;
   void build_partition_from_file(const std::string& tree_file);
-  void link_tree_msa();
   void precompute_clvs();
 
 };

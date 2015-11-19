@@ -1,3 +1,7 @@
+#ifndef EPA_PLL_UTIL_H_
+#define EPA_PLL_UTIL_H_
+#endif
+
 #include "pllhead.hpp"
 
 #define DEFAULT_BRANCH_LENGTH 0.000001
