@@ -1,10 +1,10 @@
 #include "file_io.hpp"
 
 #include <stdexcept>
-#include <string>
 
 #include "pllhead.hpp"
 #include "MSA.hpp"
+#include "pll_util.hpp"
 
 using namespace std;
 
@@ -55,4 +55,52 @@ MSA build_MSA_from_file(const string& msa_file)
   pll_fasta_close(file);
 
   return msa;
+}
+
+tuple<pll_partition_t *, pll_utree_t *>  build_partition_from_file(const string& tree_file, const Model& model,
+                  Tree_Numbers& nums,  const int num_sites)
+{
+  int num_tip_nodes;
+
+  /* first we call the appropriate pll parsing function to obtain a pll_utree structure,
+    on which our partition object will be based */
+  auto tree = pll_utree_parse_newick(tree_file.c_str(), &num_tip_nodes);
+
+  // we then derive some numbers about the graph
+  nums.init(num_tip_nodes);
+
+  if (nums.tip_nodes < 3)
+    throw runtime_error{"Number of tip nodes too small"};
+
+  set_missing_branch_length(tree, DEFAULT_BRANCH_LENGTH);
+
+
+  auto partition = pll_partition_create(nums.tip_nodes,
+                                   nums.inner_nodes * 3, //number of extra clv buffers: 3 for every direction on the node
+                                   STATES,
+                                   num_sites,
+                                   1,
+                                   nums.branches,
+                                   RATE_CATS,
+                                   nums.inner_nodes * 3, /* number of extra scaler buffers */
+                                   PLL_ATTRIB_ARCH_SSE);
+
+  double rate_cats[RATE_CATS] = {0};
+
+  /* compute the discretized category rates from a gamma distribution
+     with alpha shape 1 and store them in rate_cats  */
+  // TODO gamma dist is input?
+  pll_compute_gamma_cats(1, 4, rate_cats);
+
+  /* set frequencies at model with index 0 */
+  pll_set_frequencies(partition, 0, &(model.base_frequencies()[0]));
+
+  /* set substitution parameters at model with index 0 */
+  pll_set_subst_params(partition, 0, &(model.substitution_rates()[0]));
+
+  /* set rate categories */
+  pll_set_category_rates(partition, rate_cats);
+
+  return make_tuple(partition, tree);
+
 }

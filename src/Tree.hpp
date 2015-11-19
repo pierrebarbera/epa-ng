@@ -7,6 +7,8 @@
 #include "pllhead.hpp"
 #include "MSA.hpp"
 #include "Model.hpp"
+#include "Tree_Numbers.hpp"
+
 
 /* Encapsulates the pll data structures for ML computation */
 class Tree
@@ -26,16 +28,13 @@ private:
   pll_utree_t * tree_; // must be top level node as parsed in newick! (for jplace)
 
   // tree related numbers
-  int num_branches_;
-  int num_tip_nodes_;
+  Tree_Numbers nums_;
 
   // epa related classes
   MSA ref_msa_;
   Model model_;
 
   double place_on_edge(Sequence& s, pll_utree_t * node) const;
-  void build_partition_from_file(const std::string& tree_file);
-  void precompute_clvs();
 
 };
 

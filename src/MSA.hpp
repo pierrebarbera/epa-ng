@@ -23,10 +23,7 @@ public:
   void append(Sequence s);
 
   //Member access
-  inline int num_sites() const
-  {
-    return num_sites_;
-  }
+  inline int num_sites() const {return num_sites_;};
   const Sequence& get(const int i) const;
 
   //Iterator Compatability
