@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 #include <tuple>
+#include <cassert>
 
 #include "pll_util.hpp"
 #include "epa_pll_util.hpp"
@@ -55,6 +56,8 @@ void Tree::place(const MSA &msa) const
 /* Compute loglikelihood of a Sequence, when placed on the edge defined by node */
 double Tree::place_on_edge(Sequence& s, pll_utree_t * node) const
 {
+  assert(node != NULL);
+
   int old_left_clv_index = 0;
   int old_right_clv_index = 1;
   int new_tip_clv_index = 2;
