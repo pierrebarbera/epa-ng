@@ -166,7 +166,7 @@ static int utree_query_branches(pll_utree_t * node, pll_utree_t ** node_list)
   utree_query_branches_recursive(node->next->back, node_list, &index);
   utree_query_branches_recursive(node->next->next->back, node_list, &index);
 
-  node_list[index++] = node;
+  index++;
 
   return index;
 

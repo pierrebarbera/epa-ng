@@ -47,8 +47,7 @@ static void precompute_clvs(pll_utree_t * tree, pll_partition_t * partition, con
   auto branch_lengths = new double[nums.branches];
   auto matrix_indices = new int[nums.branches];
   auto operations = new pll_operation_t[nums.nodes];
-  // TODO num_nodes too many? whats the upper bound considering tip traversal?
-
+  
   // get a list of all tip nodes
   auto tip_nodes = new pll_utree_t*[nums.tip_nodes];
   pll_utree_query_tipnodes(tree, tip_nodes);

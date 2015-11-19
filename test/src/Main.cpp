@@ -17,6 +17,13 @@ int main(int argc, char** argv)
       env->data_dir = call.substr(0,found) + "/../data/";
   }
 
+  env->tree_file = std::string(env->data_dir);
+  env->tree_file += "ref.tre";
+  env->reference_file  = std::string(env->data_dir);
+  env->reference_file += "aln.fasta";
+  env->query_file  = std::string(env->data_dir);
+  env->query_file += "query.fasta";
+
   ::testing::InitGoogleTest(&argc, argv);
 
   ::testing::AddGlobalTestEnvironment(env);
