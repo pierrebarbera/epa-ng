@@ -54,7 +54,6 @@ static void set_unique_clv_indices_recursive(pll_utree_t * tree, const int num_t
       the tip nodes only have one clv  */
     idx = (idx - num_tip_nodes) * 3 + num_tip_nodes;
     tree->clv_index = idx;
-    // TODO scaler indices needed for correctness, however allocation of extra not impl. in pll yet
     // tree->scaler_index = idx;
     tree->next->clv_index = ++idx;
     // tree->next->scaler_index = idx;

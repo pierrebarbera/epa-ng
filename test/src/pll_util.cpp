@@ -16,7 +16,7 @@ TEST(pll_util, utree_query_branches)
 
   MSA msa = build_MSA_from_file(env->reference_file);
   Tree_Numbers nums = Tree_Numbers();
-  Model model = Model({0.25, 0.25, 0.25, 0.25}, {1,1,1,1,1,1});
+  Model model = Model({0.25, 0.25, 0.25, 0.25}, {1,1,1,1,1,1}, 1.0);
   pll_partition_t * part;
   pll_utree_t * tree;
 

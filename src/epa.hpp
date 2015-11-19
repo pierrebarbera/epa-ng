@@ -55,12 +55,13 @@ void check_clvs_computed(pll_partition_t * p, pll_utree_t * t)
 };
 
 static void epa(std::string& tree_file, std::string& reference_msa_file, std::string& query_msa_file,
-                std::vector<double> base_frequencies, std::vector<double> substitution_rates)
+                std::vector<double> base_frequencies, std::vector<double> substitution_rates,
+                double alpha)
 {
 	// sanitize input, detect file formats
 
 	// call tree object, it builds itself from file
-	auto model = Model(base_frequencies, substitution_rates);
+	auto model = Model(base_frequencies, substitution_rates, alpha);
 	auto tree = Tree(tree_file, reference_msa_file, model);
 
   auto query_reads = build_MSA_from_file(query_msa_file);

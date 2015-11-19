@@ -30,7 +30,8 @@ int main(int argc, char** argv)
       reference_file,
       query_file,
       {0.25, 0.25, 0.25, 0.25},
-      {1,1,1,1,1,1});
+      {1,1,1,1,1,1},
+      1.0);
 	// status callback?
 	printf("gday\n");
  return 0;

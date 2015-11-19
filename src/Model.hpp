@@ -12,12 +12,14 @@
 class Model
 {
 public:
-	Model(std::vector<double> base_frequencies, std::vector<double> substitution_rates);
+	Model(std::vector<double> base_frequencies, std::vector<double> substitution_rates, double alpha);
 	~Model();
-  inline const std::vector<double>& base_frequencies() const {return base_frequencies_;}
-  inline const std::vector<double>& substitution_rates() const {return substitution_rates_;}
+  inline const std::vector<double>& base_frequencies() const {return base_frequencies_;};
+  inline const std::vector<double>& substitution_rates() const {return substitution_rates_;};
+  inline double alpha() const {return alpha_;};
 
 private:
+  double alpha_;
   std::vector<double> base_frequencies_;
   std::vector<double> substitution_rates_;
 
