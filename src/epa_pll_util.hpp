@@ -40,14 +40,14 @@ static void link_tree_msa(pll_utree_t * tree, pll_partition_t * partition,
 
 static void precompute_clvs(pll_utree_t * tree, pll_partition_t * partition, const Tree_Numbers& nums)
 {
-  int num_matrices, num_ops;
+  unsigned int num_matrices, num_ops;
 
   /* buffer for creating a postorder traversal structure */
   auto travbuffer = new pll_utree_t*[nums.nodes];
   auto branch_lengths = new double[nums.branches];
-  auto matrix_indices = new int[nums.branches];
+  auto matrix_indices = new unsigned int[nums.branches];
   auto operations = new pll_operation_t[nums.nodes];
-  
+
   // get a list of all tip nodes
   auto tip_nodes = new pll_utree_t*[nums.tip_nodes];
   pll_utree_query_tipnodes(tree, tip_nodes);
@@ -59,10 +59,12 @@ static void precompute_clvs(pll_utree_t * tree, pll_partition_t * partition, con
   {
     /* perform a partial postorder traversal of the unrooted tree */
 
-    int traversal_size = pll_utree_traverse(tip_nodes[i]->back,
-                                            cb_partial_traversal,
-                                            travbuffer);
-    if (traversal_size == -1)
+    unsigned int traversal_size;
+    if(pll_utree_traverse(tip_nodes[i]->back,
+                        cb_partial_traversal,
+                        travbuffer,
+                        &traversal_size)
+                        != PLL_SUCCESS)
       throw runtime_error{"Function pll_utree_traverse() requires inner nodes as parameters"};
 
     /* given the computed traversal descriptor, generate the operations

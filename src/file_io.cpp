@@ -60,7 +60,7 @@ MSA build_MSA_from_file(const string& msa_file)
 tuple<pll_partition_t *, pll_utree_t *>  build_partition_from_file(const string& tree_file, const Model& model,
                   Tree_Numbers& nums,  const int num_sites)
 {
-  int num_tip_nodes;
+  unsigned int num_tip_nodes;
 
   /* first we call the appropriate pll parsing function to obtain a pll_utree structure,
     on which our partition object will be based */
@@ -79,6 +79,7 @@ tuple<pll_partition_t *, pll_utree_t *>  build_partition_from_file(const string&
                                    nums.inner_nodes * 3, //number of extra clv buffers: 3 for every direction on the node
                                    STATES,
                                    num_sites,
+                                   0, // number of mixture models
                                    1,
                                    nums.branches,
                                    RATE_CATS,
@@ -93,10 +94,10 @@ tuple<pll_partition_t *, pll_utree_t *>  build_partition_from_file(const string&
   pll_compute_gamma_cats(1, 4, rate_cats);
 
   /* set frequencies at model with index 0 */
-  pll_set_frequencies(partition, 0, &(model.base_frequencies()[0]));
+  pll_set_frequencies(partition, 0, 0, &(model.base_frequencies()[0]));
 
   /* set substitution parameters at model with index 0 */
-  pll_set_subst_params(partition, 0, &(model.substitution_rates()[0]));
+  pll_set_subst_params(partition, 0, 0, &(model.substitution_rates()[0]));
 
   /* set rate categories */
   pll_set_category_rates(partition, rate_cats);

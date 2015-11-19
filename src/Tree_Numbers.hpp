@@ -6,17 +6,17 @@ class Tree_Numbers
 public:
   Tree_Numbers(){};
   ~Tree_Numbers() {};
-  void init(int tn)
+  void init(unsigned int tn)
   {
     tip_nodes = tn;
     inner_nodes = tip_nodes - 2;
     nodes = inner_nodes + tip_nodes;
     branches = nodes - 1;
   };
-  int tip_nodes;
-  int inner_nodes;
-  int nodes;
-  int branches;
+  unsigned int tip_nodes;
+  unsigned int inner_nodes;
+  unsigned int nodes;
+  unsigned int branches;
 };
 
 #endif

@@ -14,8 +14,8 @@ class Model
 public:
 	Model(std::vector<double> base_frequencies, std::vector<double> substitution_rates);
 	~Model();
-  const std::vector<double>& base_frequencies() const {return base_frequencies_;}
-  const std::vector<double>& substitution_rates() const {return substitution_rates_;}
+  inline const std::vector<double>& base_frequencies() const {return base_frequencies_;}
+  inline const std::vector<double>& substitution_rates() const {return substitution_rates_;}
 
 private:
   std::vector<double> base_frequencies_;

@@ -87,6 +87,7 @@ double Tree::place_on_edge(Sequence& s, pll_utree_t * node) const
                           1, // extra clv's
                           partition_->states,
                           partition_->sites,
+                          0, // number of mixture models
                           partition_->rate_matrices,
                           3, // number of prob. matrices (one per unique branch length)
                           partition_->rate_cats,
@@ -123,7 +124,7 @@ double Tree::place_on_edge(Sequence& s, pll_utree_t * node) const
     which is the default branch length in RAxML.
     */
   double branch_lengths[2] = { old_left->length / 2, 0.9};
-  int matrix_indices[2] = { 0, 1 };
+  unsigned int matrix_indices[2] = { 0, 1 };
 
   // TODO Newton-Raphson
 
