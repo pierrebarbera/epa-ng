@@ -23,7 +23,7 @@ TEST(pll_util, utree_query_branches)
 
   tie(part, tree) = build_partition_from_file(env->tree_file, model, nums, msa.num_sites());
 
-  // tests 
+  // tests
   vector<pll_utree_t *> node_list(nums.branches);
   auto num_traversed = utree_query_branches(tree, &node_list[0]);
 
@@ -38,6 +38,49 @@ TEST(pll_util, utree_query_branches)
     int count = 0;
     for (auto y : node_list) {
       if (x == y || x == y->back)
+        count++;
+    }
+    EXPECT_EQ(count, 1);
+  }
+
+  // teardown
+  pll_partition_destroy(part);
+  pll_utree_destroy(tree);
+}
+
+TEST(pll_util, set_unique_clv_indices)
+{
+  // buildup
+  MSA msa = build_MSA_from_file(env->reference_file);
+  Tree_Numbers nums = Tree_Numbers();
+  Model model = Model({0.25, 0.25, 0.25, 0.25}, {1,1,1,1,1,1}, 1.0);
+  pll_partition_t * part;
+  pll_utree_t * tree;
+
+  tie(part, tree) = build_partition_from_file(env->tree_file, model, nums, msa.num_sites());
+  set_unique_clv_indices(tree, nums.tip_nodes);
+
+  // tests
+  vector<pll_utree_t *> inner_nodes(nums.inner_nodes);
+  pll_utree_query_innernodes(tree, &inner_nodes[0]);
+  vector<pll_utree_t *> tip_nodes(nums.tip_nodes);
+  pll_utree_query_tipnodes(tree, &tip_nodes[0]);
+
+  // check for duplicate clv indices
+  vector<unsigned int> index_list;
+  for (auto x : tip_nodes)
+    index_list.push_back(x->clv_index);
+
+  for (auto x : inner_nodes) {
+    index_list.push_back(x->clv_index);
+    index_list.push_back(x->next->clv_index);
+    index_list.push_back(x->next->next->clv_index);
+  }
+
+  for (auto x : index_list) {
+    int count = 0;
+    for (auto y : index_list) {
+      if (x == y)
         count++;
     }
     EXPECT_EQ(count, 1);
