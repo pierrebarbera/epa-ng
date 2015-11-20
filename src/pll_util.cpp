@@ -125,7 +125,7 @@ int utree_free_node_data(pll_utree_t * node)
   return 1;
 }
 
-void utree_query_branches_recursive(pll_utree_t * node, pll_utree_t ** node_list, int * index)
+void utree_query_branches_recursive(pll_utree_t * node, pll_utree_t ** node_list, unsigned int * index)
 {
   // Postorder traversal
 
@@ -138,10 +138,9 @@ void utree_query_branches_recursive(pll_utree_t * node, pll_utree_t ** node_list
   *index = *index + 1;
 }
 
-// TODO it hurts to have to traverse the full tree AGAIN
-int utree_query_branches(pll_utree_t * node, pll_utree_t ** node_list)
+unsigned int utree_query_branches(pll_utree_t * node, pll_utree_t ** node_list)
 {
-  int index = 0;
+  unsigned int index = 0;
 
   // assure that we start at inner node
   if (!node->next) node = node->back;
@@ -152,5 +151,4 @@ int utree_query_branches(pll_utree_t * node, pll_utree_t ** node_list)
   utree_query_branches_recursive(node->next->next->back, node_list, &index);
 
   return index;
-
 }

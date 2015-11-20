@@ -48,7 +48,7 @@ void Tree::place(const MSA &msa) const
 
   // place all s on every edge
   for (auto s : msa)
-    for (int i = 0; i < num_traversed; ++i) {
+    for (unsigned int i = 0; i < num_traversed; ++i) {
       // TODO pass tiny tree instead of node
       place_on_edge(s, node_list[i]);
     }

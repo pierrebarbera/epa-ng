@@ -22,6 +22,6 @@ int cb_partial_traversal(pll_utree_t * node);
 void free_node_data(pll_utree_t * node);
 int utree_free_node_data(pll_utree_t * node);
 void utree_query_branches_recursive(pll_utree_t * node, pll_utree_t ** node_list, int * index);
-int utree_query_branches(pll_utree_t * node, pll_utree_t ** node_list);
+unsigned int utree_query_branches(pll_utree_t * node, pll_utree_t ** node_list);
 
 #endif

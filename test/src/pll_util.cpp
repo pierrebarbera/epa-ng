@@ -14,7 +14,7 @@ using namespace std;
 
 TEST(pll_util, utree_query_branches)
 {
-
+  // buildup
   MSA msa = build_MSA_from_file(env->reference_file);
   Tree_Numbers nums = Tree_Numbers();
   Model model = Model({0.25, 0.25, 0.25, 0.25}, {1,1,1,1,1,1}, 1.0);
@@ -23,6 +23,7 @@ TEST(pll_util, utree_query_branches)
 
   tie(part, tree) = build_partition_from_file(env->tree_file, model, nums, msa.num_sites());
 
+  // tests 
   vector<pll_utree_t *> node_list(nums.branches);
   auto num_traversed = utree_query_branches(tree, &node_list[0]);
 
@@ -42,6 +43,7 @@ TEST(pll_util, utree_query_branches)
     EXPECT_EQ(count, 1);
   }
 
+  // teardown
   pll_partition_destroy(part);
   pll_utree_destroy(tree);
 }
