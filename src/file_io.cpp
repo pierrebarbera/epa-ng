@@ -76,15 +76,15 @@ tuple<pll_partition_t *, pll_utree_t *>  build_partition_from_file(const string&
 
 
   auto partition = pll_partition_create(nums.tip_nodes,
-                                   nums.inner_nodes * 3, //number of extra clv buffers: 3 for every direction on the node
-                                   STATES,
-                                   num_sites,
-                                   0, // number of mixture models
-                                   1,
-                                   nums.branches,
-                                   RATE_CATS,
-                                   nums.inner_nodes * 3, /* number of extra scaler buffers */
-                                   PLL_ATTRIB_ARCH_SSE);
+           nums.inner_nodes * 3, //number of extra clv buffers: 3 for every direction on the node
+           STATES,
+           num_sites,
+           0, // number of mixture models
+           1,
+           nums.branches,
+           RATE_CATS,
+           (nums.inner_nodes * 3) + nums.tip_nodes, /* number of scaler buffers */
+           PLL_ATTRIB_ARCH_SSE);
 
   double rate_cats[RATE_CATS] = {0};
 

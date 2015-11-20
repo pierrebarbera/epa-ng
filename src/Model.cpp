@@ -6,7 +6,7 @@
 using namespace std;
 
 Model::Model(vector<double> base_frequencies, vector<double> substitution_rates, double alpha)
-  : base_frequencies_(base_frequencies), substitution_rates_(substitution_rates), alpha_(alpha)
+  :  alpha_(alpha), base_frequencies_(base_frequencies), substitution_rates_(substitution_rates)
 {
 
   if (this->base_frequencies().size() != STATES)
