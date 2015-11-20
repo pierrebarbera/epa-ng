@@ -52,6 +52,8 @@ void Tree::place(const MSA &msa) const
       // TODO pass tiny tree instead of node
       place_on_edge(s, node_list[i]);
     }
+
+  delete [] node_list;
 }
 
 /* Compute loglikelihood of a Sequence, when placed on the edge defined by node */
@@ -159,7 +161,20 @@ double Tree::place_on_edge(Sequence& s, pll_utree_t * node) const
                                         inner_clv_index,  // scaler_index
                                         1,// matrix index of branch TODO depends on NR
                                         0);// freq index
+
   // TODO properly free the tiny partition or allocate it on the stack
-  //pll_partition_destroy(tiny_partition);
+  // unset model params
+  tiny_partition->rates = NULL;
+  tiny_partition->subst_params = NULL;
+  tiny_partition->frequencies = NULL;
+  // unset existing nodes clvs
+  tiny_partition->clv[old_left_clv_index] = NULL;
+  tiny_partition->clv[old_right_clv_index] = NULL;
+  // unset scalers
+  tiny_partition->scale_buffer[old_left_clv_index] = NULL;
+  tiny_partition->scale_buffer[old_right_clv_index] = NULL;
+
+  pll_partition_destroy(tiny_partition);
+
   return likelihood;
 }
