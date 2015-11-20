@@ -159,7 +159,7 @@ double Tree::place_on_edge(Sequence& s, pll_utree_t * node) const
                                         inner_clv_index,  // scaler_index
                                         1,// matrix index of branch TODO depends on NR
                                         0);// freq index
-  // TODO properly free the tiny partition
+  // TODO properly free the tiny partition or allocate it on the stack
   //pll_partition_destroy(tiny_partition);
   return likelihood;
 }
