@@ -12,7 +12,7 @@ public:
   typedef typename std::vector<Sequence>::iterator        iterator;
   typedef typename std::vector<Sequence>::const_iterator  const_iterator;
 
-  MSA(const int num_sites);
+  MSA(const unsigned int num_sites);
   MSA();
   // MSA(const MSA& other);
   // MSA operator= (MSA other);
@@ -23,7 +23,7 @@ public:
   void append(Sequence s);
 
   //Member access
-  inline int num_sites() const {return num_sites_;};
+  inline unsigned int num_sites() const {return num_sites_;};
   const Sequence& get(const int i) const;
 
   //Iterator Compatability
@@ -38,7 +38,7 @@ public:
 
 private:
   // Data Members
-  int num_sites_;
+  unsigned int num_sites_;
   std::vector<Sequence> sequence_list_;
 };
 
