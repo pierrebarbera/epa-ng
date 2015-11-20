@@ -19,8 +19,6 @@ public:
   // TODO should return placement object
   // TODO doesnt follow parallelization scheme: overload?
   void place(const MSA& msa) const;
-  // TODO bad: breaks encapsulation
-  void visit(std::function<void(pll_partition_t *, pll_utree_t *)> f);
 
 private:
   // pll structures

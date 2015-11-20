@@ -163,8 +163,3 @@ double Tree::place_on_edge(Sequence& s, pll_utree_t * node) const
   //pll_partition_destroy(tiny_partition);
   return likelihood;
 }
-
-void Tree::visit(std::function<void(pll_partition_t *, pll_utree_t *)> f)
-{
-  f(partition_, tree_);
-}

@@ -90,7 +90,6 @@ tuple<pll_partition_t *, pll_utree_t *>  build_partition_from_file(const string&
 
   /* compute the discretized category rates from a gamma distribution
      with alpha shape 1 and store them in rate_cats  */
-  // TODO gamma dist is input?
   pll_compute_gamma_cats(model.alpha(), 4, rate_cats);
 
   /* set frequencies at model with index 0 */
