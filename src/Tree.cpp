@@ -33,8 +33,8 @@ Tree::~Tree()
 {
   // free data segment of tree nodes
   utree_free_node_data(tree_);
-
 	pll_partition_destroy(partition_);
+  pll_utree_destroy(tree_);
 
 }
 
@@ -49,6 +49,7 @@ void Tree::place(const MSA &msa) const
   // place all s on every edge
   for (auto s : msa)
     for (int i = 0; i < num_traversed; ++i) {
+      // TODO pass tiny tree instead of node
       place_on_edge(s, node_list[i]);
     }
 }
@@ -105,10 +106,12 @@ double Tree::place_on_edge(Sequence& s, pll_utree_t * node) const
   tiny_partition->clv[old_right_clv_index] =
                           partition_->clv[old_right->clv_index];
 
-  // shallow copy scalers TODO is this right?
-  tiny_partition->scale_buffer[old_left_clv_index] =
+  // shallow copy scalers
+  if (old_left->scaler_index != PLL_SCALE_BUFFER_NONE)
+    tiny_partition->scale_buffer[old_left_clv_index] =
                           partition_->scale_buffer[old_left->scaler_index];
-  tiny_partition->scale_buffer[old_right_clv_index] =
+  if (old_right->scaler_index != PLL_SCALE_BUFFER_NONE)
+    tiny_partition->scale_buffer[old_right_clv_index] =
                           partition_->scale_buffer[old_right->scaler_index];
 
   // init the new tip with s.sequence(), branch length
@@ -141,7 +144,7 @@ double Tree::place_on_edge(Sequence& s, pll_utree_t * node) const
   ops[0].child2_clv_index    = old_right_clv_index;
   ops[0].child1_matrix_index = 0;// TODO depends on NR vs heuristic
   ops[0].child2_matrix_index = 0;// TODO depends on NR vs heuristic
-  ops[0].parent_scaler_index = PLL_SCALE_BUFFER_NONE;// TODO this should be inner_clv_index once scale buffers are fixed
+  ops[0].parent_scaler_index = inner_clv_index;// TODO this should be inner_clv_index once scale buffers are fixed
   ops[0].child1_scaler_index = old_left_clv_index;
   ops[0].child2_scaler_index = old_right_clv_index;
 
@@ -151,11 +154,12 @@ double Tree::place_on_edge(Sequence& s, pll_utree_t * node) const
   // compute the loglikelihood using inner node and new tip
   double likelihood =  pll_compute_edge_loglikelihood(tiny_partition,
                                         new_tip_clv_index,
-                                        new_tip_clv_index,// scaler_index
+                                        PLL_SCALE_BUFFER_NONE,// scaler_index
                                         inner_clv_index,
                                         inner_clv_index,  // scaler_index
                                         1,// matrix index of branch TODO depends on NR
                                         0);// freq index
+  // TODO properly free the tiny partition
   //pll_partition_destroy(tiny_partition);
   return likelihood;
 }
