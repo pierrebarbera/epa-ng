@@ -8,6 +8,7 @@
 #include "epa_pll_util.hpp"
 #include "file_io.hpp"
 #include "Sequence.hpp"
+#include "Placement.hpp"
 
 using namespace std;
 
@@ -44,20 +45,24 @@ void Tree::place(const MSA &msa) const
   auto node_list = new pll_utree_t*[nums_.branches];
   auto num_traversed = utree_query_branches(tree_, node_list);
 
-  // TODO create output class
+  // output class
+  vector<Placement> placements;
 
   // place all s on every edge
-  for (auto s : msa)
-    for (unsigned int i = 0; i < num_traversed; ++i) {
-      // TODO pass tiny tree instead of node
-      place_on_edge(s, node_list[i]);
+  for (auto const &s : msa)// make sure a reference, not a copy, is returned
+  {
+    placements.emplace_back(nums_.branches, &s);
+    for (unsigned int i = 0; i < num_traversed; ++i)
+    {
+      placements.back().set(i, place_on_edge(s, node_list[i]));
     }
-
+  }
   delete [] node_list;
 }
 
 /* Compute loglikelihood of a Sequence, when placed on the edge defined by node */
-double Tree::place_on_edge(Sequence& s, pll_utree_t * node) const
+// TODO pass tiny tree instead of node
+double Tree::place_on_edge(const Sequence& s, pll_utree_t * node) const
 {
   assert(node != NULL);
 
