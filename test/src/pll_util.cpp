@@ -17,11 +17,10 @@ TEST(pll_util, utree_query_branches)
   // buildup
   MSA msa = build_MSA_from_file(env->reference_file);
   Tree_Numbers nums = Tree_Numbers();
-  Model model = Model({0.25, 0.25, 0.25, 0.25}, {1,1,1,1,1,1}, 1.0);
   pll_partition_t * part;
   pll_utree_t * tree;
 
-  tie(part, tree) = build_partition_from_file(env->tree_file, model, nums, msa.num_sites());
+  tie(part, tree) = build_partition_from_file(env->tree_file, env->model, nums, msa.num_sites());
 
   // tests
   vector<pll_utree_t *> node_list(nums.branches);
@@ -53,11 +52,10 @@ TEST(pll_util, set_unique_clv_indices)
   // buildup
   MSA msa = build_MSA_from_file(env->reference_file);
   Tree_Numbers nums = Tree_Numbers();
-  Model model = Model({0.25, 0.25, 0.25, 0.25}, {1,1,1,1,1,1}, 1.0);
   pll_partition_t * part;
   pll_utree_t * tree;
 
-  tie(part, tree) = build_partition_from_file(env->tree_file, model, nums, msa.num_sites());
+  tie(part, tree) = build_partition_from_file(env->tree_file, env->model, nums, msa.num_sites());
   set_unique_clv_indices(tree, nums.tip_nodes);
 
   // tests

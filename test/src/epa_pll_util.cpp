@@ -17,11 +17,10 @@ TEST(epa_pll_util, link_tree_msa)
   // buildup
   MSA msa = build_MSA_from_file(env->reference_file);
   Tree_Numbers nums = Tree_Numbers();
-  Model model = Model({0.25, 0.25, 0.25, 0.25}, {1,1,1,1,1,1}, 1.0);
   pll_partition_t * part;
   pll_utree_t * tree;
 
-  tie(part, tree) = build_partition_from_file(env->tree_file, model, nums, msa.num_sites());
+  tie(part, tree) = build_partition_from_file(env->tree_file, env->model, nums, msa.num_sites());
   link_tree_msa(tree, part, msa, nums.tip_nodes);
 
   // tests

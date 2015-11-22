@@ -3,6 +3,8 @@
 
 #include <gtest/gtest.h>
 
+#include "src/Model.hpp"
+
 // The testing environment
 class Epatest : public ::testing::Environment {
 public:
@@ -35,6 +37,7 @@ public:
   std::string tree_file;
   std::string reference_file;
   std::string query_file;
+  Model model = Model({0.25, 0.25, 0.25, 0.25}, {1,1,1,1,1,1}, 1.0);
 
 };
 
