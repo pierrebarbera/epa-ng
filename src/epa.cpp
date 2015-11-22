@@ -22,11 +22,8 @@ void epa(string& tree_file, string& reference_msa_file, string& query_msa_file,
   auto query_reads = build_MSA_from_file(query_msa_file);
 
   auto placements = tree.place(query_reads);
-  cout << "number: " << query_reads.size() << endl;
 
-  for (auto const &p : placements) {
-    cout << placement_to_jplace_string(p) << endl;
-  }
+  cout << placement_set_to_jplace_string(placements);
 
 	// for scalability...
 		// stream? then probably conjuntion between pll datatype and my wrapper needed
