@@ -7,6 +7,7 @@
 
 class Placement {
 public:
+  Placement();
   Placement (const unsigned int size, const Sequence * s);
   ~Placement ();
   void set(const unsigned int branch, const double logl);

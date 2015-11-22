@@ -4,6 +4,10 @@
 
 using namespace std;
 
+Placement::Placement ()
+  : likelihoods_(0), sequence(NULL)
+{ }
+
 Placement::Placement (const unsigned int size, const Sequence * s)
   : likelihoods_(size), sequence(s)
 { }

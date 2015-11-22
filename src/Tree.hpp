@@ -2,12 +2,12 @@
 #define EPA_TREE_H_
 
 #include <string>
-#include <functional>
 
 #include "pllhead.hpp"
 #include "MSA.hpp"
 #include "Model.hpp"
 #include "Tree_Numbers.hpp"
+#include "Placement.hpp"
 
 
 /* Encapsulates the pll data structures for ML computation */
@@ -18,7 +18,7 @@ public:
   ~Tree();
   // TODO should return placement object
   // TODO doesnt follow parallelization scheme: overload?
-  void place(const MSA& msa) const;
+  std::vector<Placement> place(const MSA& msa) const;
 
 private:
   // pll structures

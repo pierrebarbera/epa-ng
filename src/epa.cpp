@@ -18,7 +18,7 @@ void epa(string& tree_file, string& reference_msa_file, string& query_msa_file,
 
   auto query_reads = build_MSA_from_file(query_msa_file);
 
-  tree.place(query_reads);
+  auto placements = tree.place(query_reads);
 
 	// for scalability...
 		// stream? then probably conjuntion between pll datatype and my wrapper needed

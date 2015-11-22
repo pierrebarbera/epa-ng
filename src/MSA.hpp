@@ -23,6 +23,7 @@ public:
   void append(Sequence s);
 
   //Member access
+  inline unsigned int size() const {return sequence_list_.size();};
   inline unsigned int num_sites() const {return num_sites_;};
   const Sequence& get(const int i) const;
 
