@@ -7,7 +7,7 @@
 #include "MSA.hpp"
 #include "Model.hpp"
 #include "Tree_Numbers.hpp"
-#include "Placement.hpp"
+#include "Placement_Set.hpp"
 
 
 /* Encapsulates the pll data structures for ML computation */
@@ -18,7 +18,7 @@ public:
   ~Tree();
   // TODO should return placement object
   // TODO doesnt follow parallelization scheme: overload?
-  std::vector<Placement> place(const MSA& msa) const;
+  Placement_Set place(const MSA& msa) const;
 
   // member access
   inline Tree_Numbers nums() const {return nums_;};

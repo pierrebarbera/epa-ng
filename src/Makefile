@@ -11,7 +11,8 @@ LINKFLAGS=
 TARGET=$(BIN)/epamk
 
 LIBS=-lm -lpll
-OBJS=Main.o MSA.o Tree.o Model.o file_io.o Sequence.o pll_util.o epa_pll_util.o epa.o Placement.o jplace_util.o
+CPP=$(wildcard *.cpp)
+OBJS=$(notdir $(CPP:.cpp=.o))
 OUT_OBJS=$(addprefix $(BIN)/,$(OBJS))
 
 all:  $(TARGET)

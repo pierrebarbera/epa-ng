@@ -1,8 +1,6 @@
 #include "Epatest.hpp"
 
-#include "src/pllhead.hpp"
 #include "src/file_io.hpp"
-#include "src/jplace_util.hpp"
 #include "src/Tree.hpp"
 #include "src/MSA.hpp"
 

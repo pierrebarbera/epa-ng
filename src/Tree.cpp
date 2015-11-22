@@ -38,14 +38,14 @@ Tree::~Tree()
 
 }
 
-vector<Placement> Tree::place(const MSA &msa) const
+Placement_Set Tree::place(const MSA &msa) const
 {
   // get all edges
   auto node_list = new pll_utree_t*[nums_.branches];
   auto num_traversed = utree_query_branches(tree_, node_list);
 
   // output class
-  vector<Placement> placements;
+  Placement_Set placements;
 
   // place all s on every edge
   for (auto const &s : msa)// make sure a reference, not a copy, is returned
