@@ -3,6 +3,8 @@
 
 #include "Placement.hpp"
 
+#include <utility>
+
 class Placement_Set {
 public:
   typedef Placement                                        value_type;
@@ -16,10 +18,14 @@ public:
   // member access
   inline Placement& back() {return placements_.back();};
   inline unsigned int size() {return placements_.size();};
-  // TODO shoudl pass in variadic fashion
-  inline void emplace_back(const unsigned int size, const Sequence& s) {placements_.emplace_back(size, s);};
 
-  //Iterator Compatability
+  // needs to be in the header
+  template<typename ...Args> void emplace_back(Args && ...args)
+  {
+    placements_.emplace_back(std::forward<Args>(args)...);
+  };
+
+  // Iterator Compatability
   inline iterator begin() {return placements_.begin();};
   inline iterator end() {return placements_.end();};
   inline const_iterator begin() const {return placements_.cbegin();};
