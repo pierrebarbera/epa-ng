@@ -45,12 +45,12 @@ vector<Placement> Tree::place(const MSA &msa) const
   auto num_traversed = utree_query_branches(tree_, node_list);
 
   // output class
-  vector<Placement> placements(msa.size());
+  vector<Placement> placements;
 
   // place all s on every edge
   for (auto const &s : msa)// make sure a reference, not a copy, is returned
   {
-    placements.emplace_back(nums_.branches, &s);
+    placements.emplace_back(nums_.branches, s);
     for (unsigned int i = 0; i < num_traversed; ++i)
     {
       placements.back().set(i, place_on_edge(s, node_list[i]));
