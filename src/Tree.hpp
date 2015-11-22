@@ -20,6 +20,9 @@ public:
   // TODO doesnt follow parallelization scheme: overload?
   std::vector<Placement> place(const MSA& msa) const;
 
+  // member access
+  inline Tree_Numbers nums() const {return nums_;};
+
 private:
   // pll structures
   pll_partition_t * partition_;
