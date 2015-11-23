@@ -35,7 +35,7 @@ private:
   MSA ref_msa_;
   Model model_;
 
-  double place_on_edge(const Sequence& s, pll_utree_t * node) const;
+  double place_on_edge(const Sequence& s, pll_utree_t * node, bool optimize=false) const;
 
 };
 

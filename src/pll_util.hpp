@@ -6,7 +6,7 @@
 #include <string>
 #include <sstream>
 
-#define DEFAULT_BRANCH_LENGTH 0.000001
+#define DEFAULT_BRANCH_LENGTH 0.9
 
 typedef struct
 {

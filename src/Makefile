@@ -1,6 +1,6 @@
 BIN=../bin
 TEST=../test/data
-TESTINPUT= $(TEST)/ref.tre $(TEST)/aln.fasta $(TEST)/query.fasta
+TESTINPUT= $(TEST)/ref.tre $(TEST)/aln.fasta -q $(TEST)/query.fasta
 
 CC=clang++
 DEFS=

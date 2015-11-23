@@ -11,6 +11,6 @@
 #define NEWL "\n";
 
 std::string placement_to_jplace_string(const Placement& p);
-std::string placement_set_to_jplace_string(const Placement_Set& ps);
+std::string placement_set_to_jplace_string(const Placement_Set& ps, std::string& invocation);
 
 #endif

@@ -11,7 +11,7 @@ using namespace std;
 
 void epa(string& tree_file, string& reference_msa_file, string& query_msa_file,
                 vector<double> base_frequencies, vector<double> substitution_rates,
-                double alpha)
+                double alpha, string invocation)
 {
 	// sanitize input, detect file formats
 
@@ -23,7 +23,7 @@ void epa(string& tree_file, string& reference_msa_file, string& query_msa_file,
 
   auto placements = tree.place(query_reads);
 
-  cout << placement_set_to_jplace_string(placements);
+  cout << placement_set_to_jplace_string(placements, invocation);
 
 	// for scalability...
 		// stream? then probably conjuntion between pll datatype and my wrapper needed

@@ -13,7 +13,7 @@ using namespace std;
 
 Tree::Tree(const string& tree_file, const string& msa_file, const Model& model) : model_(model)
 {
-  // TODO handle filetypes other than newick/fasta
+  // TODO detect filetype
 
   //parse, build tree
   nums_ = Tree_Numbers();
@@ -61,7 +61,7 @@ Placement_Set Tree::place(const MSA &msa) const
 
 /* Compute loglikelihood of a Sequence, when placed on the edge defined by node */
 // TODO pass tiny tree instead of node
-double Tree::place_on_edge(const Sequence& s, pll_utree_t * node) const
+double Tree::place_on_edge(const Sequence& s, pll_utree_t * node, bool optimize) const
 {
   assert(node != NULL);
 
@@ -124,7 +124,6 @@ double Tree::place_on_edge(const Sequence& s, pll_utree_t * node) const
   pll_set_tip_states(tiny_partition, new_tip_clv_index, pll_map_nt, s.sequence().c_str());
 
   // set up branch lengths
-  //int num_unique_branch_lengths = 2;
   /* heuristic insertion as described in EPA paper from 2011 (Berger et al.):
     original branch, now split by "inner", or base, node of the inserted sequence,
     defines the new branch lengths between inner and old left/right respectively
@@ -132,14 +131,18 @@ double Tree::place_on_edge(const Sequence& s, pll_utree_t * node) const
     The new branch leading from inner to the new tip is initialized with length 0.9,
     which is the default branch length in RAxML.
     */
-  double branch_lengths[2] = { old_left->length / 2, 0.9};
+  double branch_lengths[2] = { old_left->length / 2, DEFAULT_BRANCH_LENGTH};
   unsigned int matrix_indices[2] = { 0, 1 };
 
   // TODO Newton-Raphson
+  if (optimize)
+  {
+    // something like: setup params structure, call opt. branch lengths local with radius 1
+    // on the inner node
+  }
 
   // use branch lengths to compute the probability matrices
-  pll_update_prob_matrices(tiny_partition, 0, matrix_indices,
-                      branch_lengths, 2);
+  pll_update_prob_matrices(tiny_partition, 0, matrix_indices, branch_lengths, 2);
 
   /* Creating a single operation for the inner node computation.
     Here we specify which clvs and pmatrices to use, so we don't need to mess with
