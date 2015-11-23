@@ -1,5 +1,9 @@
 #include "pll_util.hpp"
 
+#include <iomanip>
+
+using namespace std;
+
 void set_missing_branch_length_recursive(pll_utree_t * tree,
                                                 double length)
 {
@@ -151,4 +155,45 @@ unsigned int utree_query_branches(pll_utree_t * node, pll_utree_t ** node_list)
   utree_query_branches_recursive(node->next->next->back, node_list, &index);
 
   return index;
+}
+
+void get_numbered_newick_string_recursive(pll_utree_t * node, ostringstream &ss, unsigned int * index)
+{
+
+  if (node->next) // inner node
+  {
+    ss << "(";
+    get_numbered_newick_string_recursive(node->next->back, ss, index);
+    ss << ",";
+    get_numbered_newick_string_recursive(node->next->next->back, ss, index);
+    ss << "):" << node->length << "{" << *index << "}";
+  } else {
+    ss << node->label << ":" << setprecision(20) << node->length << "{" << *index << "}";
+  }
+  *index = *index + 1;
+
+}
+
+string get_numbered_newick_string(pll_utree_t * root)
+{
+  ostringstream ss;
+  unsigned int index = 0;
+  //ss.precision(20);
+
+  if (!root->next) root = root->back; // ensure that we start at inner node
+
+  ss << "(";
+
+  get_numbered_newick_string_recursive(root->back, ss, &index);
+  ss << ",";
+  get_numbered_newick_string_recursive(root->next->back, ss, &index);
+  ss << ",";
+  get_numbered_newick_string_recursive(root->next->next->back, ss, &index);
+
+  ss << ")";
+  // TODO needed?
+  //ss << "{" << index << "}";
+  ss << ";";
+
+  return ss.str();
 }

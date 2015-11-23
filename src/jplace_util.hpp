@@ -2,6 +2,7 @@
 #define EPA_JPLACE_UTIL_H_
 
 #include <string>
+#include <sstream>
 
 #include "Placement.hpp"
 #include "Placement_Set.hpp"

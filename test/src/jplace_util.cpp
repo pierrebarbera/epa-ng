@@ -2,12 +2,14 @@
 
 #include "src/pllhead.hpp"
 #include "src/file_io.hpp"
+#include "src/epa_pll_util.hpp"
 #include "src/jplace_util.hpp"
 #include "src/Tree.hpp"
 #include "src/MSA.hpp"
 
 #include <string>
 #include <vector>
+#include <iostream>
 
 using namespace std;
 

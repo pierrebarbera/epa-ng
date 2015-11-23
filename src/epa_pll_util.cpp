@@ -23,7 +23,7 @@ void link_tree_msa(pll_utree_t * tree, pll_partition_t * partition,
     map[tip_nodes[i]->label] = i;
 
   /* find sequences in hash table and link them with the corresponding taxa */
-  for (auto s : msa)
+  for (auto const &s : msa)
   {
     auto map_value = map.find(s.header());
 

@@ -1,7 +1,5 @@
 #include "jplace_util.hpp"
 
-#include <sstream>
-
 using namespace std;
 
 string placement_to_jplace_string(const Placement& p)
@@ -38,7 +36,7 @@ std::string placement_set_to_jplace_string(const Placement_Set& ps)
   output << "{\n";
 
   // TODO newick string with edge numbering
-  output << "  \"tree\": \"" << "NEWICK-NEWICK" << "\",\n";
+  output << "  \"tree\": \"" << ps.newick() << "\",\n";
   output << "  \"placements\": \n";
   output << "  [\n";
 

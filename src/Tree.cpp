@@ -24,8 +24,6 @@ Tree::Tree(const string& tree_file, const string& msa_file, const Model& model) 
 
   link_tree_msa(tree_, partition_, ref_msa_, nums_.tip_nodes);
 
-  // TODO reference part of the MSA can now be freed
-
   precompute_clvs(tree_, partition_, nums_);
 }
 
@@ -45,7 +43,7 @@ Placement_Set Tree::place(const MSA &msa) const
   auto num_traversed = utree_query_branches(tree_, node_list);
 
   // output class
-  Placement_Set placements;
+  Placement_Set placements(get_numbered_newick_string(tree_));
 
   // place all s on every edge
   for (auto const &s : msa)// make sure a reference, not a copy, is returned

@@ -4,6 +4,7 @@
 #include "Placement.hpp"
 
 #include <utility>
+#include <string>
 
 class Placement_Set {
 public:
@@ -13,11 +14,13 @@ public:
 
   Placement_Set();
   Placement_Set(const unsigned int size);
+  Placement_Set(const std::string newick);
   ~Placement_Set();
 
   // member access
   inline Placement& back() {return placements_.back();};
   inline unsigned int size() {return placements_.size();};
+  inline const std::string& newick() const {return newick_;};
 
   // needs to be in the header
   template<typename ...Args> void emplace_back(Args && ...args)
@@ -35,6 +38,7 @@ public:
 
 private:
   std::vector<Placement> placements_;
+  std::string newick_;
 };
 
 #endif
