@@ -13,8 +13,10 @@ void epa(string& tree_file, string& reference_msa_file, string& query_msa_file,
                 vector<double> base_frequencies, vector<double> substitution_rates,
                 double alpha, string invocation)
 {
-	// sanitize input, detect file formats
-  // TODO detect filetype
+	// sanitize input
+  file_check(tree_file);
+  file_check(reference_msa_file);
+  file_check(query_msa_file);
 
 	// Build the reference tree
 	auto model = Model(base_frequencies, substitution_rates, alpha);

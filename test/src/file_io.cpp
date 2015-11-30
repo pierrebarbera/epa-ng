@@ -41,3 +41,13 @@ TEST(file_io, build_partition_from_file)
   pll_partition_destroy(part);
   pll_utree_destroy(tree);
 }
+
+TEST(file_io, file_check)
+{
+  EXPECT_ANY_THROW(file_check("asjbjibvi.hhs"));
+
+  EXPECT_NO_THROW(file_check(env->combined_file));
+  EXPECT_NO_THROW(file_check(env->query_file));
+  EXPECT_NO_THROW(file_check(env->reference_file));
+  EXPECT_NO_THROW(file_check(env->tree_file));
+}

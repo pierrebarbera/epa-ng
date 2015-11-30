@@ -92,7 +92,8 @@ TEST(epa_pll_util, bisect)
   pll_partition_t * part;
   pll_utree_t * tree;
 
-  tie(part, tree) = build_partition_from_file(env->tree_file, env->model, nums, combined_msa.num_sites());
+  tie(part, tree) = build_partition_from_file(env->tree_file, env->model, nums,
+    combined_msa.num_sites());
 
   // tests
   bisect(combined_msa, query_msa, tree, nums.tip_nodes);

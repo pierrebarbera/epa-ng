@@ -1,6 +1,7 @@
 #include "file_io.hpp"
 
 #include <stdexcept>
+#include <fstream>
 
 #include "pllhead.hpp"
 #include "MSA.hpp"
@@ -103,4 +104,13 @@ tuple<pll_partition_t *, pll_utree_t *>  build_partition_from_file(const string&
 
   return make_tuple(partition, tree);
 
+}
+
+void file_check(const string& file_path)
+{
+  ifstream file(file_path.c_str());
+  if (!file.good())
+    throw runtime_error{string("Error opening file: ") + file_path};
+
+  file.close();
 }
