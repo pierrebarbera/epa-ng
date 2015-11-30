@@ -14,14 +14,20 @@ void epa(string& tree_file, string& reference_msa_file, string& query_msa_file,
                 double alpha, string invocation)
 {
 	// sanitize input, detect file formats
+  // TODO detect filetype
 
-	// call tree object, it builds itself from file
+	// Build the reference tree
 	auto model = Model(base_frequencies, substitution_rates, alpha);
-	auto tree = Tree(tree_file, reference_msa_file, model);
+  auto ref_msa = build_MSA_from_file(reference_msa_file);
 
-  auto query_reads = build_MSA_from_file(query_msa_file);
+  MSA query_msa;
+  if (query_msa_file.size() != 0)
+    query_msa = build_MSA_from_file(query_msa_file);
 
-  auto placements = tree.place(query_reads);
+  auto tree = Tree(tree_file, ref_msa, model, query_msa);
+
+  // place query sequences
+  auto placements = tree.place();
 
   cout << placement_set_to_jplace_string(placements, invocation);
 

@@ -16,11 +16,12 @@ using namespace std;
 TEST(jplace_util, placement_to_jplace_string)
 {
   // buildup
-  auto tree = Tree(env->tree_file, env->reference_file, env->model);
-  auto query_reads = build_MSA_from_file(env->query_file);
+  auto query_msa = build_MSA_from_file(env->query_file);
+  auto reference_msa = build_MSA_from_file(env->reference_file);
+  auto tree = Tree(env->tree_file, reference_msa, env->model, query_msa);
 
   // tests
-  auto placements = tree.place(query_reads);
+  auto placements = tree.place();
   vector<string> out;
 
   for (auto const &p : placements)

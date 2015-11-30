@@ -23,6 +23,8 @@ int main(int argc, char** argv)
   env->reference_file += "aln.fasta";
   env->query_file  = std::string(env->data_dir);
   env->query_file += "query.fasta";
+  env->combined_file  = std::string(env->data_dir);
+  env->combined_file += "combined.fasta";
 
   ::testing::InitGoogleTest(&argc, argv);
 

@@ -45,11 +45,10 @@ TEST(epa_pll_util, precompute_clvs)
   // buildup
   MSA msa = build_MSA_from_file(env->reference_file);
   Tree_Numbers nums = Tree_Numbers();
-  Model model = Model({0.25, 0.25, 0.25, 0.25}, {1,1,1,1,1,1}, 1.0);
   pll_partition_t * part;
   pll_utree_t * tree;
 
-  tie(part, tree) = build_partition_from_file(env->tree_file, model, nums, msa.num_sites());
+  tie(part, tree) = build_partition_from_file(env->tree_file, env->model, nums, msa.num_sites());
   link_tree_msa(tree, part, msa, nums.tip_nodes);
   precompute_clvs(tree, part, nums);
 
@@ -80,6 +79,33 @@ TEST(epa_pll_util, precompute_clvs)
 
   // teardown
   utree_free_node_data(tree);
+  pll_partition_destroy(part);
+  pll_utree_destroy(tree);
+}
+
+TEST(epa_pll_util, bisect)
+{
+  // buildup
+  auto combined_msa = build_MSA_from_file(env->combined_file);
+  MSA query_msa;
+  Tree_Numbers nums = Tree_Numbers();
+  pll_partition_t * part;
+  pll_utree_t * tree;
+
+  tie(part, tree) = build_partition_from_file(env->tree_file, env->model, nums, combined_msa.num_sites());
+
+  // tests
+  bisect(combined_msa, query_msa, tree, nums.tip_nodes);
+
+  EXPECT_EQ(combined_msa.num_sites(), query_msa.num_sites());
+  EXPECT_EQ(combined_msa.size(), 8);
+  EXPECT_EQ(query_msa.size(), 2);
+
+  for (auto x : combined_msa)
+    for (auto y : query_msa)
+      EXPECT_STRNE(x.header().c_str(), y.header().c_str());
+
+  // teardown
   pll_partition_destroy(part);
   pll_utree_destroy(tree);
 }

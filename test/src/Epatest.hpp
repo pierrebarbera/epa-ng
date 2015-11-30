@@ -36,6 +36,7 @@ public:
   std::string data_dir;
   std::string tree_file;
   std::string reference_file;
+  std::string combined_file;
   std::string query_file;
   Model model = Model({0.25, 0.25, 0.25, 0.25}, {1,1,1,1,1,1}, 1.0);
 

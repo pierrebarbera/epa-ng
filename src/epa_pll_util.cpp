@@ -2,6 +2,7 @@
 
 #include <unordered_map>
 #include <string>
+#include <algorithm>
 
 #include "pll_util.hpp"
 
@@ -82,4 +83,29 @@ void precompute_clvs(pll_utree_t * tree, pll_partition_t * partition, const Tree
        will be carried out sequentially starting from operation 0 towrds num_ops-1 */
     pll_update_partials(partition, &operations[0], num_ops);
   }
+}
+
+void bisect(MSA& source, MSA& target, pll_utree_t * tree, unsigned int num_tip_nodes)
+{
+  vector<pll_utree_t*> tip_nodes(num_tip_nodes);
+  pll_utree_query_tipnodes(tree, &tip_nodes[0]);
+
+  auto falsegroup_begin = partition(source.begin(), source.end(),
+    [tip_nodes](const Sequence& em)
+    {
+      return find(tip_nodes.begin(), tip_nodes.end(), em) != tip_nodes.end();
+    });
+  target.num_sites(source.num_sites());
+  target.set_sequences(falsegroup_begin, source.end());
+  source.erase(falsegroup_begin, source.end());
+}
+
+bool operator==(const pll_utree_t * node, const Sequence& s)
+{
+  return s.header().compare(node->label) == 0;
+}
+
+bool operator==(const Sequence& s, const pll_utree_t * node)
+{
+  return operator==(node, s);
 }

@@ -12,11 +12,12 @@ using namespace std;
 TEST(Tree, place)
 {
   // buildup
-  auto tree = Tree(env->tree_file, env->reference_file, env->model);
-  auto query_reads = build_MSA_from_file(env->query_file);
+  auto query_msa = build_MSA_from_file(env->query_file);
+  auto reference_msa = build_MSA_from_file(env->reference_file);
+  auto tree = Tree(env->tree_file, reference_msa, env->model, query_msa);
 
   // tests
-  auto placements = tree.place(query_reads);
+  auto placements = tree.place();
 
   EXPECT_EQ(placements.size(), 2);
 
@@ -33,4 +34,10 @@ TEST(Tree, place)
   }
   // teardown
 
+}
+
+TEST(Tree, combined_input_file)
+{
+  auto combined_msa = build_MSA_from_file(env->combined_file);
+  auto tree = Tree(env->tree_file, combined_msa, env->model);
 }

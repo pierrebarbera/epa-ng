@@ -1,7 +1,5 @@
 #include "Sequence.hpp"
 
-#include <string>
-
 using namespace std;
 
 Sequence::Sequence(const Sequence& s)
@@ -11,11 +9,8 @@ Sequence::Sequence(const Sequence& s)
 
 Sequence::Sequence(string header, string sequence)
           : header_(header), sequence_(sequence)
-{
+{}
 
-}
 
 Sequence::~Sequence()
-{
-
-}
+{}

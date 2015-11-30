@@ -16,15 +16,15 @@ MSA::MSA(const unsigned int num_sites) : num_sites_(num_sites)
 }
 
 MSA::MSA() : num_sites_(0)
-{
-
-}
+{}
 
 MSA::~MSA()
-{
-  // vectors are self deleting
-}
+{}
 
+void MSA::set_sequences(iterator begin, iterator end)
+{
+  sequence_list_.assign(begin, end);
+}
 
 const Sequence& MSA::get(const int i) const
 {

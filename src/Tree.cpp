@@ -11,16 +11,16 @@
 
 using namespace std;
 
-Tree::Tree(const string& tree_file, const string& msa_file, const Model& model) : model_(model)
+Tree::Tree(const string& tree_file, const MSA& msa, const Model& model, const MSA& query)
+  : ref_msa_(msa), query_msa_(query), model_(model)
 {
-  // TODO detect filetype
-
   //parse, build tree
   nums_ = Tree_Numbers();
-
-  ref_msa_ = build_MSA_from_file(msa_file);
-
   tie(partition_, tree_) = build_partition_from_file(tree_file, model_, nums_, ref_msa_.num_sites());
+
+  // split msa if no separate query msa was supplied
+  if (query.num_sites() == 0)
+    bisect(ref_msa_, query_msa_, tree_, nums_.tip_nodes);
 
   link_tree_msa(tree_, partition_, ref_msa_, nums_.tip_nodes);
 
@@ -36,7 +36,7 @@ Tree::~Tree()
 
 }
 
-Placement_Set Tree::place(const MSA &msa) const
+Placement_Set Tree::place() const
 {
   // get all edges
   auto node_list = new pll_utree_t*[nums_.branches];
@@ -46,7 +46,7 @@ Placement_Set Tree::place(const MSA &msa) const
   Placement_Set placements(get_numbered_newick_string(tree_));
 
   // place all s on every edge
-  for (auto const &s : msa)// make sure a reference, not a copy, is returned
+  for (auto const &s : query_msa_)// make sure a reference, not a copy, is returned
   {
     placements.emplace_back(nums_.branches, s);
     for (unsigned int i = 0; i < num_traversed; ++i)

@@ -19,13 +19,17 @@ public:
   // MSA operator= (const MSA& other) = delete;
   ~MSA();
   // swap(const MSA& other);
+  void set_sequences(iterator begin, iterator end);
   void append(const std::string& header, const std::string& sequence);
   void append(Sequence s);
+  void erase(iterator begin, iterator end) {sequence_list_.erase(begin, end);};
 
   //Member access
   inline unsigned int size() const {return sequence_list_.size();};
   inline unsigned int num_sites() const {return num_sites_;};
+  inline void num_sites(unsigned int sites) {num_sites_ = sites;};
   const Sequence& get(const int i) const;
+
 
   //Iterator Compatability
   iterator begin();

@@ -14,11 +14,11 @@
 class Tree
 {
 public:
-  Tree(const std::string& tree_file, const std::string& msa_file, const Model& model);
+  Tree(const std::string& tree_file, const MSA& msa, const Model& model, const MSA& query = MSA());
   ~Tree();
   // TODO should return placement object
   // TODO doesnt follow parallelization scheme: overload?
-  Placement_Set place(const MSA& msa) const;
+  Placement_Set place() const;
 
   // member access
   inline Tree_Numbers nums() const {return nums_;};
@@ -33,6 +33,7 @@ private:
 
   // epa related classes
   MSA ref_msa_;
+  MSA query_msa_;
   Model model_;
 
   double place_on_edge(const Sequence& s, pll_utree_t * node, bool optimize=false) const;
