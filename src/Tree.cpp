@@ -24,6 +24,9 @@ Tree::Tree(const string& tree_file, const MSA& msa, const Model& model, const MS
 
   link_tree_msa(tree_, partition_, ref_msa_, nums_.tip_nodes);
 
+  // perform branch length optimization on the reference tree
+  optimize(tree_, partition_, nums_, model_);
+
   precompute_clvs(tree_, partition_, nums_);
 }
 

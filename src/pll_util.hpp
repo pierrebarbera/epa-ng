@@ -24,6 +24,7 @@ void get_numbered_newick_string_recursive(pll_utree_t * node, std::ostringstream
 
 // interface
 int cb_partial_traversal(pll_utree_t * node);
+int cb_full_traversal(pll_utree_t * node);
 int utree_free_node_data(pll_utree_t * node);
 unsigned int utree_query_branches(pll_utree_t * node, pll_utree_t ** node_list);
 void set_unique_clv_indices(pll_utree_t * tree, const int num_tip_nodes);

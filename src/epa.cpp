@@ -19,7 +19,8 @@ void epa(string& tree_file, string& reference_msa_file, string& query_msa_file,
   file_check(query_msa_file);
 
 	// Build the reference tree
-	auto model = Model(base_frequencies, substitution_rates, alpha);
+  vector<int> symmetries({0,0,0,0,0,0});
+	auto model = Model(base_frequencies, substitution_rates, alpha, symmetries);
   auto ref_msa = build_MSA_from_file(reference_msa_file);
 
   MSA query_msa;
@@ -31,7 +32,12 @@ void epa(string& tree_file, string& reference_msa_file, string& query_msa_file,
   // place query sequences
   auto placements = tree.place();
 
-  cout << placement_set_to_jplace_string(placements, invocation);
+  cout << placements.newick() << endl;
+
+  ofstream outfile("/tmp/out.jplace");
+  outfile << placement_set_to_jplace_string(placements, invocation) << endl;
+  outfile.close();
+
 
 	// for scalability...
 		// stream? then probably conjuntion between pll datatype and my wrapper needed

@@ -5,8 +5,10 @@
 
 using namespace std;
 
-Model::Model(vector<double> base_frequencies, vector<double> substitution_rates, double alpha)
-  :  alpha_(alpha), base_frequencies_(base_frequencies), substitution_rates_(substitution_rates)
+Model::Model(vector<double> base_frequencies, vector<double> substitution_rates,
+  double alpha, std::vector<int> symmetries)
+  : alpha_(alpha), base_frequencies_(base_frequencies), substitution_rates_(substitution_rates),
+    subs_symmetries_(symmetries)
 {
 
   if (this->base_frequencies().size() != STATES)

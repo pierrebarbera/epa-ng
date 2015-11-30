@@ -10,7 +10,7 @@ LINKFLAGS=
 
 TARGET=$(BIN)/epamk
 
-LIBS=-lm -lpll
+LIBS=-lm -lpll -lpll_optimize
 CPP=$(wildcard *.cpp)
 OBJS=$(notdir $(CPP:.cpp=.o))
 OUT_OBJS=$(addprefix $(BIN)/,$(OBJS))

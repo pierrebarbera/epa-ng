@@ -57,10 +57,6 @@ int main(int argc, char** argv)
   string tree_file(argv[optind]);
   string reference_file(argv[optind + 1]);
 
-  cout << tree_file << endl;
-  cout << reference_file << endl;
-  cout << query_file << endl;
-
 	epa(tree_file,
       reference_file,
       query_file,
