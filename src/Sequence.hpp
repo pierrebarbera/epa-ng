@@ -8,8 +8,15 @@
 class Sequence
 {
 public:
-  Sequence(const Sequence& s);
+  Sequence() = default;
   Sequence(std::string header, std::string sequence);
+
+  Sequence(const Sequence& s) = default;
+  Sequence(Sequence&& s) = default;
+
+  Sequence& operator = (const Sequence& s) = default;
+  Sequence& operator = (Sequence&& s) = default;
+
   ~Sequence();
 
   // member access

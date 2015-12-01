@@ -50,11 +50,6 @@ Placement_Set Tree::place() const
   for (auto node : branches)
     insertion_trees.emplace_back(node, partition_);
 
-  // Tiny_Tree** insertion_trees= (Tiny_Tree**)malloc(num_traversed * sizeof(Tiny_Tree*));
-  // for (unsigned int i = 0; i < num_traversed; i++) {
-  //   insertion_trees[i] = new Tiny_Tree(branches[0], partition_);
-  // }
-
   // output class
   Placement_Set placements(get_numbered_newick_string(tree_));
 

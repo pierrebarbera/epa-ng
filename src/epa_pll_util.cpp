@@ -100,12 +100,12 @@ void bisect(MSA& source, MSA& target, pll_utree_t * tree, unsigned int num_tip_n
   pll_utree_query_tipnodes(tree, &tip_nodes[0]);
 
   auto falsegroup_begin = partition(source.begin(), source.end(),
-    [tip_nodes](const Sequence& em)
+    [&tip_nodes](const Sequence& em)
     {
       return find(tip_nodes.begin(), tip_nodes.end(), em) != tip_nodes.end();
     });
   target.num_sites(source.num_sites());
-  target.set_sequences(falsegroup_begin, source.end());
+  target.move_sequences(falsegroup_begin, source.end());
   source.erase(falsegroup_begin, source.end());
 }
 

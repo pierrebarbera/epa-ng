@@ -21,9 +21,10 @@ MSA::MSA() : num_sites_(0)
 MSA::~MSA()
 {}
 
-void MSA::set_sequences(iterator begin, iterator end)
+void MSA::move_sequences(iterator begin, iterator end)
 {
-  sequence_list_.assign(begin, end);
+  // sequence_list_.assign(begin, end);
+  std::move(begin, end, std::back_inserter(sequence_list_));
 }
 
 const Sequence& MSA::get(const int i) const
