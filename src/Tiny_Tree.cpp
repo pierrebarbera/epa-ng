@@ -61,42 +61,11 @@ Tiny_Tree::Tiny_Tree(pll_utree_t * edge_node, pll_partition_t * old_partition, b
   else
     ops_.child2_scaler_index = PLL_SCALE_BUFFER_NONE;
 
-  // deep copy clv's
-  // memcpy(partition_->clv[OLD_LEFT_CLV_INDEX], old_partition->clv[old_left->clv_index],
-  //     sizeof(double) * old_partition->sites);
-  // memcpy(partition_->clv[OLD_RIGHT_CLV_INDEX], old_partition->clv[old_right->clv_index],
-  //     sizeof(double) * old_partition->sites);
-
-  // deep copy scalers
-  // if (old_left->scaler_index != PLL_SCALE_BUFFER_NONE)
-  // {
-  //   memcpy(partition_->scale_buffer[OLD_LEFT_CLV_INDEX],
-  //       old_partition->scale_buffer[old_left->scaler_index],
-  //       sizeof(unsigned int) * old_partition->sites);
-  //   ops_.child1_scaler_index = OLD_LEFT_CLV_INDEX;
-  // }
-  // else
-  //   ops_.child1_scaler_index = PLL_SCALE_BUFFER_NONE;
-  //
-  // if (old_right->scaler_index != PLL_SCALE_BUFFER_NONE)
-  // {
-  //   memcpy(partition_->scale_buffer[OLD_RIGHT_CLV_INDEX],
-  //       old_partition->scale_buffer[old_right->scaler_index],
-  //       sizeof(unsigned int) * old_partition->sites);
-  //   ops_.child2_scaler_index = OLD_RIGHT_CLV_INDEX;
-  // }
-  // else
-  //   ops_.child2_scaler_index = PLL_SCALE_BUFFER_NONE;
-
-
   // precreate some of the operation fields that are static throughout the trees lifetime
   ops_.parent_clv_index    = INNER_CLV_INDEX;
   ops_.child1_clv_index    = OLD_LEFT_CLV_INDEX;
   ops_.child2_clv_index    = OLD_RIGHT_CLV_INDEX;
-  ops_.parent_scaler_index = PLL_SCALE_BUFFER_NONE;//INNER_CLV_INDEX;
-
-  // TODO might not be needed depending on how BLO is done
-  old_branch_length_ = old_left->length;
+  ops_.parent_scaler_index = INNER_CLV_INDEX;
 
   // if the heuristic is to be used, the branch lengths only need to be set once
   if (heuristic_)
@@ -109,17 +78,11 @@ Tiny_Tree::Tiny_Tree(pll_utree_t * edge_node, pll_partition_t * old_partition, b
       The new branch leading from inner to the new tip is initialized with length 0.9,
       which is the default branch length in RAxML.
     */
-    // TODO free
-    auto branch_lengths = new double[2];// = { old_branch_length_ / 2, DEFAULT_BRANCH_LENGTH};
-    branch_lengths[0] = old_branch_length_ / 2;
-    branch_lengths[1] = DEFAULT_BRANCH_LENGTH;
-    auto matrix_indices = new unsigned int[2];
-    matrix_indices[0] = 0;
-    matrix_indices[1] = 1;
+    double branch_lengths[2] = { old_left->length / 2, DEFAULT_BRANCH_LENGTH};
+    unsigned int matrix_indices[2] = { 0, 1 };
 
-
-  // use branch lengths to compute the probability matrices
-  pll_update_prob_matrices(partition_, 0, matrix_indices, branch_lengths, 2);
+    // use branch lengths to compute the probability matrices
+    pll_update_prob_matrices(partition_, 0, matrix_indices, branch_lengths, 2);
   }
 
 }

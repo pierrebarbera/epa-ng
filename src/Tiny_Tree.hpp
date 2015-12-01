@@ -38,7 +38,6 @@ public:
   Tiny_Tree(Tiny_Tree&& other)
     : partition_(other.partition_)
     , ops_(other.ops_)
-    , old_branch_length_ (other.old_branch_length_)
     , heuristic_(other.heuristic_)
   {
     other.partition_ = nullptr;
@@ -54,11 +53,8 @@ public:
 private:
   // pll structures
   pll_partition_t * partition_ = nullptr;
-  // pll_utree_t * tree_;
   pll_operation_t ops_;
 
-  // useful numbers
-  double old_branch_length_;
   const bool heuristic_;
 
 };
