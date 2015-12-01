@@ -8,6 +8,7 @@
 #include "Model.hpp"
 #include "Tree_Numbers.hpp"
 #include "Placement_Set.hpp"
+#include "Tiny_Tree.hpp"
 
 
 /* Encapsulates the pll data structures for ML computation */
