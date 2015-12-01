@@ -20,7 +20,7 @@ Tree::Tree(const string& tree_file, const MSA& msa, const Model& model, const MS
 
   // split msa if no separate query msa was supplied
   if (query.num_sites() == 0)
-    bisect(ref_msa_, query_msa_, tree_, nums_.tip_nodes);
+    split_combined_msa(ref_msa_, query_msa_, tree_, nums_.tip_nodes);
 
   link_tree_msa(tree_, partition_, ref_msa_, nums_.tip_nodes);
 

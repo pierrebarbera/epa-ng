@@ -83,7 +83,7 @@ TEST(epa_pll_util, precompute_clvs)
   pll_utree_destroy(tree);
 }
 
-TEST(epa_pll_util, bisect)
+TEST(epa_pll_util, split_combined_msa)
 {
   // buildup
   auto combined_msa = build_MSA_from_file(env->combined_file);
@@ -96,7 +96,7 @@ TEST(epa_pll_util, bisect)
     combined_msa.num_sites());
 
   // tests
-  bisect(combined_msa, query_msa, tree, nums.tip_nodes);
+  split_combined_msa(combined_msa, query_msa, tree, nums.tip_nodes);
 
   EXPECT_EQ(combined_msa.num_sites(), query_msa.num_sites());
   EXPECT_EQ(combined_msa.size(), 8);

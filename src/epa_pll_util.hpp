@@ -10,7 +10,7 @@
 void link_tree_msa(pll_utree_t * tree, pll_partition_t * partition,
               const MSA& msa, const unsigned int num_tip_nodes);
 void precompute_clvs(pll_utree_t * tree, pll_partition_t * partition, const Tree_Numbers& nums);
-void bisect(MSA& source, MSA& target, pll_utree_t * tree, unsigned int num_tip_nodes);
+void split_combined_msa(MSA& source, MSA& target, pll_utree_t * tree, unsigned int num_tip_nodes);
 void optimize(pll_utree_t * tree, pll_partition_t * partition, const Tree_Numbers &nums, Model& model);
 
 // operator overloads

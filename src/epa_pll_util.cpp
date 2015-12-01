@@ -94,7 +94,7 @@ void precompute_clvs(pll_utree_t * tree, pll_partition_t * partition, const Tree
   }
 }
 
-void bisect(MSA& source, MSA& target, pll_utree_t * tree, unsigned int num_tip_nodes)
+void split_combined_msa(MSA& source, MSA& target, pll_utree_t * tree, unsigned int num_tip_nodes)
 {
   vector<pll_utree_t*> tip_nodes(num_tip_nodes);
   pll_utree_query_tipnodes(tree, &tip_nodes[0]);
