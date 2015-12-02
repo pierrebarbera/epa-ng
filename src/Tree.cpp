@@ -8,6 +8,7 @@
 #include "epa_pll_util.hpp"
 #include "file_io.hpp"
 #include "Sequence.hpp"
+#include "optimize.hpp"
 
 using namespace std;
 
