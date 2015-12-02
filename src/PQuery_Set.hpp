@@ -12,10 +12,9 @@ public:
   typedef typename std::vector<PQuery>::iterator        iterator;
   typedef typename std::vector<PQuery>::const_iterator  const_iterator;
 
-  PQuery_Set();
-  PQuery_Set(const unsigned int size);
+  PQuery_Set() = default;
   PQuery_Set(const std::string newick);
-  ~PQuery_Set();
+  ~PQuery_Set() = default;
 
   // member access
   inline PQuery& back() {return pquerys_.back();};

@@ -4,17 +4,23 @@
 #include <vector>
 
 #include "Sequence.hpp"
+#include "Placement.hpp"
 
 class PQuery {
 public:
-  typedef double                                        value_type;
-  typedef typename std::vector<double>::iterator        iterator;
-  typedef typename std::vector<double>::const_iterator  const_iterator;
+  typedef Placement                                        value_type;
+  typedef typename std::vector<Placement>::iterator        iterator;
+  typedef typename std::vector<Placement>::const_iterator  const_iterator;
 
-  PQuery();
-  PQuery (const unsigned int size, const Sequence & s);
+  PQuery() = delete;
+  PQuery (const Sequence & s);
   ~PQuery ();
-  void set(const unsigned int branch, const double logl);
+
+  // needs to be in the header
+  template<typename ...Args> void emplace_back(Args && ...args)
+  {
+    placements_.emplace_back(std::forward<Args>(args)...);
+  };
 
   // member access
   inline const Sequence& sequence() const {return sequence_;};
@@ -26,9 +32,9 @@ public:
   const_iterator end() const;
   const_iterator cbegin();
   const_iterator cend();
+
 private:
-  /* TODO change to vector of pquery class, to make it sortable, */
-  std::vector<double> likelihoods_;
+  std::vector<Placement> placements_;
   const Sequence sequence_;
 };
 

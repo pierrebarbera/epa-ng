@@ -8,26 +8,38 @@ static void rwnd(ostringstream& ss, unsigned int chars)
   ss.seekp (pos - (chars * sizeof(char)));
 }
 
-string pquery_to_jplace_string(const PQuery& p)
+string placement_to_jplace_string(const Placement& p)
+{
+  ostringstream output;
+
+  output << "[" << to_string(p.branch_id()) << ", ";
+  output << to_string(p.likelihood()) << ", ";
+  output << to_string(p.lwr()) << ", ";
+  output << to_string(p.pendant_length()) << ", ";
+  output << to_string(p.distal_length()) << "]";
+
+  return output.str();
+}
+
+string pquery_to_jplace_string(const PQuery& pquery)
 {
   ostringstream output;
 
   output << "    {\"p\":" << NEWL; // p for pquery
   output << "      [" << NEWL; // opening bracket for pquery array
 
-  unsigned int branch = 0; // TODO bad, will change when map introduced
-  for (auto logl : p)
+  for (auto place : pquery)
   {
     // individual pquery
-    output << "      [" << branch << ", "<< logl << "]," << NEWL;
-    ++branch;
+    output << "      " << placement_to_jplace_string(place) << "," << NEWL;
   }
 
-  // rewind by two chars: newline and last comma
+  // undo last comma
   rwnd(output, 2);
+  output << NEWL;
 
   // closing bracket for pquery array and name column
-  output << "\n      ],\n    \"n\": [\"" << p.sequence().header().c_str() << "\"]" << NEWL;
+  output << "      ]," << NEWL <<"    \"n\": [\"" << pquery.sequence().header().c_str() << "\"]" << NEWL;
 
   output << "    }";// final bracket
 
@@ -38,29 +50,31 @@ std::string pquery_set_to_jplace_string(const PQuery_Set& ps, string& invocation
 {
   ostringstream output;
 
-  output << "{\n";
+  output << "{" << NEWL;
 
-  output << "  \"tree\": \"" << ps.newick() << "\",\n";
-  output << "  \"pquerys\": \n";
-  output << "  [\n";
+  output << "  \"tree\": \"" << ps.newick() << "\"," << NEWL;
+  output << "  \"pquerys\": " << NEWL;
+  output << "  [" << NEWL;
 
   for (auto p : ps)
-    output << pquery_to_jplace_string(p) << ",\n";
+    output << pquery_to_jplace_string(p) << "," << NEWL;
 
   // undo the last comma
   rwnd(output, 2);
+  output << NEWL;
 
-  output << "\n  ],\n";
+  output << "  ]," << NEWL;
 
   // metadata string
   if (invocation.length() > 0)
-    output << "\"metadata\": {\"invocation\": \"" << invocation << "\"},\n";
+    output << "  \"metadata\": {\"invocation\": \"" << invocation << "\"}," << NEWL;
 
-  output << "  \"version\": 3,\n";
+  output << "  \"version\": 3," << NEWL;
   output << "  \"fields\": ";
-  output << "[\"edge_num\", \"likelihood\"]\n";
+  output << "[\"edge_num\", \"likelihood\", \"like_weight_ratio\", \"pendant_length\"";
+  output << ", \"distal_length\"]" << NEWL;
 
-  output << "}\n";
+  output << "}" << NEWL;
 
   return output.str();
 }

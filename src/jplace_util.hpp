@@ -6,10 +6,11 @@
 
 #include "PQuery.hpp"
 #include "PQuery_Set.hpp"
+#include "Placement.hpp"
 
-#define TAB "  ";
-#define NEWL "\n";
+constexpr char NEWL = '\n';
 
+std::string placement_to_jplace_string(const Placement& p);
 std::string pquery_to_jplace_string(const PQuery& p);
 std::string pquery_set_to_jplace_string(const PQuery_Set& ps, std::string& invocation);
 

@@ -17,17 +17,17 @@ TEST(Tree, place)
   auto tree = Tree(env->tree_file, reference_msa, env->model, query_msa);
 
   // tests
-  auto placements = tree.place();
+  auto pquery_set = tree.place();
 
-  EXPECT_EQ(placements.size(), 2);
+  EXPECT_EQ(pquery_set.size(), 2);
 
   // check for zero entires and correct number
-  for (auto place : placements)
+  for (auto pquery : pquery_set)
   {
     int count = 0;
-    for (auto logl : place)
+    for (auto p : pquery)
     {
-      EXPECT_NE(logl, 0.0);
+      EXPECT_NE(p.likelihood(), 0.0);
       count++;
     }
     EXPECT_EQ(count, tree.nums().branches);

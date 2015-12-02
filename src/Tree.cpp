@@ -56,15 +56,16 @@ PQuery_Set Tree::place() const
   // place all s on every edge
   for (auto const &s : query_msa_)// make sure a reference, not a copy, is returned
   {
-    pquerys.emplace_back(nums_.branches, s);
+    pquerys.emplace_back(s);
     for (unsigned int i = 0; i < num_traversed; ++i)
     {
-      pquerys.back().set(i, insertion_trees[i].place(s));
+      pquerys.back().emplace_back(
+        i, // branch_id
+        insertion_trees[i].place(s), // likelihood
+        0.0, // pendant length
+        0.0 // distal length
+        );
     }
   }
-
-  // insertion_trees[0]->place(query_msa_.get(0));
-  //
-  // free(insertion_trees);
   return pquerys;
 }
