@@ -14,11 +14,13 @@ static void print_help()
   cout << "  -h\t Display this page" << endl;
   cout << "  -q\t Path to separate query MSA file. If none is provided, epa will assume" << endl;
   cout << "    \t query reads are in the reference_MSA_file (second parameter)" << endl;
+  cout << "  -b\t optimize branch lengths on insertion" << endl;
 };
 
 int main(int argc, char** argv)
 {
   string invocation("");
+  bool heuristic = true;
   for (int i = 0; i < argc; ++i)
   {
     invocation += argv[i];
@@ -28,7 +30,7 @@ int main(int argc, char** argv)
   string query_file("");
 
   int c;
-  while((c =  getopt(argc, argv, "hq:")) != EOF)
+  while((c =  getopt(argc, argv, "hbq:")) != EOF)
   {
       switch (c)
       {
@@ -38,6 +40,9 @@ int main(int argc, char** argv)
            case 'h':
                print_help();
                exit(0);
+               break;
+           case 'b':
+               heuristic = false;
                break;
            case ':':
                cerr << "Missing option." << endl;
@@ -63,6 +68,7 @@ int main(int argc, char** argv)
       {0.25, 0.25, 0.25, 0.25},
       {1,1,1,1,1,1},
       1.0,
+      heuristic,
       invocation);
 	return 0;
 }

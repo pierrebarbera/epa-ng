@@ -6,8 +6,6 @@
 #include <string>
 #include <sstream>
 
-#define DEFAULT_BRANCH_LENGTH 0.9
-
 typedef struct
 {
   int clv_valid;
@@ -30,5 +28,6 @@ unsigned int utree_query_branches(pll_utree_t * node, pll_utree_t ** node_list);
 void set_unique_clv_indices(pll_utree_t * tree, const int num_tip_nodes);
 void set_missing_branch_length(pll_utree_t * tree, double length);
 std::string get_numbered_newick_string(pll_utree_t * root);
+pll_utree_t * make_tiny_tree_structure(const pll_utree_t * old_left, const pll_utree_t * old_right);
 
 #endif

@@ -2,6 +2,8 @@
 
 #include <iomanip>
 
+#include "constants.hpp"
+
 using namespace std;
 
 void set_missing_branch_length_recursive(pll_utree_t * tree,
@@ -197,9 +199,75 @@ string get_numbered_newick_string(pll_utree_t * root)
   get_numbered_newick_string_recursive(root->next->next->back, ss, &index);
 
   ss << ")";
-  // TODO needed?
-  //ss << "{" << index << "}";
   ss << ";";
 
   return ss.str();
+}
+
+// doin it the hard way!
+pll_utree_t * make_tiny_tree_structure(const pll_utree_t * old_left, const pll_utree_t * old_right)
+{
+  pll_utree_t * inner = (pll_utree_t *) calloc(1,sizeof(pll_utree_t));
+  inner->next = (pll_utree_t *) calloc(1,sizeof(pll_utree_t));
+  inner->next->next = (pll_utree_t *) calloc(1,sizeof(pll_utree_t));
+  inner->next->next->next = inner;
+
+  pll_utree_t * new_tip = (pll_utree_t *) calloc(1,sizeof(pll_utree_t));
+  pll_utree_t * proximal = (pll_utree_t *) calloc(1,sizeof(pll_utree_t));
+  pll_utree_t * distal = (pll_utree_t *) calloc(1,sizeof(pll_utree_t));
+
+  // connect the nodes to each other
+  inner->back = new_tip;
+  new_tip->back = inner;
+  inner->next->back = distal;
+  distal->back = inner->next;
+  inner->next->next->back = proximal;
+  proximal->back = inner->next->next;
+
+  // set up clv indices
+  inner->clv_index = TINY_INNER_CLV_INDEX;
+  inner->next->clv_index = TINY_INNER_CLV_INDEX;
+  inner->next->next->clv_index = TINY_INNER_CLV_INDEX;
+  proximal->clv_index = TINY_PROXIMAL_CLV_INDEX;
+  distal->clv_index = TINY_DISTAL_CLV_INDEX;
+  new_tip->clv_index = TINY_NEW_TIP_CLV_INDEX;
+
+  // set up scaler indices
+  new_tip->scaler_index = PLL_SCALE_BUFFER_NONE;
+  inner->scaler_index = TINY_INNER_CLV_INDEX;
+  proximal->scaler_index = (old_left->scaler_index == PLL_SCALE_BUFFER_NONE) ?
+    PLL_SCALE_BUFFER_NONE : TINY_PROXIMAL_CLV_INDEX;
+  distal->scaler_index = (old_right->scaler_index == PLL_SCALE_BUFFER_NONE) ?
+    PLL_SCALE_BUFFER_NONE : TINY_DISTAL_CLV_INDEX;
+
+  // set up branch lengths
+  double half_old = old_right->length / 2;
+  new_tip->length = DEFAULT_BRANCH_LENGTH;
+  new_tip->back->length = DEFAULT_BRANCH_LENGTH;
+  proximal->length = half_old;
+  proximal->back->length = half_old;
+  distal->length = half_old;
+  distal->back->length = half_old;
+
+  // set up pmatrix indices
+  inner->pmatrix_index = 1;
+  new_tip->pmatrix_index = 1;
+  inner->next->pmatrix_index = 0;
+  distal->pmatrix_index = 0;
+  inner->next->next->pmatrix_index = 0;
+  proximal->pmatrix_index = 0;
+
+  // set up labels
+  // char* pendant_str = "pendant";
+  // char* proximal_str = "proximal";
+  // char* distal_str = "distal";
+  // char* inner_str = "inner";
+  // new_tip->label = pendant_str;
+  // new_tip->back->label = inner_str;
+  // proximal->label = proximal_str;
+  // proximal->back->label = inner_str;
+  // distal->label = distal_str;
+  // distal->back->label = inner_str;
+
+  return inner;
 }

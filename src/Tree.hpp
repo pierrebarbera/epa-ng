@@ -15,10 +15,9 @@
 class Tree
 {
 public:
-  Tree(const std::string& tree_file, const MSA& msa, const Model& model, const MSA& query = MSA());
+  Tree(const std::string& tree_file, const MSA& msa, const Model& model, const bool heuristic,
+      const MSA& query = MSA());
   ~Tree();
-  // TODO should return pquery object
-  // TODO doesnt follow parallelization scheme: overload?
   PQuery_Set place() const;
 
   // member access
@@ -36,6 +35,9 @@ private:
   MSA ref_msa_;
   MSA query_msa_;
   Model model_;
+
+  // flags
+  bool heuristic_ = true;
 
   double place_on_edge(const Sequence& s, pll_utree_t * node, bool optimize=false) const;
 

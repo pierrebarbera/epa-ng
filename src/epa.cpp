@@ -11,7 +11,7 @@ using namespace std;
 
 void epa(string& tree_file, string& reference_msa_file, string& query_msa_file,
                 vector<double> base_frequencies, vector<double> substitution_rates,
-                double alpha, string invocation)
+                double alpha, bool heuristic,  string invocation)
 {
 	// sanitize input
   file_check(tree_file);
@@ -27,7 +27,7 @@ void epa(string& tree_file, string& reference_msa_file, string& query_msa_file,
   if (query_msa_file.size() != 0)
     query_msa = build_MSA_from_file(query_msa_file);
 
-  auto tree = Tree(tree_file, ref_msa, model, query_msa);
+  auto tree = Tree(tree_file, ref_msa, model, heuristic, query_msa);
 
   // place query sequences
   auto pquerys = tree.place();

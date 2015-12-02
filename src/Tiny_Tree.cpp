@@ -4,17 +4,22 @@
 #include <cassert>
 
 #include "pll_util.hpp"
+#include "optimize.hpp"
+#include "Tree_Numbers.hpp"
 
 using namespace std;
 
-Tiny_Tree::Tiny_Tree(pll_utree_t * edge_node, pll_partition_t * old_partition, bool heuristic)
-  : heuristic_(heuristic)
+Tiny_Tree::Tiny_Tree(pll_utree_t * edge_node, pll_partition_t * old_partition, Model model,
+   bool heuristic)
+  : heuristic_(heuristic), model_(model)
 {
   assert(edge_node != NULL);
   assert(old_partition != NULL);
 
   pll_utree_t * old_left = edge_node;
   pll_utree_t * old_right = edge_node->back;
+
+  tree_ = make_tiny_tree_structure(old_left, old_right);
 
   partition_ =
   pll_partition_create(   3, // tips
@@ -37,40 +42,32 @@ Tiny_Tree::Tiny_Tree(pll_utree_t * edge_node, pll_partition_t * old_partition, b
   assert(old_partition->clv[old_left->clv_index] != NULL);
   assert(old_partition->clv[old_right->clv_index] != NULL);
 
-  partition_->clv[OLD_LEFT_CLV_INDEX] =
+  partition_->clv[TINY_PROXIMAL_CLV_INDEX] =
                           old_partition->clv[old_left->clv_index];
-  partition_->clv[OLD_RIGHT_CLV_INDEX] =
+  partition_->clv[TINY_DISTAL_CLV_INDEX] =
                           old_partition->clv[old_right->clv_index];
 
   // shallow copy scalers
   if (old_left->scaler_index != PLL_SCALE_BUFFER_NONE)
-  {
-    partition_->scale_buffer[OLD_LEFT_CLV_INDEX] =
+    partition_->scale_buffer[TINY_PROXIMAL_CLV_INDEX] =
                           old_partition->scale_buffer[old_left->scaler_index];
-    ops_.child1_scaler_index = OLD_LEFT_CLV_INDEX;
-  }
-  else
-    ops_.child1_scaler_index = PLL_SCALE_BUFFER_NONE;
 
   if (old_right->scaler_index != PLL_SCALE_BUFFER_NONE)
-  {
-    partition_->scale_buffer[OLD_RIGHT_CLV_INDEX] =
+    partition_->scale_buffer[TINY_DISTAL_CLV_INDEX] =
                           old_partition->scale_buffer[old_right->scaler_index];
-    ops_.child2_scaler_index = OLD_RIGHT_CLV_INDEX;
-  }
-  else
-    ops_.child2_scaler_index = PLL_SCALE_BUFFER_NONE;
+
 
   // precreate some of the operation fields that are static throughout the trees lifetime
-  ops_.parent_clv_index    = INNER_CLV_INDEX;
-  ops_.child1_clv_index    = OLD_LEFT_CLV_INDEX;
-  ops_.child2_clv_index    = OLD_RIGHT_CLV_INDEX;
-  ops_.parent_scaler_index = INNER_CLV_INDEX;
+  ops_.parent_clv_index    = TINY_INNER_CLV_INDEX;
+  ops_.child1_clv_index    = TINY_PROXIMAL_CLV_INDEX;
+  ops_.child1_scaler_index = tree_->next->next->back->scaler_index;
+  ops_.child2_clv_index    = TINY_DISTAL_CLV_INDEX;
+  ops_.child2_scaler_index = tree_->next->back->scaler_index;
+  ops_.parent_scaler_index = TINY_INNER_CLV_INDEX;
 
   // if the heuristic is to be used, the branch lengths only need to be set once
   if (heuristic_)
   {
-
     /* heuristic insertion as described in EPA paper from 2011 (Berger et al.):
       original branch, now split by "inner", or base, node of the inserted sequence,
       defines the new branch lengths between inner and old left/right respectively
@@ -87,62 +84,70 @@ Tiny_Tree::Tiny_Tree(pll_utree_t * edge_node, pll_partition_t * old_partition, b
 
 }
 
-double Tiny_Tree::place(const Sequence &s)
+Tiny_Tree::~Tiny_Tree()
+{
+  if (partition_ != nullptr)
+  {
+    // unset model params
+    partition_->rates = nullptr;
+    partition_->subst_params = nullptr;
+    partition_->frequencies = nullptr;
+    if (partition_->clv != nullptr)
+    {
+      // unset existing nodes clvs
+      partition_->clv[TINY_PROXIMAL_CLV_INDEX] = nullptr;
+      partition_->clv[TINY_DISTAL_CLV_INDEX] = nullptr;
+    }
+    if (partition_->scale_buffer != nullptr)
+    {
+      // unset scalers
+      partition_->scale_buffer[TINY_PROXIMAL_CLV_INDEX] = nullptr;
+      partition_->scale_buffer[TINY_DISTAL_CLV_INDEX] = nullptr;
+    }
+    pll_partition_destroy(partition_);
+  }
+
+  if (tree_ != nullptr)
+    pll_utree_destroy(tree_);
+}
+
+std::tuple<double, double, double> Tiny_Tree::place(const Sequence &s)
 {
   assert(partition_ != NULL);
 
   // init the new tip with s.sequence(), branch length
-  pll_set_tip_states(partition_, NEW_TIP_CLV_INDEX, pll_map_nt, s.sequence().c_str());
+  pll_set_tip_states(partition_, TINY_NEW_TIP_CLV_INDEX, pll_map_nt, s.sequence().c_str());
+
+  unsigned int inner_matrix_index = 1;
 
   // optimize branch lengths
   if (!heuristic_)
   {
-    assert(true);
-    // TODO Newton-Raphson
-    // TODO needs full tree? only done once?
-    // something like: setup params structure, call opt. branch lengths local with radius 1
-    // on the inner node
-  } else {
-    ops_.child1_matrix_index = 0;// TODO depends on NR vs heuristic
-    ops_.child2_matrix_index = 0;// TODO depends on NR vs heuristic
-  }
+    Tree_Numbers nums;
+    nums.init(3);
+    optimize(tree_, partition_, nums, model_);
 
+    ops_.child1_matrix_index = tree_->next->next->pmatrix_index;
+    ops_.child2_matrix_index = tree_->next->pmatrix_index;
+    inner_matrix_index = tree_->pmatrix_index;
+  }
+  else
+  {
+    ops_.child1_matrix_index = 0;
+    ops_.child2_matrix_index = 0;
+  }
 
   // use update_partials to compute the clv pointing toward the new tip
-  pll_update_partials(partition_, &ops_, NUM_OPS);
+  pll_update_partials(partition_, &ops_, TINY_NUM_OPS);
 
   // compute the loglikelihood using inner node and new tip
-  return  pll_compute_edge_loglikelihood(partition_,
-                                        NEW_TIP_CLV_INDEX,
+  auto logl = pll_compute_edge_loglikelihood(partition_,
+                                        TINY_NEW_TIP_CLV_INDEX,
                                         PLL_SCALE_BUFFER_NONE,// scaler_index
-                                        INNER_CLV_INDEX,
-                                        INNER_CLV_INDEX,  // scaler_index
-                                        1,// matrix index of branch TODO depends on NR
+                                        TINY_INNER_CLV_INDEX,
+                                        TINY_INNER_CLV_INDEX,  // scaler_index
+                                        inner_matrix_index,
                                         0);// freq index
 
-}
-
-
-Tiny_Tree::~Tiny_Tree()
-{
-  if (partition_ != NULL)
-  {
-    // unset model params
-    partition_->rates = NULL;
-    partition_->subst_params = NULL;
-    partition_->frequencies = NULL;
-    if (partition_->clv != NULL)
-    {
-      // unset existing nodes clvs
-      partition_->clv[OLD_LEFT_CLV_INDEX] = NULL;
-      partition_->clv[OLD_RIGHT_CLV_INDEX] = NULL;
-    }
-    if (partition_->scale_buffer != NULL)
-    {
-      // unset scalers
-      partition_->scale_buffer[OLD_LEFT_CLV_INDEX] = NULL;
-      partition_->scale_buffer[OLD_RIGHT_CLV_INDEX] = NULL;
-    }
-    pll_partition_destroy(partition_);
-  }
+  return make_tuple(logl, tree_->next->length, tree_->length);
 }

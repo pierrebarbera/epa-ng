@@ -5,6 +5,7 @@
 
 #include "pllhead.hpp"
 #include "MSA.hpp"
+#include "constants.hpp"
 #include "pll_util.hpp"
 
 using namespace std;

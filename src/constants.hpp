@@ -1,0 +1,12 @@
+#ifndef EPA_CONSTANTS_H_
+#define EPA_CONSTANTS_H_
+
+constexpr unsigned int TINY_PROXIMAL_CLV_INDEX = 0;
+constexpr unsigned int TINY_DISTAL_CLV_INDEX = 1;
+constexpr unsigned int TINY_NEW_TIP_CLV_INDEX = 2;
+constexpr unsigned int TINY_INNER_CLV_INDEX = 3;
+constexpr unsigned int TINY_NUM_OPS = 1;
+
+constexpr double DEFAULT_BRANCH_LENGTH = 0.9;
+
+#endif

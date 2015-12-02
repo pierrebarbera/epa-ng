@@ -12,8 +12,9 @@
 
 using namespace std;
 
-Tree::Tree(const string& tree_file, const MSA& msa, const Model& model, const MSA& query)
-  : ref_msa_(msa), query_msa_(query), model_(model)
+Tree::Tree(const string& tree_file, const MSA& msa, const Model& model, const bool heuristic, 
+  const MSA& query)
+  : ref_msa_(msa), query_msa_(query), model_(model), heuristic_(heuristic)
 {
   //parse, build tree
   nums_ = Tree_Numbers();
@@ -49,22 +50,24 @@ PQuery_Set Tree::place() const
   // build all tiny trees with corresponding edges
   vector<Tiny_Tree> insertion_trees;
   for (auto node : branches)
-    insertion_trees.emplace_back(node, partition_);
+    insertion_trees.emplace_back(node, partition_, model_, heuristic_);
 
   // output class
   PQuery_Set pquerys(get_numbered_newick_string(tree_));
 
   // place all s on every edge
+  double logl, distal, pendant;
   for (auto const &s : query_msa_)// make sure a reference, not a copy, is returned
   {
     pquerys.emplace_back(s);
     for (unsigned int i = 0; i < num_traversed; ++i)
     {
+      tie(logl, distal, pendant) = insertion_trees[i].place(s);
       pquerys.back().emplace_back(
         i, // branch_id
-        insertion_trees[i].place(s), // likelihood
-        0.0, // pendant length
-        0.0 // distal length
+        logl, // likelihood
+        pendant, // pendant length
+        distal // distal length
         );
     }
   }

@@ -3,9 +3,10 @@
 #include <vector>
 #include <cmath>
 #include <cstdlib>
-#include <stdexcept>
+#include <cassert>
 
 #include "pll_util.hpp"
+#include "constants.hpp"
 
 using namespace std;
 
@@ -20,14 +21,13 @@ void optimize(pll_utree_t * tree, pll_partition_t * partition, const Tree_Number
   vector<unsigned int> matrix_indices(nums.branches);
   vector<pll_operation_t> operations(nums.nodes);
 
-  vector<pll_utree_t *> inner_nodes(nums.inner_nodes);
-  pll_utree_query_innernodes(tree, &inner_nodes[0]);
+  vector<pll_utree_t *> branches(nums.branches);
+  utree_query_branches(tree, &branches[0]);
 
   /* perform a full traversal*/
+  assert(tree->next != nullptr);
   unsigned int traversal_size;
-  if(pll_utree_traverse(tree, cb_full_traversal, &travbuffer[0], &traversal_size)
-              != PLL_SUCCESS)
-    throw runtime_error{"Function pll_utree_traverse() requires inner nodes as parameters"};
+  pll_utree_traverse(tree, cb_full_traversal, &travbuffer[0], &traversal_size);
 
   /* given the computed traversal descriptor, generate the operations
      structure, and the corresponding probability matrix indices that
@@ -62,7 +62,7 @@ void optimize(pll_utree_t * tree, pll_partition_t * partition, const Tree_Number
   params.lk_params.operations = &operations[0];
   params.lk_params.branch_lengths = &branch_lengths[0];
   params.lk_params.matrix_indices = &matrix_indices[0];
-  params.lk_params.alpha_value = 0;
+  params.lk_params.alpha_value = model.alpha();
   params.lk_params.freqs_index = 0;
   params.lk_params.rooted = 0;
   params.lk_params.where.unrooted_t.parent_clv_index = tree->clv_index;
@@ -90,8 +90,10 @@ void optimize(pll_utree_t * tree, pll_partition_t * partition, const Tree_Number
     logl = cur_logl;
 
     // set current node to a random inner node to avoid local maxima
-    int inner_index = rand () % nums.inner_nodes;
-    tree = inner_nodes[inner_index];
+    tree = branches[rand () % nums.branches];
+
+    if (!tree->next)
+      tree = tree->back;
 
     pll_utree_traverse(tree, cb_full_traversal, &travbuffer[0], &traversal_size);
 
