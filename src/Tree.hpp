@@ -7,7 +7,7 @@
 #include "MSA.hpp"
 #include "Model.hpp"
 #include "Tree_Numbers.hpp"
-#include "Placement_Set.hpp"
+#include "PQuery_Set.hpp"
 #include "Tiny_Tree.hpp"
 
 
@@ -17,9 +17,9 @@ class Tree
 public:
   Tree(const std::string& tree_file, const MSA& msa, const Model& model, const MSA& query = MSA());
   ~Tree();
-  // TODO should return placement object
+  // TODO should return pquery object
   // TODO doesnt follow parallelization scheme: overload?
-  Placement_Set place() const;
+  PQuery_Set place() const;
 
   // member access
   inline Tree_Numbers nums() const {return nums_;};

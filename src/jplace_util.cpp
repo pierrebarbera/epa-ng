@@ -8,17 +8,17 @@ static void rwnd(ostringstream& ss, unsigned int chars)
   ss.seekp (pos - (chars * sizeof(char)));
 }
 
-string placement_to_jplace_string(const Placement& p)
+string pquery_to_jplace_string(const PQuery& p)
 {
   ostringstream output;
 
-  output << "    {\"p\":" << NEWL; // p for placement
-  output << "      [" << NEWL; // opening bracket for placement array
+  output << "    {\"p\":" << NEWL; // p for pquery
+  output << "      [" << NEWL; // opening bracket for pquery array
 
   unsigned int branch = 0; // TODO bad, will change when map introduced
   for (auto logl : p)
   {
-    // individual placement
+    // individual pquery
     output << "      [" << branch << ", "<< logl << "]," << NEWL;
     ++branch;
   }
@@ -26,7 +26,7 @@ string placement_to_jplace_string(const Placement& p)
   // rewind by two chars: newline and last comma
   rwnd(output, 2);
 
-  // closing bracket for placement array and name column
+  // closing bracket for pquery array and name column
   output << "\n      ],\n    \"n\": [\"" << p.sequence().header().c_str() << "\"]" << NEWL;
 
   output << "    }";// final bracket
@@ -34,18 +34,18 @@ string placement_to_jplace_string(const Placement& p)
   return output.str();
 }
 
-std::string placement_set_to_jplace_string(const Placement_Set& ps, string& invocation)
+std::string pquery_set_to_jplace_string(const PQuery_Set& ps, string& invocation)
 {
   ostringstream output;
 
   output << "{\n";
 
   output << "  \"tree\": \"" << ps.newick() << "\",\n";
-  output << "  \"placements\": \n";
+  output << "  \"pquerys\": \n";
   output << "  [\n";
 
   for (auto p : ps)
-    output << placement_to_jplace_string(p) << ",\n";
+    output << pquery_to_jplace_string(p) << ",\n";
 
   // undo the last comma
   rwnd(output, 2);

@@ -13,7 +13,7 @@
 
 using namespace std;
 
-TEST(jplace_util, placement_to_jplace_string)
+TEST(jplace_util, pquery_to_jplace_string)
 {
   // buildup
   auto query_msa = build_MSA_from_file(env->query_file);
@@ -21,11 +21,11 @@ TEST(jplace_util, placement_to_jplace_string)
   auto tree = Tree(env->tree_file, reference_msa, env->model, query_msa);
 
   // tests
-  auto placements = tree.place();
+  auto pquerys = tree.place();
   vector<string> out;
 
-  for (auto const &p : placements)
-    out.push_back(placement_to_jplace_string(p));
+  for (auto const &p : pquerys)
+    out.push_back(pquery_to_jplace_string(p));
 
   EXPECT_EQ(out.size(), 2);
 

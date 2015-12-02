@@ -39,7 +39,7 @@ Tree::~Tree()
 
 }
 
-Placement_Set Tree::place() const
+PQuery_Set Tree::place() const
 {
   // get all edges
   vector<pll_utree_t *> branches(nums_.branches);
@@ -51,20 +51,20 @@ Placement_Set Tree::place() const
     insertion_trees.emplace_back(node, partition_);
 
   // output class
-  Placement_Set placements(get_numbered_newick_string(tree_));
+  PQuery_Set pquerys(get_numbered_newick_string(tree_));
 
   // place all s on every edge
   for (auto const &s : query_msa_)// make sure a reference, not a copy, is returned
   {
-    placements.emplace_back(nums_.branches, s);
+    pquerys.emplace_back(nums_.branches, s);
     for (unsigned int i = 0; i < num_traversed; ++i)
     {
-      placements.back().set(i, insertion_trees[i].place(s));
+      pquerys.back().set(i, insertion_trees[i].place(s));
     }
   }
 
   // insertion_trees[0]->place(query_msa_.get(0));
   //
   // free(insertion_trees);
-  return placements;
+  return pquerys;
 }

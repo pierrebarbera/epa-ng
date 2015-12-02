@@ -8,7 +8,7 @@ using namespace std;
 
 static void print_help()
 {
-  cout << "EPA - Evolutionary Placement Algorithm" << endl << endl;
+  cout << "EPA - Evolutionary PQuery Algorithm" << endl << endl;
   cout << "USAGE: epa [options] <reference_tree_file> <reference_MSA_file>" << endl << endl;
   cout << "OPTIONS:" << endl;
   cout << "  -h\t Display this page" << endl;

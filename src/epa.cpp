@@ -30,12 +30,12 @@ void epa(string& tree_file, string& reference_msa_file, string& query_msa_file,
   auto tree = Tree(tree_file, ref_msa, model, query_msa);
 
   // place query sequences
-  auto placements = tree.place();
+  auto pquerys = tree.place();
 
-  cout << placements.newick() << endl;
+  cout << pquerys.newick() << endl;
 
   ofstream outfile("/tmp/out.jplace");
-  outfile << placement_set_to_jplace_string(placements, invocation) << endl;
+  outfile << pquery_set_to_jplace_string(pquerys, invocation) << endl;
   outfile.close();
 
 
@@ -49,9 +49,9 @@ void epa(string& tree_file, string& reference_msa_file, string& query_msa_file,
 		// kernel does one thing: place one sequence on one branch and recalculate
 		// do for every branch
 			// do for every sequence
-	// loop returns list of list of placements
+	// loop returns list of list of pquerys
 
-	// filter: what fraction of placements to remember (absolute number, top x %, threshold)
+	// filter: what fraction of pquerys to remember (absolute number, top x %, threshold)
 
-	// pass placement lists to output writer, possibly also strategy based?
+	// pass pquery lists to output writer, possibly also strategy based?
 }
