@@ -53,7 +53,7 @@ std::string pquery_set_to_jplace_string(const PQuery_Set& ps, string& invocation
   output << "{" << NEWL;
 
   output << "  \"tree\": \"" << ps.newick() << "\"," << NEWL;
-  output << "  \"pquerys\": " << NEWL;
+  output << "  \"placements\": " << NEWL;
   output << "  [" << NEWL;
 
   for (auto p : ps)
