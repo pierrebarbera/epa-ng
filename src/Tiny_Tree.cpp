@@ -16,10 +16,10 @@ Tiny_Tree::Tiny_Tree(pll_utree_t * edge_node, pll_partition_t * old_partition, M
   assert(edge_node != NULL);
   assert(old_partition != NULL);
 
-  pll_utree_t * old_left = edge_node;
-  pll_utree_t * old_right = edge_node->back;
+  pll_utree_t * old_proximal = edge_node->back;
+  pll_utree_t * old_distal = edge_node;
 
-  tree_ = make_tiny_tree_structure(old_left, old_right);
+  tree_ = make_tiny_tree_structure(old_proximal, old_distal);
 
   partition_ =
   pll_partition_create(   3, // tips
@@ -39,22 +39,24 @@ Tiny_Tree::Tiny_Tree(pll_utree_t * edge_node, pll_partition_t * old_partition, M
   partition_->frequencies = old_partition->frequencies;
 
   // shallow copy 2 existing nodes clvs
-  assert(old_partition->clv[old_left->clv_index] != NULL);
-  assert(old_partition->clv[old_right->clv_index] != NULL);
+  assert(old_partition->clv[old_proximal->clv_index] != NULL);
+  assert(old_partition->clv[old_distal->clv_index] != NULL);
 
-  partition_->clv[TINY_PROXIMAL_CLV_INDEX] =
-                          old_partition->clv[old_left->clv_index];
-  partition_->clv[TINY_DISTAL_CLV_INDEX] =
-                          old_partition->clv[old_right->clv_index];
+  //deep copy clv's
+  memcpy(partition_->clv[TINY_PROXIMAL_CLV_INDEX], old_partition->clv[old_proximal->clv_index],
+      sizeof(double) * old_partition->sites * old_partition->rate_cats * old_partition->states);
+  memcpy(partition_->clv[TINY_DISTAL_CLV_INDEX], old_partition->clv[old_distal->clv_index],
+      sizeof(double) * old_partition->sites * old_partition->rate_cats * old_partition->states);
 
-  // shallow copy scalers
-  if (old_left->scaler_index != PLL_SCALE_BUFFER_NONE)
-    partition_->scale_buffer[TINY_PROXIMAL_CLV_INDEX] =
-                          old_partition->scale_buffer[old_left->scaler_index];
-
-  if (old_right->scaler_index != PLL_SCALE_BUFFER_NONE)
-    partition_->scale_buffer[TINY_DISTAL_CLV_INDEX] =
-                          old_partition->scale_buffer[old_right->scaler_index];
+  // deep copy scalers
+  if (old_proximal->scaler_index != PLL_SCALE_BUFFER_NONE)
+    memcpy(partition_->scale_buffer[TINY_PROXIMAL_CLV_INDEX],
+        old_partition->scale_buffer[old_proximal->scaler_index],
+        sizeof(unsigned int) * old_partition->sites);
+  if (old_distal->scaler_index != PLL_SCALE_BUFFER_NONE)
+    memcpy(partition_->scale_buffer[TINY_DISTAL_CLV_INDEX],
+        old_partition->scale_buffer[old_distal->scaler_index],
+        sizeof(unsigned int) * old_partition->sites);
 
 
   // precreate some of the operation fields that are static throughout the trees lifetime
@@ -75,7 +77,7 @@ Tiny_Tree::Tiny_Tree(pll_utree_t * edge_node, pll_partition_t * old_partition, M
       The new branch leading from inner to the new tip is initialized with length 0.9,
       which is the default branch length in RAxML.
     */
-    double branch_lengths[2] = { old_left->length / 2, DEFAULT_BRANCH_LENGTH};
+    double branch_lengths[2] = { old_proximal->length / 2, DEFAULT_BRANCH_LENGTH};
     unsigned int matrix_indices[2] = { 0, 1 };
 
     // use branch lengths to compute the probability matrices
@@ -88,22 +90,11 @@ Tiny_Tree::~Tiny_Tree()
 {
   if (partition_ != nullptr)
   {
-    // unset model params
+    // unset shallow copied things
     partition_->rates = nullptr;
     partition_->subst_params = nullptr;
     partition_->frequencies = nullptr;
-    if (partition_->clv != nullptr)
-    {
-      // unset existing nodes clvs
-      partition_->clv[TINY_PROXIMAL_CLV_INDEX] = nullptr;
-      partition_->clv[TINY_DISTAL_CLV_INDEX] = nullptr;
-    }
-    if (partition_->scale_buffer != nullptr)
-    {
-      // unset scalers
-      partition_->scale_buffer[TINY_PROXIMAL_CLV_INDEX] = nullptr;
-      partition_->scale_buffer[TINY_DISTAL_CLV_INDEX] = nullptr;
-    }
+
     pll_partition_destroy(partition_);
   }
 
@@ -125,7 +116,7 @@ std::tuple<double, double, double> Tiny_Tree::place(const Sequence &s)
   {
     Tree_Numbers nums;
     nums.init(3);
-    optimize(tree_, partition_, nums, model_);
+    optimize(tree_, partition_, nums);
 
     ops_.child1_matrix_index = tree_->next->next->pmatrix_index;
     ops_.child2_matrix_index = tree_->next->pmatrix_index;

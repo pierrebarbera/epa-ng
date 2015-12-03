@@ -12,6 +12,6 @@
  * they do not improve the likelihood at one iteration */
 #define CHECK_LOCAL_CONVERGENCE 1
 
-void optimize(pll_utree_t * tree, pll_partition_t * partition, const Tree_Numbers &nums, Model& model);
+void optimize(pll_utree_t * tree, pll_partition_t * partition, const Tree_Numbers &nums);
 
 #endif

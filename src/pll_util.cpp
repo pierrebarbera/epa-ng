@@ -250,10 +250,10 @@ pll_utree_t * make_tiny_tree_structure(const pll_utree_t * old_left, const pll_u
   distal->back->length = half_old;
 
   // set up pmatrix indices
-  inner->pmatrix_index = 1;
-  new_tip->pmatrix_index = 1;
-  inner->next->pmatrix_index = 0;
-  distal->pmatrix_index = 0;
+  inner->pmatrix_index = 2;
+  new_tip->pmatrix_index = 2;
+  inner->next->pmatrix_index = 1;
+  distal->pmatrix_index = 1;
   inner->next->next->pmatrix_index = 0;
   proximal->pmatrix_index = 0;
 

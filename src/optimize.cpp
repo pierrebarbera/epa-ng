@@ -4,14 +4,14 @@
 #include <cmath>
 #include <cstdlib>
 #include <cassert>
+#include <stdexcept>
 
 #include "pll_util.hpp"
 #include "constants.hpp"
 
 using namespace std;
 
-void optimize(pll_utree_t * tree, pll_partition_t * partition, const Tree_Numbers &nums,
-    Model& model)
+void optimize(pll_utree_t * tree, pll_partition_t * partition, const Tree_Numbers &nums)
 {
   unsigned int num_matrices, num_ops;
 
@@ -57,31 +57,7 @@ void optimize(pll_utree_t * tree, pll_partition_t * partition, const Tree_Number
                                                 tree->back->scaler_index,
                                                 tree->pmatrix_index, 0);
 
-  pll_optimize_options_t params;
-  params.lk_params.partition = partition;
-  params.lk_params.operations = &operations[0];
-  params.lk_params.branch_lengths = &branch_lengths[0];
-  params.lk_params.matrix_indices = &matrix_indices[0];
-  params.lk_params.alpha_value = model.alpha();
-  params.lk_params.freqs_index = 0;
-  params.lk_params.rooted = 0;
-  params.lk_params.where.unrooted_t.parent_clv_index = tree->clv_index;
-  params.lk_params.where.unrooted_t.parent_scaler_index = tree->scaler_index;
-  params.lk_params.where.unrooted_t.child_clv_index = tree->back->clv_index;
-  params.lk_params.where.unrooted_t.child_scaler_index =
-      tree->back->scaler_index;
-  params.lk_params.where.unrooted_t.edge_pmatrix_index = tree->pmatrix_index;
-
-  /* optimization parameters */
-  params.params_index = 0;
-  params.mixture_index = 0;
-  params.subst_params_symmetries = &(model.symmetries())[0];
-  params.factr = 1e7;
-  params.pgtol = OPT_PARAM_EPSILON;
-
-  params.which_parameters = PLL_PARAMETER_BRANCHES_SINGLE;
-
-  double cur_logl = logl - 10;
+  double cur_logl = -99999999999999.0;
   int smoothings = 1;
   double lnl_monitor = logl;
 
@@ -116,24 +92,16 @@ void optimize(pll_utree_t * tree, pll_partition_t * partition, const Tree_Number
 
     pll_update_partials(partition, &operations[0], num_ops);
 
-    // reupdate params for current node
-    params.lk_params.where.unrooted_t.parent_clv_index = tree->clv_index;
-    params.lk_params.where.unrooted_t.parent_scaler_index =
-        tree->scaler_index;
-    params.lk_params.where.unrooted_t.child_clv_index = tree->back->clv_index;
-    params.lk_params.where.unrooted_t.child_scaler_index =
-        tree->back->scaler_index;
-    params.lk_params.where.unrooted_t.edge_pmatrix_index =
-        tree->pmatrix_index;
-
     pll_errno = 0; // hotfix
 
     cur_logl = -1 * pll_optimize_branch_lengths_iterative (
-        partition, tree, params.params_index, params.lk_params.freqs_index,
-        params.pgtol, smoothings++, 1); // last param = 1 means branch lengths are iteratively
+        partition, tree, 0, 0,
+        OPT_PARAM_EPSILON, smoothings++, 1); // last param = 1 means branch lengths are iteratively
                                         // updated during the call
+    if(cur_logl+1e-6 < lnl_monitor)
+      throw runtime_error{string("cur_logl < lnl_monitor: ") + to_string(cur_logl) + string(" : ")
+      + to_string(lnl_monitor)};
 
-    assert(cur_logl >= lnl_monitor);
 
     if (CHECK_LOCAL_CONVERGENCE && fabs(cur_logl - lnl_monitor) < OPT_EPSILON)
       break;
