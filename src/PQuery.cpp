@@ -5,7 +5,7 @@
 using namespace std;
 
 PQuery::PQuery (const Sequence& s)
-  : sequence_(s)
+  : sequence_(s), total_(0)
 { }
 
 PQuery::~PQuery ()

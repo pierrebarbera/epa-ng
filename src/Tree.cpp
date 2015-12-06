@@ -9,6 +9,7 @@
 #include "file_io.hpp"
 #include "Sequence.hpp"
 #include "optimize.hpp"
+#include "calculation.hpp"
 
 using namespace std;
 
@@ -71,5 +72,7 @@ PQuery_Set Tree::place() const
         );
     }
   }
+  // now that everything has been placed, we can compute the likelihood weight ratio
+  compute_and_set_lwr(pquerys);
   return pquerys;
 }

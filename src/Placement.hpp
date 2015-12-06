@@ -26,6 +26,9 @@ public:
   inline double distal_length() const {return distal_length_;};
   inline unsigned int branch_id() const {return branch_id_;};
 
+  // setters
+  inline void lwr(double value) {lwr_ = value;};
+
 private:
   const unsigned int branch_id_;
   const double likelihood_;
