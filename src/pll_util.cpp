@@ -235,6 +235,8 @@ pll_utree_t * make_tiny_tree_structure(const pll_utree_t * old_left, const pll_u
   // set up scaler indices
   new_tip->scaler_index = PLL_SCALE_BUFFER_NONE;
   inner->scaler_index = TINY_INNER_CLV_INDEX;
+  inner->next->scaler_index = TINY_INNER_CLV_INDEX;
+  inner->next->next->scaler_index = TINY_INNER_CLV_INDEX;
   proximal->scaler_index = (old_left->scaler_index == PLL_SCALE_BUFFER_NONE) ?
     PLL_SCALE_BUFFER_NONE : TINY_PROXIMAL_CLV_INDEX;
   distal->scaler_index = (old_right->scaler_index == PLL_SCALE_BUFFER_NONE) ?
@@ -256,18 +258,6 @@ pll_utree_t * make_tiny_tree_structure(const pll_utree_t * old_left, const pll_u
   distal->pmatrix_index = 1;
   inner->next->next->pmatrix_index = 0;
   proximal->pmatrix_index = 0;
-
-  // set up labels
-  // char* pendant_str = "pendant";
-  // char* proximal_str = "proximal";
-  // char* distal_str = "distal";
-  // char* inner_str = "inner";
-  // new_tip->label = pendant_str;
-  // new_tip->back->label = inner_str;
-  // proximal->label = proximal_str;
-  // proximal->back->label = inner_str;
-  // distal->label = distal_str;
-  // distal->back->label = inner_str;
 
   return inner;
 }
