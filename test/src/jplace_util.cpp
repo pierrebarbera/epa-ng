@@ -18,7 +18,7 @@ TEST(jplace_util, pquery_to_jplace_string)
   // buildup
   auto query_msa = build_MSA_from_file(env->query_file);
   auto reference_msa = build_MSA_from_file(env->reference_file);
-  auto tree = Tree(env->tree_file, reference_msa, env->model, query_msa);
+  auto tree = Tree(env->tree_file, reference_msa, env->model, true, query_msa);
 
   // tests
   auto pquerys = tree.place();
