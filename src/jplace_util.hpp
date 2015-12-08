@@ -1,14 +1,10 @@
 #ifndef EPA_JPLACE_UTIL_H_
 #define EPA_JPLACE_UTIL_H_
 
-#include <string>
-#include <sstream>
-
+#include "stringify.hpp"
 #include "PQuery.hpp"
 #include "PQuery_Set.hpp"
 #include "Placement.hpp"
-
-constexpr char NEWL = '\n';
 
 std::string placement_to_jplace_string(const Placement& p);
 std::string pquery_to_jplace_string(const PQuery& p);

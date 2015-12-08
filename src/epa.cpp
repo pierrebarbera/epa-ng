@@ -6,6 +6,7 @@
 
 #include "file_io.hpp"
 #include "jplace_util.hpp"
+#include "stringify.hpp"
 
 using namespace std;
 
@@ -32,7 +33,10 @@ void epa(string& tree_file, string& reference_msa_file, string& query_msa_file,
   // place query sequences
   auto pquerys = tree.place();
 
-  cout << pquerys.newick() << endl;
+  auto opt_model = tree.model();
+  cout << to_string(opt_model);
+  cout << "Post-Optimization reference tree Log-Likelihood: ";
+  cout << to_string(tree.ref_tree_logl()) << endl;
 
   ofstream outfile("/tmp/out.jplace");
   outfile << pquery_set_to_jplace_string(pquerys, invocation) << endl;

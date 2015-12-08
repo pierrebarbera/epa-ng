@@ -116,7 +116,7 @@ std::tuple<double, double, double> Tiny_Tree::place(const Sequence &s)
   {
     Tree_Numbers nums;
     nums.init(3);
-    optimize(tree_, partition_, nums);
+    optimize_branch_lengths(tree_, partition_, nums);
 
     ops_.child1_matrix_index = tree_->next->next->pmatrix_index;
     ops_.child2_matrix_index = tree_->next->pmatrix_index;

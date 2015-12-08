@@ -40,7 +40,7 @@ Substitution Matrix: GTR
 
 RAxML was called as follows:
 
-../raxmlHPC-PTHREADS-AVX -f v -s aln.phy -t ref.tre -n epa -m GTRGAMMA 
+../raxmlHPC-PTHREADS-AVX -f v -s ../epa/test/data/aln.phy -t ../epa/test/data/ref.tre -n epa -m GTRGAMMA 
 
 
 RAxML placement algorithm: You provided a reference tree with 8 taxa; alignmnet has 10 taxa
@@ -49,6 +49,12 @@ RAxML placement algorithm: You provided a reference tree with 8 taxa; alignmnet 
 RAxML Evolutionary Placement Algorithm
 
 Likelihood of reference tree: -4079.157130
+
+rates ac ag at cg ct gt: 
+3.340516, 6.022302, 2.454476, 1.114995, 13.772177, 1.000000
+alpha: 0.365557
+base freqs ACGT: 
+0.320 0.272 0.147 0.261
 
 RAxML will place 2 Query Sequences into the 13 branches of the reference tree with 8 taxa
 

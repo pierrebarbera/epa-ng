@@ -13,7 +13,7 @@
 
 using namespace std;
 
-Tree::Tree(const string& tree_file, const MSA& msa, const Model& model, const bool heuristic,
+Tree::Tree(const string& tree_file, const MSA& msa, Model& model, const bool heuristic,
   const MSA& query)
   : ref_msa_(msa), query_msa_(query), model_(model), heuristic_(heuristic)
 {
@@ -28,9 +28,19 @@ Tree::Tree(const string& tree_file, const MSA& msa, const Model& model, const bo
   link_tree_msa(tree_, partition_, ref_msa_, nums_.tip_nodes);
 
   // perform branch length optimization on the reference tree
-  optimize(tree_, partition_, nums_);
+  optimize_model_params(model_, tree_, partition_, nums_);
+  optimize_branch_lengths(tree_, partition_, nums_);
 
   precompute_clvs(tree_, partition_, nums_);
+}
+
+double Tree::ref_tree_logl()
+{
+  return pll_compute_edge_loglikelihood (partition_, tree_->clv_index,
+                                                tree_->scaler_index,
+                                                tree_->back->clv_index,
+                                                tree_->back->scaler_index,
+                                                tree_->pmatrix_index, 0);
 }
 
 Tree::~Tree()

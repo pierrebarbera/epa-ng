@@ -1,12 +1,8 @@
 #include "jplace_util.hpp"
 
-using namespace std;
+#include <sstream>
 
-static void rwnd(ostringstream& ss, unsigned int chars)
-{
-  long pos = ss.tellp();
-  ss.seekp (pos - (chars * sizeof(char)));
-}
+using namespace std;
 
 string placement_to_jplace_string(const Placement& p)
 {

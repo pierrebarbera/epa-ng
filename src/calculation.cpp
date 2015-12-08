@@ -14,4 +14,5 @@ void compute_and_set_lwr(PQuery_Set& pqs)
     for (auto &p : pq)
       p.lwr(p.likelihood() / total);
   }
+
 }

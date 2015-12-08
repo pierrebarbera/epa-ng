@@ -1,7 +1,7 @@
 BIN=../bin
 TEST=../test/data
-FLGS+=
-TESTINPUT= $(TEST)/ref.tre $(TEST)/aln.fasta -q $(TEST)/query.fasta $(FLGS)
+F+=
+TESTINPUT= $(TEST)/ref.tre $(TEST)/aln.fasta -q $(TEST)/query.fasta $(F)
 
 CC=clang++
 DEFS=

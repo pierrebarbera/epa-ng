@@ -15,13 +15,16 @@
 class Tree
 {
 public:
-  Tree(const std::string& tree_file, const MSA& msa, const Model& model, const bool heuristic,
+  Tree(const std::string& tree_file, const MSA& msa, Model& model, const bool heuristic,
       const MSA& query = MSA());
   ~Tree();
   PQuery_Set place() const;
 
   // member access
   inline Tree_Numbers nums() const {return nums_;};
+  inline Model model() {return model_;};
+
+  double ref_tree_logl();
 
 private:
   // pll structures
