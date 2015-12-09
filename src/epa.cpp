@@ -11,8 +11,7 @@
 using namespace std;
 
 void epa(string& tree_file, string& reference_msa_file, string& query_msa_file,
-                vector<double> base_frequencies, vector<double> substitution_rates,
-                double alpha, bool heuristic,  string invocation)
+                Model model, bool heuristic,  string invocation)
 {
 	// sanitize input
   file_check(tree_file);
@@ -20,8 +19,6 @@ void epa(string& tree_file, string& reference_msa_file, string& query_msa_file,
   file_check(query_msa_file);
 
 	// Build the reference tree
-  vector<int> symmetries({0,0,0,0,0,0});
-	auto model = Model(base_frequencies, substitution_rates, alpha, symmetries);
   auto ref_msa = build_MSA_from_file(reference_msa_file);
 
   MSA query_msa;

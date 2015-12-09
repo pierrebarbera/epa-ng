@@ -38,7 +38,7 @@ public:
   std::string reference_file;
   std::string combined_file;
   std::string query_file;
-  Model model = Model({0.25, 0.25, 0.25, 0.25}, {1,1,1,1,1,1}, 1.0, {0,0,0,0,0,0});
+  Model model = Model("GTR");
 
 };
 

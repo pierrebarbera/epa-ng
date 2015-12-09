@@ -8,18 +8,23 @@ using namespace std;
 
 static void print_help()
 {
-  cout << "EPA - Evolutionary PQuery Algorithm" << endl << endl;
+  cout << "EPA - Evolutionary Placement Algorithm" << endl << endl;
   cout << "USAGE: epa [options] <reference_tree_file> <reference_MSA_file>" << endl << endl;
   cout << "OPTIONS:" << endl;
-  cout << "  -h\t Display this page" << endl;
-  cout << "  -q\t Path to separate query MSA file. If none is provided, epa will assume" << endl;
-  cout << "    \t query reads are in the reference_MSA_file (second parameter)" << endl;
-  cout << "  -b\t optimize branch lengths on insertion" << endl;
+  cout << "  -h \tDisplay this page" << endl;
+  cout << "  -q \tPath to separate query MSA file. If none is provided, epa will assume" << endl;
+  cout << "     \tquery reads are in the reference_MSA_file (second parameter)" << endl;
+  cout << "  -b \toptimize branch lengths on insertion" << endl;
+  cout << "  -m \tSpecify model of nucleotide substitution" << endl << endl;
+  cout << "     \tGTR \tGeneralized time reversible" << endl;
+  cout << "     \tJC69 \tJukes-Cantor Model" << endl;
+  cout << "     \tK80 \tKimura 80 Model" << endl;
 };
 
 int main(int argc, char** argv)
 {
   string invocation("");
+  string model_id("GTR");
   bool heuristic = true;
   for (int i = 0; i < argc; ++i)
   {
@@ -62,12 +67,12 @@ int main(int argc, char** argv)
   string tree_file(argv[optind]);
   string reference_file(argv[optind + 1]);
 
+  Model model(model_id);
+
 	epa(tree_file,
       reference_file,
       query_file,
-      {0.25, 0.25, 0.25, 0.25},
-      {1,1,1,1,1,1},
-      1.0,
+      model,
       heuristic,
       invocation);
 	return 0;

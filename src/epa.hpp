@@ -6,9 +6,9 @@
 
 #include "Tree.hpp"
 #include "MSA.hpp"
+#include "Model.hpp"
 
 void epa(std::string& tree_file, std::string& reference_msa_file, std::string& query_msa_file,
-                std::vector<double> base_frequencies, std::vector<double> substitution_rates,
-                double alpha, bool heuristic, std::string invocation="");
+                Model model, bool heuristic, std::string invocation="");
 
 #endif

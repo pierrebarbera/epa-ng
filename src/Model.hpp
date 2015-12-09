@@ -2,6 +2,7 @@
 #define EPA_MODEL_H_
 
 #include <vector>
+#include <unordered_map>
 
 // TODO find a better place for these. possible candidates for compile flag variation: DNA vs protein
 #define STATES    4
@@ -13,8 +14,9 @@ class Model
 {
 public:
   Model() = default;
-	Model(std::vector<double> base_frequencies, std::vector<double> substitution_rates,
-    double alpha, std::vector<int> symmetries = {0,0,0,0,0,0});
+  Model(std::string model_id);
+	// Model(std::vector<double> base_frequencies, std::vector<double> substitution_rates,
+  //   double alpha, std::vector<int> symmetries = {0,0,0,0,0,0});
 	~Model() = default;
 
   // getters
@@ -38,6 +40,10 @@ private:
     HKY/K80:  010010
     */
   std::vector<int> subs_symmetries_;
+
+  // map for determining model symmetries
+  typedef std::unordered_map<std::string, std::vector<int>> model_map_t;
+  static model_map_t model_map_;
 
 };
 
