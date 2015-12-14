@@ -1,12 +1,14 @@
 BIN=../bin
 TEST=../test/data
+LOGDIR=../test/log
 F+=
 TESTINPUT= $(TEST)/ref.tre $(TEST)/aln.fasta -q $(TEST)/query.fasta $(F)
 
 CC=clang++
 DEFS=
 WARNINGS= -Wall -Wextra -pedantic -pedantic-errors
-CFLAGS= $(WARNINGS) -std=c++11 -g
+DBG=-g
+CFLAGS= $(WARNINGS) -std=c++11 $(DBG)
 LINKFLAGS=
 
 TARGET=$(BIN)/epamk
@@ -16,6 +18,8 @@ CPP=$(wildcard *.cpp)
 OBJS=$(notdir $(CPP:.cpp=.o))
 OUT_OBJS=$(addprefix $(BIN)/,$(OBJS))
 
+callgrind: CFLAGS= $(WARNINGS) -std=c++11 -O2
+
 all:  $(TARGET)
 
 test: $(TARGET)
@@ -23,6 +27,11 @@ test: $(TARGET)
 
 valgrind: $(TARGET)
 	valgrind $(TARGET) $(TESTINPUT)
+
+callgrind: $(TARGET)
+	mkdir -p $(LOGDIR)
+	valgrind --tool=callgrind --callgrind-out-file=$(LOGDIR)/callgrind.output.%p \
+	$(TARGET) $(TESTINPUT)
 
 gdb: $(TARGET)
 	gdb --args $(TARGET) $(TESTINPUT)

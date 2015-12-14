@@ -1,6 +1,7 @@
 bin/
 build/
 test/bin
+test/log
 include/
 
 # Compiled Object files
