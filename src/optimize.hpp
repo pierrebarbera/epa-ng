@@ -5,8 +5,8 @@
 #include "Model.hpp"
 #include "Tree_Numbers.hpp"
 
-#define OPT_EPSILON       1e-5
-#define OPT_PARAM_EPSILON 1e-5
+#define OPT_EPSILON       1e-2
+#define OPT_PARAM_EPSILON 1e-2
 
 /* if set, the parameters are no longer optimized when
  * they do not improve the likelihood at one iteration */
@@ -18,9 +18,10 @@ void traverse_update_partials(pll_utree_t * tree, pll_partition_t * partition,
     pll_operation_t * operations);
 
 // interface
-void optimize_branch_lengths(pll_utree_t * tree, pll_partition_t * partition, const Tree_Numbers &nums);
-void optimize_model_params(Model& model, pll_utree_t * tree, pll_partition_t * partition,
-  const Tree_Numbers& nums);
+double optimize_branch_lengths(pll_utree_t * tree, pll_partition_t * partition, pll_optimize_options_t& params,
+  pll_utree_t ** travbuffer, double cur_log, double lnl_monitor, int* smoothings);
+void optimize(Model& model, pll_utree_t * tree, pll_partition_t * partition,
+  const Tree_Numbers& nums, bool only_branches=false);
 void compute_and_set_empirical_frequencies(pll_partition_t * partition);
 
 #endif

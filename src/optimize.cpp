@@ -45,9 +45,45 @@ void traverse_update_partials(pll_utree_t * tree, pll_partition_t * partition,
 
 }
 
-void optimize_branch_lengths(pll_utree_t * tree, pll_partition_t * partition, const Tree_Numbers &nums)
+double optimize_branch_lengths(pll_utree_t * tree, pll_partition_t * partition, pll_optimize_options_t& params,
+  pll_utree_t ** travbuffer, double cur_logl, double lnl_monitor, int* smoothings)
 {
-  /* various buffers for creating a postorder traversal and operations structures */
+  if (!tree->next)
+    tree = tree->back;
+
+  traverse_update_partials(tree, partition, travbuffer, params.lk_params.branch_lengths,
+    params.lk_params.matrix_indices, params.lk_params.operations);
+
+  pll_errno = 0; // hotfix
+
+  cur_logl = -1 * pll_optimize_branch_lengths_iterative (
+      partition, tree, 0, 0,
+      OPT_PARAM_EPSILON, *smoothings++, 1); // last param = 1 means branch lengths are iteratively
+                                      // updated during the call
+  if (cur_logl+1e-6 < lnl_monitor)
+    throw runtime_error{string("cur_logl < lnl_monitor: ") + to_string(cur_logl) + string(" : ")
+    + to_string(lnl_monitor)};
+
+  // reupdate the indices as they may have changed
+  params.lk_params.where.unrooted_t.parent_clv_index = tree->clv_index;
+  params.lk_params.where.unrooted_t.parent_scaler_index =
+      tree->scaler_index;
+  params.lk_params.where.unrooted_t.child_clv_index = tree->back->clv_index;
+  params.lk_params.where.unrooted_t.child_scaler_index =
+      tree->back->scaler_index;
+  params.lk_params.where.unrooted_t.edge_pmatrix_index =
+      tree->pmatrix_index;
+
+  return cur_logl;
+
+}
+
+void optimize(Model& model, pll_utree_t * tree, pll_partition_t * partition,
+  const Tree_Numbers& nums, bool only_branches)
+{
+  auto symmetries = (&(model.symmetries())[0]);
+
+  // sadly we explicitly need these buffers here and in the params structure
   vector<pll_utree_t*> travbuffer(nums.nodes);
   vector<double> branch_lengths(nums.branches);
   vector<unsigned int> matrix_indices(nums.branches);
@@ -69,52 +105,6 @@ void optimize_branch_lengths(pll_utree_t * tree, pll_partition_t * partition, co
   double cur_logl = -numeric_limits<double>::infinity();
   int smoothings = 1;
   double lnl_monitor = logl;
-
-  while (fabs (cur_logl - logl) > OPT_EPSILON)
-  {
-    logl = cur_logl;
-
-    // set current node to a random inner node to avoid local maxima
-    tree = branches[rand () % nums.branches];
-
-    if (!tree->next)
-      tree = tree->back;
-
-    traverse_update_partials(tree, partition, &travbuffer[0], &branch_lengths[0],
-      &matrix_indices[0], &operations[0]);
-
-    pll_errno = 0; // hotfix
-
-    cur_logl = -1 * pll_optimize_branch_lengths_iterative (
-        partition, tree, 0, 0,
-        OPT_PARAM_EPSILON, smoothings++, 1); // last param = 1 means branch lengths are iteratively
-                                        // updated during the call
-    if(cur_logl+1e-6 < lnl_monitor)
-      throw runtime_error{string("cur_logl < lnl_monitor: ") + to_string(cur_logl) + string(" : ")
-      + to_string(lnl_monitor)};
-
-
-    if (CHECK_LOCAL_CONVERGENCE && fabs(cur_logl - lnl_monitor) < OPT_EPSILON)
-      break;
-
-    lnl_monitor = cur_logl;
-
-  }
-}
-
-void optimize_model_params(Model& model, pll_utree_t * tree, pll_partition_t * partition,
-  const Tree_Numbers& nums)
-{
-  auto symmetries = (&(model.symmetries())[0]);
-
-  // sadly we explicitly need these buffers here and in the params structure
-  vector<pll_utree_t*> travbuffer(nums.nodes);
-  vector<double> branch_lengths(nums.branches);
-  vector<unsigned int> matrix_indices(nums.branches);
-  vector<pll_operation_t> operations(nums.nodes);
-
-  traverse_update_partials(tree, partition, &travbuffer[0], &branch_lengths[0],
-    &matrix_indices[0], &operations[0]);
 
   // set up high level options structure
   pll_optimize_options_t params;
@@ -139,29 +129,36 @@ void optimize_model_params(Model& model, pll_utree_t * tree, pll_partition_t * p
   params.factr = 1e7;
   params.pgtol = OPT_PARAM_EPSILON;
 
-  // params.which_parameters = PLL_PARAMETER_ALPHA;
-  // pll_optimize_parameters_brent(&params);
-  //
-  // params.which_parameters = PLL_PARAMETER_SUBST_RATES;
-  // pll_optimize_parameters_lbfgsb(&params);
-  //
-  // params.which_parameters = PLL_PARAMETER_FREQUENCIES;
-  // pll_optimize_parameters_lbfgsb(&params);
-  //
-  // params.which_parameters = PLL_PARAMETER_PINV;
-  // pll_optimize_parameters_lbfgsb(&params);
+  while (fabs (cur_logl - logl) > OPT_EPSILON)
+  {
+    logl = cur_logl;
 
-  params.which_parameters = PLL_PARAMETER_FREQUENCIES
-  | PLL_PARAMETER_ALPHA | PLL_PARAMETER_SUBST_RATES;// | PLL_PARAMETER_PINV;
-  pll_optimize_parameters_lbfgsb(&params);
+    if (!only_branches)
+    {
+      params.which_parameters = PLL_PARAMETER_ALPHA;
+      pll_optimize_parameters_brent(&params);
 
-  // params.which_parameters = PLL_PARAMETER_BRANCHES_ITERATIVE;
-  // pll_optimize_parameters_lbfgsb(&params);
+      params.which_parameters = PLL_PARAMETER_SUBST_RATES;
+      pll_optimize_parameters_lbfgsb(&params);
+
+      params.which_parameters = PLL_PARAMETER_FREQUENCIES;
+      pll_optimize_parameters_lbfgsb(&params);
+
+      params.which_parameters = PLL_PARAMETER_PINV;
+      pll_optimize_parameters_brent(&params);
+    }
+
+    cur_logl = optimize_branch_lengths(branches[rand () % nums.branches],
+        partition, params,&travbuffer[0], cur_logl, lnl_monitor, &smoothings);
+  }
 
   // update epa model object as well
-  model.alpha(params.lk_params.alpha_value);
-  model.substitution_rates(partition->subst_params[0], 6);
-  model.base_frequencies(partition->frequencies[params.params_index], partition->states);
+  if (!only_branches)
+  {
+    model.alpha(params.lk_params.alpha_value);
+    model.substitution_rates(partition->subst_params[0], 6);
+    model.base_frequencies(partition->frequencies[params.params_index], partition->states);
+  }
 }
 
 void compute_and_set_empirical_frequencies(pll_partition_t * partition)
