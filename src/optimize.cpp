@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <cassert>
 #include <stdexcept>
+#include <limits>
 
 #include "pll_util.hpp"
 #include "constants.hpp"
@@ -46,6 +47,9 @@ void traverse_update_partials(pll_utree_t * tree, pll_partition_t * partition,
 
 void optimize_branch_lengths(pll_utree_t * tree, pll_partition_t * partition, const Tree_Numbers &nums)
 {
+  // reset branch lengths to default
+  set_branch_length(tree, DEFAULT_BRANCH_LENGTH);
+
   /* various buffers for creating a postorder traversal and operations structures */
   vector<pll_utree_t*> travbuffer(nums.nodes);
   vector<double> branch_lengths(nums.branches);
@@ -65,7 +69,7 @@ void optimize_branch_lengths(pll_utree_t * tree, pll_partition_t * partition, co
                                                 tree->back->scaler_index,
                                                 tree->pmatrix_index, 0);
 
-  double cur_logl = -99999999999999.0;
+  double cur_logl = -numeric_limits<double>::infinity();
   int smoothings = 1;
   double lnl_monitor = logl;
 
@@ -138,12 +142,24 @@ void optimize_model_params(Model& model, pll_utree_t * tree, pll_partition_t * p
   params.factr = 1e7;
   params.pgtol = OPT_PARAM_EPSILON;
 
-  params.which_parameters =
-    PLL_PARAMETER_SUBST_RATES |
-    PLL_PARAMETER_FREQUENCIES |
-    PLL_PARAMETER_ALPHA;
-    // | PLL_PARAMETER_BRANCHES_ALL;
+  // params.which_parameters = PLL_PARAMETER_ALPHA;
+  // pll_optimize_parameters_brent(&params);
+  //
+  // params.which_parameters = PLL_PARAMETER_SUBST_RATES;
+  // pll_optimize_parameters_lbfgsb(&params);
+  //
+  // params.which_parameters = PLL_PARAMETER_FREQUENCIES;
+  // pll_optimize_parameters_lbfgsb(&params);
+  //
+  // params.which_parameters = PLL_PARAMETER_PINV;
+  // pll_optimize_parameters_lbfgsb(&params);
+
+  params.which_parameters = PLL_PARAMETER_FREQUENCIES
+  | PLL_PARAMETER_ALPHA | PLL_PARAMETER_SUBST_RATES;// | PLL_PARAMETER_PINV;
   pll_optimize_parameters_lbfgsb(&params);
+
+  // params.which_parameters = PLL_PARAMETER_BRANCHES_ITERATIVE;
+  // pll_optimize_parameters_lbfgsb(&params);
 
   // update epa model object as well
   model.alpha(params.lk_params.alpha_value);

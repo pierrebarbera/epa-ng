@@ -5,8 +5,8 @@
 #include "Model.hpp"
 #include "Tree_Numbers.hpp"
 
-#define OPT_EPSILON       1e-1
-#define OPT_PARAM_EPSILON 1e-1
+#define OPT_EPSILON       1e-5
+#define OPT_PARAM_EPSILON 1e-5
 
 /* if set, the parameters are no longer optimized when
  * they do not improve the likelihood at one iteration */

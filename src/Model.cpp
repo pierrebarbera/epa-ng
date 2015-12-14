@@ -6,22 +6,8 @@
 
 using namespace std;
 
-// Model::Model(vector<double> base_frequencies, vector<double> substitution_rates,
-//   double alpha, std::vector<int> symmetries)
-//   : alpha_(alpha), base_frequencies_(base_frequencies), substitution_rates_(substitution_rates),
-//     subs_symmetries_(symmetries)
-// {
-//
-//   if (base_frequencies_.size() != STATES)
-//     throw runtime_error{"Inappropriate number of base frequencies"};
-//
-//   // TODO what is the appropriate number of substitution rates?
-//   // TODO what is the apropriate alpha input range
-//
-// }
-
 Model::Model(string model_id)
-  : alpha_(1.0), base_frequencies_({0.25,0.25,0.25,0.25}),
+  : alpha_(0.1), base_frequencies_({0.25,0.25,0.25,0.25}),
   substitution_rates_({0.5,0.5,0.5,0.5,0.5,1.0})
 {
   // tolerate case insensitivity

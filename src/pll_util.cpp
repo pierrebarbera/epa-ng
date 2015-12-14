@@ -29,11 +29,34 @@ void set_missing_branch_length_recursive(pll_utree_t * tree,
   }
 }
 
-/* set missing branch lengths to length */
 void set_missing_branch_length(pll_utree_t * tree, double length)
 {
   set_missing_branch_length_recursive(tree, length);
   set_missing_branch_length_recursive(tree->back, length);
+}
+
+void set_branch_length_recursive(pll_utree_t * tree,
+                                                double length)
+{
+  if (tree)
+  {
+    tree->length = length;
+
+    if (tree->next)
+    {
+      tree->next->length = length;
+      tree->next->next->length = length;
+
+      set_branch_length_recursive(tree->next->back, length);
+      set_branch_length_recursive(tree->next->next->back, length);
+    }
+  }
+}
+
+void set_branch_length(pll_utree_t * tree, double length)
+{
+  set_branch_length_recursive(tree, length);
+  set_branch_length_recursive(tree->back, length);
 }
 
 void set_unique_clv_indices_recursive(pll_utree_t * tree, const int num_tip_nodes)
