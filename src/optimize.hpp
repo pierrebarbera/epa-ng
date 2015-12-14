@@ -21,5 +21,6 @@ void traverse_update_partials(pll_utree_t * tree, pll_partition_t * partition,
 void optimize_branch_lengths(pll_utree_t * tree, pll_partition_t * partition, const Tree_Numbers &nums);
 void optimize_model_params(Model& model, pll_utree_t * tree, pll_partition_t * partition,
   const Tree_Numbers& nums);
+void compute_and_set_empirical_frequencies(pll_partition_t * partition);
 
 #endif

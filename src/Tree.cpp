@@ -27,6 +27,10 @@ Tree::Tree(const string& tree_file, const MSA& msa, Model& model, const bool heu
 
   link_tree_msa(tree_, partition_, ref_msa_, nums_.tip_nodes);
 
+  // initialize some model/tree params
+  set_branch_length(tree_, DEFAULT_BRANCH_LENGTH);
+  compute_and_set_empirical_frequencies(partition_);
+
   // perform branch length optimization on the reference tree
   optimize_model_params(model_, tree_, partition_, nums_);
   optimize_branch_lengths(tree_, partition_, nums_);

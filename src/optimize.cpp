@@ -47,9 +47,6 @@ void traverse_update_partials(pll_utree_t * tree, pll_partition_t * partition,
 
 void optimize_branch_lengths(pll_utree_t * tree, pll_partition_t * partition, const Tree_Numbers &nums)
 {
-  // reset branch lengths to default
-  set_branch_length(tree, DEFAULT_BRANCH_LENGTH);
-
   /* various buffers for creating a postorder traversal and operations structures */
   vector<pll_utree_t*> travbuffer(nums.nodes);
   vector<double> branch_lengths(nums.branches);
@@ -165,4 +162,11 @@ void optimize_model_params(Model& model, pll_utree_t * tree, pll_partition_t * p
   model.alpha(params.lk_params.alpha_value);
   model.substitution_rates(partition->subst_params[0], 6);
   model.base_frequencies(partition->frequencies[params.params_index], partition->states);
+}
+
+void compute_and_set_empirical_frequencies(pll_partition_t * partition)
+{
+  double * empirical_freqs = pll_compute_empirical_frequencies (partition);
+  pll_set_frequencies (partition, 0, 0, empirical_freqs);
+  free (empirical_freqs);
 }

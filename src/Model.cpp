@@ -7,7 +7,7 @@
 using namespace std;
 
 Model::Model(string model_id)
-  : alpha_(0.1), base_frequencies_({0.25,0.25,0.25,0.25}),
+  : alpha_(.1), base_frequencies_({0.25,0.25,0.25,0.25}),
   substitution_rates_({0.5,0.5,0.5,0.5,0.5,1.0})
 {
   // tolerate case insensitivity
