@@ -20,13 +20,11 @@ public:
   template<typename ...Args> void emplace_back(Args && ...args)
   {
     placements_.emplace_back(std::forward<Args>(args)...);
-    // update total
-    total_ += placements_.back().likelihood();
   };
 
   // member access
   inline const Sequence& sequence() const {return sequence_;};
-  inline double total() const {return total_;};
+  inline unsigned int size() const {return placements_.size();};
 
   //Iterator Compatability
   iterator begin();
@@ -39,7 +37,6 @@ public:
 private:
   std::vector<Placement> placements_;
   const Sequence sequence_;
-  double total_;
 };
 
 #endif
