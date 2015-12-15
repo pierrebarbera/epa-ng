@@ -13,9 +13,9 @@
 
 using namespace std;
 
-Tree::Tree(const string& tree_file, const MSA& msa, Model& model, const bool heuristic,
+Tree::Tree(const string& tree_file, const MSA& msa, Model& model, Options options,
   const MSA& query)
-  : ref_msa_(msa), query_msa_(query), model_(model), heuristic_(heuristic)
+  : ref_msa_(msa), query_msa_(query), model_(model), options_(options)
 {
   //parse, build tree
   nums_ = Tree_Numbers();
@@ -27,12 +27,10 @@ Tree::Tree(const string& tree_file, const MSA& msa, Model& model, const bool heu
 
   link_tree_msa(tree_, partition_, ref_msa_, nums_.tip_nodes);
 
-  // initialize some model/tree params
-  set_branch_length(tree_, DEFAULT_BRANCH_LENGTH);
   // compute_and_set_empirical_frequencies(partition_);
 
   // perform branch length and model optimization on the reference tree
-  optimize(model_, tree_, partition_, nums_);
+  optimize(model_, tree_, partition_, nums_, options_.opt_branches, options_.opt_model);
 
   precompute_clvs(tree_, partition_, nums_);
 }
@@ -64,7 +62,7 @@ PQuery_Set Tree::place() const
   // build all tiny trees with corresponding edges
   vector<Tiny_Tree> insertion_trees;
   for (auto node : branches)
-    insertion_trees.emplace_back(node, partition_, model_, heuristic_);
+    insertion_trees.emplace_back(node, partition_, model_, options_.opt_insertion_branches);
 
   // output class
   PQuery_Set pquerys(get_numbered_newick_string(tree_));

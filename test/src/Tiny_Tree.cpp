@@ -51,7 +51,7 @@ TEST(Tiny_Tree, place_BLO)
   tie(part, tree) = build_partition_from_file(env->tree_file, env->model, nums, msa.num_sites());
 
   // tests
-  Tiny_Tree tt(tree, part, env->model, false);
+  Tiny_Tree tt(tree, part, env->model, true);
 
   double logl, pendant, distal;
   for (auto const &x : queries)

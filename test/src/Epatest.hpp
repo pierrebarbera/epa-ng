@@ -4,6 +4,7 @@
 #include <gtest/gtest.h>
 
 #include "src/Model.hpp"
+#include "src/Options.hpp"
 
 // The testing environment
 class Epatest : public ::testing::Environment {
@@ -11,9 +12,7 @@ public:
   // You can remove any or all of the following functions if its body
   // is empty.
 
-  Epatest() {
-    // You can do set-up work for each test here.
-  }
+  Epatest() {};
 
   virtual ~Epatest() {
     // You can do clean-up work that doesn't throw exceptions here.
@@ -39,6 +38,7 @@ public:
   std::string combined_file;
   std::string query_file;
   Model model = Model("GTR");
+  Options options;
 
 };
 

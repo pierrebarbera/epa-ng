@@ -14,7 +14,8 @@ static void print_help()
   cout << "  -h \tDisplay this page" << endl;
   cout << "  -q \tPath to separate query MSA file. If none is provided, epa will assume" << endl;
   cout << "     \tquery reads are in the reference_MSA_file (second parameter)" << endl;
-  cout << "  -b \toptimize branch lengths on insertion" << endl;
+  cout << "  -o \toptimize branch lengths on insertion" << endl;
+  cout << "  -O \toptimize reference tree and model parameters" << endl;
   cout << "  -m \tSpecify model of nucleotide substitution" << endl << endl;
   cout << "     \tGTR \tGeneralized time reversible" << endl;
   cout << "     \tJC69 \tJukes-Cantor Model" << endl;
@@ -25,7 +26,7 @@ int main(int argc, char** argv)
 {
   string invocation("");
   string model_id("GTR");
-  bool heuristic = true;
+  Options options;
   for (int i = 0; i < argc; ++i)
   {
     invocation += argv[i];
@@ -35,7 +36,7 @@ int main(int argc, char** argv)
   string query_file("");
 
   int c;
-  while((c =  getopt(argc, argv, "hbq:")) != EOF)
+  while((c =  getopt(argc, argv, "hoOq:")) != EOF)
   {
       switch (c)
       {
@@ -46,8 +47,12 @@ int main(int argc, char** argv)
                print_help();
                exit(0);
                break;
-           case 'b':
-               heuristic = false;
+           case 'o':
+               options.opt_insertion_branches = true;
+               break;
+           case 'O':
+               options.opt_branches = true;
+               options.opt_model = true;
                break;
            case ':':
                cerr << "Missing option." << endl;
@@ -73,7 +78,7 @@ int main(int argc, char** argv)
       reference_file,
       query_file,
       model,
-      heuristic,
+      options,
       invocation);
 	return 0;
 }

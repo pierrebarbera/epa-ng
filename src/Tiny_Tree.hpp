@@ -29,13 +29,13 @@ class Tiny_Tree
 {
 public:
   Tiny_Tree(pll_utree_t * edge_node, pll_partition_t * old_partition, Model model,
-    bool heuristic=true);
+    bool opt_branches=false);
 
   Tiny_Tree(Tiny_Tree const& other) = delete;
 
   Tiny_Tree(Tiny_Tree&& other)
     : partition_(other.partition_), tree_(other.tree_), ops_(other.ops_),
-      heuristic_(other.heuristic_)
+      opt_branches_(other.opt_branches_)
   {
     other.partition_ = nullptr;
     other.tree_ = nullptr;
@@ -54,7 +54,7 @@ private:
   pll_utree_t * tree_ = nullptr;
   pll_operation_t ops_;
 
-  const bool heuristic_;
+  const bool opt_branches_;
   Model model_;
 
 };

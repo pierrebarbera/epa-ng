@@ -10,8 +10,8 @@
 using namespace std;
 
 Tiny_Tree::Tiny_Tree(pll_utree_t * edge_node, pll_partition_t * old_partition, Model model,
-   bool heuristic)
-  : heuristic_(heuristic), model_(model)
+   bool opt_branches)
+  : opt_branches_(opt_branches), model_(model)
 {
   assert(edge_node != NULL);
   assert(old_partition != NULL);
@@ -68,7 +68,7 @@ Tiny_Tree::Tiny_Tree(pll_utree_t * edge_node, pll_partition_t * old_partition, M
   ops_.parent_scaler_index = TINY_INNER_CLV_INDEX;
 
   // if the heuristic is to be used, the branch lengths only need to be set once
-  if (heuristic_)
+  if (!opt_branches_)
   {
     /* heuristic insertion as described in EPA paper from 2011 (Berger et al.):
       original branch, now split by "inner", or base, node of the inserted sequence,
@@ -111,12 +111,12 @@ std::tuple<double, double, double> Tiny_Tree::place(const Sequence &s)
 
   unsigned int inner_matrix_index = 1;
 
-  // optimize branch lengths
-  if (!heuristic_)
+  if (opt_branches_)
   {
+    // optimize branch lengths
     Tree_Numbers nums;
     nums.init(3);
-    optimize(model_, tree_, partition_, nums, true);
+    optimize(model_, tree_, partition_, nums, true, false);
 
     ops_.child1_matrix_index = tree_->next->next->pmatrix_index;
     ops_.child2_matrix_index = tree_->next->pmatrix_index;

@@ -79,8 +79,14 @@ double optimize_branch_lengths(pll_utree_t * tree, pll_partition_t * partition, 
 }
 
 void optimize(Model& model, pll_utree_t * tree, pll_partition_t * partition,
-  const Tree_Numbers& nums, bool only_branches)
+  const Tree_Numbers& nums, const bool opt_branches, const bool opt_model)
 {
+  if (!opt_branches && !opt_model)
+    return;
+
+  if (opt_branches)
+    set_branch_length(tree, DEFAULT_BRANCH_LENGTH);;
+
   auto symmetries = (&(model.symmetries())[0]);
 
   // sadly we explicitly need these buffers here and in the params structure
@@ -133,7 +139,7 @@ void optimize(Model& model, pll_utree_t * tree, pll_partition_t * partition,
   {
     logl = cur_logl;
 
-    if (!only_branches)
+    if (opt_model)
     {
       params.which_parameters = PLL_PARAMETER_ALPHA;
       pll_optimize_parameters_brent(&params);
@@ -145,16 +151,17 @@ void optimize(Model& model, pll_utree_t * tree, pll_partition_t * partition,
       pll_optimize_parameters_lbfgsb(&params);
 
       params.which_parameters = PLL_PARAMETER_PINV;
-      pll_optimize_parameters_brent(&params);
+      cur_logl = -1 * pll_optimize_parameters_brent(&params);
     }
 
-    cur_logl = optimize_branch_lengths(branches[rand () % nums.branches],
-        partition, params,&travbuffer[0], cur_logl, lnl_monitor, &smoothings);
+    if (opt_branches)
+      cur_logl = optimize_branch_lengths(branches[rand () % nums.branches],
+          partition, params,&travbuffer[0], cur_logl, lnl_monitor, &smoothings);
   }
 
-  // update epa model object as well
-  if (!only_branches)
+  if (opt_model)
   {
+    // update epa model object as well
     model.alpha(params.lk_params.alpha_value);
     model.substitution_rates(partition->subst_params[0], 6);
     model.base_frequencies(partition->frequencies[params.params_index], partition->states);
