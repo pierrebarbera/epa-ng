@@ -25,6 +25,7 @@ public:
   // member access
   inline const Sequence& sequence() const {return sequence_;};
   inline unsigned int size() const {return placements_.size();};
+  void erase(iterator begin, iterator end) {placements_.erase(begin, end);};
 
   //Iterator Compatability
   iterator begin();

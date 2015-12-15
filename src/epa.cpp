@@ -7,11 +7,12 @@
 #include "file_io.hpp"
 #include "jplace_util.hpp"
 #include "stringify.hpp"
+#include "calculation.hpp"
 
 using namespace std;
 
 void epa(string& tree_file, string& reference_msa_file, string& query_msa_file,
-                Model model, Options options,  string invocation)
+                Model model, Options options, string invocation)
 {
 	// sanitize input
   file_check(tree_file);
@@ -34,6 +35,8 @@ void epa(string& tree_file, string& reference_msa_file, string& query_msa_file,
   cout << to_string(opt_model);
   cout << "Post-Optimization reference tree Log-Likelihood: ";
   cout << to_string(tree.ref_tree_logl()) << endl;
+
+  discard_by_support_threshold(pquerys, options.support_threshold);
 
   ofstream outfile("/tmp/out.jplace");
   outfile << pquery_set_to_jplace_string(pquerys, invocation) << endl;

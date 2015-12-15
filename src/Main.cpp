@@ -22,6 +22,15 @@ static void print_help()
   cout << "     \tK80 \tKimura 80 Model" << endl;
 };
 
+static void inv(string msg)
+{
+  if (msg.size())
+    cerr << msg << endl;
+  print_help();
+  cout.flush();
+  exit(EXIT_FAILURE);
+}
+
 int main(int argc, char** argv)
 {
   string invocation("");
@@ -36,38 +45,37 @@ int main(int argc, char** argv)
   string query_file("");
 
   int c;
-  while((c =  getopt(argc, argv, "hoOq:")) != EOF)
+  while((c =  getopt(argc, argv, "hoOq:s:")) != EOF)
   {
-      switch (c)
-      {
-           case 'q':
-               query_file += optarg;
-               break;
-           case 'h':
-               print_help();
-               exit(0);
-               break;
-           case 'o':
-               options.opt_insertion_branches = true;
-               break;
-           case 'O':
-               options.opt_branches = true;
-               options.opt_model = true;
-               break;
-           case ':':
-               cerr << "Missing option." << endl;
-               exit(EXIT_FAILURE);
-               break;
+    switch (c)
+    {
+      case 'q':
+        query_file += optarg;
+        break;
+      case 's':
+        options.support_threshold = stod(optarg);
+        if (options.support_threshold <= 0.0)
+          inv("Support threshold cutoff too small!");
+        break;
+      case 'h':
+          inv("");
+          break;
+      case 'o':
+          options.opt_insertion_branches = true;
+          break;
+      case 'O':
+          options.opt_branches = true;
+          options.opt_model = true;
+          break;
+      case ':':
+          inv("Missing option.");
+          break;
       }
   }
 
   if (argc < 2)
-  {
-    cerr << "Insufficient parameters!" << endl;
-    print_help();
-    cout.flush();
-    exit(EXIT_FAILURE);
-  }
+    inv("Insufficient parameters!");
+
   // first two params are always the reference tree and msa file paths
   string tree_file(argv[optind]);
   string reference_file(argv[optind + 1]);

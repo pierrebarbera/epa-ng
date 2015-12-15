@@ -30,11 +30,11 @@ public:
   inline void lwr(double value) {lwr_ = value;};
 
 private:
-  const unsigned int branch_id_;
-  const double likelihood_;
+  unsigned int branch_id_;
+  double likelihood_;
   double lwr_;
-  const double pendant_length_;
-  const double distal_length_;
+  double pendant_length_;
+  double distal_length_;
 };
 
 #endif
