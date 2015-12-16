@@ -9,15 +9,17 @@ using namespace std;
 static void print_help()
 {
   cout << "EPA - Evolutionary Placement Algorithm" << endl << endl;
-  cout << "USAGE: epa [options] <reference_tree_file> <reference_MSA_file>" << endl << endl;
+  cout << "USAGE: epa [options] <tree_file> <MSA_file>" << endl << endl;
   cout << "OPTIONS:" << endl;
   cout << "  -h \tDisplay this page" << endl;
   cout << "  -q \tPath to separate query MSA file. If none is provided, epa will assume" << endl;
-  cout << "     \tquery reads are in the reference_MSA_file (second parameter)" << endl;
+  cout << "     \tquery reads are in the MSA_file (second parameter)" << endl;
   cout << "  -o \toptimize branch lengths on insertion" << endl;
   cout << "  -O \toptimize reference tree and model parameters" << endl;
-  cout << "  -m \tSpecify model of nucleotide substitution" << endl << endl;
-  cout << "     \tGTR \tGeneralized time reversible" << endl;
+  cout << "  -s \tspecify minimum likelihood weight below which a placement is discarded" << endl;
+  cout << "     \t  DEFAULT: 0.01" << endl;
+  cout << "  -m \tSpecify model of nucleotide substitution" <<  endl;
+  cout << "     \tGTR \tGeneralized time reversible`(DEFAULT)" << endl;
   cout << "     \tJC69 \tJukes-Cantor Model" << endl;
   cout << "     \tK80 \tKimura 80 Model" << endl;
 };
