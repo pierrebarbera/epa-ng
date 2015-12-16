@@ -1,8 +1,9 @@
 BIN=../bin
 TEST=../test/data
 LOGDIR=../test/log
+OUTDIR=/tmp/epa
 F+=
-TESTINPUT= $(TEST)/ref.tre $(TEST)/aln.fasta -q $(TEST)/query.fasta $(F)
+TESTINPUT= $(TEST)/ref.tre $(TEST)/aln.fasta -q $(TEST)/query.fasta -w $(OUTDIR) $(F)
 
 CC=clang++
 DEFS=
@@ -23,17 +24,21 @@ callgrind: CFLAGS= $(WARNINGS) -std=c++11 -O2
 all:  $(TARGET)
 
 test: $(TARGET)
+	mkdir -p $(OUTDIR)
 	$(TARGET) $(TESTINPUT)
 
 valgrind: $(TARGET)
+	mkdir -p $(OUTDIR)
 	valgrind $(TARGET) $(TESTINPUT)
 
 callgrind: $(TARGET)
 	mkdir -p $(LOGDIR)
+	mkdir -p $(OUTDIR)
 	valgrind --tool=callgrind --callgrind-out-file=$(LOGDIR)/callgrind.output.%p \
 	$(TARGET) $(TESTINPUT)
 
 gdb: $(TARGET)
+	mkdir -p $(OUTDIR)
 	gdb --args $(TARGET) $(TESTINPUT)
 
 $(TARGET): $(OUT_OBJS)

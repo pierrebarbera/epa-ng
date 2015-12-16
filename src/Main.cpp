@@ -14,6 +14,7 @@ static void print_help()
   cout << "  -h \tDisplay this page" << endl;
   cout << "  -q \tPath to separate query MSA file. If none is provided, epa will assume" << endl;
   cout << "     \tquery reads are in the MSA_file (second parameter)" << endl;
+  cout << "  -w \tPath to working directory" << endl;
   cout << "  -o \toptimize branch lengths on insertion" << endl;
   cout << "  -O \toptimize reference tree and model parameters" << endl;
   cout << "  -s \tspecify minimum likelihood weight below which a placement is discarded" << endl;
@@ -45,14 +46,18 @@ int main(int argc, char** argv)
   }
 
   string query_file("");
+  string work_dir("");
 
   int c;
-  while((c =  getopt(argc, argv, "hoOq:s:")) != EOF)
+  while((c =  getopt(argc, argv, "hoOq:s:w:")) != EOF)
   {
     switch (c)
     {
       case 'q':
         query_file += optarg;
+        break;
+      case 'w':
+        work_dir += optarg;
         break;
       case 's':
         options.support_threshold = stod(optarg);
@@ -87,6 +92,7 @@ int main(int argc, char** argv)
 	epa(tree_file,
       reference_file,
       query_file,
+      work_dir,
       model,
       options,
       invocation);

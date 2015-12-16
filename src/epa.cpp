@@ -11,7 +11,7 @@
 
 using namespace std;
 
-void epa(string& tree_file, string& reference_msa_file, string& query_msa_file,
+void epa(string& tree_file, string& reference_msa_file, string& query_msa_file, string& outdir,
                 Model model, Options options, string invocation)
 {
 	// sanitize input
@@ -38,7 +38,7 @@ void epa(string& tree_file, string& reference_msa_file, string& query_msa_file,
 
   discard_by_support_threshold(pquerys, options.support_threshold);
 
-  ofstream outfile("/tmp/out.jplace");
+  ofstream outfile(outdir + string("/epa_result.jplace"));
   outfile << pquery_set_to_jplace_string(pquerys, invocation) << endl;
   outfile.close();
 
