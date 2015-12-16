@@ -18,7 +18,7 @@ MSA build_MSA_from_file(const string& msa_file)
   /* open the file */
   auto file = pll_fasta_open(msa_file.c_str(), pll_map_fasta);
   if (!file)
-    throw runtime_error{string("Cannot open file") + msa_file};
+    throw runtime_error{string("Cannot open file ") + msa_file};
 
   char * sequence = NULL;
   char * header = NULL;
@@ -52,7 +52,7 @@ MSA build_MSA_from_file(const string& msa_file)
   }
 
   if (pll_errno != PLL_ERROR_FILE_EOF)
-    throw runtime_error{string("Error while reading file:") +  msa_file};
+    throw runtime_error{string("Error while reading file: ") +  msa_file};
 
   pll_fasta_close(file);
 
@@ -111,7 +111,7 @@ void file_check(const string& file_path)
 {
   ifstream file(file_path.c_str());
   if (!file.good())
-    throw runtime_error{string("Error opening file: ") + file_path};
+    throw runtime_error{string("file_check failed: ") + file_path};
 
   file.close();
 }

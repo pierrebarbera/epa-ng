@@ -17,7 +17,8 @@ void epa(string& tree_file, string& reference_msa_file, string& query_msa_file, 
 	// sanitize input
   file_check(tree_file);
   file_check(reference_msa_file);
-  file_check(query_msa_file);
+  if(query_msa_file.length() > 0)
+    file_check(query_msa_file);
 
 	// Build the reference tree
   auto ref_msa = build_MSA_from_file(reference_msa_file);
