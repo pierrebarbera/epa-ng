@@ -35,7 +35,7 @@ public:
 
   Tiny_Tree(Tiny_Tree&& other)
     : partition_(other.partition_), tree_(other.tree_), ops_(other.ops_),
-      opt_branches_(other.opt_branches_)
+      opt_branches_(other.opt_branches_), original_branch_length_(other.original_branch_length_)
   {
     other.partition_ = nullptr;
     other.tree_ = nullptr;
@@ -55,6 +55,7 @@ private:
   pll_operation_t ops_;
 
   const bool opt_branches_;
+  const double original_branch_length_;
   Model model_;
 
 };

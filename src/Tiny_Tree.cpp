@@ -11,7 +11,7 @@ using namespace std;
 
 Tiny_Tree::Tiny_Tree(pll_utree_t * edge_node, pll_partition_t * old_partition, Model model,
    bool opt_branches)
-  : opt_branches_(opt_branches), model_(model)
+  : opt_branches_(opt_branches), original_branch_length_(edge_node->length), model_(model)
 {
   assert(edge_node != NULL);
   assert(old_partition != NULL);
@@ -111,6 +111,8 @@ std::tuple<double, double, double> Tiny_Tree::place(const Sequence &s)
 
   unsigned int inner_matrix_index = 1;
 
+  double scaled_distal_length = tree_->next->length;
+
   if (opt_branches_)
   {
     // optimize branch lengths
@@ -121,6 +123,17 @@ std::tuple<double, double, double> Tiny_Tree::place(const Sequence &s)
     ops_.child1_matrix_index = tree_->next->next->pmatrix_index;
     ops_.child2_matrix_index = tree_->next->pmatrix_index;
     inner_matrix_index = tree_->pmatrix_index;
+
+    assert(tree_->length >= 0);
+    assert(tree_->next->length >= 0);
+    assert(tree_->next->next->length >= 0);
+
+    // rescale the distal length, as it has likely changed during optimization
+    // done as in raxml
+    double distal_length = scaled_distal_length;
+    double proximal_length = tree_->next->next->length;
+    double new_total_branch_length = distal_length + proximal_length;
+    scaled_distal_length = (original_branch_length_ / new_total_branch_length) * distal_length;
   }
   else
   {
@@ -140,5 +153,8 @@ std::tuple<double, double, double> Tiny_Tree::place(const Sequence &s)
                                         inner_matrix_index,
                                         0);// freq index
 
-  return make_tuple(logl, tree_->next->length, tree_->length);
+
+  assert(scaled_distal_length <= original_branch_length_);
+
+  return make_tuple(logl, scaled_distal_length, tree_->length);
 }
