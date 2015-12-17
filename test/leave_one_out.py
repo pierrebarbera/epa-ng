@@ -47,46 +47,61 @@ msa = DnaCharacterMatrix.get(path=MSA_file, schema="fasta")
 num_failed = 0
 num_run = 0
 
-# for every tip:
-for node in tree.leaf_node_iter():
-    # trim taxon from the cloned tree
-    lou_tree = tree.clone()
-    to_prune = TaxonNamespace()
-    to_prune.add_taxon(node.taxon)
-    lou_tree.prune_taxa(to_prune)
-    lou_tree.deroot()
+# count the tips
+num_tips = 0.0
+for n in tree.leaf_node_iter():
+    num_tips += 1
+progress = 0.0
 
-    # write tree to tmp folder
-    cur_outdir = os.path.join(output_dir, str(node.taxon))
-    if not os.path.exists(cur_outdir):
-        os.makedirs(cur_outdir)
+with open(os.path.join(output_dir, "results.log"), 'wb') as log_file:
+    # for every tip:
+    for node in tree.leaf_node_iter():
+        # trim taxon from the cloned tree
+        lou_tree = tree.clone()
+        to_prune = TaxonNamespace()
+        to_prune.add_taxon(node.taxon)
+        lou_tree.prune_taxa(to_prune)
+        lou_tree.deroot()
 
-    cur_treefile = os.path.join(cur_outdir, "tree.newick")
-    lou_tree.write(path=cur_treefile, schema="newick", suppress_rooting=True)
+        # write tree to tmp folder
+        cur_outdir = os.path.join(output_dir, str(node.taxon))
+        # print cur_outdir
+        if not os.path.exists(cur_outdir):
+            os.makedirs(cur_outdir)
 
-    # call raxml with trimmed files
-    print "calling raxml:"
-    params = [raxml, "-f", "v", "-s", MSA_file, "-t", cur_treefile, "-n", "leave_one_out", "-m","GTRGAMMA",
-    "-w", cur_outdir]
-    print params
-    ret = call(params, stdout=open(os.devnull, 'wb'))
+        cur_treefile = os.path.join(cur_outdir, "tree.newick")
+        lou_tree.write(path=cur_treefile, schema="newick", suppress_rooting=True)
 
-    # call epa with trimmed files
-    print "calling epa: "
-    params = [epa, cur_treefile, MSA_file, "-oO", "-w", cur_outdir]
-    print params
-    ret = call(params, stdout=open(os.devnull, 'wb'))
+        # call raxml with trimmed files
+        # print "calling raxml:"
+        params = [raxml, "-f", "v", "-s", MSA_file, "-t", cur_treefile, "-n", "leave_one_out", "-m","GTRGAMMA",
+        "-w", cur_outdir]
+        # print params
+        ret = call(params, stdout=open(os.devnull, 'wb'))
 
-    # call validation script on both jplace files, log to log file
-    jplace_files = glob.glob(os.path.join(cur_outdir, "*.jplace"))
-    assert len(jplace_files) == 2
+        # call epa with trimmed files
+        # print "calling epa: "
+        params = [epa, cur_treefile, MSA_file, "-oO", "-w", cur_outdir]
+        # print params
+        ret = call(params, stdout=open(os.devnull, 'wb'))
 
-    print "calling compare script:"
-    params = ["./jplace_compare.py", "-v"] + jplace_files
-    print params
-    ret = call(params)
+        # call validation script on both jplace files, log to log file
+        jplace_files = glob.glob(os.path.join(cur_outdir, "*.jplace"))
+        assert len(jplace_files) == 2
 
-    num_failed += ret
-    num_run += 1
+        # print "calling compare script:"
+        params = ["./jplace_compare.py", "-v"] + jplace_files
+        # print params
+        ret = call(params, stdout=log_file)
+
+        num_failed += ret
+        num_run += 1
+
+        progress_old = progress
+        progress = (num_run / num_tips)*100
+
+        if  (progress - progress_old) > 1:
+            print str(progress) + "%"
+
 
 print "Failed " + str(num_failed) + " out of " + str(num_run) + " tests"
