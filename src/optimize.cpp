@@ -147,8 +147,8 @@ void optimize(Model& model, pll_utree_t * tree, pll_partition_t * partition,
       params.which_parameters = PLL_PARAMETER_SUBST_RATES;
       pll_optimize_parameters_lbfgsb(&params);
 
-      params.which_parameters = PLL_PARAMETER_FREQUENCIES;
-      pll_optimize_parameters_lbfgsb(&params);
+      // params.which_parameters = PLL_PARAMETER_FREQUENCIES;
+      // pll_optimize_parameters_lbfgsb(&params);
 
       params.which_parameters = PLL_PARAMETER_PINV;
       cur_logl = -1 * pll_optimize_parameters_brent(&params);

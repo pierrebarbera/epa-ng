@@ -27,7 +27,7 @@ Tree::Tree(const string& tree_file, const MSA& msa, Model& model, Options option
 
   link_tree_msa(tree_, partition_, ref_msa_, nums_.tip_nodes);
 
-  // compute_and_set_empirical_frequencies(partition_);
+  compute_and_set_empirical_frequencies(partition_);
 
   // perform branch length and model optimization on the reference tree
   optimize(model_, tree_, partition_, nums_, options_.opt_branches, options_.opt_model);
