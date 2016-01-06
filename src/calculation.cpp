@@ -34,3 +34,29 @@ void discard_by_support_threshold(PQuery_Set& pqs, const double thresh)
     pq.erase(erase_iter, pq.end());
   }
 }
+
+void discard_by_accumulated_threshold(PQuery_Set& pqs, const double thresh)
+{
+  // sorting phase
+  for (auto &pq : pqs)
+  {
+    sort(pq.begin(), pq.end(),
+      [](const Placement &p_a, const Placement &p_b) -> bool {return p_a.lwr() > p_b.lwr();}
+    );
+  }
+  // accumulation and erasure phase
+  for (auto &pq : pqs)
+  {
+    double sum = 0.0;
+    auto pq_iter = pq.begin();
+    for (pq_iter = pq.begin(); pq_iter != pq.end(); ++pq_iter)
+    {
+      sum += pq_iter->lwr();
+      if (sum >= thresh)
+        break;
+    }
+
+
+    pq.erase(pq_iter, pq.end());
+  }
+}

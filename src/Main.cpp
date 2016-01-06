@@ -19,6 +19,8 @@ static void print_help()
   cout << "  -O \toptimize reference tree and model parameters" << endl;
   cout << "  -s \tspecify minimum likelihood weight below which a placement is discarded" << endl;
   cout << "     \t  DEFAULT: 0.01" << endl;
+  cout << "  -S \tspecify accumulated likelihood weight after which further placements are discarded" << endl;
+  cout << "     \t  DEFAULT: OFF" << endl;
   cout << "  -m \tSpecify model of nucleotide substitution" <<  endl;
   cout << "     \tGTR \tGeneralized time reversible`(DEFAULT)" << endl;
   cout << "     \tJC69 \tJukes-Cantor Model" << endl;
@@ -49,7 +51,7 @@ int main(int argc, char** argv)
   string work_dir("");
 
   int c;
-  while((c =  getopt(argc, argv, "hoOq:s:w:")) != EOF)
+  while((c =  getopt(argc, argv, "hoOq:s:S:w:")) != EOF)
   {
     switch (c)
     {
@@ -62,7 +64,17 @@ int main(int argc, char** argv)
       case 's':
         options.support_threshold = stod(optarg);
         if (options.support_threshold <= 0.0)
-          inv("Support threshold cutoff too small!");
+          inv("Support threshold cutoff too small! Range: (0,1)");
+        if (options.support_threshold >= 1.0)
+          inv("Support threshold cutoff too large! Range: (0,1)");
+        break;
+      case 'S':
+        options.support_threshold = stod(optarg);
+        if (options.support_threshold <= 0.0)
+          inv("Accumulated support threshold cutoff too small! Range: (0,1)");
+        if (options.support_threshold >= 1.0)
+          inv("Accumulated support threshold cutoff too large! Range: (0,1)");
+        options.acc_threshold = true;
         break;
       case 'h':
           inv("");

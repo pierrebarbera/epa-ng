@@ -37,7 +37,11 @@ void epa(string& tree_file, string& reference_msa_file, string& query_msa_file, 
   cout << "Post-Optimization reference tree Log-Likelihood: ";
   cout << to_string(tree.ref_tree_logl()) << endl;
 
-  discard_by_support_threshold(pquerys, options.support_threshold);
+  if (options.acc_threshold)
+    discard_by_accumulated_threshold(pquerys, options.support_threshold);
+  else
+    discard_by_support_threshold(pquerys, options.support_threshold);
+
 
   ofstream outfile(outdir + string("/epa_result.jplace"));
   outfile << pquery_set_to_jplace_string(pquerys, invocation) << endl;

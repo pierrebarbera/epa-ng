@@ -5,7 +5,8 @@ class Options {
 
 public:
   Options ()
-    : opt_insertion_branches(false), opt_model(false), opt_branches(false), support_threshold(0.01) {};
+    : opt_insertion_branches(false), opt_model(false), opt_branches(false), support_threshold(0.01)
+    , acc_threshold(false) {};
 
   Options (bool opt_insertion_branches, bool opt_model, bool opt_branches)
     : opt_insertion_branches(opt_insertion_branches), opt_model(opt_model), opt_branches(opt_branches)
@@ -17,6 +18,7 @@ public:
   bool opt_model;
   bool opt_branches;
   double support_threshold;
+  bool acc_threshold;
 
 private:
 

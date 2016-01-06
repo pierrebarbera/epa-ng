@@ -20,14 +20,14 @@ public:
   ~Placement() = default;
 
   // getters
-  inline double lwr() const {return lwr_;};
-  inline double likelihood() const {return likelihood_;};
-  inline double pendant_length() const {return pendant_length_;};
-  inline double distal_length() const {return distal_length_;};
-  inline unsigned int branch_id() const {return branch_id_;};
+  double lwr() const {return lwr_;};
+  double likelihood() const {return likelihood_;};
+  double pendant_length() const {return pendant_length_;};
+  double distal_length() const {return distal_length_;};
+  unsigned int branch_id() const {return branch_id_;};
 
   // setters
-  inline void lwr(double value) {lwr_ = value;};
+  void lwr(double value) {lwr_ = value;};
 
 private:
   unsigned int branch_id_;

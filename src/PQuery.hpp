@@ -13,8 +13,8 @@ public:
   typedef typename std::vector<Placement>::const_iterator  const_iterator;
 
   PQuery() = delete;
-  PQuery (const Sequence & s);
-  ~PQuery ();
+  PQuery (const Sequence & s) : sequence_(s) {};
+  ~PQuery() = default;
 
   // needs to be in the header
   template<typename ...Args> void emplace_back(Args && ...args)
@@ -23,17 +23,18 @@ public:
   };
 
   // member access
-  inline const Sequence& sequence() const {return sequence_;};
-  inline unsigned int size() const {return placements_.size();};
+  Placement& back() {return placements_.back();};
+  const Sequence& sequence() const {return sequence_;};
+  unsigned int size() const {return placements_.size();};
   void erase(iterator begin, iterator end) {placements_.erase(begin, end);};
 
-  //Iterator Compatability
-  iterator begin();
-  iterator end();
-  const_iterator begin() const;
-  const_iterator end() const;
-  const_iterator cbegin();
-  const_iterator cend();
+  // Iterator Compatibility
+  iterator begin() {return placements_.begin();};
+  iterator end() {return placements_.end();};
+  const_iterator begin() const {return placements_.cbegin();};
+  const_iterator end() const {return placements_.cend();};
+  const_iterator cbegin() {return placements_.cbegin();};
+  const_iterator cend() {return placements_.cend();};
 
 private:
   std::vector<Placement> placements_;
