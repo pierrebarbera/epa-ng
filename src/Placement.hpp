@@ -28,6 +28,9 @@ public:
 
   // setters
   void lwr(double value) {lwr_ = value;};
+  void likelihood(double value) {likelihood_ = value;};
+  void pendant_length(double value) {pendant_length_ = value;};
+  void distal_length(double value) {distal_length_ = value;};
 
 private:
   unsigned int branch_id_;

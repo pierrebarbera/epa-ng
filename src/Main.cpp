@@ -63,24 +63,24 @@ int main(int argc, char** argv)
         break;
       case 's':
         options.support_threshold = stod(optarg);
-        if (options.support_threshold <= 0.0)
-          inv("Support threshold cutoff too small! Range: (0,1)");
+        if (options.support_threshold < 0.0)
+          inv("Support threshold cutoff too small! Range: [0,1)");
         if (options.support_threshold >= 1.0)
-          inv("Support threshold cutoff too large! Range: (0,1)");
+          inv("Support threshold cutoff too large! Range: [0,1)");
         break;
       case 'S':
         options.support_threshold = stod(optarg);
         if (options.support_threshold <= 0.0)
-          inv("Accumulated support threshold cutoff too small! Range: (0,1)");
-        if (options.support_threshold >= 1.0)
-          inv("Accumulated support threshold cutoff too large! Range: (0,1)");
+          inv("Accumulated support threshold cutoff too small! Range: (0,1]");
+        if (options.support_threshold > 1.0)
+          inv("Accumulated support threshold cutoff too large! Range: (0,1]");
         options.acc_threshold = true;
         break;
       case 'h':
           inv("");
           break;
       case 'o':
-          options.opt_insertion_branches = true;
+          options.prescoring = true;
           break;
       case 'O':
           options.opt_branches = true;

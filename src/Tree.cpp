@@ -62,7 +62,9 @@ PQuery_Set Tree::place() const
   // build all tiny trees with corresponding edges
   vector<Tiny_Tree> insertion_trees;
   for (auto node : branches)
-    insertion_trees.emplace_back(node, partition_, model_, options_.opt_insertion_branches);
+    insertion_trees.emplace_back(node, partition_, model_, !options_.prescoring);
+    /* clarification: last arg here is a flag specifying whether to optimize the branches.
+      we don't want that if the mode is prescoring */
 
   // output class
   PQuery_Set pquerys(get_numbered_newick_string(tree_));
@@ -85,5 +87,32 @@ PQuery_Set Tree::place() const
   }
   // now that everything has been placed, we can compute the likelihood weight ratio
   compute_and_set_lwr(pquerys);
+
+  /* prescoring was chosen: perform a second round, but only on candidate edges identified
+    during the first run */
+  // TODO for MPI: think about how to split up the work, probably build list of sequences
+  // per branch, then pass
+  if (options_.prescoring)
+  {
+    discard_by_accumulated_threshold(pquerys, 0.95);// TODO outside input? constant?
+    for (auto &pq : pquerys)
+      for (auto &placement : pq)
+      {
+        unsigned int id = placement.branch_id();
+        insertion_trees[id].opt_branches(true); // TODO only needs to be done once
+        tie(logl, distal, pendant) = insertion_trees[id].place(pq.sequence());
+        placement.likelihood(logl);
+        placement.pendant_length(pendant);
+        placement.distal_length(distal);
+      }
+    compute_and_set_lwr(pquerys);
+  }
+
+  // finally, trim the output
+  if (options_.acc_threshold)
+    discard_by_accumulated_threshold(pquerys, options_.support_threshold);
+  else
+    discard_by_support_threshold(pquerys, options_.support_threshold);
+
   return pquerys;
 }

@@ -5,16 +5,16 @@ class Options {
 
 public:
   Options ()
-    : opt_insertion_branches(false), opt_model(false), opt_branches(false), support_threshold(0.01)
+    : prescoring(false), opt_model(false), opt_branches(false), support_threshold(0.01)
     , acc_threshold(false) {};
 
-  Options (bool opt_insertion_branches, bool opt_model, bool opt_branches)
-    : opt_insertion_branches(opt_insertion_branches), opt_model(opt_model), opt_branches(opt_branches)
-    , support_threshold(0.01) {};
+  Options (bool prescoring, bool opt_model, bool opt_branches)
+    : prescoring(prescoring), opt_model(opt_model), opt_branches(opt_branches)
+    , support_threshold(0.01), acc_threshold(false) {};
 
   ~Options () = default;
 
-  bool opt_insertion_branches;
+  bool prescoring;
   bool opt_model;
   bool opt_branches;
   double support_threshold;

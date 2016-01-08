@@ -48,13 +48,15 @@ public:
   // returns, in order, : likelihood, distal length, pendant length
   std::tuple<double, double, double> place(const Sequence& s);
 
+  void opt_branches(bool b) {opt_branches_ = b;};
+
 private:
   // pll structures
   pll_partition_t * partition_ = nullptr;
   pll_utree_t * tree_ = nullptr;
   pll_operation_t ops_;
 
-  const bool opt_branches_;
+  bool opt_branches_;
   const double original_branch_length_;
   Model model_;
 

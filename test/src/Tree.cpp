@@ -14,7 +14,9 @@ TEST(Tree, place)
   // buildup
   auto query_msa = build_MSA_from_file(env->query_file);
   auto reference_msa = build_MSA_from_file(env->reference_file);
-  auto tree = Tree(env->tree_file, reference_msa, env->model, env->options, query_msa);
+  Options options(false,false,false);
+  options.support_threshold = 0.0;
+  auto tree = Tree(env->tree_file, reference_msa, env->model, options, query_msa);
 
   // tests
   auto pquery_set = tree.place();
@@ -36,12 +38,13 @@ TEST(Tree, place)
 
 }
 
-TEST(Tree, place_optimize)
+TEST(Tree, place_prescore)
 {
   // buildup
   auto query_msa = build_MSA_from_file(env->query_file);
   auto reference_msa = build_MSA_from_file(env->reference_file);
   Options options(true,true,true);
+  options.support_threshold = 0.0;
   auto tree = Tree(env->tree_file, reference_msa, env->model, options, query_msa);
 
   // tests
@@ -58,7 +61,7 @@ TEST(Tree, place_optimize)
       EXPECT_NE(p.likelihood(), 0.0);
       count++;
     }
-    EXPECT_EQ(count, tree.nums().branches);
+    EXPECT_EQ(count, 1);
   }
   // teardown
 
