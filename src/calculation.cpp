@@ -48,15 +48,13 @@ void discard_by_accumulated_threshold(PQuery_Set& pqs, const double thresh)
   for (auto &pq : pqs)
   {
     double sum = 0.0;
+
     auto pq_iter = pq.begin();
-    for (pq_iter = pq.begin(); pq_iter != pq.end(); ++pq_iter)
-    {
+    for (pq_iter = pq.begin(); pq_iter != pq.end() && sum < thresh; ++pq_iter)
       sum += pq_iter->lwr();
-      if (sum >= thresh)
-        break;
-    }
-
-
+      // sum up until threshold is passed. if we abort before it is passed, we would have the possibility of
+      // empty lists
+      
     pq.erase(pq_iter, pq.end());
   }
 }
