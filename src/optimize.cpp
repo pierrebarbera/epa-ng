@@ -95,9 +95,6 @@ void optimize(Model& model, pll_utree_t * tree, pll_partition_t * partition,
   vector<unsigned int> matrix_indices(nums.branches);
   vector<pll_operation_t> operations(nums.nodes);
 
-  vector<pll_utree_t *> branches(nums.branches);
-  utree_query_branches(tree, &branches[0]);
-
   traverse_update_partials(tree, partition, &travbuffer[0], &branch_lengths[0],
     &matrix_indices[0], &operations[0]);
 
@@ -155,8 +152,8 @@ void optimize(Model& model, pll_utree_t * tree, pll_partition_t * partition,
     }
 
     if (opt_branches)
-      cur_logl = optimize_branch_lengths(branches[rand () % nums.branches],
-          partition, params,&travbuffer[0], cur_logl, lnl_monitor, &smoothings);
+      cur_logl = optimize_branch_lengths(tree,
+          partition, params, &travbuffer[0], cur_logl, lnl_monitor, &smoothings);
   }
 
   if (opt_model)
