@@ -13,13 +13,16 @@ void compute_and_set_lwr(PQuery_Set& pqs)
     double total = 0.0;
     double max=-numeric_limits<double>::infinity();
 
+    // find the maximum
     for (auto &p : pq)
       if (p.likelihood() > max)
         max = p.likelihood();
 
+    // sum up the distances to the max
     for (auto &p : pq)
       total += exp(p.likelihood() - max);
 
+    // normalize the distances
     for (auto &p : pq)
       p.lwr(exp(p.likelihood() - max) / total);
   }
@@ -54,7 +57,7 @@ void discard_by_accumulated_threshold(PQuery_Set& pqs, const double thresh)
       sum += pq_iter->lwr();
       // sum up until threshold is passed. if we abort before it is passed, we would have the possibility of
       // empty lists
-      
+
     pq.erase(pq_iter, pq.end());
   }
 }

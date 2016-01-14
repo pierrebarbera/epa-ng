@@ -2,7 +2,6 @@
 
 import sys
 import os
-from tempfile import mkdtemp
 from dendropy import *
 from subprocess import call
 import glob

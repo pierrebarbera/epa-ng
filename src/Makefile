@@ -3,7 +3,7 @@ TEST=../test/data
 LOGDIR=../test/log
 OUTDIR=/tmp/epa
 F+=
-TESTINPUT= $(TEST)/ref.tre $(TEST)/aln.fasta -q $(TEST)/query.fasta -w $(OUTDIR) $(F)
+TESTINPUT= $(TEST)/ref.tre $(TEST)/aln.fasta -q $(TEST)/query.fasta -w $(OUTDIR) -oO $(F)
 
 CC=clang++
 DEFS=
@@ -20,6 +20,7 @@ OBJS=$(notdir $(CPP:.cpp=.o))
 OUT_OBJS=$(addprefix $(BIN)/,$(OBJS))
 
 callgrind: CFLAGS= $(WARNINGS) -std=c++11 -O2
+profile: CFLAGS= $(WARNINGS) -std=c++11 -O2
 
 all:  $(TARGET)
 
@@ -36,6 +37,11 @@ callgrind: $(TARGET)
 	mkdir -p $(OUTDIR)
 	valgrind --tool=callgrind --callgrind-out-file=$(LOGDIR)/callgrind.output.%p \
 	$(TARGET) $(TESTINPUT)
+
+profile: $(TARGET)
+	mkdir -p $(OUTDIR)
+	$(TARGET) $(TESTINPUT) -b 10
+
 
 gdb: $(TARGET)
 	mkdir -p $(OUTDIR)
