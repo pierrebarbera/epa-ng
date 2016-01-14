@@ -13,13 +13,13 @@ run_make: build/CMakeCache.txt
 	@make -C build
 .PHONY: run_make
 
-new_files:
+update:
 	@touch src/CMakeLists.txt
 	@touch test/src/CMakeLists.txt
 	@make -C build
-.PHONY: new_files
+.PHONY: update
 
-test: new_files
+test: update
 	@./test/bin/epa_test
 .PHONY: test
 
