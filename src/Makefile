@@ -3,13 +3,14 @@ TEST=../test/data
 LOGDIR=../test/log
 OUTDIR=/tmp/epa
 F+=
+CF+=
 TESTINPUT= $(TEST)/ref.tre $(TEST)/aln.fasta -q $(TEST)/query.fasta -w $(OUTDIR) -oO $(F)
 
 CC=clang++
 DEFS=
 WARNINGS= -Wall -Wextra -pedantic -pedantic-errors
 DBG=-g
-CFLAGS= $(WARNINGS) -std=c++11 $(DBG)
+CFLAGS= $(WARNINGS) -std=c++11 $(DBG) $(CF)
 LINKFLAGS=
 
 TARGET=$(BIN)/epamk

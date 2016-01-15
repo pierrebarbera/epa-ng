@@ -76,6 +76,10 @@ tuple<pll_partition_t *, pll_utree_t *>  build_partition_from_file(const string&
 
   set_missing_branch_length(tree, DEFAULT_BRANCH_LENGTH);
 
+  auto attributes = PLL_ATTRIB_ARCH_SSE;
+#ifdef __AVX
+  attributes = PLL_ATTRIB_ARCH_AVX;
+#endif
 
   auto partition = pll_partition_create(nums.tip_nodes,
            nums.inner_nodes * 3, //number of extra clv buffers: 3 for every direction on the node
@@ -86,21 +90,15 @@ tuple<pll_partition_t *, pll_utree_t *>  build_partition_from_file(const string&
            nums.branches,
            RATE_CATS,
            (nums.inner_nodes * 3) + nums.tip_nodes, /* number of scaler buffers */
-           PLL_ATTRIB_ARCH_SSE);
+           attributes);
 
   double rate_cats[RATE_CATS] = {0};
 
   /* compute the discretized category rates from a gamma distribution
-     with alpha shape 1 and store them in rate_cats  */
+     with alpha shape */
   pll_compute_gamma_cats(model.alpha(), RATE_CATS, rate_cats);
-
-  /* set frequencies at model with index 0 */
   pll_set_frequencies(partition, 0, 0, &(model.base_frequencies()[0]));
-
-  /* set substitution parameters at model with index 0 */
   pll_set_subst_params(partition, 0, 0, &(model.substitution_rates()[0]));
-
-  /* set rate categories */
   pll_set_category_rates(partition, rate_cats);
 
   return make_tuple(partition, tree);
