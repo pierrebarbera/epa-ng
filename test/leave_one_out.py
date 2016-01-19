@@ -7,7 +7,7 @@ from subprocess import call
 import glob
 
 def help():
-    print "USAGE:\traxml_path epa_path tree_file MSA_file output_dir"
+    print "USAGE:\traxml_path epa_path tree_file MSA_file output_dir [number of runs]"
 def wrng(msg):
     print msg
     help()
@@ -17,16 +17,22 @@ def err(msg):
     print "Aborting"
     exit()
 
-if len(sys.argv) != 6:
+if len(sys.argv) < 6 or len(sys.argv) > 7:
     print "incorrect number of arguments"
     help()
     exit()
+
+first_x = False
+runs=0
 
 raxml = sys.argv[1]
 epa = sys.argv[2]
 tree_file = os.path.abspath(sys.argv[3])
 MSA_file = os.path.abspath(sys.argv[4])
 output_dir = os.path.abspath(sys.argv[5])
+if len(sys.argv) == 7:
+    runs = int(sys.argv[6])
+    first_x = True
 
 if not os.path.isfile(raxml):
     wrng("raxml doesn't exist or isn't a file")
@@ -95,6 +101,9 @@ with open(os.path.join(output_dir, "results.log"), 'wb') as log_file:
 
         num_failed += ret
         num_run += 1
+
+        if first_x and num_run == runs:
+            break
 
         progress_old = progress
         progress = (num_run / num_tips)*100
