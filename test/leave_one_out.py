@@ -111,5 +111,7 @@ with open(os.path.join(output_dir, "results.log"), 'wb') as log_file:
         if  (progress - progress_old) > 1:
             print str(progress) + "%"
 
+    failed_string = "Failed " + str(num_failed) + " out of " + str(num_run) + " tests"
+    log_file.write(failed_string + "\n")
 
-print "Failed " + str(num_failed) + " out of " + str(num_run) + " tests"
+print failed_string
