@@ -5,7 +5,7 @@
 #include "Model.hpp"
 #include "Tree_Numbers.hpp"
 
-#define OPT_EPSILON       1e-1
+#define OPT_EPSILON       1.0
 #define OPT_PARAM_EPSILON 1e-2
 
 /* if set, the parameters are no longer optimized when

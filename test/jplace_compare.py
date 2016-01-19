@@ -121,11 +121,11 @@ if mode == "-v":
     tab.add_column("like_weight_ratio L")
     tab.add_column("like_weight_ratio R")
 
-    tab.add_column("proximal_length L")
-    tab.add_column("proximal_length R")
-
-    tab.add_column("pendant_length L")
-    tab.add_column("pendant_length R")
+    # tab.add_column("proximal_length L")
+    # tab.add_column("proximal_length R")
+    #
+    # tab.add_column("pendant_length L")
+    # tab.add_column("pendant_length R")
 
     tab.add_column("Correct?")
 
@@ -161,11 +161,11 @@ for i in range(0, pmap_lhs.pquery_size()):
             tab.append(str(place_lhs.like_weight_ratio))
             tab.append(str(place_rhs.like_weight_ratio))
 
-            tab.append(str(place_lhs.proximal_length))
-            tab.append(str(place_rhs.proximal_length))
-
-            tab.append(str(place_lhs.pendant_length))
-            tab.append(str(place_rhs.pendant_length))
+            # tab.append(str(place_lhs.proximal_length))
+            # tab.append(str(place_rhs.proximal_length))
+            #
+            # tab.append(str(place_lhs.pendant_length))
+            # tab.append(str(place_rhs.pendant_length))
 
         # Do the comparison and act accordingly.
 
