@@ -5,8 +5,10 @@
 #include "Model.hpp"
 #include "Tree_Numbers.hpp"
 
-#define OPT_EPSILON       1.0
-#define OPT_PARAM_EPSILON 1e-2
+constexpr double OPT_EPSILON = 1.0;
+constexpr double OPT_PARAM_EPSILON = 1e-2;
+constexpr double MIN_BRANCH_LEN = 1.0e-4;
+constexpr double MAX_BRANCH_LEN = 10.0; // TODO these I pulled out of my ass
 
 /* if set, the parameters are no longer optimized when
  * they do not improve the likelihood at one iteration */
@@ -22,6 +24,7 @@ double optimize_branch_lengths(pll_utree_t * tree, pll_partition_t * partition, 
   pll_utree_t ** travbuffer, double cur_log, double lnl_monitor, int* smoothings);
 void optimize(Model& model, pll_utree_t * tree, pll_partition_t * partition,
   const Tree_Numbers& nums, const bool opt_branches, const bool opt_model);
+void optimize_branch_triplet(pll_partition_t * partition, pll_utree_t * tree);
 void compute_and_set_empirical_frequencies(pll_partition_t * partition);
 
 #endif

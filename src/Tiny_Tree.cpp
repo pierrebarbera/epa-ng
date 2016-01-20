@@ -67,22 +67,26 @@ Tiny_Tree::Tiny_Tree(pll_utree_t * edge_node, pll_partition_t * old_partition, M
   ops_.child2_scaler_index = tree_->next->back->scaler_index;
   ops_.parent_scaler_index = TINY_INNER_CLV_INDEX;
 
-  // if the heuristic is to be used, the branch lengths only need to be set once
-  if (!opt_branches_)
-  {
-    /* heuristic insertion as described in EPA paper from 2011 (Berger et al.):
-      original branch, now split by "inner", or base, node of the inserted sequence,
-      defines the new branch lengths between inner and old left/right respectively
-      as old branch length / 2.
-      The new branch leading from inner to the new tip is initialized with length 0.9,
-      which is the default branch length in RAxML.
-    */
-    double branch_lengths[2] = { old_proximal->length / 2, DEFAULT_BRANCH_LENGTH};
-    unsigned int matrix_indices[2] = { 0, 1 };
+  /* heuristic insertion as described in EPA paper from 2011 (Berger et al.):
+    original branch, now split by "inner", or base, node of the inserted sequence,
+    defines the new branch lengths between inner and old left/right respectively
+    as old branch length / 2.
+    The new branch leading from inner to the new tip is initialized with length 0.9,
+    which is the default branch length in RAxML.
+  */
+  // wether heuristic is used or not, this is the initial branch length configuration
+  double branch_lengths[2] = { old_proximal->length / 2, DEFAULT_BRANCH_LENGTH};
+  unsigned int matrix_indices[2] = { 0, 1 };
 
-    // use branch lengths to compute the probability matrices
-    pll_update_prob_matrices(partition_, 0, matrix_indices, branch_lengths, 2);
-  }
+  // use branch lengths to compute the probability matrices
+  pll_update_prob_matrices(partition_, 0, matrix_indices, branch_lengths, 2);
+
+  ops_.child1_matrix_index = 0;
+  ops_.child2_matrix_index = 0;
+
+  // use update_partials to compute the clv pointing toward the new tip
+  // TODO do this once and earlier? must be done before optimization
+  pll_update_partials(partition_, &ops_, TINY_NUM_OPS);
 
 }
 
@@ -113,12 +117,16 @@ std::tuple<double, double, double> Tiny_Tree::place(const Sequence &s)
 
   double distal_length = tree_->next->length;
 
+
   if (opt_branches_)
   {
+
     // optimize branch lengths
-    Tree_Numbers nums;
-    nums.init(3);
-    optimize(model_, tree_, partition_, nums, true, false);
+    // Tree_Numbers nums;
+    // nums.init(3);
+    // optimize(model_, tree_, partition_, nums, true, false);
+
+    optimize_branch_triplet(partition_, tree_);
 
     ops_.child1_matrix_index = tree_->next->next->pmatrix_index;
     ops_.child2_matrix_index = tree_->next->pmatrix_index;
@@ -134,14 +142,6 @@ std::tuple<double, double, double> Tiny_Tree::place(const Sequence &s)
     double new_total_branch_length = distal_length + proximal_length;
     distal_length = (original_branch_length_ / new_total_branch_length) * distal_length;
   }
-  else
-  {
-    ops_.child1_matrix_index = 0;
-    ops_.child2_matrix_index = 0;
-  }
-
-  // use update_partials to compute the clv pointing toward the new tip
-  pll_update_partials(partition_, &ops_, TINY_NUM_OPS);
 
   // compute the loglikelihood using inner node and new tip
   auto logl = pll_compute_edge_loglikelihood(partition_,
