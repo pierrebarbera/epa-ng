@@ -2,6 +2,8 @@
 #define EPA_TREE_H_
 
 #include <string>
+#include <tuple>
+#include <vector>
 
 #include "pllhead.hpp"
 #include "MSA.hpp"
@@ -40,6 +42,9 @@ private:
   MSA query_msa_;
   Model model_;
   Options options_;
+
+  // useful internal strucutres
+  std::vector<std::tuple<unsigned int, unsigned int>> valid_map_;
 
   double place_on_edge(const Sequence& s, pll_utree_t * node, bool optimize=false) const;
 
