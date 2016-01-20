@@ -20,7 +20,10 @@ typedef struct
   pll_operation_t * operation;
 }lk_set;
 
-/* compute the negative lnL (score function for L-BFGS-B */
+/* compute the negative lnL (score function for L-BFGS-B
+* Author:  Diego Darriba <Diego.Darriba@h-its.org>
+* Used with permission.
+*/
 static double compute_negative_lnl_unrooted (void * p, double *x)
 {
   lk_set * params = (lk_set *) p;
@@ -51,6 +54,8 @@ static double compute_negative_lnl_unrooted (void * p, double *x)
  * to the optimized branches are valid.
  * This function returns the updated branch lengths in the tree structure and
  * the likelihood score.
+ * Author:  Diego Darriba <Diego.Darriba@h-its.org>
+ * Used with permission.
  */
 static double optimize_triplet_lbfgsb (pll_partition_t * partition,
                                        pll_utree_t * tree,
@@ -70,8 +75,8 @@ static double optimize_triplet_lbfgsb (pll_partition_t * partition,
   x[2] = tree->next->next->length;
 
   /* set boundaries */
-  lower_bounds[0] = lower_bounds[1] = lower_bounds[2] = MIN_BRANCH_LEN;
-  upper_bounds[0] = upper_bounds[1] = upper_bounds[2] = MAX_BRANCH_LEN;
+  lower_bounds[0] = lower_bounds[1] = lower_bounds[2] = PLL_OPT_MIN_BRANCH_LEN;
+  upper_bounds[0] = upper_bounds[1] = upper_bounds[2] = PLL_OPT_MAX_BRANCH_LEN;
   bound_type[0] = bound_type[1] = bound_type[2] = PLL_LBFGSB_BOUND_BOTH;
 
   /* set operation for updating the CLV on the virtual root edge */
