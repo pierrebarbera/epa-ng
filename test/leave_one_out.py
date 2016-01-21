@@ -86,7 +86,7 @@ with open(os.path.join(output_dir, "results.log"), 'wb') as log_file:
 
         # call epa with trimmed files
         # print "calling epa: "
-        params = [epa, cur_treefile, MSA_file, "-oO", "-w", cur_outdir]
+        params = [epa, cur_treefile, MSA_file, "-O", "-w", cur_outdir]
         # print params
         ret = call(params, stdout=open(os.devnull, 'wb'))
 

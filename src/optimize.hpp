@@ -7,8 +7,6 @@
 
 constexpr double OPT_EPSILON = 1.0;
 constexpr double OPT_PARAM_EPSILON = 1e-2;
-constexpr double MIN_BRANCH_LEN = 1.0e-4;
-constexpr double MAX_BRANCH_LEN = 10.0; // TODO these I pulled out of my ass
 
 /* if set, the parameters are no longer optimized when
  * they do not improve the likelihood at one iteration */

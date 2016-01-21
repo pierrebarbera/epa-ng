@@ -1,15 +1,20 @@
 #ifndef EPA_EPA_PLL_UTIL_H_
 #define EPA_EPA_PLL_UTIL_H_
 
+#include <string>
+#include <tuple>
+
 #include "pllhead.hpp"
 #include "Tree_Numbers.hpp"
 #include "MSA.hpp"
 #include "Sequence.hpp"
 
 void link_tree_msa(pll_utree_t * tree, pll_partition_t * partition,
-              const MSA& msa, const unsigned int num_tip_nodes);
+              const MSA& msa, const unsigned int num_tip_nodes,
+              std::vector<std::tuple<unsigned int, unsigned int>> &valid_map);
 void precompute_clvs(pll_utree_t * tree, pll_partition_t * partition, const Tree_Numbers& nums);
 void split_combined_msa(MSA& source, MSA& target, pll_utree_t * tree, unsigned int num_tip_nodes);
+std::tuple<unsigned int, unsigned int> get_valid_range(std::string sequence);
 
 // operator overloads
 bool operator==(const pll_utree_t * node, const Sequence& s);
