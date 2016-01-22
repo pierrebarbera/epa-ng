@@ -12,14 +12,6 @@
 
 using namespace std;
 
-typedef struct
-{
-  pll_utree_t * tree;
-  pll_partition_t * partition;
-  unsigned int matrix_indices[3];
-  pll_operation_t * operation;
-}lk_set;
-
 /* compute the negative lnL (score function for L-BFGS-B
 * Author:  Diego Darriba <Diego.Darriba@h-its.org>
 * Used with permission.
@@ -35,6 +27,31 @@ static double compute_negative_lnl_unrooted (void * p, double *x)
                             x,
                             3);
   pll_update_partials (partition, params->operation, 1);
+
+  score = -1
+        * pll_compute_edge_loglikelihood (
+            partition,
+            params->tree->clv_index,
+            params->tree->scaler_index,
+            params->tree->back->clv_index,
+            params->tree->back->scaler_index,
+            params->tree->pmatrix_index,
+            0);
+
+  return score;
+}
+
+static double compute_negative_lnl_unrooted_ranged (void * p, double *x, Range range)
+{
+  lk_set * params = (lk_set *) p;
+  pll_partition_t * partition = params->partition;
+  double score;
+
+  pll_update_prob_matrices (partition, 0,
+                            params->matrix_indices,
+                            x,
+                            3);
+  //update_partial_ranged (partition, params->operation, range.begin, range.span);
 
   score = -1
         * pll_compute_edge_loglikelihood (
@@ -112,14 +129,9 @@ static double optimize_triplet_lbfgsb (pll_partition_t * partition,
   return score;
 }
 
-void optimize_branch_triplet(pll_partition_t * partition, pll_utree_t * tree)
+double optimize_branch_triplet(pll_partition_t * partition, pll_utree_t * tree)
 {
   // compute logl once to give us a logl starting point
-  // auto logl = pll_compute_edge_loglikelihood (partition, tree->clv_index,
-  //                                               tree->scaler_index,
-  //                                               tree->back->clv_index,
-  //                                               tree->back->scaler_index,
-  //                                               tree->pmatrix_index, 0);
   auto logl = -1* optimize_triplet_lbfgsb (partition, tree, 1e7, OPT_PARAM_EPSILON);
   auto cur_logl = -numeric_limits<double>::infinity();
 
@@ -128,6 +140,8 @@ void optimize_branch_triplet(pll_partition_t * partition, pll_utree_t * tree)
     logl = cur_logl;
     cur_logl = -1* optimize_triplet_lbfgsb (partition, tree, 1e7, OPT_PARAM_EPSILON);
   }
+
+  return cur_logl;
 }
 
 void traverse_update_partials(pll_utree_t * tree, pll_partition_t * partition,
@@ -202,7 +216,7 @@ void optimize(Model& model, pll_utree_t * tree, pll_partition_t * partition,
     return;
 
   if (opt_branches)
-    set_branch_length(tree, DEFAULT_BRANCH_LENGTH);;
+    set_branch_length(tree, DEFAULT_BRANCH_LENGTH);
 
   auto symmetries = (&(model.symmetries())[0]);
 
@@ -282,9 +296,10 @@ void optimize(Model& model, pll_utree_t * tree, pll_partition_t * partition,
   }
 }
 
-void compute_and_set_empirical_frequencies(pll_partition_t * partition)
+void compute_and_set_empirical_frequencies(pll_partition_t * partition, Model& model)
 {
   double * empirical_freqs = pll_compute_empirical_frequencies (partition);
   pll_set_frequencies (partition, 0, 0, empirical_freqs);
+  model.base_frequencies(partition->frequencies[0], partition->states);
   free (empirical_freqs);
 }
