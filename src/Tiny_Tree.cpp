@@ -12,12 +12,26 @@ using namespace std;
 Tiny_Tree::Tiny_Tree(pll_utree_t * edge_node, pll_partition_t * old_partition, Model model,
    bool opt_branches)
   : opt_branches_(opt_branches), original_branch_length_(edge_node->length), model_(model)
+
 {
   assert(edge_node != NULL);
   assert(old_partition != NULL);
 
   pll_utree_t * old_proximal = edge_node->back;
   pll_utree_t * old_distal = edge_node;
+
+  // detect the tip-tip case. In the tip-tip case, the reference tip should always be the DISTAL
+  if (!old_distal->next)
+  {
+    tip_tip_case_ = true;
+  }
+  else if (!old_proximal->next)
+  {
+    tip_tip_case_ = true;
+    // do the switcheroo
+    old_distal = old_proximal;
+    old_proximal = old_distal->back;
+  }
 
   tree_ = make_tiny_tree_structure(old_proximal, old_distal);
 
@@ -28,7 +42,7 @@ Tiny_Tree::Tiny_Tree(pll_utree_t * edge_node, pll_partition_t * old_partition, M
                           old_partition->sites,
                           0, // number of mixture models
                           old_partition->rate_matrices,
-                          3, // number of prob. matrices (one per unique branch length)
+                          3, // number of prob. matrices (one per possible unique branch length)
                           old_partition->rate_cats,
                           4, // number of scale buffers (one per node)
                           old_partition->attributes);
@@ -58,7 +72,6 @@ Tiny_Tree::Tiny_Tree(pll_utree_t * edge_node, pll_partition_t * old_partition, M
         old_partition->scale_buffer[old_distal->scaler_index],
         sizeof(unsigned int) * old_partition->sites);
 
-
   // precreate some of the operation fields that are static throughout the trees lifetime
   ops_.parent_clv_index    = TINY_INNER_CLV_INDEX;
   ops_.child1_clv_index    = TINY_PROXIMAL_CLV_INDEX;
@@ -73,7 +86,7 @@ Tiny_Tree::Tiny_Tree(pll_utree_t * edge_node, pll_partition_t * old_partition, M
     as old branch length / 2.
     The new branch leading from inner to the new tip is initialized with length 0.9,
     which is the default branch length in RAxML.
-  */
+  */// TODO change this
   // wether heuristic is used or not, this is the initial branch length configuration
   double branch_lengths[2] = { old_proximal->length / 2, DEFAULT_BRANCH_LENGTH};
   unsigned int matrix_indices[2] = { 0, 1 };
@@ -84,9 +97,9 @@ Tiny_Tree::Tiny_Tree(pll_utree_t * edge_node, pll_partition_t * old_partition, M
   ops_.child1_matrix_index = 0;
   ops_.child2_matrix_index = 0;
 
-  // use update_partials to compute the clv pointing toward the new tip
-  // TODO do this once and earlier? must be done before optimization
-  pll_update_partials(partition_, &ops_, TINY_NUM_OPS);
+  if (!opt_branches_)
+    pll_update_partials(partition_, &ops_, TINY_NUM_OPS);
+    // use update_partials to compute the clv pointing toward the new tip
 
 }
 
@@ -114,9 +127,8 @@ std::tuple<double, double, double> Tiny_Tree::place(const Sequence &s)
   pll_set_tip_states(partition_, TINY_NEW_TIP_CLV_INDEX, pll_map_nt, s.sequence().c_str());
 
   unsigned int inner_matrix_index = 1;
-
   double distal_length = tree_->next->length;
-
+  double logl = 0;
 
   if (opt_branches_)
   {
@@ -126,11 +138,16 @@ std::tuple<double, double, double> Tiny_Tree::place(const Sequence &s)
     // nums.init(3);
     // optimize(model_, tree_, partition_, nums, true, false);
 
-    optimize_branch_triplet(partition_, tree_);
+    // TODO rebuild the operation for the tip tip case
+    // TODO pass the sacred operation to optimize
+    // TODO call a modified opt with range
+    /* TODO
+      */
+    logl = optimize_branch_triplet(partition_, tree_);
 
-    ops_.child1_matrix_index = tree_->next->next->pmatrix_index;
-    ops_.child2_matrix_index = tree_->next->pmatrix_index;
-    inner_matrix_index = tree_->pmatrix_index;
+    // ops_.child1_matrix_index = tree_->next->next->pmatrix_index;
+    // ops_.child2_matrix_index = tree_->next->pmatrix_index;
+    // inner_matrix_index = tree_->pmatrix_index;
 
     assert(tree_->length >= 0);
     assert(tree_->next->length >= 0);
@@ -142,16 +159,14 @@ std::tuple<double, double, double> Tiny_Tree::place(const Sequence &s)
     double new_total_branch_length = distal_length + proximal_length;
     distal_length = (original_branch_length_ / new_total_branch_length) * distal_length;
   }
-
-  // compute the loglikelihood using inner node and new tip
-  auto logl = pll_compute_edge_loglikelihood(partition_,
-                                        TINY_NEW_TIP_CLV_INDEX,
-                                        PLL_SCALE_BUFFER_NONE,// scaler_index
-                                        TINY_INNER_CLV_INDEX,
-                                        TINY_INNER_CLV_INDEX,  // scaler_index
-                                        inner_matrix_index,
-                                        0);// freq index
-
+  else
+    logl = pll_compute_edge_loglikelihood(partition_,
+                                          TINY_NEW_TIP_CLV_INDEX,
+                                          PLL_SCALE_BUFFER_NONE,// scaler_index
+                                          TINY_INNER_CLV_INDEX,
+                                          TINY_INNER_CLV_INDEX,  // scaler_index
+                                          inner_matrix_index,
+                                          0);// freq index
 
   assert(distal_length <= original_branch_length_);
 
