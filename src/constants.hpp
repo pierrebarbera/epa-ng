@@ -10,6 +10,6 @@ constexpr unsigned int TINY_NEW_TIP_CLV_INDEX = 2;
 constexpr unsigned int TINY_INNER_CLV_INDEX = 3;
 constexpr unsigned int TINY_NUM_OPS = 1;
 
-constexpr double DEFAULT_BRANCH_LENGTH = -log(0.9);
+#define DEFAULT_BRANCH_LENGTH -log(0.9)
 
 #endif
