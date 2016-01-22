@@ -1,8 +1,9 @@
 #!/bin/bash
 
-OUT="20k"
-TREE="data/lucas/20k.newick"
-MSA="data/lucas/20k.fasta"
+ABSPATH=$(cd `dirname "${BASH_SOURCE[0]}"` && pwd)
+OUT=$ABSPATH/20k
+TREE=$ABSPATH/data/lucas/20k.newick
+MSA=$ABSPATH/data/lucas/20k.fasta
 mkdir -p $OUT
 rm -rf $OUT/*
 

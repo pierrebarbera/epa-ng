@@ -1,7 +1,11 @@
 bin/
 build/
-test/bin
-test/log
+test/bin/
+test/log/
+test/20k/
+test/lou/
+test/data/lucas/
+test/data/bacvag/
 include/
 
 # Compiled Object files
