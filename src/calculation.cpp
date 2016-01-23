@@ -61,3 +61,34 @@ void discard_by_accumulated_threshold(PQuery_Set& pqs, const double thresh)
     pq.erase(pq_iter, pq.end());
   }
 }
+
+inline Range superset(Range a, Range b)
+{
+  if (b.begin < a.begin)
+    a.begin = b.begin;
+  if (b.span > a.span)
+    a.span = b.span;
+  return a;
+}
+
+/*  Returns the range of a sequence outside of which there are ONLY indel characters.
+ *  Range starts at the first valid position and ends after <span> characters, where
+ *  begin + span is the first element not included in the valid range.
+ *  Example:
+ *  -  -  -  A  T  A  G  C  T  -  -
+ *  0  1  2  3  4  5  6  7  8  9 10
+ *  Output: (3,6)
+ */
+Range get_valid_range(string sequence)
+{
+  unsigned int lower = 0;
+  unsigned int upper = sequence.length();
+
+  while(sequence.c_str()[lower] == '-')
+    lower++;
+
+  while(sequence.c_str()[upper - 1] == '-')
+    upper--;
+
+  return Range(lower, upper - lower);
+}
