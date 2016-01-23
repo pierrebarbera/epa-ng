@@ -49,7 +49,7 @@ Tree::~Tree() {
   pll_utree_destroy(tree_);
 }
 
-PQuery_Set Tree::place() const {
+PQuery_Set Tree::place() {
   // get all edges
   vector<pll_utree_t *> branches(nums_.branches);
   auto num_traversed = utree_query_branches(tree_, &branches[0]);
@@ -73,7 +73,7 @@ PQuery_Set Tree::place() const {
   {
     pquerys.emplace_back(s);
     for (unsigned int i = 0; i < num_traversed; ++i) {
-      tie(logl, distal, pendant) = insertion_trees[i].place(s);
+      tie(logl, distal, pendant) = insertion_trees[i].place(s, valid_map_);
       pquerys.back().emplace_back(i,       // branch_id
                                   logl,    // likelihood
                                   pendant, // pendant length
@@ -99,7 +99,7 @@ PQuery_Set Tree::place() const {
         unsigned int id = placement.branch_id();
         insertion_trees[id].opt_branches(
             true); // TODO only needs to be done once
-        tie(logl, distal, pendant) = insertion_trees[id].place(pq.sequence());
+        tie(logl, distal, pendant) = insertion_trees[id].place(pq.sequence(), valid_map_);
         placement.likelihood(logl);
         placement.pendant_length(pendant);
         placement.distal_length(distal);

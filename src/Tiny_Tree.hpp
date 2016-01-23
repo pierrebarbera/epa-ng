@@ -2,6 +2,7 @@
 #define EPA_TINY_TREE_H_
 
 #include <tuple>
+#include <vector>
 
 #include "pllhead.hpp"
 #include "Sequence.hpp"
@@ -53,7 +54,7 @@ public:
   Tiny_Tree& operator = (Tiny_Tree && other) = delete;
 
   // returns, in order, : likelihood, distal length, pendant length
-  std::tuple<double, double, double> place(const Sequence& s);
+  std::tuple<double, double, double> place(const Sequence& s, std::vector<Range>& valid_map);
 
   void opt_branches(bool b) {opt_branches_ = b;};
 
@@ -68,6 +69,7 @@ private:
   Model model_;
   Range reference_tip_range_;
   bool tip_tip_case_ = false;
+  unsigned int reference_tip_clv_index_ = 0;
 
 };
 

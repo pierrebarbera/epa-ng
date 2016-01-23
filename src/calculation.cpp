@@ -62,7 +62,7 @@ void discard_by_accumulated_threshold(PQuery_Set& pqs, const double thresh)
   }
 }
 
-inline Range superset(Range a, Range b)
+Range superset(Range a, Range b)
 {
   if (b.begin < a.begin)
     a.begin = b.begin;

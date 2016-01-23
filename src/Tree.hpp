@@ -21,7 +21,7 @@ public:
   Tree(const std::string& tree_file, const MSA& msa, Model& model, Options options,
       const MSA& query = MSA());
   ~Tree();
-  PQuery_Set place() const;
+  PQuery_Set place();
 
   // member access
   inline Tree_Numbers nums() const {return nums_;};
