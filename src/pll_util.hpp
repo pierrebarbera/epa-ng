@@ -13,15 +13,9 @@ typedef struct
 
 /* some code adapted from libpll examples */
 
-// helper functions
-void set_missing_branch_length_recursive(pll_utree_t * tree, double length);
-void set_branch_length_recursive(pll_utree_t * tree, double length);
-void set_unique_clv_indices_recursive(pll_utree_t * tree, const int num_tip_nodes);
-void utree_query_branches_recursive(pll_utree_t * node, pll_utree_t ** node_list, int * index);
-void free_node_data(pll_utree_t * node);
-void get_numbered_newick_string_recursive(pll_utree_t * node, std::ostringstream &ss);
-
 // interface
+void update_partial_ranged(pll_partition_t * partition, pll_operation_t * op,
+  unsigned int begin, unsigned int span);
 int cb_partial_traversal(pll_utree_t * node);
 int cb_full_traversal(pll_utree_t * node);
 int utree_free_node_data(pll_utree_t * node);
