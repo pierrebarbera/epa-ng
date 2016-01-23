@@ -6,7 +6,15 @@
 
 using namespace std;
 
-inline void update_partial_ranged(pll_partition_t * partition, pll_operation_t * op,
+// helper functions
+void set_missing_branch_length_recursive(pll_utree_t * tree, double length);
+void set_branch_length_recursive(pll_utree_t * tree, double length);
+void set_unique_clv_indices_recursive(pll_utree_t * tree, const int num_tip_nodes);
+void utree_query_branches_recursive(pll_utree_t * node, pll_utree_t ** node_list, int * index);
+void free_node_data(pll_utree_t * node);
+void get_numbered_newick_string_recursive(pll_utree_t * node, std::ostringstream &ss);
+
+void update_partial_ranged(pll_partition_t * partition, pll_operation_t * op,
                             unsigned int begin, unsigned int span)
 {
 #ifdef __AVX
@@ -16,7 +24,7 @@ inline void update_partial_ranged(pll_partition_t * partition, pll_operation_t *
 #endif
 
   pll_core_update_partial(STATES,
-                          span, // first CLV entry not used in computation
+                          span, // begin + span = first CLV entry not used in computation
                           partition->rate_cats,
                           (partition->clv[op->parent_clv_index]) + begin,
                           partition->scale_buffer[op->parent_scaler_index],
