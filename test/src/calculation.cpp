@@ -2,11 +2,33 @@
 
 #include "src/calculation.hpp"
 #include "src/jplace_util.hpp"
+#include "src/Range.hpp"
 
 #include <vector>
 #include <iostream>
 
 using namespace std;
+
+TEST(calculation, get_valid_range)
+{
+  string s1("---------GGGCCCGTAT-------");//(9,19)
+  string s2("GGGCCCGTAT-------");         //(0,10)
+  string s3("-GGGC---CCG-TAT");           //(1,15)
+
+  Range r;
+  r = get_valid_range(s1);
+  EXPECT_EQ(r.begin, 9);
+  EXPECT_EQ(r.span, 10);
+
+  r = get_valid_range(s2);
+  EXPECT_EQ(r.begin, 0);
+  EXPECT_EQ(r.span, 10);
+
+  r = get_valid_range(s3);
+  EXPECT_EQ(r.begin, 1);
+  EXPECT_EQ(r.span, 14);
+}
+
 
 TEST(calculation, discard_by_accumulated_threshold)
 {

@@ -7,6 +7,7 @@
 #include "src/Tree_Numbers.hpp"
 #include "src/Model.hpp"
 #include "src/MSA.hpp"
+#include "src/Range.hpp"
 
 #include <string>
 #include <tuple>
@@ -110,7 +111,7 @@ TEST(pll_util, get_numbered_newick_string)
   pll_utree_t * tree;
 
   tie(part, tree) = build_partition_from_file(env->tree_file, env->model, nums, msa.num_sites());
-  auto valid_map = vector<tuple<unsigned int, unsigned int>>(nums.tip_nodes);
+  auto valid_map = vector<Range>(nums.tip_nodes);
   link_tree_msa(tree, part, msa, nums.tip_nodes, valid_map);
 
   // tests

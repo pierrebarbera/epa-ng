@@ -12,11 +12,21 @@
 
 using namespace std;
 
+// local helpers
+void traverse_update_partials(pll_utree_t * tree, pll_partition_t * partition,
+  pll_utree_t ** travbuffer, double * branch_lengths, unsigned int * matrix_indices,
+  pll_operation_t * operations);
+double compute_negative_lnl_unrooted_ranged (void * p, double *x);
+double optimize_triplet_lbfgsb_ranged (pll_partition_t * partition, pll_utree_t * tree,
+  double factr, double pgtol, unsigned int begin, unsigned int span);
+
+
 /* compute the negative lnL (score function for L-BFGS-B
-* Author:  Diego Darriba <Diego.Darriba@h-its.org>
+* Original author:  Diego Darriba <Diego.Darriba@h-its.org>
 * Used with permission.
+* With modifications.
 */
-static double compute_negative_lnl_unrooted (void * p, double *x)
+double compute_negative_lnl_unrooted_ranged (void * p, double *x)
 {
   lk_set * params = (lk_set *) p;
   pll_partition_t * partition = params->partition;
@@ -26,42 +36,16 @@ static double compute_negative_lnl_unrooted (void * p, double *x)
                             params->matrix_indices,
                             x,
                             3);
-  pll_update_partials (partition, params->operation, 1);
+  update_partial_ranged (partition, params->operation, params->begin, params->span);
 
-  score = -1
-        * pll_compute_edge_loglikelihood (
-            partition,
-            params->tree->clv_index,
-            params->tree->scaler_index,
-            params->tree->back->clv_index,
-            params->tree->back->scaler_index,
-            params->tree->pmatrix_index,
-            0);
-
-  return score;
-}
-
-static double compute_negative_lnl_unrooted_ranged (void * p, double *x, Range range)
-{
-  lk_set * params = (lk_set *) p;
-  pll_partition_t * partition = params->partition;
-  double score;
-
-  pll_update_prob_matrices (partition, 0,
-                            params->matrix_indices,
-                            x,
-                            3);
-  //update_partial_ranged (partition, params->operation, range.begin, range.span);
-
-  score = -1
-        * pll_compute_edge_loglikelihood (
-            partition,
-            params->tree->clv_index,
-            params->tree->scaler_index,
-            params->tree->back->clv_index,
-            params->tree->back->scaler_index,
-            params->tree->pmatrix_index,
-            0);
+  score = -1 * pll_compute_edge_loglikelihood (
+                partition,
+                params->tree->clv_index,
+                params->tree->scaler_index,
+                params->tree->back->clv_index,
+                params->tree->back->scaler_index,
+                params->tree->pmatrix_index,
+                0);
 
   return score;
 }
@@ -71,13 +55,16 @@ static double compute_negative_lnl_unrooted_ranged (void * p, double *x, Range r
  * to the optimized branches are valid.
  * This function returns the updated branch lengths in the tree structure and
  * the likelihood score.
- * Author:  Diego Darriba <Diego.Darriba@h-its.org>
+ * Original author:  Diego Darriba <Diego.Darriba@h-its.org>
  * Used with permission.
+ * With modifications.
  */
-static double optimize_triplet_lbfgsb (pll_partition_t * partition,
+double optimize_triplet_lbfgsb_ranged (pll_partition_t * partition,
                                        pll_utree_t * tree,
                                        double factr,
-                                       double pgtol)
+                                       double pgtol,
+                                       unsigned int begin,
+                                       unsigned int span)
 {
 
   /* L-BFGS-B parameters */
@@ -115,11 +102,13 @@ static double optimize_triplet_lbfgsb (pll_partition_t * partition,
   params.matrix_indices[1] = tree->next->pmatrix_index;
   params.matrix_indices[2] = tree->next->next->pmatrix_index;
   params.operation = &op;
+  params.begin = begin;
+  params.span = span;
 
   /* optimize branches */
   score = pll_minimize_lbfgsb (x, lower_bounds, upper_bounds, bound_type,
                                num_variables, factr, pgtol, &params,
-                               compute_negative_lnl_unrooted);
+                               compute_negative_lnl_unrooted_ranged);
 
   /* set lengths back to the tree structure */
   tree->length = tree->back->length = x[0];
@@ -129,16 +118,18 @@ static double optimize_triplet_lbfgsb (pll_partition_t * partition,
   return score;
 }
 
-double optimize_branch_triplet(pll_partition_t * partition, pll_utree_t * tree)
+double optimize_branch_triplet_ranged(pll_partition_t * partition, pll_utree_t * tree, Range range)
 {
   // compute logl once to give us a logl starting point
-  auto logl = -1* optimize_triplet_lbfgsb (partition, tree, 1e7, OPT_PARAM_EPSILON);
+  auto logl = -1* optimize_triplet_lbfgsb_ranged (partition, tree, 1e7, OPT_PARAM_EPSILON,
+                                                range.begin, range.span);
   auto cur_logl = -numeric_limits<double>::infinity();
 
   while (fabs (cur_logl - logl) > OPT_EPSILON)
   {
     logl = cur_logl;
-    cur_logl = -1* optimize_triplet_lbfgsb (partition, tree, 1e7, OPT_PARAM_EPSILON);
+    cur_logl = -1* optimize_triplet_lbfgsb_ranged (partition, tree, 1e7, OPT_PARAM_EPSILON,
+                                          range.begin, range.span);
   }
 
   return cur_logl;

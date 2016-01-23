@@ -24,7 +24,7 @@ Tree::Tree(const string &tree_file, const MSA &msa, Model &model,
   if (query.num_sites() == 0)
     split_combined_msa(ref_msa_, query_msa_, tree_, nums_.tip_nodes);
 
-  valid_map_ = vector<tuple<unsigned int, unsigned int>>(nums_.tip_nodes);
+  valid_map_ = vector<Range>(nums_.tip_nodes);
   link_tree_msa(tree_, partition_, ref_msa_, nums_.tip_nodes, valid_map_);
 
   compute_and_set_empirical_frequencies(partition_, model_);

@@ -7,31 +7,11 @@
 #include "src/Tree_Numbers.hpp"
 #include "src/Model.hpp"
 #include "src/MSA.hpp"
+#include "src/Range.hpp"
 
 #include <string>
 
 using namespace std;
-
-TEST(epa_pll_util, get_valid_range)
-{
-  string s1("---------GGGCCCGTAT-------");//(9,19)
-  string s2("GGGCCCGTAT-------");         //(0,10)
-  string s3("-GGGC---CCG-TAT");           //(1,15)
-
-  unsigned int i = 0, j = 0;
-
-  tie(i,j) = get_valid_range(s1);
-  EXPECT_EQ(i, 9);
-  EXPECT_EQ(j, 19);
-
-  tie(i,j) = get_valid_range(s2);
-  EXPECT_EQ(i, 0);
-  EXPECT_EQ(j, 10);
-
-  tie(i,j) = get_valid_range(s3);
-  EXPECT_EQ(i, 1);
-  EXPECT_EQ(j, 15);
-}
 
 TEST(epa_pll_util, link_tree_msa)
 {
@@ -42,7 +22,7 @@ TEST(epa_pll_util, link_tree_msa)
   pll_utree_t * tree;
 
   tie(part, tree) = build_partition_from_file(env->tree_file, env->model, nums, msa.num_sites());
-  auto valid_map = vector<tuple<unsigned int, unsigned int>>(nums.tip_nodes);
+  auto valid_map = vector<Range>(nums.tip_nodes);
   link_tree_msa(tree, part, msa, nums.tip_nodes, valid_map);
 
   // tests
@@ -71,7 +51,7 @@ TEST(epa_pll_util, precompute_clvs)
   pll_utree_t * tree;
 
   tie(part, tree) = build_partition_from_file(env->tree_file, env->model, nums, msa.num_sites());
-  auto valid_map = vector<tuple<unsigned int, unsigned int>>(nums.tip_nodes);
+  auto valid_map = vector<Range>(nums.tip_nodes);
   link_tree_msa(tree, part, msa, nums.tip_nodes, valid_map);
   precompute_clvs(tree, part, nums);
 

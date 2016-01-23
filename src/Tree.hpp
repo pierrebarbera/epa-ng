@@ -12,7 +12,7 @@
 #include "PQuery_Set.hpp"
 #include "Tiny_Tree.hpp"
 #include "Options.hpp"
-
+#include "Range.hpp"
 
 /* Encapsulates the pll data structures for ML computation */
 class Tree
@@ -44,7 +44,7 @@ private:
   Options options_;
 
   // useful internal strucutres
-  std::vector<std::tuple<unsigned int, unsigned int>> valid_map_;
+  std::vector<Range> valid_map_;
 
   double place_on_edge(const Sequence& s, pll_utree_t * node, bool optimize=false) const;
 
