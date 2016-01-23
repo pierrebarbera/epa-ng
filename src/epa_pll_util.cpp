@@ -4,33 +4,13 @@
 #include <algorithm>
 
 #include "pll_util.hpp"
+#include "calculation.hpp"
 
 using namespace std;
 
-/*  Returns the range of a sequence outside of which there are ONLY indel characters.
- *  Range starts at the first valid position and ends with the first non-valid position
- *  Example:
- *  -  -  -  A  T  A  G  C  T  -  -
- *  0  1  2  3  4  5  6  7  8  9 10
- *  Output: (3,9)
- */
-tuple<unsigned int, unsigned int> get_valid_range(string sequence)
-{
-  unsigned int lower = 0;
-  unsigned int upper = sequence.length();
-
-  while(sequence.c_str()[lower] == '-')
-    lower++;
-
-  while(sequence.c_str()[upper - 1] == '-')
-    upper--;
-
-  return make_tuple(lower, upper);
-}
-
 void link_tree_msa(pll_utree_t * tree, pll_partition_t * partition,
               const MSA& msa, const unsigned int num_tip_nodes,
-              vector<tuple<unsigned int, unsigned int>> &valid_map)
+              vector<Range> &valid_map)
 {
   // obtain pointers to all tip nodes
   vector<pll_utree_t*> tip_nodes(num_tip_nodes);
