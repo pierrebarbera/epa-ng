@@ -1,6 +1,7 @@
 #include "pll_util.hpp"
 
 #include <iomanip>
+#include <stdexcept>
 
 #include "constants.hpp"
 
@@ -328,4 +329,18 @@ pll_utree_t * make_tiny_tree_structure(const pll_utree_t * old_left, const pll_u
   proximal->pmatrix_index = 0;
 
   return inner;
+}
+
+/* Function to return the tip node if either <node> or <node->back> is one. Otherweise
+  returns null. */
+pll_utree_t * get_tip_node(pll_utree_t * node)
+{
+  pll_utree_t * tip_node = nullptr;
+  // node is the tip
+  if (!node->next)
+    tip_node = node;
+  else if (!node->back->next)
+    tip_node = node->back;
+
+  return tip_node;
 }

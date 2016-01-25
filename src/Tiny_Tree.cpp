@@ -12,9 +12,9 @@
 using namespace std;
 
 Tiny_Tree::Tiny_Tree(pll_utree_t *edge_node, pll_partition_t *old_partition,
-                     Model model, bool opt_branches)
+                     Model model, bool opt_branches, Range reference_tip_range)
     : opt_branches_(opt_branches), original_branch_length_(edge_node->length),
-      model_(model)
+      model_(model), reference_tip_range_(reference_tip_range)
 
 {
   assert(edge_node != NULL);
@@ -32,7 +32,6 @@ Tiny_Tree::Tiny_Tree(pll_utree_t *edge_node, pll_partition_t *old_partition,
     // do the switcheroo
     old_distal = old_proximal;
     old_proximal = old_distal->back;
-    reference_tip_clv_index_ = old_distal->clv_index;
   }
 
   tree_ = make_tiny_tree_structure(old_proximal, old_distal);
@@ -123,7 +122,7 @@ Tiny_Tree::~Tiny_Tree() {
     pll_utree_destroy(tree_);
 }
 
-std::tuple<double, double, double> Tiny_Tree::place(const Sequence &s, vector<Range>& valid_map) {
+std::tuple<double, double, double> Tiny_Tree::place(const Sequence &s) {
   assert(partition_ != NULL);
 
   // init the new tip with s.sequence(), branch length
@@ -165,7 +164,7 @@ std::tuple<double, double, double> Tiny_Tree::place(const Sequence &s, vector<Ra
 
       /* setting the actual range of the ranged CLV computation to be the
         superset of the two tips ranges*/
-      range = superset(get_valid_range(s.sequence()), valid_map[reference_tip_clv_index_]);
+      range = superset(get_valid_range(s.sequence()), reference_tip_range_);
     }
 
     logl = optimize_branch_triplet_ranged(partition_, virtual_root, range);

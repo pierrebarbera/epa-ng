@@ -14,7 +14,8 @@ using namespace std;
 
 Tree::Tree(const string &tree_file, const MSA &msa, Model &model,
            Options options, const MSA &query)
-    : ref_msa_(msa), query_msa_(query), model_(model), options_(options) {
+    : ref_msa_(msa), query_msa_(query), model_(model), options_(options)
+{
   // parse, build tree
   nums_ = Tree_Numbers();
   tie(partition_, tree_) =
@@ -42,14 +43,16 @@ double Tree::ref_tree_logl() {
       tree_->back->scaler_index, tree_->pmatrix_index, 0);
 }
 
-Tree::~Tree() {
+Tree::~Tree()
+{
   // free data segment of tree nodes
   utree_free_node_data(tree_);
   pll_partition_destroy(partition_);
   pll_utree_destroy(tree_);
 }
 
-PQuery_Set Tree::place() {
+PQuery_Set Tree::place()
+{
   // get all edges
   vector<pll_utree_t *> branches(nums_.branches);
   auto num_traversed = utree_query_branches(tree_, &branches[0]);
@@ -57,9 +60,17 @@ PQuery_Set Tree::place() {
   // build all tiny trees with corresponding edges
   vector<Tiny_Tree> insertion_trees;
   for (auto node : branches)
+  {
+    Range tip_range;
+    pll_utree_t * tip_node;
+    // if the current node is or is adjacent to a tip, get the tips valid range
+    if ((tip_node = get_tip_node(node)))
+      tip_range = valid_map_[tip_node->clv_index];
     insertion_trees.emplace_back(node, partition_, model_,
-                                 !options_.prescoring);
-  /* clarification: last arg here is a flag specifying whether to optimize the
+                                !options_.prescoring,// flag
+                                tip_range);
+  }
+  /* clarification: flag here is a flag specifying whether to optimize the
     branches.
     we don't want that if the mode is prescoring */
 
@@ -72,8 +83,9 @@ PQuery_Set Tree::place() {
        query_msa_) // make sure a reference, not a copy, is returned
   {
     pquerys.emplace_back(s);
-    for (unsigned int i = 0; i < num_traversed; ++i) {
-      tie(logl, distal, pendant) = insertion_trees[i].place(s, valid_map_);
+    for (unsigned int i = 0; i < num_traversed; ++i)
+    {
+      tie(logl, distal, pendant) = insertion_trees[i].place(s);
       pquerys.back().emplace_back(i,       // branch_id
                                   logl,    // likelihood
                                   pendant, // pendant length
@@ -89,17 +101,15 @@ PQuery_Set Tree::place() {
     identified
     during the first run */
   // TODO for MPI: think about how to split up the work, probably build list of
-  // sequences
-  // per branch, then pass
+  // sequences per branch, then pass
   if (options_.prescoring) {
     discard_by_accumulated_threshold(pquerys,
                                      0.95); // TODO outside input? constant?
     for (auto &pq : pquerys)
       for (auto &placement : pq) {
         unsigned int id = placement.branch_id();
-        insertion_trees[id].opt_branches(
-            true); // TODO only needs to be done once
-        tie(logl, distal, pendant) = insertion_trees[id].place(pq.sequence(), valid_map_);
+        insertion_trees[id].opt_branches(true); // TODO only needs to be done once
+        tie(logl, distal, pendant) = insertion_trees[id].place(pq.sequence());
         placement.likelihood(logl);
         placement.pendant_length(pendant);
         placement.distal_length(distal);

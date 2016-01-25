@@ -25,5 +25,6 @@ void set_missing_branch_length(pll_utree_t * tree, double length);
 void set_branch_length(pll_utree_t * tree, double length);
 std::string get_numbered_newick_string(pll_utree_t * root);
 pll_utree_t * make_tiny_tree_structure(const pll_utree_t * old_left, const pll_utree_t * old_right);
+pll_utree_t * get_tip_node(pll_utree_t * node);
 
 #endif

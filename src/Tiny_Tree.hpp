@@ -31,13 +31,10 @@ class Tiny_Tree
 {
 public:
   Tiny_Tree(pll_utree_t * edge_node, pll_partition_t * old_partition, Model model,
-    bool opt_branches);
+    bool opt_branches) : Tiny_Tree(edge_node, old_partition,
+    model, opt_branches, Range(0, old_partition->sites)) {};
   Tiny_Tree(pll_utree_t * edge_node, pll_partition_t * old_partition, Model model,
-    bool opt_branches, Range reference_tip_range) : original_branch_length_(edge_node->length)
-  {
-    reference_tip_range_ = reference_tip_range;
-    Tiny_Tree(edge_node, old_partition, model, opt_branches);
-  };
+    bool opt_branches, Range reference_tip_range);
 
   Tiny_Tree(Tiny_Tree const& other) = delete;
 
@@ -54,7 +51,7 @@ public:
   Tiny_Tree& operator = (Tiny_Tree && other) = delete;
 
   // returns, in order, : likelihood, distal length, pendant length
-  std::tuple<double, double, double> place(const Sequence& s, std::vector<Range>& valid_map);
+  std::tuple<double, double, double> place(const Sequence& s);
 
   void opt_branches(bool b) {opt_branches_ = b;};
 
@@ -69,7 +66,6 @@ private:
   Model model_;
   Range reference_tip_range_;
   bool tip_tip_case_ = false;
-  unsigned int reference_tip_clv_index_ = 0;
 
 };
 
