@@ -69,7 +69,7 @@ with open(os.path.join(output_dir, "results.log"), 'wb') as log_file:
         lou_tree.deroot()
 
         # write tree to tmp folder
-        cur_outdir = os.path.join(output_dir, str(node.taxon))
+        cur_outdir = os.path.join(output_dir, node.taxon.label)
         # print cur_outdir
         if not os.path.exists(cur_outdir):
             os.makedirs(cur_outdir)
