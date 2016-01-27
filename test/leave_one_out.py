@@ -69,7 +69,7 @@ with open(os.path.join(output_dir, "results.log"), 'wb') as log_file:
         lou_tree.deroot()
 
         # write tree to tmp folder
-        cur_outdir = os.path.join(output_dir, str(node.taxon))
+        cur_outdir = os.path.join(output_dir, node.taxon.label)
         # print cur_outdir
         if not os.path.exists(cur_outdir):
             os.makedirs(cur_outdir)
@@ -94,8 +94,11 @@ with open(os.path.join(output_dir, "results.log"), 'wb') as log_file:
         jplace_files = glob.glob(os.path.join(cur_outdir, "*.jplace"))
         assert len(jplace_files) == 2
 
+        raxml_jplace =  os.path.join(cur_outdir, "RAxML_portableTree.leave_one_out.jplace")
+        epa_jplace = os.path.join(cur_outdir, "epa_result.jplace")
+
         # print "calling compare script:"
-        params = ["./jplace_compare.py", "-v"] + jplace_files
+        params = ["./jplace_compare.py", "-v", raxml_jplace, epa_jplace]
         # print params
         ret = call(params, stdout=log_file)
 
