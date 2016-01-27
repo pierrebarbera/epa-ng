@@ -15,43 +15,6 @@ void utree_query_branches_recursive(pll_utree_t * node, pll_utree_t ** node_list
 void free_node_data(pll_utree_t * node);
 void get_numbered_newick_string_recursive(pll_utree_t * node, std::ostringstream &ss);
 
-void update_partial_ranged(pll_partition_t * partition, pll_operation_t * op,
-                            unsigned int begin, unsigned int span)
-{
-#ifdef __AVX
-  auto attrib = PLL_ATTRIB_ARCH_AVX;
-#else
-  auto attrib = PLL_ATTRIB_ARCH_SSE;
-#endif
-
-  // make sure we actually skip the first <begin> entries ov the CLVs. Their size is
-  // number of states * number of rate cats
-  auto skip_clv = begin * partition->states * partition->rate_cats;
-  // scalers are per site, so we just skip <begin>
-
-  // check if scalers exist, and if so shift them accordingly
-  unsigned int * parent_scaler = (op->parent_scaler_index == PLL_SCALE_BUFFER_NONE) ?
-      nullptr : partition->scale_buffer[op->parent_scaler_index] + begin;
-  unsigned int * child1_scaler = (op->child1_scaler_index == PLL_SCALE_BUFFER_NONE) ?
-      nullptr : partition->scale_buffer[op->child1_scaler_index] + begin;
-  unsigned int * child2_scaler = (op->child2_scaler_index == PLL_SCALE_BUFFER_NONE) ?
-      nullptr : partition->scale_buffer[op->child2_scaler_index] + begin;
-
-  pll_core_update_partial(partition->states,
-                          span, // begin + span = first CLV entry not used in computation
-                          partition->rate_cats,
-                          partition->clv[op->parent_clv_index] + skip_clv,
-                          parent_scaler,
-                          partition->clv[op->child1_clv_index] + skip_clv,
-                          partition->clv[op->child2_clv_index] + skip_clv,
-                          partition->pmatrix[op->child1_matrix_index],
-                          partition->pmatrix[op->child2_matrix_index],
-                          child1_scaler,
-                          child2_scaler,
-                          attrib
-                        );
-}
-
 void set_missing_branch_length_recursive(pll_utree_t * tree, double length)
 {
   if (tree)

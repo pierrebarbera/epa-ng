@@ -14,8 +14,6 @@ typedef struct
 /* some code adapted from libpll examples */
 
 // interface
-void update_partial_ranged(pll_partition_t * partition, pll_operation_t * op,
-  unsigned int begin, unsigned int span);
 int cb_partial_traversal(pll_utree_t * node);
 int cb_full_traversal(pll_utree_t * node);
 int utree_free_node_data(pll_utree_t * node);
