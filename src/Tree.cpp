@@ -27,14 +27,6 @@ Tree::Tree(const string& tree_file, const MSA& msa, Model& model, Options option
   valid_map_ = vector<tuple<unsigned int, unsigned int>>(nums_.tip_nodes);
   link_tree_msa(tree_, partition_, ref_msa_, nums_.tip_nodes, valid_map_);
 
-  // for(auto tp : valid_map_)
-  // {
-  //   unsigned int i, j;
-  //   tie(i,j) = tp;
-  //   cout << "(" << i << ", " << j << ")" << endl;
-  //
-  // }
-
   compute_and_set_empirical_frequencies(partition_);
 
   // perform branch length and model optimization on the reference tree
