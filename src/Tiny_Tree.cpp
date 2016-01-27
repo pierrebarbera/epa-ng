@@ -183,7 +183,8 @@ std::tuple<double, double, double> Tiny_Tree::place(const Sequence &s) {
     double new_total_branch_length = distal_length + proximal_length;
     distal_length = (original_branch_length_ / new_total_branch_length) * distal_length;
   } else
-    logl = pll_compute_edge_loglikelihood(partition_, TINY_NEW_TIP_CLV_INDEX,
+    logl = pll_compute_edge_loglikelihood(partition_,
+                                          TINY_NEW_TIP_CLV_INDEX,
                                           PLL_SCALE_BUFFER_NONE, // scaler_index
                                           TINY_INNER_CLV_INDEX,
                                           TINY_INNER_CLV_INDEX, // scaler_index

@@ -52,8 +52,7 @@ void update_partial_ranged(pll_partition_t * partition, pll_operation_t * op,
                         );
 }
 
-void set_missing_branch_length_recursive(pll_utree_t * tree,
-                                                double length)
+void set_missing_branch_length_recursive(pll_utree_t * tree, double length)
 {
   if (tree)
   {
