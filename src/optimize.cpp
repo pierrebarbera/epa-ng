@@ -19,7 +19,101 @@ void traverse_update_partials(pll_utree_t * tree, pll_partition_t * partition,
 double compute_negative_lnl_unrooted_ranged (void * p, double *x);
 double optimize_triplet_lbfgsb_ranged (pll_partition_t * partition, pll_utree_t * tree,
   double factr, double pgtol, unsigned int begin, unsigned int span);
+double compute_edge_loglikelihood_ranged(pll_partition_t * partition,
+  unsigned int parent_clv_index, int parent_scaler_index, unsigned int child_clv_index,
+  int child_scaler_index, unsigned int matrix_index, unsigned int freqs_index,
+  unsigned int begin, unsigned int span);
 
+/* Function to compute the edge likelihood directly on the CLVs passed
+  instead of indirectly through the partition instance / indices
+  for the purpose of ranged computation */
+double compute_edge_loglikelihood_ranged(pll_partition_t * partition,
+                                              unsigned int parent_clv_index,
+                                              int parent_scaler_index,
+                                              unsigned int child_clv_index,
+                                              int child_scaler_index,
+                                              unsigned int matrix_index,
+                                              unsigned int freqs_index,
+                                              unsigned int begin,
+                                              unsigned int span)
+{
+  unsigned int n,i,j,k;
+  double logl = 0;
+  double terma, terma_r, termb;
+  double site_lk, inv_site_lk;
+
+  auto skip_clv = begin * partition->states * partition->rate_cats;
+  auto pattern_weights = partition->pattern_weights + begin;
+  auto invariant = partition->invariant + begin;
+
+  const double * clvp = partition->clv[parent_clv_index] + skip_clv;
+  const double * clvc = partition->clv[child_clv_index] + skip_clv;
+  const double * freqs = NULL;
+  const double * pmatrix = partition->pmatrix[matrix_index];
+  double prop_invar = partition->prop_invar[freqs_index];
+  unsigned int states = partition->states;
+  unsigned int states_padded = partition->states_padded;
+  double * weights = partition->rate_weights;
+  unsigned int scale_factors;
+
+  unsigned int * parent_scaler;
+  unsigned int * child_scaler;
+
+  if (child_scaler_index == PLL_SCALE_BUFFER_NONE)
+    child_scaler = NULL;
+  else
+    child_scaler = partition->scale_buffer[child_scaler_index] + begin;
+
+  if (parent_scaler_index == PLL_SCALE_BUFFER_NONE)
+    parent_scaler = NULL;
+  else
+    parent_scaler = partition->scale_buffer[parent_scaler_index] + begin;
+
+  for (n = 0; n < span; ++n)
+  {
+    pmatrix = partition->pmatrix[matrix_index];
+    freqs = partition->frequencies[freqs_index];
+    terma = 0;
+    for (i = 0; i < partition->rate_cats; ++i)
+    {
+      terma_r = 0;
+      for (j = 0; j < partition->states; ++j)
+      {
+        termb = 0;
+        for (k = 0; k < partition->states; ++k)
+          termb += pmatrix[k] * clvc[k];
+        terma_r += clvp[j] * freqs[j] * termb;
+        pmatrix += states;
+      }
+      terma += terma_r * weights[i];
+      clvp += states;
+      clvc += states;
+      if (partition->mixture > 1)
+        freqs += states_padded;
+    }
+
+    site_lk = terma;
+
+    /* account for invariant sites */
+    if (prop_invar > 0)
+    {
+      inv_site_lk = (invariant[n] == -1) ?
+                        0 : freqs[invariant[n]];
+
+      site_lk = site_lk * (1. - prop_invar) +
+                inv_site_lk * prop_invar;
+    }
+
+    scale_factors = (parent_scaler) ? parent_scaler[n] : 0;
+    scale_factors += (child_scaler) ? child_scaler[n] : 0;
+
+    logl += log(site_lk) * pattern_weights[n];
+    if (scale_factors)
+      logl += scale_factors * log(PLL_SCALE_THRESHOLD);
+  }
+
+  return logl;
+}
 
 /* compute the negative lnL (score function for L-BFGS-B
 * Original author:  Diego Darriba <Diego.Darriba@h-its.org>
@@ -38,14 +132,16 @@ double compute_negative_lnl_unrooted_ranged (void * p, double *x)
                             3);
   update_partial_ranged (partition, params->operation, params->begin, params->span);
 
-  score = -1 * pll_compute_edge_loglikelihood (
+  score = -1 * compute_edge_loglikelihood_ranged (
                 partition,
                 params->tree->clv_index,
                 params->tree->scaler_index,
                 params->tree->back->clv_index,
                 params->tree->back->scaler_index,
                 params->tree->pmatrix_index,
-                0);
+                0,
+                params->begin,
+                params->span);
 
   return score;
 }
