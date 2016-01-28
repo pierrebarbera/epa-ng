@@ -6,6 +6,7 @@
 #include <cassert>
 #include <stdexcept>
 #include <limits>
+#include <algorithm>
 
 #include "pll_util.hpp"
 #include "constants.hpp"
@@ -35,9 +36,11 @@ void update_partial_ranged(pll_partition_t * partition, pll_operation_t * op,
   auto attrib = PLL_ATTRIB_ARCH_SSE;
 #endif
 
+
   // make sure we actually skip the first <begin> entries ov the CLVs. Their size is
   // number of states * number of rate cats
-  auto skip_clv = begin * partition->states * partition->rate_cats;
+  auto size = partition->states * partition->rate_cats;
+  auto skip_clv = begin * size;
   // scalers are per site, so we just skip <begin>
 
   // check if scalers exist, and if so shift them accordingly
@@ -61,6 +64,13 @@ void update_partial_ranged(pll_partition_t * partition, pll_operation_t * op,
                           child2_scaler,
                           attrib
                         );
+  // ranged computation leaves the CLV outside of the range as 0's. This is incorrect; it should be 1
+  // which is why we need to meset the values outside of the range to 1
+  fill_n(partition->clv[op->parent_clv_index], skip_clv, 1.0);
+  auto first_after_skip = (begin + span) * size;
+  fill_n(partition->clv[op->parent_clv_index] + first_after_skip,
+    (partition->sites * size) - first_after_skip, 1.0);
+
 }
 
 /* Function to compute the edge likelihood directly on the CLVs passed
@@ -171,16 +181,16 @@ double compute_negative_lnl_unrooted_ranged (void * p, double *x)
                             3);
   update_partial_ranged (partition, params->operation, params->begin, params->span);
 
-  score = -1 * compute_edge_loglikelihood_ranged (
+  score = -1 * pll_compute_edge_loglikelihood (
                 partition,
                 params->tree->clv_index,
                 params->tree->scaler_index,
                 params->tree->back->clv_index,
                 params->tree->back->scaler_index,
                 params->tree->pmatrix_index,
-                0,
-                params->begin,
-                params->span);
+                0);
+                // params->begin,
+                // params->span);
 
   return score;
 }

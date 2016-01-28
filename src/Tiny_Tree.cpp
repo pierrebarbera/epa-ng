@@ -169,6 +169,16 @@ std::tuple<double, double, double> Tiny_Tree::place(const Sequence &s) {
 
     logl = optimize_branch_triplet_ranged(partition_, virtual_root, range);
 
+    if (tip_tip_case_ && (s.header().compare(string("Rat")) == 0))
+    {
+      printf ("\nResult of %s: \n", s.header().c_str());
+      pll_show_clv(partition_,TINY_INNER_CLV_INDEX,PLL_SCALE_BUFFER_NONE,7);
+      for (size_t i = 0; i < partition_->sites; i++) {
+        printf("%d, ", partition_->scale_buffer[TINY_INNER_CLV_INDEX][i]);
+      }
+      printf("\nThis edge a");
+    }
+
     // ops_.child1_matrix_index = tree_->next->next->pmatrix_index;
     // ops_.child2_matrix_index = tree_->next->pmatrix_index;
     // inner_matrix_index = tree_->pmatrix_index;
