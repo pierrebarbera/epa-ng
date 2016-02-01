@@ -7,11 +7,12 @@ CF+=
 TESTINPUT= $(TEST)/ref.tre $(TEST)/aln.fasta -q $(TEST)/query.fasta -w $(OUTDIR) -oO $(F)
 
 CC=clang++
+#CC=g++
 DEFS=
 WARNINGS= -Wall -Wextra -pedantic -pedantic-errors
 DBG=-g
-CFLAGS= $(WARNINGS) -std=c++11 $(DBG) $(CF)
-LINKFLAGS=
+CFLAGS= $(WARNINGS) -std=c++11 $(DBG) -Ofast $(CF)
+LINKFLAGS=$(DBG) #$(CFLAGS)
 
 TARGET=$(BIN)/epamk
 
@@ -22,6 +23,8 @@ OUT_OBJS=$(addprefix $(BIN)/,$(OBJS))
 
 callgrind: CFLAGS= $(WARNINGS) -std=c++11 -O2
 profile: CFLAGS= $(WARNINGS) -std=c++11 -O2
+gprof: LINKFLAGS+= --static -pg
+gprof: CFLAGS+= -pg
 
 all:  $(TARGET)
 
@@ -42,6 +45,12 @@ callgrind: $(TARGET)
 profile: $(TARGET)
 	mkdir -p $(OUTDIR)
 	$(TARGET) $(TESTINPUT) -b 10
+
+gprof: $(TARGET)
+	mkdir -p $(LOGDIR)
+	mkdir -p $(OUTDIR)
+	$(TARGET) $(TESTINPUT)
+	gprof $(OUTDIR)/gmon.out
 
 
 gdb: $(TARGET)

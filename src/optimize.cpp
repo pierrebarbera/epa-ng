@@ -26,6 +26,8 @@ double compute_edge_loglikelihood_ranged(pll_partition_t * partition,
   unsigned int begin, unsigned int span);
 void update_partial_ranged(pll_partition_t * partition, pll_operation_t * op,
   unsigned int begin, unsigned int span);
+double pll_optimize_parameters_brent_ranged(pll_optimize_options_t * params,
+  double xmin, double xguess, double xmax);
 
 void update_partial_ranged(pll_partition_t * partition, pll_operation_t * op,
                             unsigned int begin, unsigned int span)
@@ -288,6 +290,8 @@ void traverse_update_partials(pll_utree_t * tree, pll_partition_t * partition,
   /* perform a full traversal*/
   assert(tree->next != nullptr);
   unsigned int traversal_size;
+  // TODO this only needs to be done once, outside of this func. pass traversal size also
+  // however this is practically nonexistent impact compared to clv comp
   pll_utree_traverse(tree, cb_full_traversal, travbuffer, &traversal_size);
 
   /* given the computed traversal descriptor, generate the operations
@@ -399,6 +403,10 @@ void optimize(Model& model, pll_utree_t * tree, pll_partition_t * partition,
   params.factr = 1e7;
   params.pgtol = OPT_PARAM_EPSILON;
 
+  // double xmin;
+  // double xguess;
+  // double xmax;
+
   while (fabs (cur_logl - logl) > OPT_EPSILON)
   {
     logl = cur_logl;
@@ -406,6 +414,7 @@ void optimize(Model& model, pll_utree_t * tree, pll_partition_t * partition,
     if (opt_model)
     {
       params.which_parameters = PLL_PARAMETER_ALPHA;
+      // pll_optimize_parameters_brent_ranged(&params, xmin, xguess, xmax);
       pll_optimize_parameters_brent(&params);
 
       params.which_parameters = PLL_PARAMETER_SUBST_RATES;
@@ -415,6 +424,7 @@ void optimize(Model& model, pll_utree_t * tree, pll_partition_t * partition,
       // pll_optimize_parameters_lbfgsb(&params);
 
       params.which_parameters = PLL_PARAMETER_PINV;
+      // cur_logl = -1 * pll_optimize_parameters_brent_ranged(&params, xmin, xguess, xmax);
       cur_logl = -1 * pll_optimize_parameters_brent(&params);
     }
 

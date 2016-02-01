@@ -98,6 +98,8 @@ Tiny_Tree::Tiny_Tree(pll_utree_t *edge_node, pll_partition_t *old_partition,
   unsigned int matrix_indices[2] = {0, 1};
 
   // use branch lengths to compute the probability matrices
+  // TODO replace with updating single matrix function
+  // alternatively have modified version that recognizes the default branch length
   pll_update_prob_matrices(partition_, 0, matrix_indices, branch_lengths, 2);
 
   ops_.child1_matrix_index = 0;

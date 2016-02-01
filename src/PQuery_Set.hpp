@@ -1,5 +1,4 @@
-#ifndef EPA_PQUERY_SET_H_
-#define EPA_PQUERY_SET_H_
+#pragma once
 
 #include "PQuery.hpp"
 
@@ -36,8 +35,8 @@ public:
   const_iterator cend() {return pquerys_.cend();};
 
 private:
+  // TODO if this is indexed by unique query indexes it could be good for
+  // resukt retrieval in mp*
   std::vector<PQuery> pquerys_;
   std::string newick_;
 };
-
-#endif

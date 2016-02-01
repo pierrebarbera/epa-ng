@@ -37,7 +37,8 @@ Tree::Tree(const string &tree_file, const MSA &msa, Model &model,
   precompute_clvs(tree_, partition_, nums_);
 }
 
-double Tree::ref_tree_logl() {
+double Tree::ref_tree_logl()
+{
   return pll_compute_edge_loglikelihood(
       partition_, tree_->clv_index, tree_->scaler_index, tree_->back->clv_index,
       tree_->back->scaler_index, tree_->pmatrix_index, 0);
@@ -79,8 +80,7 @@ PQuery_Set Tree::place()
 
   // place all s on every edge
   double logl, distal, pendant;
-  for (auto const &s :
-       query_msa_) // make sure a reference, not a copy, is returned
+  for (auto const &s : query_msa_) // make sure a reference, not a copy, is returned
   {
     pquerys.emplace_back(s);
     for (unsigned int i = 0; i < num_traversed; ++i)
@@ -102,9 +102,9 @@ PQuery_Set Tree::place()
     during the first run */
   // TODO for MPI: think about how to split up the work, probably build list of
   // sequences per branch, then pass
-  if (options_.prescoring) {
-    discard_by_accumulated_threshold(pquerys,
-                                     0.95); // TODO outside input? constant?
+  if (options_.prescoring)
+  {
+    discard_by_accumulated_threshold(pquerys, 0.95); // TODO outside input? constant?
     for (auto &pq : pquerys)
       for (auto &placement : pq) {
         unsigned int id = placement.branch_id();
