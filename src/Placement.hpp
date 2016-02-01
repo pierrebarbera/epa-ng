@@ -1,9 +1,7 @@
-#ifndef EPA_PLACEMENT_H_
-#define EPA_PLACEMENT_H_
-
+#pragma once
 class Placement {
 public:
-  Placement() = delete;
+  Placement() = default;
 
   Placement(unsigned int branch_id, double likelihood, double pendant_length,
     double distal_length)
@@ -39,5 +37,3 @@ private:
   double pendant_length_;
   double distal_length_;
 };
-
-#endif

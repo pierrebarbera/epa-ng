@@ -1,5 +1,4 @@
-#ifndef EPA_PQUERY_H_
-#define EPA_PQUERY_H_
+#pragma once
 
 #include <vector>
 
@@ -8,12 +7,13 @@
 
 class PQuery {
 public:
-  typedef Placement                                        value_type;
-  typedef typename std::vector<Placement>::iterator        iterator;
-  typedef typename std::vector<Placement>::const_iterator  const_iterator;
+  typedef Placement                                       value_type;
+  typedef typename std::vector<value_type>::iterator        iterator;
+  typedef typename std::vector<value_type>::const_iterator  const_iterator;
 
-  PQuery() = delete;
-  PQuery (const Sequence & s) : sequence_(s) {};
+  PQuery() : sequence_() {};
+  PQuery (const Sequence & s, const unsigned int size)
+    : placements_(size), sequence_(s) {};
   ~PQuery() = default;
 
   // needs to be in the header
@@ -36,9 +36,12 @@ public:
   const_iterator cbegin() {return placements_.cbegin();};
   const_iterator cend() {return placements_.cend();};
 
+  // Operator overloads
+  Placement& operator[] (const unsigned int index)
+  {
+    return placements_[index];
+  };
 private:
   std::vector<Placement> placements_;
   const Sequence sequence_;
 };
-
-#endif

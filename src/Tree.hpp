@@ -1,5 +1,4 @@
-#ifndef EPA_TREE_H_
-#define EPA_TREE_H_
+#pragma once
 
 #include <string>
 #include <tuple>
@@ -49,5 +48,3 @@ private:
   double place_on_edge(const Sequence& s, pll_utree_t * node, bool optimize=false) const;
 
 };
-
-#endif

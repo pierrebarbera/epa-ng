@@ -1,19 +1,20 @@
-#ifndef EPA_PQUERY_SET_H_
-#define EPA_PQUERY_SET_H_
+#pragma once
 
 #include "PQuery.hpp"
 
 #include <utility>
 #include <string>
+#include <vector>
 
 class PQuery_Set {
 public:
-  typedef PQuery                                        value_type;
-  typedef typename std::vector<PQuery>::iterator        iterator;
-  typedef typename std::vector<PQuery>::const_iterator  const_iterator;
+  typedef PQuery                                       value_type;
+  typedef typename std::vector<value_type>::iterator        iterator;
+  typedef typename std::vector<value_type>::const_iterator  const_iterator;
 
   PQuery_Set() = default;
-  PQuery_Set(const std::string newick) : newick_(newick) {};
+  PQuery_Set(const std::string newick)
+    : newick_(newick) {};
   ~PQuery_Set() = default;
 
   // member access
@@ -35,9 +36,13 @@ public:
   const_iterator cbegin() {return pquerys_.cbegin();};
   const_iterator cend() {return pquerys_.cend();};
 
+  // Operator overloads
+  PQuery& operator[] (const unsigned int index)
+  {
+    return pquerys_[index];
+  };
+
 private:
   std::vector<PQuery> pquerys_;
   std::string newick_;
 };
-
-#endif

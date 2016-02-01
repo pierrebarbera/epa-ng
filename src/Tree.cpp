@@ -55,9 +55,11 @@ Tree::~Tree()
 
 PQuery_Set Tree::place() const
 {
+  const auto num_branches = nums_.branches;
   // get all edges
-  vector<pll_utree_t *> branches(nums_.branches);
-  auto num_traversed = utree_query_branches(tree_, &branches[0]);
+  vector<pll_utree_t *> branches(num_branches);
+  auto num_traversed_branches = utree_query_branches(tree_, &branches[0]);
+  assert(num_traversed_branches == num_branches);
 
   // build all tiny trees with corresponding edges
   vector<Tiny_Tree> insertion_trees;
@@ -67,22 +69,23 @@ PQuery_Set Tree::place() const
       we don't want that if the mode is prescoring */
 
   // output class
+  auto num_queries = query_msa_.size();
   PQuery_Set pquerys(get_numbered_newick_string(tree_));
+  for (const auto & s : query_msa_)
+    pquerys.emplace_back(s, num_branches);
 
   // place all s on every edge
   double logl, distal, pendant;
-  for (auto const &s : query_msa_)// make sure a reference, not a copy, is returned
+  for (unsigned int branch_id = 0; branch_id < num_branches; ++branch_id)
   {
-    pquerys.emplace_back(s);
-    for (unsigned int i = 0; i < num_traversed; ++i)
+    for (unsigned int sequence_id = 0; sequence_id < num_queries; ++sequence_id)
     {
-      tie(logl, distal, pendant) = insertion_trees[i].place(s);
-      pquerys.back().emplace_back(
-        i, // branch_id
-        logl, // likelihood
-        pendant, // pendant length
-        distal // distal length
-        );
+      tie(logl, distal, pendant) = insertion_trees[branch_id].place(query_msa_.get(sequence_id));
+      pquerys[sequence_id][branch_id] = Placement(
+        branch_id,
+        logl,
+        pendant,
+        distal);
     }
   }
   // now that everything has been placed, we can compute the likelihood weight ratio
