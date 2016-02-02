@@ -27,6 +27,7 @@ profile: CFLAGS= $(WARNINGS) -std=c++11 -O2
 omp: DBG=
 omp: LIBS+= -liomp5
 omp: CFLAGS+=-fopenmp=libomp
+ranged_test: TESTINPUT= $(TEST)/ref.tre $(TEST)/range_combined.fasta -w $(OUTDIR) $(F)
 
 all:  $(TARGET)
 
@@ -35,6 +36,11 @@ omp:  $(TARGET)
 test: $(TARGET)
 	mkdir -p $(OUTDIR)
 	$(TARGET) $(TESTINPUT)
+
+ranged_test: $(TARGET)
+		mkdir -p $(OUTDIR)
+		$(TARGET) $(TESTINPUT)
+
 
 valgrind: $(TARGET)
 	mkdir -p $(OUTDIR)
