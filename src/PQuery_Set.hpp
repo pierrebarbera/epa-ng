@@ -43,6 +43,8 @@ public:
   }
 
 private:
+  // TODO if this is indexed by unique query indexes it could be good for
+  // resukt retrieval in mp*
   std::vector<PQuery> pquerys_;
   std::string newick_;
 };

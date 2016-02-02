@@ -7,11 +7,12 @@ CF+=
 TESTINPUT= $(TEST)/ref.tre $(TEST)/aln.fasta -q $(TEST)/query.fasta -w $(OUTDIR) $(F)
 
 CC=clang++
+#CC=g++
 DEFS=
 WARNINGS= -Wall -Wextra -pedantic -pedantic-errors
-DBG=#-g
-CFLAGS= $(WARNINGS) -std=c++11 -O3 $(DBG) $(CF)
-LINKFLAGS=
+DBG=-g
+CFLAGS= $(WARNINGS) -std=c++11 $(DBG) -Ofast $(CF)
+LINKFLAGS=$(DBG) #$(CFLAGS)
 
 TARGET=$(BIN)/epamk
 

@@ -43,5 +43,5 @@ public:
   }
 private:
   std::vector<Placement> placements_;
-  const Sequence sequence_;
+  const Sequence sequence_;// TODO really only needs the header, not the sequence
 };

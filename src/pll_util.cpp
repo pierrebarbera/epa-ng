@@ -1,13 +1,21 @@
 #include "pll_util.hpp"
 
 #include <iomanip>
+#include <stdexcept>
 
 #include "constants.hpp"
 
 using namespace std;
 
-void set_missing_branch_length_recursive(pll_utree_t * tree,
-                                                double length)
+// helper functions
+void set_missing_branch_length_recursive(pll_utree_t * tree, double length);
+void set_branch_length_recursive(pll_utree_t * tree, double length);
+void set_unique_clv_indices_recursive(pll_utree_t * tree, const int num_tip_nodes);
+void utree_query_branches_recursive(pll_utree_t * node, pll_utree_t ** node_list, int * index);
+void free_node_data(pll_utree_t * node);
+void get_numbered_newick_string_recursive(pll_utree_t * node, std::ostringstream &ss);
+
+void set_missing_branch_length_recursive(pll_utree_t * tree, double length)
 {
   if (tree)
   {
@@ -283,4 +291,18 @@ pll_utree_t * make_tiny_tree_structure(const pll_utree_t * old_left, const pll_u
   proximal->pmatrix_index = 0;
 
   return inner;
+}
+
+/* Function to return the tip node if either <node> or <node->back> is one. Otherweise
+  returns null. */
+pll_utree_t * get_tip_node(pll_utree_t * node)
+{
+  pll_utree_t * tip_node = nullptr;
+  // node is the tip
+  if (!node->next)
+    tip_node = node;
+  else if (!node->back->next)
+    tip_node = node->back;
+
+  return tip_node;
 }

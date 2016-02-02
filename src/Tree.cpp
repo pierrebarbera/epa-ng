@@ -13,48 +13,47 @@
 
 using namespace std;
 
-Tree::Tree(const string& tree_file, const MSA& msa, Model& model, Options options,
-  const MSA& query)
-  : ref_msa_(msa), query_msa_(query), model_(model), options_(options)
+Tree::Tree(const string &tree_file, const MSA &msa, Model &model,
+           Options options, const MSA &query)
+    : ref_msa_(msa), query_msa_(query), model_(model), options_(options)
 {
-  //parse, build tree
+  // parse, build tree
   nums_ = Tree_Numbers();
-  tie(partition_, tree_) = build_partition_from_file(tree_file, model_, nums_, ref_msa_.num_sites());
+  tie(partition_, tree_) =
+      build_partition_from_file(tree_file, model_, nums_, ref_msa_.num_sites());
 
   // split msa if no separate query msa was supplied
   if (query.num_sites() == 0)
     split_combined_msa(ref_msa_, query_msa_, tree_, nums_.tip_nodes);
 
-  valid_map_ = vector<tuple<unsigned int, unsigned int>>(nums_.tip_nodes);
+  valid_map_ = vector<Range>(nums_.tip_nodes);
   link_tree_msa(tree_, partition_, ref_msa_, nums_.tip_nodes, valid_map_);
 
-  compute_and_set_empirical_frequencies(partition_);
+  compute_and_set_empirical_frequencies(partition_, model_);
 
   // perform branch length and model optimization on the reference tree
-  optimize(model_, tree_, partition_, nums_, options_.opt_branches, options_.opt_model);
+  optimize(model_, tree_, partition_, nums_, options_.opt_branches,
+           options_.opt_model);
 
   precompute_clvs(tree_, partition_, nums_);
 }
 
 double Tree::ref_tree_logl()
 {
-  return pll_compute_edge_loglikelihood (partition_, tree_->clv_index,
-                                                tree_->scaler_index,
-                                                tree_->back->clv_index,
-                                                tree_->back->scaler_index,
-                                                tree_->pmatrix_index, 0);
+  return pll_compute_edge_loglikelihood(
+      partition_, tree_->clv_index, tree_->scaler_index, tree_->back->clv_index,
+      tree_->back->scaler_index, tree_->pmatrix_index, 0);
 }
 
 Tree::~Tree()
 {
   // free data segment of tree nodes
   utree_free_node_data(tree_);
-	pll_partition_destroy(partition_);
+  pll_partition_destroy(partition_);
   pll_utree_destroy(tree_);
-
 }
 
-PQuery_Set Tree::place() const
+PQuery_Set Tree::place()
 {
   const auto num_branches = nums_.branches;
   // get all edges

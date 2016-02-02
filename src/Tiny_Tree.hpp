@@ -1,11 +1,13 @@
 #pragma once
 
 #include <tuple>
+#include <vector>
 
 #include "pllhead.hpp"
 #include "Sequence.hpp"
 #include "constants.hpp"
 #include "Model.hpp"
+#include "Range.hpp"
 
 /* Encapsulates a smallest possible unrooted tree (3 tip nodes, 1 inner node)
   for use in edge insertion:
@@ -28,7 +30,10 @@ class Tiny_Tree
 {
 public:
   Tiny_Tree(pll_utree_t * edge_node, pll_partition_t * old_partition, Model model,
-    bool opt_branches=false);
+    bool opt_branches) : Tiny_Tree(edge_node, old_partition,
+    model, opt_branches, Range(0, old_partition->sites)) {};
+  Tiny_Tree(pll_utree_t * edge_node, pll_partition_t * old_partition, Model model,
+    bool opt_branches, Range reference_tip_range);
 
   Tiny_Tree(Tiny_Tree const& other) = delete;
 
@@ -58,5 +63,7 @@ private:
   bool opt_branches_;
   const double original_branch_length_;
   Model model_;
+  Range reference_tip_range_;
+  bool tip_tip_case_ = false;
 
 };
