@@ -13,31 +13,20 @@
 
 using namespace std;
 
-// local helpers
-void traverse_update_partials(pll_utree_t * tree, pll_partition_t * partition,
-  pll_utree_t ** travbuffer, double * branch_lengths, unsigned int * matrix_indices,
-  pll_operation_t * operations);
-double compute_negative_lnl_unrooted_ranged (void * p, double *x);
-double optimize_triplet_lbfgsb_ranged (pll_partition_t * partition, pll_utree_t * tree,
-  double factr, double pgtol, unsigned int begin, unsigned int span);
-double compute_edge_loglikelihood_ranged(pll_partition_t * partition,
-  unsigned int parent_clv_index, int parent_scaler_index, unsigned int child_clv_index,
-  int child_scaler_index, unsigned int matrix_index, unsigned int freqs_index,
-  unsigned int begin, unsigned int span);
-void update_partial_ranged(pll_partition_t * partition, pll_operation_t * op,
-  unsigned int begin, unsigned int span);
-double pll_optimize_parameters_brent_ranged(pll_optimize_options_t * params,
-  double xmin, double xguess, double xmax);
-
-void update_partial_ranged(pll_partition_t * partition, pll_operation_t * op,
+/*  Update a single partial likelihood vector (CLV) based on a range. Requires the
+    CLV to be appropriately initialized (0.0 within the range, 1.0 without)*/
+static void update_partial_ranged(pll_partition_t * partition, pll_operation_t * op,
                             unsigned int begin, unsigned int span)
 {
+  // quick probe to check if properly initialized
+  if (begin > 0)
+    assert(partition->clv[op->parent_clv_index][0] != 0.0);
+
 #ifdef __AVX
   auto attrib = PLL_ATTRIB_ARCH_AVX;
 #else
   auto attrib = PLL_ATTRIB_ARCH_SSE;
 #endif
-
 
   // make sure we actually skip the first <begin> entries ov the CLVs. Their size is
   // number of states * number of rate cats
@@ -66,13 +55,6 @@ void update_partial_ranged(pll_partition_t * partition, pll_operation_t * op,
                           child2_scaler,
                           attrib
                         );
-  // ranged computation leaves the CLV outside of the range as 0's. This is incorrect; it should be 1
-  // which is why we need to meset the values outside of the range to 1
-  // fill_n(partition->clv[op->parent_clv_index], skip_clv, 1.0);
-  // auto first_after_skip = (begin + span) * size;
-  // fill_n(partition->clv[op->parent_clv_index] + first_after_skip,
-  //   (partition->sites * size) - first_after_skip, 1.0);
-
 }
 
 /* compute the negative lnL (score function for L-BFGS-B
@@ -80,11 +62,10 @@ void update_partial_ranged(pll_partition_t * partition, pll_operation_t * op,
 * Used with permission.
 * With modifications.
 */
-double compute_negative_lnl_unrooted_ranged (void * p, double *x)
+static double compute_negative_lnl_unrooted_ranged (void * p, double *x)
 {
   lk_set * params = (lk_set *) p;
   pll_partition_t * partition = params->partition;
-  double score;
 
   pll_update_prob_matrices (partition, 0,
                             params->matrix_indices,
@@ -92,7 +73,7 @@ double compute_negative_lnl_unrooted_ranged (void * p, double *x)
                             3);
   update_partial_ranged (partition, params->operation, params->begin, params->span);
 
-  score = -1 * pll_compute_edge_loglikelihood (
+  return -1 * pll_compute_edge_loglikelihood (
                 partition,
                 params->tree->clv_index,
                 params->tree->scaler_index,
@@ -100,10 +81,6 @@ double compute_negative_lnl_unrooted_ranged (void * p, double *x)
                 params->tree->back->scaler_index,
                 params->tree->pmatrix_index,
                 0);
-                // params->begin,
-                // params->span);
-
-  return score;
 }
 
 /* optimize the 3 adjacent branches of the node (tree) simultaneously
@@ -115,7 +92,7 @@ double compute_negative_lnl_unrooted_ranged (void * p, double *x)
  * Used with permission.
  * With modifications.
  */
-double optimize_triplet_lbfgsb_ranged (pll_partition_t * partition,
+static double optimize_triplet_lbfgsb_ranged (pll_partition_t * partition,
                                        pll_utree_t * tree,
                                        double factr,
                                        double pgtol,
@@ -174,8 +151,22 @@ double optimize_triplet_lbfgsb_ranged (pll_partition_t * partition,
   return score;
 }
 
+void fill_without(pll_partition_t * partition, unsigned int clv_index, Range& range, double value)
+{
+  auto size = partition->states * partition->rate_cats;
+  auto skip_clv = range.begin * size;
+  auto clv = partition->clv[clv_index];
+  fill_n(clv, skip_clv, value);
+  auto first_after_skip = (range.begin + range.span) * size;
+  fill_n(clv + first_after_skip,
+    (partition->sites * size) - first_after_skip, value);
+}
+
 double optimize_branch_triplet_ranged(pll_partition_t * partition, pll_utree_t * tree, Range range)
 {
+  // fill the partial's non-valid regions with one
+  fill_without(partition, tree->clv_index, range, 1.0);
+
   // compute logl once to give us a logl starting point
   auto logl = -1* optimize_triplet_lbfgsb_ranged (partition, tree, 1e7, OPT_PARAM_EPSILON,
                                                 range.begin, range.span);
@@ -191,7 +182,7 @@ double optimize_branch_triplet_ranged(pll_partition_t * partition, pll_utree_t *
   return cur_logl;
 }
 
-void traverse_update_partials(pll_utree_t * tree, pll_partition_t * partition,
+static void traverse_update_partials(pll_utree_t * tree, pll_partition_t * partition,
     pll_utree_t ** travbuffer, double * branch_lengths, unsigned int * matrix_indices,
     pll_operation_t * operations)
 {
