@@ -4,13 +4,13 @@ LOGDIR=../test/log
 OUTDIR=/tmp/epa
 F+=
 CF+=
-TESTINPUT= $(TEST)/ref.tre $(TEST)/aln.fasta -q $(TEST)/query.fasta -w $(OUTDIR) -oO $(F)
+TESTINPUT= $(TEST)/ref.tre $(TEST)/aln.fasta -q $(TEST)/query.fasta -w $(OUTDIR) $(F)
 
 CC=clang++
 DEFS=
 WARNINGS= -Wall -Wextra -pedantic -pedantic-errors
-DBG=-g
-CFLAGS= $(WARNINGS) -std=c++11 $(DBG) $(CF)
+DBG=#-g
+CFLAGS= $(WARNINGS) -std=c++11 -O3 $(DBG) $(CF)
 LINKFLAGS=
 
 TARGET=$(BIN)/epamk
@@ -22,8 +22,14 @@ OUT_OBJS=$(addprefix $(BIN)/,$(OBJS))
 
 callgrind: CFLAGS= $(WARNINGS) -std=c++11 -O2
 profile: CFLAGS= $(WARNINGS) -std=c++11 -O2
+# omp: CC=g++
+omp: DBG=
+omp: LIBS+= -liomp5
+omp: CFLAGS+=-fopenmp=libomp
 
 all:  $(TARGET)
+
+omp:  $(TARGET)
 
 test: $(TARGET)
 	mkdir -p $(OUTDIR)

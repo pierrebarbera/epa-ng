@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 #include <iostream>
+#include <omp.h>
 
 #include "pll_util.hpp"
 #include "epa_pll_util.hpp"
@@ -76,6 +77,9 @@ PQuery_Set Tree::place() const
 
   // place all s on every edge
   double logl, distal, pendant;
+
+  // omp_set_num_threads(4);
+  #pragma omp parallel for
   for (unsigned int branch_id = 0; branch_id < num_branches; ++branch_id)
   {
     for (unsigned int sequence_id = 0; sequence_id < num_queries; ++sequence_id)
