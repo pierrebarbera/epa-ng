@@ -8,6 +8,9 @@ test/data/lucas/
 test/data/bacvag/
 include/
 
+# output files
+*.jplace
+
 # Compiled Object files
 *.slo
 *.lo
