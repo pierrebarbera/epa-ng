@@ -1,5 +1,4 @@
-#ifndef EPA_SEQUENCE_H_
-#define EPA_SEQUENCE_H_
+#pragma once
 
 #include <string>
 
@@ -28,5 +27,3 @@ private:
   std::string sequence_;
 
 };
-
-#endif

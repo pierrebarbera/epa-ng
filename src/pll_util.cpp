@@ -130,7 +130,7 @@ int cb_full_traversal(pll_utree_t * node)
 {
   (void) node;
   return 1;
-};
+}
 
 void free_node_data(pll_utree_t * node)
 {

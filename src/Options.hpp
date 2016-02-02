@@ -1,5 +1,4 @@
-#ifndef EPA_OPTIONS_H_
-#define EPA_OPTIONS_H_
+#pragma once
 
 class Options {
 
@@ -23,5 +22,3 @@ public:
 private:
 
 };
-
-#endif

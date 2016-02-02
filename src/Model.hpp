@@ -1,5 +1,4 @@
-#ifndef EPA_MODEL_H_
-#define EPA_MODEL_H_
+#pragma once
 
 #include <vector>
 #include <unordered_map>
@@ -46,5 +45,3 @@ private:
   static model_map_t model_map_;
 
 };
-
-#endif

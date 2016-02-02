@@ -20,7 +20,7 @@ public:
   template<typename ...Args> void emplace_back(Args && ...args)
   {
     placements_.emplace_back(std::forward<Args>(args)...);
-  };
+  }
 
   // member access
   Placement& back() {return placements_.back();};
@@ -40,7 +40,7 @@ public:
   Placement& operator[] (const unsigned int index)
   {
     return placements_[index];
-  };
+  }
 private:
   std::vector<Placement> placements_;
   const Sequence sequence_;

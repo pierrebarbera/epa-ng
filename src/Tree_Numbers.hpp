@@ -1,5 +1,4 @@
-#ifndef EPA_TREE_NUMBERS_H_
-#define EPA_TREE_NUMBERS_H_
+#pragma once
 
 class Tree_Numbers
 {
@@ -18,5 +17,3 @@ public:
   unsigned int nodes;
   unsigned int branches;
 };
-
-#endif

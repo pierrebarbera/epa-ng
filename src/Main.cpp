@@ -29,7 +29,7 @@ static void print_help()
   cout << "     \tGTR \tGeneralized time reversible`(DEFAULT)" << endl;
   cout << "     \tJC69 \tJukes-Cantor Model" << endl;
   cout << "     \tK80 \tKimura 80 Model" << endl;
-};
+}
 
 static void inv(string msg)
 {
@@ -106,7 +106,7 @@ int main(int argc, char** argv)
   // first two params are always the reference tree and msa file paths
   string tree_file(argv[optind]);
   string reference_file(argv[optind + 1]);
-  
+
   vector<long double> runtimes;
 
   for (size_t i = 0; i < runs; i++) {

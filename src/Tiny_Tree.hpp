@@ -1,5 +1,4 @@
-#ifndef EPA_TINY_TREE_H_
-#define EPA_TINY_TREE_H_
+#pragma once
 
 #include <tuple>
 
@@ -61,5 +60,3 @@ private:
   Model model_;
 
 };
-
-#endif

@@ -26,7 +26,7 @@ public:
   template<typename ...Args> void emplace_back(Args && ...args)
   {
     pquerys_.emplace_back(std::forward<Args>(args)...);
-  };
+  }
 
   // Iterator Compatibility
   iterator begin() {return pquerys_.begin();};
@@ -40,7 +40,7 @@ public:
   PQuery& operator[] (const unsigned int index)
   {
     return pquerys_[index];
-  };
+  }
 
 private:
   std::vector<PQuery> pquerys_;

@@ -1,5 +1,4 @@
-#ifndef EPA_MSA_H_
-#define EPA_MSA_H_
+#pragma once
 
 #include <vector>
 
@@ -46,5 +45,3 @@ private:
   unsigned int num_sites_;
   std::vector<Sequence> sequence_list_;
 };
-
-#endif

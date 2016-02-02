@@ -60,7 +60,7 @@ void link_tree_msa(pll_utree_t * tree, pll_partition_t * partition,
     // remember the valid-range of the sequence, indexed by tip clv index
     valid_map[clv_index] = get_valid_range(s.sequence());
   }
-};
+}
 
 void precompute_clvs(pll_utree_t * tree, pll_partition_t * partition, const Tree_Numbers& nums)
 {
