@@ -7,6 +7,15 @@
 #define STATES    4
 #define RATE_CATS 4
 
+// map for determining model symmetries
+const std::unordered_map<std::string, std::vector<int>> MODEL_MAP(
+  {
+    {"JC69", {0,0,0,0,0,0}},
+    {"K80", {0,1,0,0,1,0}},
+    {"GTR", {0,1,2,3,4,5}}
+  }
+);
+
 /* Encapsulates the evolutionary model parameters
   TODO possible basepoint of model class hierarchy */
 class Model
@@ -19,15 +28,15 @@ public:
 	~Model() = default;
 
   // getters
-  inline const std::vector<double>& base_frequencies() const {return base_frequencies_;};
-  inline std::vector<int>& symmetries()  {return subs_symmetries_;};
-  inline const std::vector<double>& substitution_rates() const {return substitution_rates_;};
-  inline double alpha() const {return alpha_;};
+  const std::vector<double>& base_frequencies() const {return base_frequencies_;};
+  std::vector<int>& symmetries()  {return subs_symmetries_;};
+  const std::vector<double>& substitution_rates() const {return substitution_rates_;};
+  double alpha() const {return alpha_;};
 
   // setters
   void base_frequencies(double* source, unsigned int length);
   void substitution_rates(double* source, unsigned int length);
-  inline void alpha(double a) {alpha_ = a;};
+  void alpha(double a) {alpha_ = a;};
 
 private:
   double alpha_;
@@ -39,9 +48,4 @@ private:
     HKY/K80:  010010
     */
   std::vector<int> subs_symmetries_;
-
-  // map for determining model symmetries
-  typedef std::unordered_map<std::string, std::vector<int>> model_map_t;
-  static model_map_t model_map_;
-
 };

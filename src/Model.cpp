@@ -13,19 +13,13 @@ Model::Model(string model_id)
   // tolerate case insensitivity
   transform(model_id.begin(), model_id.end(),model_id.begin(), ::toupper);
   // set symmetries
-  auto find_iter = model_map_.find(model_id);
-  if (find_iter == model_map_.end())
+  // subs_symmetries_ = MODEL_MAP[model_id.c_str()];
+  auto find_iter = MODEL_MAP.find(model_id);
+  if (find_iter == MODEL_MAP.end())
     throw runtime_error{string("Model Identifier not found! String passed: ") + model_id};
   for (auto n : find_iter->second)
     subs_symmetries_.push_back(n);
 }
-
-Model::model_map_t Model::model_map_ =
-{
-  {"JC69", {0,0,0,0,0,0}},
-  {"K80", {0,1,0,0,1,0}},
-  {"GTR", {0,1,2,3,4,5}}
-};
 
 void Model::base_frequencies(double *source, unsigned int length)
 {
