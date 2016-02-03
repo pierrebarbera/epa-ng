@@ -7,7 +7,7 @@
 #include "optimize.hpp"
 #include "Tree_Numbers.hpp"
 #include "Range.hpp"
-#include "calculation.hpp"
+#include "set_manipulators.hpp"
 
 using namespace std;
 

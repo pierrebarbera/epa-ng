@@ -7,7 +7,7 @@
 #include "file_io.hpp"
 #include "jplace_util.hpp"
 #include "stringify.hpp"
-#include "calculation.hpp"
+#include "set_manipulators.hpp"
 
 using namespace std;
 

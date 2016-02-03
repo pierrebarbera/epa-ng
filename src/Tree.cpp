@@ -9,7 +9,7 @@
 #include "file_io.hpp"
 #include "Sequence.hpp"
 #include "optimize.hpp"
-#include "calculation.hpp"
+#include "set_manipulators.hpp"
 
 using namespace std;
 
