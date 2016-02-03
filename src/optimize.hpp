@@ -1,5 +1,4 @@
-#ifndef EPA_OPTIMIZE_H_
-#define EPA_OPTIMIZE_H_
+#pragma once
 
 #include "pllhead.hpp"
 #include "Model.hpp"
@@ -30,5 +29,3 @@ void optimize(Model& model, pll_utree_t * tree, pll_partition_t * partition,
   const Tree_Numbers& nums, const bool opt_branches, const bool opt_model);
 double optimize_branch_triplet_ranged(pll_partition_t * partition, pll_utree_t * tree, Range range);
 void compute_and_set_empirical_frequencies(pll_partition_t * partition, Model& model);
-
-#endif

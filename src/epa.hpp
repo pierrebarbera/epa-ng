@@ -1,5 +1,4 @@
-#ifndef EPA_EPA_H_
-#define EPA_EPA_H_
+#pragma once
 
 #include <string>
 #include <vector>
@@ -11,5 +10,3 @@
 
 void epa(std::string& tree_file, std::string& reference_msa_file, std::string& query_msa_file,
           std::string& outdir, Model model, Options options, std::string invocation="");
-
-#endif

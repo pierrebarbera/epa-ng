@@ -1,5 +1,4 @@
-#ifndef EPA_FILE_IO_H_
-#define EPA_FILE_IO_H_
+#pragma once
 
 #include <string>
 #include <tuple>
@@ -17,7 +16,4 @@ class MSA;
 MSA build_MSA_from_file(const std::string& msa_file);
 std::tuple<pll_partition_t *, pll_utree_t *> build_partition_from_file(
   const std::string& tree_file, const Model& model, Tree_Numbers& nums, const int num_sites);
-
 void file_check(const std::string& file_path);
-
-#endif

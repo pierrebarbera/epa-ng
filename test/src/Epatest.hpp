@@ -1,5 +1,4 @@
-#ifndef EPA_TEST_EPATEST_H_
-#define EPA_TEST_EPATEST_H_
+#pragma once
 
 #include <gtest/gtest.h>
 
@@ -43,5 +42,3 @@ public:
 };
 
 extern Epatest* env;
-
-#endif
