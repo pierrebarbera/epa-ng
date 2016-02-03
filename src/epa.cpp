@@ -8,6 +8,7 @@
 #include "jplace_util.hpp"
 #include "stringify.hpp"
 #include "set_manipulators.hpp"
+#include "logging.hpp"
 
 using namespace std;
 
@@ -19,6 +20,9 @@ void epa(string& tree_file, string& reference_msa_file, string& query_msa_file, 
   file_check(reference_msa_file);
   if(query_msa_file.length() > 0)
     file_check(query_msa_file);
+  if (outdir.length() > 0 && outdir.back() != '/')
+    outdir += "/";
+  lgr = Log(outdir + "epa_info.log");
 
 	// Build the reference tree
   auto ref_msa = build_MSA_from_file(reference_msa_file);
@@ -33,12 +37,11 @@ void epa(string& tree_file, string& reference_msa_file, string& query_msa_file, 
   auto pquerys = tree.place();
 
   auto opt_model = tree.model();
-  cout << to_string(opt_model);
-  cout << "Post-Optimization reference tree Log-Likelihood: ";
-  cout << to_string(tree.ref_tree_logl()) << endl;
+  lgr << to_string(opt_model);
+  lgr << "Post-Optimization reference tree Log-Likelihood: ";
+  lgr << to_string(tree.ref_tree_logl()) << endl;
 
-  if (outdir.length() > 0 && outdir.back() != '/')
-    outdir += "/";
+
   ofstream outfile(outdir + "epa_result.jplace");
   outfile << pquery_set_to_jplace_string(pquerys, invocation) << endl;
   outfile.close();
