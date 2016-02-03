@@ -5,6 +5,7 @@
 #include <chrono>
 
 #include "epa.hpp"
+#include "logging.hpp"
 
 using namespace std;
 
@@ -44,7 +45,6 @@ int main(int argc, char** argv)
 {
   string invocation("");
   string model_id("GTR");
-  unsigned int runs = 1;
   Options options;
   for (int i = 0; i < argc; ++i)
   {
@@ -56,7 +56,7 @@ int main(int argc, char** argv)
   string work_dir("");
 
   int c;
-  while((c =  getopt(argc, argv, "hoOq:s:S:w:b:")) != EOF)
+  while((c =  getopt(argc, argv, "hoOq:s:S:w:")) != EOF)
   {
     switch (c)
     {
@@ -81,9 +81,6 @@ int main(int argc, char** argv)
           inv("Accumulated support threshold cutoff too large! Range: (0,1]");
         options.acc_threshold = true;
         break;
-      case 'b':
-        runs = stoi(optarg);
-        break;
       case 'h':
           inv("");
           break;
@@ -107,29 +104,19 @@ int main(int argc, char** argv)
   string tree_file(argv[optind]);
   string reference_file(argv[optind + 1]);
 
-  vector<long double> runtimes;
+  auto start = chrono::high_resolution_clock::now();
+  Model model(model_id);
+  epa(tree_file,
+    reference_file,
+    query_file,
+    work_dir,
+    model,
+    options,
+    invocation);
+  auto end = chrono::high_resolution_clock::now();
+  auto runtime = chrono::duration_cast<chrono::milliseconds>(end - start).count();
 
-  for (size_t i = 0; i < runs; i++) {
-    auto start = chrono::high_resolution_clock::now();
-    Model model(model_id);
-    epa(tree_file,
-      reference_file,
-      query_file,
-      work_dir,
-      model,
-      options,
-      invocation);
-    auto end = chrono::high_resolution_clock::now();
-    runtimes.push_back(chrono::duration_cast<chrono::milliseconds>(end - start).count());
-  }
-
-  if (runs > 1)
-    cout << "Minimum time: ";
-  else
-    cout << "Elapsed time: ";
-
-  auto min = min_element(runtimes.begin(), runtimes.end());
-  cout << *min << "ms" << endl;
+  lgr << "\nElapsed time: " << runtime << "ms" << endl;
 
 	return 0;
 }
