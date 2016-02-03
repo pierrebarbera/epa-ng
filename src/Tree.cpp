@@ -60,10 +60,14 @@ Tree::~Tree()
 PQuery_Set Tree::place()
 {
   const auto num_branches = nums_.branches;
+  const auto num_queries = query_msa_.size();
   // get all edges
   vector<pll_utree_t *> branches(num_branches);
   auto num_traversed_branches = utree_query_branches(tree_, &branches[0]);
   assert(num_traversed_branches == num_branches);
+
+  lgr << "\nPlacing "<< to_string(num_queries) << " reads on " <<
+    to_string(num_branches) << " branches." << endl;
 
   // build all tiny trees with corresponding edges
   vector<Tiny_Tree> insertion_trees;
@@ -73,7 +77,6 @@ PQuery_Set Tree::place()
       we don't want that if the mode is prescoring */
 
   // output class
-  auto num_queries = query_msa_.size();
   PQuery_Set pquerys(get_numbered_newick_string(tree_));
   for (const auto & s : query_msa_)
     pquerys.emplace_back(s, num_branches);

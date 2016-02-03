@@ -41,6 +41,7 @@ void epa(string& tree_file, string& reference_msa_file, string& query_msa_file, 
   auto pquerys = tree.place();
 
   ofstream outfile(outdir + "epa_result.jplace");
+  lgr << "\nWriting output to: " << outdir + "epa_result.jplace" << endl;
   outfile << pquery_set_to_jplace_string(pquerys, invocation) << endl;
   outfile.close();
 
