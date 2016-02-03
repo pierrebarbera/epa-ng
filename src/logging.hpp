@@ -38,4 +38,4 @@ private:
   std::unique_ptr<std::ofstream> log_file_ = nullptr;
 };
 
-Log lgr;
+extern Log lgr;

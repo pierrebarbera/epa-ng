@@ -10,6 +10,7 @@
 #include "Sequence.hpp"
 #include "optimize.hpp"
 #include "set_manipulators.hpp"
+#include "logging.hpp"
 
 using namespace std;
 
@@ -36,6 +37,9 @@ Tree::Tree(const string &tree_file, const MSA &msa, Model &model,
            options_.opt_model);
 
   precompute_clvs(tree_, partition_, nums_);
+
+  lgr << "\nPost-optimization reference tree log-likelihood: ";
+  lgr << to_string(this->ref_tree_logl()) << endl;
 }
 
 double Tree::ref_tree_logl()

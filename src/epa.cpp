@@ -1,7 +1,6 @@
 #include "epa.hpp"
 
 #include <stdexcept>
-#include <iostream>
 #include <fstream>
 
 #include "file_io.hpp"
@@ -11,6 +10,8 @@
 #include "logging.hpp"
 
 using namespace std;
+
+Log lgr;
 
 void epa(string& tree_file, string& reference_msa_file, string& query_msa_file, string& outdir,
                 Model model, Options options, string invocation)
@@ -38,12 +39,6 @@ void epa(string& tree_file, string& reference_msa_file, string& query_msa_file, 
 
   // place query sequences
   auto pquerys = tree.place();
-
-  auto opt_model = tree.model();
-  // lgr << to_string(opt_model);
-  lgr << "\nPost-optimization reference tree log-likelihood: ";
-  lgr << to_string(tree.ref_tree_logl()) << endl;
-
 
   ofstream outfile(outdir + "epa_result.jplace");
   outfile << pquery_set_to_jplace_string(pquerys, invocation) << endl;
