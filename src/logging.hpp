@@ -17,13 +17,21 @@ public:
     return *this;
   }
 
-  // TODO templetize?
-  std::ostream& operator<<(std::string&& msg)
+  template<typename T>
+  Log& operator<<(T&& msg)
   {
-    std::cout << msg << std::endl;
+    std::cout << msg;
     if(log_file_)
-      (*log_file_) << msg << std::endl;
-    return std::cout;
+      (*log_file_) << msg;
+    return *this;
+  }
+
+  Log& operator<<(std::ostream&(*f)(std::ostream&))
+  {
+    std::cout << f;
+    if(log_file_)
+      (*log_file_) << f;
+    return *this;
   }
 
 private:

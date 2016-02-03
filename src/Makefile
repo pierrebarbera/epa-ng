@@ -35,11 +35,13 @@ omp:  $(TARGET)
 
 test: $(TARGET)
 	mkdir -p $(OUTDIR)
+	rm $(OUTDIR)/*
 	$(TARGET) $(TESTINPUT)
 
 ranged_test: $(TARGET)
-		mkdir -p $(OUTDIR)
-		$(TARGET) $(TESTINPUT)
+	mkdir -p $(OUTDIR)
+	rm $(OUTDIR)/*
+	$(TARGET) $(TESTINPUT)
 
 
 valgrind: $(TARGET)

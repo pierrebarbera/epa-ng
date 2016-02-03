@@ -24,6 +24,9 @@ void epa(string& tree_file, string& reference_msa_file, string& query_msa_file, 
     outdir += "/";
   lgr = Log(outdir + "epa_info.log");
 
+  lgr << "EPA - Evolutionary Placement Algorithm" << endl;
+  lgr << "\nInvocation: \n" << invocation << endl;
+
 	// Build the reference tree
   auto ref_msa = build_MSA_from_file(reference_msa_file);
 
@@ -37,8 +40,8 @@ void epa(string& tree_file, string& reference_msa_file, string& query_msa_file, 
   auto pquerys = tree.place();
 
   auto opt_model = tree.model();
-  lgr << to_string(opt_model);
-  lgr << "Post-Optimization reference tree Log-Likelihood: ";
+  // lgr << to_string(opt_model);
+  lgr << "\nPost-optimization reference tree log-likelihood: ";
   lgr << to_string(tree.ref_tree_logl()) << endl;
 
 
