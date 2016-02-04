@@ -9,7 +9,37 @@
 
 using namespace std;
 
-TEST(calculation, get_valid_range)
+TEST(set_manipulators, find_collapse_equal_sequences)
+{
+  // buildup
+  MSA msa;
+  msa.append(string("T"),   string("AGCTAGCT"));
+  msa.append(string("C"),   string("AGCCAGCT"));
+  msa.append(string("G"),   string("AGCGAGCT"));
+  msa.append(string("A"),   string("AGCAAGCT"));
+  msa.append(string("t1"),  string("AGCTAGCT"));
+  msa.append(string("c1"),  string("AGCCAGCT"));
+  msa.append(string("g1"),  string("AGCGAGCT"));
+  msa.append(string("a1"),  string("AGCAAGCT"));
+  msa.append(string("t2"),  string("AGCTAGCT"));
+  msa.append(string("c2"),  string("AGCCAGCT"));
+
+  // test
+  find_collapse_equal_sequences(msa);
+  EXPECT_EQ(msa.size(), 4);
+
+  EXPECT_EQ(msa[0].header_list().size(), 3);
+  EXPECT_EQ(msa[1].header_list().size(), 3);
+  EXPECT_EQ(msa[2].header_list().size(), 2);
+  EXPECT_EQ(msa[3].header_list().size(), 2);
+
+  // for (auto &s : msa)
+  //   for (auto &head : s.header_list())
+  //     cout << head << endl;
+
+}
+
+TEST(set_manipulators, get_valid_range)
 {
   string s1("---------GGGCCCGTAT-------");//(9,19)
   string s2("GGGCCCGTAT-------");         //(0,10)
@@ -30,7 +60,7 @@ TEST(calculation, get_valid_range)
 }
 
 
-TEST(calculation, discard_by_accumulated_threshold)
+TEST(set_manipulators, discard_by_accumulated_threshold)
 {
   // setup
   PQuery_Set pqs;
@@ -70,7 +100,7 @@ TEST(calculation, discard_by_accumulated_threshold)
 
 }
 
-TEST(calculation, discard_by_support_threshold)
+TEST(set_manipulators, discard_by_support_threshold)
 {
   // setup
   PQuery_Set pqs;

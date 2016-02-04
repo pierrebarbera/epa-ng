@@ -13,36 +13,6 @@
 
 using namespace std;
 
-TEST(epa_pll_util, find_collapse_equal_sequences)
-{
-  // buildup
-  MSA msa;
-  msa.append(string("T"),   string("AGCTAGCT"));
-  msa.append(string("C"),   string("AGCCAGCT"));
-  msa.append(string("G"),   string("AGCGAGCT"));
-  msa.append(string("A"),   string("AGCAAGCT"));
-  msa.append(string("t1"),  string("AGCTAGCT"));
-  msa.append(string("c1"),  string("AGCCAGCT"));
-  msa.append(string("g1"),  string("AGCGAGCT"));
-  msa.append(string("a1"),  string("AGCAAGCT"));
-  msa.append(string("t2"),  string("AGCTAGCT"));
-  msa.append(string("c2"),  string("AGCCAGCT"));
-
-  // test
-  find_collapse_equal_sequences(msa);
-  EXPECT_EQ(msa.size(), 4);
-
-  EXPECT_EQ(msa[0].header_list().size(), 3);
-  EXPECT_EQ(msa[1].header_list().size(), 3);
-  EXPECT_EQ(msa[2].header_list().size(), 2);
-  EXPECT_EQ(msa[3].header_list().size(), 2);
-
-  // for (auto &s : msa)
-  //   for (auto &head : s.header_list())
-  //     cout << head << endl;
-
-}
-
 TEST(epa_pll_util, link_tree_msa)
 {
   // buildup

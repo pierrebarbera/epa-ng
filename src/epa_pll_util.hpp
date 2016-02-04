@@ -13,7 +13,6 @@ void link_tree_msa(pll_utree_t * tree, pll_partition_t * partition,
               std::vector<Range> &valid_map);
 void precompute_clvs(pll_utree_t * tree, pll_partition_t * partition, const Tree_Numbers& nums);
 void split_combined_msa(MSA& source, MSA& target, pll_utree_t * tree, unsigned int num_tip_nodes);
-void find_collapse_equal_sequences(MSA& msa);
 
 // operator overloads
 bool operator==(const pll_utree_t * node, const Sequence& s);
