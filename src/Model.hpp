@@ -19,9 +19,6 @@ class Model {
 public:
   Model() = default;
   Model(std::string model_id);
-  // Model(std::vector<double> base_frequencies, std::vector<double>
-  // substitution_rates,
-  //   double alpha, std::vector<int> symmetries = {0,0,0,0,0,0});
   ~Model() = default;
 
   // getters

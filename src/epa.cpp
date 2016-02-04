@@ -44,21 +44,4 @@ void epa(string& tree_file, string& reference_msa_file, string& query_msa_file, 
   lgr << "\nWriting output to: " << outdir + "epa_result.jplace" << endl;
   outfile << pquery_set_to_jplace_string(pquerys, invocation) << endl;
   outfile.close();
-
-
-	// for scalability...
-		// stream? then probably conjuntion between pll datatype and my wrapper needed
-		// partition? further heuristic!
-
-	// subtask handling!
-
-	// for basic approach: call kernel directly, basic for loop, later expand to par solution
-		// kernel does one thing: place one sequence on one branch and recalculate
-		// do for every branch
-			// do for every sequence
-	// loop returns list of list of pquerys
-
-	// filter: what fraction of pquerys to remember (absolute number, top x %, threshold)
-
-	// pass pquery lists to output writer, possibly also strategy based?
 }

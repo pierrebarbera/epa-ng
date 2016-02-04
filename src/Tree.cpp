@@ -30,6 +30,8 @@ Tree::Tree(const string &tree_file, const MSA &msa, Model &model,
   valid_map_ = vector<Range>(nums_.tip_nodes);
   link_tree_msa(tree_, partition_, ref_msa_, nums_.tip_nodes, valid_map_);
 
+  // find_collapse_equal_sequences(query_msa_);
+
   compute_and_set_empirical_frequencies(partition_, model_);
 
   // perform branch length and model optimization on the reference tree
@@ -90,7 +92,7 @@ PQuery_Set Tree::place()
   {
     for (unsigned int sequence_id = 0; sequence_id < num_queries; ++sequence_id)
     {
-      tie(logl, distal, pendant) = insertion_trees[branch_id].place(query_msa_.get(sequence_id));
+      tie(logl, distal, pendant) = insertion_trees[branch_id].place(query_msa_[sequence_id]);
       pquerys[sequence_id][branch_id] = Placement(
         branch_id,
         logl,

@@ -15,8 +15,6 @@ static void print_help()
   cout << "USAGE: epa [options] <tree_file> <MSA_file>" << endl << endl;
   cout << "OPTIONS:" << endl;
   cout << "  -h \tDisplay this page" << endl;
-  cout << "  -b \tBenchmark mode: Specify number of runs" << endl;
-  cout << "     \tOutput will include the minimum of the separate run times." << endl;
   cout << "  -q \tPath to separate query MSA file. If none is provided, epa will assume" << endl;
   cout << "     \tquery reads are in the MSA_file (second parameter)" << endl;
   cout << "  -w \tPath to working directory" << endl;

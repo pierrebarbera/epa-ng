@@ -15,7 +15,7 @@ using namespace std;
 
 /*  Update a single partial likelihood vector (CLV) based on a range. Requires the
     CLV to be appropriately initialized (0.0 within the range, 1.0 without)*/
-static void update_partial_ranged(pll_partition_t * partition, pll_operation_t * op,
+inline static void update_partial_ranged(pll_partition_t * partition, pll_operation_t * op,
                             unsigned int begin, unsigned int span)
 {
   // quick probe to check if properly initialized
@@ -151,7 +151,7 @@ static double optimize_triplet_lbfgsb_ranged (pll_partition_t * partition,
   return score;
 }
 
-void fill_without(pll_partition_t * partition, unsigned int clv_index, Range& range, double value)
+static void fill_without(pll_partition_t * partition, unsigned int clv_index, Range& range, double value)
 {
   auto size = partition->states * partition->rate_cats;
   auto skip_clv = range.begin * size;

@@ -13,32 +13,27 @@ public:
 
   MSA(const unsigned int num_sites);
   MSA();
-  // MSA(const MSA& other);
-  // MSA operator= (MSA other);
-  // MSA operator= (const MSA& other) = delete;
   ~MSA();
-  // swap(const MSA& other);
   void move_sequences(iterator begin, iterator end);
   void append(const std::string& header, const std::string& sequence);
   void append(Sequence s);
   void erase(iterator begin, iterator end) {sequence_list_.erase(begin, end);};
 
-  //Member access
-  inline unsigned int size() const {return sequence_list_.size();};
-  inline unsigned int num_sites() const {return num_sites_;};
-  inline void num_sites(unsigned int sites) {num_sites_ = sites;};
-  const Sequence& get(const int i) const;
+  // getters
+  unsigned int size() const {return sequence_list_.size();};
+  unsigned int num_sites() const {return num_sites_;};
+  const Sequence& operator[](const unsigned int i) const;
 
+  // setters
+  void num_sites(const unsigned int sites) {num_sites_ = sites;};
 
   //Iterator Compatability
-  iterator begin();
-  iterator end();
-  const_iterator begin() const;
-  const_iterator end() const;
-  const_iterator cbegin();
-  const_iterator cend();
-
-
+  iterator begin() { return sequence_list_.begin(); };
+  iterator end() { return sequence_list_.end(); };
+  const_iterator begin() const { return sequence_list_.cbegin(); };
+  const_iterator end() const { return sequence_list_.cend(); };
+  const_iterator cbegin() { return sequence_list_.cbegin(); };
+  const_iterator cend() { return sequence_list_.cend(); };
 
 private:
   // Data Members
