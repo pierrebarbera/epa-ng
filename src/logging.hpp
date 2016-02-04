@@ -11,6 +11,8 @@ public:
   Log() = default;
   ~Log() {if(log_file_) log_file_->close();};
 
+  void to_cout(bool b) {to_cout_ = b;};
+
   Log& operator=(Log&& other)
   {
     std::swap(log_file_, other.log_file_);
@@ -20,7 +22,8 @@ public:
   template<typename T>
   Log& operator<<(T&& msg)
   {
-    std::cout << msg;
+    if (to_cout_)
+      std::cout << msg;
     if(log_file_)
       (*log_file_) << msg;
     return *this;
@@ -28,7 +31,8 @@ public:
 
   Log& operator<<(std::ostream&(*f)(std::ostream&))
   {
-    std::cout << f;
+    if (to_cout_)
+      std::cout << f;
     if(log_file_)
       (*log_file_) << f;
     return *this;
@@ -36,6 +40,7 @@ public:
 
 private:
   std::unique_ptr<std::ofstream> log_file_ = nullptr;
+  bool to_cout_ = true;
 };
 
 extern Log lgr;

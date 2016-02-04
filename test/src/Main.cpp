@@ -3,11 +3,14 @@
 #include <iostream>
 
 #include "Epatest.hpp"
+#include "src/logging.hpp"
 
 Epatest* env;
+// Log lgr;
 
 int main(int argc, char** argv)
 {
+  lgr.to_cout(false);
   env = new Epatest();
 
   // Set data dir using the program path.
