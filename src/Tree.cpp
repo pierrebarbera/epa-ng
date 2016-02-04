@@ -30,7 +30,7 @@ Tree::Tree(const string &tree_file, const MSA &msa, Model &model,
   valid_map_ = vector<Range>(nums_.tip_nodes);
   link_tree_msa(tree_, partition_, ref_msa_, nums_.tip_nodes, valid_map_);
 
-  // find_collapse_equal_sequences(query_msa_);
+  find_collapse_equal_sequences(query_msa_);
 
   compute_and_set_empirical_frequencies(partition_, model_);
 
