@@ -30,12 +30,20 @@ string pquery_to_jplace_string(const PQuery& pquery)
     output << "      " << placement_to_jplace_string(place) << "," << NEWL;
   }
 
-  // undo last comma
+  // undo last comma and newline
   rwnd(output, 2);
   output << NEWL;
 
-  // closing bracket for pquery array and name column
-  output << "      ]," << NEWL <<"    \"n\": [\"" << pquery.sequence().header().c_str() << "\"]" << NEWL;
+  // closing bracket for pquery array, and start of name column
+  output << "      ]," << NEWL <<"    \"n\": [";
+  // list of sequence headers
+  for (const auto& header : pquery.sequence().header_list() )
+    output << "\"" << header.c_str() << "\",";
+
+  // rewind last comma
+  rwnd(output, 1);
+
+  output << "]" << NEWL; // close name bracket
 
   output << "    }";// final bracket
 
