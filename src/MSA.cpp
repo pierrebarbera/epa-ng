@@ -8,19 +8,6 @@
 
 using namespace std;
 
-// Invariant: all contained sequences shall have the same length (num_sites)
-MSA::MSA(const unsigned int num_sites) : num_sites_(num_sites)
-{
-  if(num_sites <= 0)
-    throw runtime_error{"Number of sites in MSA cannot be zero or negative."};
-}
-
-MSA::MSA() : num_sites_(0)
-{}
-
-MSA::~MSA()
-{}
-
 void MSA::move_sequences(iterator begin, iterator end)
 {
   // sequence_list_.assign(begin, end);

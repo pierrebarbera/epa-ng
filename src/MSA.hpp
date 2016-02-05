@@ -11,9 +11,9 @@ public:
   typedef typename std::vector<Sequence>::iterator        iterator;
   typedef typename std::vector<Sequence>::const_iterator  const_iterator;
 
-  MSA(const unsigned int num_sites);
-  MSA();
-  ~MSA();
+  MSA(const unsigned int num_sites) : num_sites_(num_sites) {};
+  MSA() : num_sites_(0) {};
+  ~MSA() = default;
   void move_sequences(iterator begin, iterator end);
   void append(const std::string& header, const std::string& sequence);
   void append(Sequence s);
