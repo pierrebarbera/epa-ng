@@ -7,7 +7,6 @@
 class MSA
 {
 public:
-  typedef Sequence                                        value_type;
   typedef typename std::vector<Sequence>::iterator        iterator;
   typedef typename std::vector<Sequence>::const_iterator  const_iterator;
 

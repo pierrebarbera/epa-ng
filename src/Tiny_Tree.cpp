@@ -45,6 +45,7 @@ Tiny_Tree::Tiny_Tree(pll_utree_t *edge_node, pll_partition_t *old_partition,
       3, // number of prob. matrices (one per possible unique branch length)
       old_partition->rate_cats,
       4, // number of scale buffers (one per node)
+      pll_map_nt,
       old_partition->attributes);
 
   // shallow copy model params

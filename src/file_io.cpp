@@ -90,6 +90,7 @@ tuple<pll_partition_t *, pll_utree_t *>  build_partition_from_file(const string&
            nums.branches,
            RATE_CATS,
            (nums.inner_nodes * 3) + nums.tip_nodes, /* number of scaler buffers */
+           pll_map_nt,
            attributes);
 
   double rate_cats[RATE_CATS] = {0};
