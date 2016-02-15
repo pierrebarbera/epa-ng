@@ -11,7 +11,7 @@ CC=clang++
 DEFS=
 WARNINGS= -Wall -Wextra -pedantic -pedantic-errors
 DBG=-g
-CFLAGS= $(WARNINGS) -std=c++11 $(DBG) -Ofast $(CF)
+CFLAGS= $(WARNINGS) -std=c++11 $(DBG) -O3 $(CF)
 LINKFLAGS=$(DBG) #$(CFLAGS)
 
 TARGET=$(BIN)/epamk

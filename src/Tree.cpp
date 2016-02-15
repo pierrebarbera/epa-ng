@@ -110,7 +110,10 @@ PQuery_Set Tree::place()
   if (options_.prescoring)
   {
     discard_by_accumulated_threshold(pquerys, 0.95);// TODO outside input? constant?
-    for (auto &pq : pquerys)
+    #pragma omp parallel for
+    for (unsigned int pquery_id = 0; pquery_id < pquerys.size(); pquery_id++)
+    {
+      auto pq = pquerys[pquery_id];
       for (auto &placement : pq)
       {
         unsigned int id = placement.branch_id();
@@ -120,6 +123,7 @@ PQuery_Set Tree::place()
         placement.pendant_length(pendant);
         placement.distal_length(distal);
       }
+    }
     compute_and_set_lwr(pquerys);
   }
 
