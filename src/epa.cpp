@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 #include <fstream>
+#include <chrono>
 
 #include "file_io.hpp"
 #include "jplace_util.hpp"
@@ -38,7 +39,12 @@ void epa(string& tree_file, string& reference_msa_file, string& query_msa_file, 
   auto tree = Tree(tree_file, ref_msa, model, options, query_msa);
 
   // place query sequences
+  auto start = chrono::high_resolution_clock::now();
   auto pquerys = tree.place();
+  auto end = chrono::high_resolution_clock::now();
+  auto runtime = chrono::duration_cast<chrono::seconds>(end - start).count();
+
+  lgr << "\nTime spent placing: " << runtime << "s" << endl;
 
   ofstream outfile(outdir + "epa_result.jplace");
   lgr << "\nWriting output to: " << outdir + "epa_result.jplace" << endl;

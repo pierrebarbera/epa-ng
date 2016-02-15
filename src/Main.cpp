@@ -2,7 +2,6 @@
 #include <unistd.h>
 #include <string>
 #include <algorithm>
-#include <chrono>
 
 #include "epa.hpp"
 #include "logging.hpp"
@@ -102,7 +101,6 @@ int main(int argc, char** argv)
   string tree_file(argv[optind]);
   string reference_file(argv[optind + 1]);
 
-  auto start = chrono::high_resolution_clock::now();
   Model model(model_id);
   epa(tree_file,
     reference_file,
@@ -111,10 +109,6 @@ int main(int argc, char** argv)
     model,
     options,
     invocation);
-  auto end = chrono::high_resolution_clock::now();
-  auto runtime = chrono::duration_cast<chrono::milliseconds>(end - start).count();
-
-  lgr << "\nElapsed time: " << runtime << "ms" << endl;
 
 	return 0;
 }
