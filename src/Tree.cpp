@@ -86,7 +86,6 @@ PQuery_Set Tree::place()
   // place all s on every edge
   double logl, distal, pendant;
 
-  // omp_set_num_threads(4);
   #pragma omp parallel for
   for (unsigned int branch_id = 0; branch_id < num_branches; ++branch_id)
   {
@@ -110,20 +109,44 @@ PQuery_Set Tree::place()
   if (options_.prescoring)
   {
     discard_by_accumulated_threshold(pquerys, 0.95);// TODO outside input? constant?
+
+    // build a list of placements per edge that need to be recomputed
+    vector<vector<tuple<Placement *, const Sequence *>>> recompute_list(num_branches);
+    for (auto & pq : pquerys)
+      for (auto & placement : pq)
+        recompute_list[placement.branch_id()].push_back(make_tuple(&placement, &pq.sequence()));
+
     #pragma omp parallel for
-    for (unsigned int pquery_id = 0; pquery_id < pquerys.size(); pquery_id++)
+    for (unsigned int branch_id = 0; branch_id < num_branches; branch_id++)
     {
-      auto pq = pquerys[pquery_id];
-      for (auto &placement : pq)
+      Placement * placement;
+      // Sequence * sequence;
+      auto& branch = insertion_trees[branch_id];
+      branch.opt_branches(true); // TODO only needs to be done once
+      for (auto recomp_tuple : recompute_list[branch_id])
       {
-        unsigned int id = placement.branch_id();
-        insertion_trees[id].opt_branches(true); // TODO only needs to be done once
-        tie(logl, distal, pendant) = insertion_trees[id].place(pq.sequence());
-        placement.likelihood(logl);
-        placement.pendant_length(pendant);
-        placement.distal_length(distal);
+        // tie(placement, sequence) = recomp_tuple;
+        placement = get<0>(recomp_tuple);
+        tie(logl, distal, pendant) = branch.place(*get<1>(recomp_tuple));
+        placement->likelihood(logl);
+        placement->pendant_length(pendant);
+        placement->distal_length(distal);
       }
     }
+
+    // for (unsigned int pquery_id = 0; pquery_id < pquerys.size(); pquery_id++)
+    // {
+    //   auto pq = pquerys[pquery_id];
+    //   for (auto &placement : pq)
+    //   {
+    //     unsigned int id = placement.branch_id();
+    //     insertion_trees[id].opt_branches(true); // TODO only needs to be done once
+    //     tie(logl, distal, pendant) = insertion_trees[id].place(pq.sequence());
+    //     placement.likelihood(logl);
+    //     placement.pendant_length(pendant);
+    //     placement.distal_length(distal);
+    //   }
+    // }
     compute_and_set_lwr(pquerys);
   }
 
