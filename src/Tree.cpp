@@ -86,7 +86,7 @@ PQuery_Set Tree::place()
   // place all s on every edge
   double logl, distal, pendant;
 
-  #pragma omp parallel for
+  #pragma omp parallel for schedule(dynamic)
   for (unsigned int branch_id = 0; branch_id < num_branches; ++branch_id)
   {
     for (unsigned int sequence_id = 0; sequence_id < num_queries; ++sequence_id)
@@ -116,7 +116,7 @@ PQuery_Set Tree::place()
       for (auto & placement : pq)
         recompute_list[placement.branch_id()].push_back(make_tuple(&placement, &pq.sequence()));
 
-    #pragma omp parallel for
+    #pragma omp parallel for schedule(dynamic)
     for (unsigned int branch_id = 0; branch_id < num_branches; branch_id++)
     {
       Placement * placement;
@@ -133,20 +133,6 @@ PQuery_Set Tree::place()
         placement->distal_length(distal);
       }
     }
-
-    // for (unsigned int pquery_id = 0; pquery_id < pquerys.size(); pquery_id++)
-    // {
-    //   auto pq = pquerys[pquery_id];
-    //   for (auto &placement : pq)
-    //   {
-    //     unsigned int id = placement.branch_id();
-    //     insertion_trees[id].opt_branches(true); // TODO only needs to be done once
-    //     tie(logl, distal, pendant) = insertion_trees[id].place(pq.sequence());
-    //     placement.likelihood(logl);
-    //     placement.pendant_length(pendant);
-    //     placement.distal_length(distal);
-    //   }
-    // }
     compute_and_set_lwr(pquerys);
   }
 
