@@ -133,8 +133,9 @@ std::tuple<double, double, double> Tiny_Tree::place(const Sequence &s) {
                      s.sequence().c_str());
 
   unsigned int inner_matrix_index = 1;
-  double distal_length = tree_->next->length;
-  double logl = 0;
+  auto distal_length = tree_->next->length;
+  auto pendant_length = tree_->length;
+  double logl = 0.0;
 
   if (opt_branches_) {
     Range range(0, partition_->sites);
@@ -157,6 +158,7 @@ std::tuple<double, double, double> Tiny_Tree::place(const Sequence &s) {
       /* setting the actual range of the ranged CLV computation to be the
         superset of the two tips ranges*/
       range = superset(get_valid_range(s.sequence()), reference_tip_range_);
+      // range = get_valid_range(s.sequence());
     }
 
     logl = optimize_branch_triplet_ranged(partition_, virtual_root, range);
@@ -170,6 +172,27 @@ std::tuple<double, double, double> Tiny_Tree::place(const Sequence &s) {
     double proximal_length = tree_->next->next->length;
     double new_total_branch_length = distal_length + proximal_length;
     distal_length = (original_branch_length_ / new_total_branch_length) * distal_length;
+    pendant_length = tree_->length;
+
+    // reset branch lenths to their default for the next insertion
+    tree_->length = DEFAULT_BRANCH_LENGTH;
+    tree_->back->length = DEFAULT_BRANCH_LENGTH;
+    auto half_original = original_branch_length_ / 2;
+    tree_->next->length = half_original;
+    tree_->next->back->length = half_original;
+    tree_->next->next->length = half_original;
+    tree_->next->next->back->length = half_original;
+
+    tree_->pmatrix_index = 1;
+    tree_->back->pmatrix_index = 1;
+    tree_->next->pmatrix_index = 0;
+    tree_->next->back->pmatrix_index = 0;
+    tree_->next->next->pmatrix_index = 0;
+    tree_->next->next->back->pmatrix_index = 0;
+
+    double branch_lengths[2] = {half_original, DEFAULT_BRANCH_LENGTH};
+    unsigned int matrix_indices[2] = {0, 1};
+    pll_update_prob_matrices(partition_, 0, matrix_indices, branch_lengths, 2);
   } else
     logl = pll_compute_edge_loglikelihood(partition_,
                                           TINY_NEW_TIP_CLV_INDEX,
@@ -181,5 +204,5 @@ std::tuple<double, double, double> Tiny_Tree::place(const Sequence &s) {
 
   assert(distal_length <= original_branch_length_);
 
-  return make_tuple(logl, distal_length, tree_->length);
+  return make_tuple(logl, distal_length, pendant_length);
 }
