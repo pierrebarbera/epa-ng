@@ -11,8 +11,8 @@ string placement_to_jplace_string(const Placement& p)
   output << "[" << to_string(p.branch_id()) << ", ";
   output << to_string(p.likelihood()) << ", ";
   output << to_string(p.lwr()) << ", ";
-  output << to_string(p.pendant_length()) << ", ";
-  output << to_string(p.distal_length()) << "]";
+  output << to_string(p.distal_length()) << ", ";
+  output << to_string(p.pendant_length()) << "]";
 
   return output.str();
 }
@@ -75,8 +75,8 @@ std::string pquery_set_to_jplace_string(const PQuery_Set& ps, string& invocation
 
   output << "  \"version\": 3," << NEWL;
   output << "  \"fields\": ";
-  output << "[\"edge_num\", \"likelihood\", \"like_weight_ratio\", \"pendant_length\"";
-  output << ", \"distal_length\"]" << NEWL;
+  output << "[\"edge_num\", \"likelihood\", \"like_weight_ratio\", \"distal_length\"";
+  output << ", \"pendant_length\"]" << NEWL;
 
   output << "}" << NEWL;
 
