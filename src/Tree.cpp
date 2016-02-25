@@ -11,6 +11,7 @@
 #include "optimize.hpp"
 #include "set_manipulators.hpp"
 #include "logging.hpp"
+#include "stringify.hpp"
 
 using namespace std;
 
@@ -20,8 +21,7 @@ Tree::Tree(const string &tree_file, const MSA &msa, Model &model,
 {
   // parse, build tree
   nums_ = Tree_Numbers();
-  tie(partition_, tree_) =
-      build_partition_from_file(tree_file, model_, nums_, ref_msa_.num_sites());
+  tie(partition_, tree_) = build_partition_from_file(tree_file, model_, nums_, ref_msa_.num_sites());
 
   // split msa if no separate query msa was supplied
   if (query.num_sites() == 0)
@@ -32,11 +32,12 @@ Tree::Tree(const string &tree_file, const MSA &msa, Model &model,
 
   find_collapse_equal_sequences(query_msa_);
 
-  compute_and_set_empirical_frequencies(partition_, model_);
+  // compute_and_set_empirical_frequencies(partition_, model_);
 
   // perform branch length and model optimization on the reference tree
-  optimize(model_, tree_, partition_, nums_, options_.opt_branches,
-           options_.opt_model);
+  optimize(model_, tree_, partition_, nums_, options_.opt_branches, options_.opt_model);
+
+  lgr << to_string(model_);
 
   precompute_clvs(tree_, partition_, nums_);
 
