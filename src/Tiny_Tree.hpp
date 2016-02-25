@@ -39,7 +39,9 @@ public:
 
   Tiny_Tree(Tiny_Tree&& other)
     : partition_(other.partition_), tree_(other.tree_), ops_(other.ops_),
-      opt_branches_(other.opt_branches_), original_branch_length_(other.original_branch_length_)
+      opt_branches_(other.opt_branches_), original_branch_length_(other.original_branch_length_),
+      model_(other.model_),
+      reference_tip_range_(other.reference_tip_range_), tip_tip_case_(other.tip_tip_case_)
   {
     other.partition_ = nullptr;
     other.tree_ = nullptr;
