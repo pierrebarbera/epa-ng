@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <limits>
 #include <algorithm>
+#include <iterator>
 
 using namespace std;
 
@@ -37,16 +38,22 @@ static void sort_by_lwr(PQuery& pq)
 
 void discard_bottom_x_percent(PQuery_Set& pqs, const double x)
 {
-  for (auto pq : pqs)
+  if (x < 0.0 || x > 1.0)
+    throw range_error{"x is not a percentage (outside of [0,1])"};
+  for (auto &pq : pqs)
   {
     auto num_keep = max((int)ceil((1.0 - x) * (double)pq.size()), 5);
     sort_by_lwr(pq);
-    pq.erase(pq.begin() + num_keep, pq.end());
+    auto erase_iter = pq.begin();
+    advance(erase_iter, num_keep);
+    pq.erase(erase_iter, pq.end());
   }
 }
 
 void discard_by_support_threshold(PQuery_Set& pqs, const double thresh)
 {
+  if (thresh < 0.0 || thresh > 1.0)
+    throw range_error{"thresh is not a valid likelihood weight ratio (outside of [0,1])"};
   for (auto &pq : pqs)
   {
     auto erase_iter = partition(pq.begin(), pq.end(),
