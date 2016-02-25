@@ -28,6 +28,23 @@ void compute_and_set_lwr(PQuery_Set& pqs)
   }
 }
 
+static void sort_by_lwr(PQuery& pq)
+{
+  sort(pq.begin(), pq.end(),
+    [](const Placement &p_a, const Placement &p_b) -> bool {return p_a.lwr() > p_b.lwr();}
+  );
+}
+
+void discard_bottom_x_percent(PQuery_Set& pqs, const double x)
+{
+  for (auto pq : pqs)
+  {
+    auto num_keep = max((int)ceil((1.0 - x) * (double)pq.size()), 5);
+    sort_by_lwr(pq);
+    pq.erase(pq.begin() + num_keep, pq.end());
+  }
+}
+
 void discard_by_support_threshold(PQuery_Set& pqs, const double thresh)
 {
   for (auto &pq : pqs)
@@ -42,11 +59,8 @@ void discard_by_accumulated_threshold(PQuery_Set& pqs, const double thresh)
 {
   // sorting phase
   for (auto &pq : pqs)
-  {
-    sort(pq.begin(), pq.end(),
-      [](const Placement &p_a, const Placement &p_b) -> bool {return p_a.lwr() > p_b.lwr();}
-    );
-  }
+    sort_by_lwr(pq);
+
   // accumulation and erasure phase
   for (auto &pq : pqs)
   {
