@@ -53,7 +53,7 @@ Tiny_Tree::Tiny_Tree(pll_utree_t *edge_node, pll_partition_t *old_partition,
   partition_->subst_params = old_partition->subst_params;
   partition_->frequencies = old_partition->frequencies;
 
-  // shallow copy 2 existing nodes clvs
+
   assert(old_partition->clv[old_proximal->clv_index] != NULL);
   assert(old_partition->clv[old_distal->clv_index] != NULL);
 
@@ -81,9 +81,9 @@ Tiny_Tree::Tiny_Tree(pll_utree_t *edge_node, pll_partition_t *old_partition,
   // lifetime
   ops_.parent_clv_index = TINY_INNER_CLV_INDEX;
   ops_.child1_clv_index = TINY_PROXIMAL_CLV_INDEX;
-  ops_.child1_scaler_index = tree_->next->next->back->scaler_index;
+  ops_.child1_scaler_index = tree_->next->back->scaler_index;
   ops_.child2_clv_index = TINY_DISTAL_CLV_INDEX;
-  ops_.child2_scaler_index = tree_->next->back->scaler_index;
+  ops_.child2_scaler_index = tree_->next->next->back->scaler_index;
   ops_.parent_scaler_index = TINY_INNER_CLV_INDEX;
 
   /* heuristic insertion as described in EPA paper from 2011 (Berger et al.):
@@ -95,16 +95,16 @@ Tiny_Tree::Tiny_Tree(pll_utree_t *edge_node, pll_partition_t *old_partition,
   */ // TODO change this
   // wether heuristic is used or not, this is the initial branch length
   // configuration
-  double branch_lengths[2] = {old_proximal->length / 2, DEFAULT_BRANCH_LENGTH};
-  unsigned int matrix_indices[2] = {0, 1};
+  double branch_lengths[3] = {old_proximal->length / 2, old_proximal->length / 2, DEFAULT_BRANCH_LENGTH};
+  unsigned int matrix_indices[3] = {0, 1, 2};
 
   // use branch lengths to compute the probability matrices
   // TODO replace with updating single matrix function
   // alternatively have modified version that recognizes the default branch length
-  pll_update_prob_matrices(partition_, 0, matrix_indices, branch_lengths, 2);
+  pll_update_prob_matrices(partition_, 0, matrix_indices, branch_lengths, 3);
 
   ops_.child1_matrix_index = 0;
-  ops_.child2_matrix_index = 0;
+  ops_.child2_matrix_index = 1;
 
   if (!opt_branches_)
     pll_update_partials(partition_, &ops_, TINY_NUM_OPS);
@@ -161,7 +161,8 @@ std::tuple<double, double, double> Tiny_Tree::place(const Sequence &s) {
       // range = get_valid_range(s.sequence());
     }
 
-    logl = optimize_branch_triplet_ranged(partition_, virtual_root, range);
+    // logl = optimize_branch_triplet_ranged(partition_, virtual_root, range);
+    logl = optimize_branch_triplet_newton(partition_, virtual_root);
 
     assert(tree_->length >= 0);
     assert(tree_->next->length >= 0);
@@ -183,16 +184,16 @@ std::tuple<double, double, double> Tiny_Tree::place(const Sequence &s) {
     tree_->next->next->length = half_original;
     tree_->next->next->back->length = half_original;
 
-    tree_->pmatrix_index = 1;
-    tree_->back->pmatrix_index = 1;
-    tree_->next->pmatrix_index = 0;
-    tree_->next->back->pmatrix_index = 0;
+    tree_->pmatrix_index = 2;
+    tree_->back->pmatrix_index = 2;
+    tree_->next->pmatrix_index = 1;
+    tree_->next->back->pmatrix_index = 1;
     tree_->next->next->pmatrix_index = 0;
     tree_->next->next->back->pmatrix_index = 0;
 
-    double branch_lengths[2] = {half_original, DEFAULT_BRANCH_LENGTH};
-    unsigned int matrix_indices[2] = {0, 1};
-    pll_update_prob_matrices(partition_, 0, matrix_indices, branch_lengths, 2);
+    double branch_lengths[3] = {half_original, half_original, DEFAULT_BRANCH_LENGTH};
+    unsigned int matrix_indices[3] = {0, 1, 2};
+    pll_update_prob_matrices(partition_, 0, matrix_indices, branch_lengths, 3);
   } else
     logl = pll_compute_edge_loglikelihood(partition_,
                                           TINY_NEW_TIP_CLV_INDEX,
