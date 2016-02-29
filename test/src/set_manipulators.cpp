@@ -67,7 +67,7 @@ TEST(set_manipulators, discard_bottom_x_percent)
   pqs.emplace_back(s_a, 0);
   vector<double> weights_a({0.001,0.23,0.05,0.02,0.4,0.009,0.2,0.09});
   vector<double> weights_b({0.01,0.02,0.005,0.002,0.94,0.003,0.02});
-  unsigned int num_expected[3] = {5,5,5};
+  unsigned int num_expected[3] = {4,4,1};
 
   for (auto n : weights_a) {
     pqs.back().emplace_back(1,-10,0.9,0.9);
@@ -83,12 +83,12 @@ TEST(set_manipulators, discard_bottom_x_percent)
   pqs.back().back().lwr(1.0);
 
   // tests
-  discard_bottom_x_percent(pqs, 0.9);
+  discard_bottom_x_percent(pqs, 0.5);
   int i =0;
   for (auto pq : pqs) {
     unsigned int num = 0;
     for (auto p : pq) {
-      (void)p;
+      // cout << to_string(p.lwr()) << endl;
       num++;
     }
     EXPECT_EQ(num, num_expected[i++]);
