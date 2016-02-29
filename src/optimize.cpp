@@ -317,7 +317,7 @@ double optimize_branch_triplet_newton(pll_partition_t * partition, pll_utree_t *
                                                 tree->back->scaler_index,
                                                 tree->pmatrix_index, 0);
   auto cur_logl = -numeric_limits<double>::infinity();
-  int smoothings = 2;
+  int smoothings = 8;
 
   while (fabs (cur_logl - logl) > OPT_EPSILON)
   {
@@ -441,12 +441,17 @@ void optimize(Model& model, pll_utree_t * tree, pll_partition_t * partition,
   params.factr = OPT_FACTR;
   params.pgtol = OPT_PARAM_EPSILON;
 
+  vector<pll_utree_t*> branches(nums.branches);
+  auto num_traversed = utree_query_branches(tree, &branches[0]);
+  assert (num_traversed == nums.branches);
+  unsigned int branch_index = 0;
+
   double logl = cur_logl;
 
   if (opt_branches)
   {
     smoothings = 8;
-    cur_logl = optimize_branch_lengths(tree,
+    cur_logl = optimize_branch_lengths(branches[branch_index],
       partition, params, &travbuffer[0], cur_logl, lnl_monitor, &smoothings);
 
     lgr << "after hidden blo crouching tiger: " << to_string(cur_logl) << "\n";
@@ -461,6 +466,8 @@ void optimize(Model& model, pll_utree_t * tree, pll_partition_t * partition,
 
   do
   {
+    branch_index = rand () % num_traversed;
+
     lgr << "Start: " << to_string(cur_logl) << "\n";
     logl = cur_logl;
 
@@ -475,7 +482,7 @@ void optimize(Model& model, pll_utree_t * tree, pll_partition_t * partition,
       if (opt_branches)
       {
         smoothings = 3;
-        cur_logl = optimize_branch_lengths(tree,
+        cur_logl = optimize_branch_lengths(branches[branch_index],
           partition, params, &travbuffer[0], cur_logl, lnl_monitor, &smoothings);
 
         lgr << "after blo 1: " << to_string(cur_logl) << "\n";
@@ -488,7 +495,7 @@ void optimize(Model& model, pll_utree_t * tree, pll_partition_t * partition,
       if (opt_branches)
       {
         smoothings = 3;
-        cur_logl = optimize_branch_lengths(tree,
+        cur_logl = optimize_branch_lengths(branches[branch_index],
           partition, params, &travbuffer[0], cur_logl, lnl_monitor, &smoothings);
 
         lgr << "after blo 2: " << to_string(cur_logl) << "\n";
@@ -507,7 +514,7 @@ void optimize(Model& model, pll_utree_t * tree, pll_partition_t * partition,
     if (opt_branches)
     {
       smoothings = 4;
-      cur_logl = optimize_branch_lengths(tree,
+      cur_logl = optimize_branch_lengths(branches[branch_index],
         partition, params, &travbuffer[0], cur_logl, lnl_monitor, &smoothings);
 
       lgr << "after blo 3: " << to_string(cur_logl) << "\n";
