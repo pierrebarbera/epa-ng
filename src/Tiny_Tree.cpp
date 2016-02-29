@@ -78,13 +78,15 @@ Tiny_Tree::Tiny_Tree(pll_utree_t *edge_node, pll_partition_t *old_partition,
            sizeof(unsigned int) * old_partition->sites);
 
   // precreate some of the operation fields that are static throughout the trees
-  // lifetime
+  // lifetime TODO only need it once, shouldnt be object scope
   ops_.parent_clv_index = TINY_INNER_CLV_INDEX;
-  ops_.child1_clv_index = TINY_PROXIMAL_CLV_INDEX;
+  ops_.child1_clv_index = TINY_DISTAL_CLV_INDEX;
   ops_.child1_scaler_index = tree_->next->back->scaler_index;
-  ops_.child2_clv_index = TINY_DISTAL_CLV_INDEX;
+  ops_.child2_clv_index = TINY_PROXIMAL_CLV_INDEX;
   ops_.child2_scaler_index = tree_->next->next->back->scaler_index;
   ops_.parent_scaler_index = TINY_INNER_CLV_INDEX;
+  ops_.child1_matrix_index = 0;
+  ops_.child2_matrix_index = 1;
 
   /* heuristic insertion as described in EPA paper from 2011 (Berger et al.):
     original branch, now split by "inner", or base, node of the inserted sequence,
@@ -93,6 +95,7 @@ Tiny_Tree::Tiny_Tree(pll_utree_t *edge_node, pll_partition_t *old_partition,
     The new branch leading from inner to the new tip is initialized with length 0.9,
     which is the default branch length in RAxML.
   */ // TODO change this
+
   // wether heuristic is used or not, this is the initial branch length
   // configuration
   double branch_lengths[3] = {old_proximal->length / 2, old_proximal->length / 2, DEFAULT_BRANCH_LENGTH};
@@ -103,13 +106,11 @@ Tiny_Tree::Tiny_Tree(pll_utree_t *edge_node, pll_partition_t *old_partition,
   // alternatively have modified version that recognizes the default branch length
   pll_update_prob_matrices(partition_, 0, matrix_indices, branch_lengths, 3);
 
-  ops_.child1_matrix_index = 0;
-  ops_.child2_matrix_index = 1;
 
   if (!opt_branches_)
     pll_update_partials(partition_, &ops_, TINY_NUM_OPS);
-  // use update_partials to compute the clv pointing toward the new tip
 }
+// use update_partials to compute the clv pointing toward the new tip
 
 Tiny_Tree::~Tiny_Tree() {
   if (partition_ != nullptr) {
@@ -132,7 +133,6 @@ std::tuple<double, double, double> Tiny_Tree::place(const Sequence &s) {
   pll_set_tip_states(partition_, TINY_NEW_TIP_CLV_INDEX, pll_map_nt,
                      s.sequence().c_str());
 
-  unsigned int inner_matrix_index = 1;
   auto distal_length = tree_->next->length;
   auto pendant_length = tree_->length;
   double logl = 0.0;
@@ -200,7 +200,7 @@ std::tuple<double, double, double> Tiny_Tree::place(const Sequence &s) {
                                           PLL_SCALE_BUFFER_NONE, // scaler_index
                                           TINY_INNER_CLV_INDEX,
                                           TINY_INNER_CLV_INDEX, // scaler_index
-                                          inner_matrix_index,
+                                          tree_->pmatrix_index,
                                           0); // freq index
 
   assert(distal_length <= original_branch_length_);
