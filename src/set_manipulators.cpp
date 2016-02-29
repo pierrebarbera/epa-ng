@@ -42,7 +42,7 @@ void discard_bottom_x_percent(PQuery_Set& pqs, const double x)
     throw range_error{"x is not a percentage (outside of [0,1])"};
   for (auto &pq : pqs)
   {
-    auto num_keep = max((int)ceil((1.0 - x) * (double)pq.size()), 5);
+    auto num_keep = (int)ceil((1.0 - x) * (double)pq.size());
     sort_by_lwr(pq);
     auto erase_iter = pq.begin();
     advance(erase_iter, num_keep);
