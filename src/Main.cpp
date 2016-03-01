@@ -17,7 +17,10 @@ static void print_help()
   cout << "  -q \tPath to separate query MSA file. If none is provided, epa will assume" << endl;
   cout << "     \tquery reads are in the MSA_file (second parameter)" << endl;
   cout << "  -w \tPath to working directory" << endl;
-  cout << "  -o \toptimize branch lengths on insertion" << endl;
+  cout << "  -g \tHeuristic insertion, determination of candidate edges using accumulative threshold" << endl;
+  cout << "     \t" << endl;
+  cout << "  -G \tHeuristic insertion, determination of candidate edges by specified percentage of total edges" << endl;
+  cout << "     \t" << endl;
   cout << "  -O \toptimize reference tree and model parameters" << endl;
   cout << "  -s \tspecify minimum likelihood weight below which a placement is discarded" << endl;
   cout << "     \t  DEFAULT: 0.01" << endl;
@@ -25,7 +28,7 @@ static void print_help()
   cout << "     \t  DEFAULT: OFF" << endl;
   cout << "  -m \tSpecify model of nucleotide substitution" <<  endl;
   cout << "     \tGTR \tGeneralized time reversible`(DEFAULT)" << endl;
-  cout << "     \tJC69 \tJukes-Cantor Model" << endl;
+  cout << "     \tJC69\tJukes-Cantor Model" << endl;
   cout << "     \tK80 \tKimura 80 Model" << endl;
 }
 
@@ -53,7 +56,7 @@ int main(int argc, char** argv)
   string work_dir("");
 
   int c;
-  while((c =  getopt(argc, argv, "hoOq:s:S:w:")) != EOF)
+  while((c =  getopt(argc, argv, "hOq:s:S:w:g::G::")) != EOF)
   {
     switch (c)
     {
@@ -79,18 +82,40 @@ int main(int argc, char** argv)
         options.acc_threshold = true;
         break;
       case 'h':
-          inv("");
-          break;
-      case 'o':
-          options.prescoring = true;
-          break;
+        inv("");
+        break;
+      case 'g':
+        if (options.prescoring)
+          inv("-g cannot be used simultaneously with -G!");
+        if (optarg)
+          options.prescoring_threshold = stod(optarg);
+        if (options.prescoring_threshold < 0.0)
+          inv("Prescoring threshold cutoff too small! Range: [0,1]");
+        if (options.prescoring_threshold > 1.0)
+          inv("Prescoring threshold cutoff too large! Range: [0,1]");
+        options.prescoring = true;
+        break;
+      case 'G':
+        if (options.prescoring)
+          inv("-g cannot be used simultaneously with -G!");
+        if (optarg)
+          options.prescoring_threshold = stod(optarg);
+        else
+          options.prescoring_threshold = 0.1;
+        if (options.prescoring_threshold < 0.0)
+          inv("Prescoring threshold cutoff too small! Range: [0,1]");
+        if (options.prescoring_threshold > 1.0)
+          inv("Prescoring threshold cutoff too large! Range: [0,1]");
+        options.prescoring = true;
+        options.prescoring_by_percentage = true;
+        break;
       case 'O':
-          options.opt_branches = true;
-          options.opt_model = true;
-          break;
+        options.opt_branches = true;
+        options.opt_model = true;
+        break;
       case ':':
-          inv("Missing option.");
-          break;
+        inv("Missing option.");
+        break;
       }
   }
 

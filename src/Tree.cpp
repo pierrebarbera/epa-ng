@@ -109,8 +109,11 @@ PQuery_Set Tree::place()
   // per branch, then pass
   if (options_.prescoring)
   {
-    // discard_by_accumulated_threshold(pquerys, 0.95);// TODO outside input? constant?
-    discard_bottom_x_percent(pquerys, 0.9);
+    lgr << "Entering second phase of placement. \n";
+    if (options_.prescoring_by_percentage)
+      discard_bottom_x_percent(pquerys, (1.0 - options_.prescoring_threshold));
+    else
+      discard_by_accumulated_threshold(pquerys, options_.prescoring_threshold);
 
     // build a list of placements per edge that need to be recomputed
     vector<vector<tuple<Placement *, const Sequence *>>> recompute_list(num_branches);
