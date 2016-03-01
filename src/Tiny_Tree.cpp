@@ -98,7 +98,7 @@ Tiny_Tree::Tiny_Tree(pll_utree_t *edge_node, pll_partition_t *old_partition,
 
   // wether heuristic is used or not, this is the initial branch length
   // configuration
-  double branch_lengths[3] = {old_proximal->length / 2, old_proximal->length / 2, DEFAULT_BRANCH_LENGTH};
+  double branch_lengths[3] = {old_proximal->length / 2.0, old_proximal->length / 2.0, DEFAULT_BRANCH_LENGTH};
   unsigned int matrix_indices[3] = {0, 1, 2};
 
   // use branch lengths to compute the probability matrices
