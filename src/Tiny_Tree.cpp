@@ -178,7 +178,7 @@ std::tuple<double, double, double> Tiny_Tree::place(const Sequence &s) {
     // reset branch lenths to their default for the next insertion
     tree_->length = DEFAULT_BRANCH_LENGTH;
     tree_->back->length = DEFAULT_BRANCH_LENGTH;
-    auto half_original = original_branch_length_ / 2;
+    double half_original = original_branch_length_ / 2.0;
     tree_->next->length = half_original;
     tree_->next->back->length = half_original;
     tree_->next->next->length = half_original;
@@ -204,6 +204,7 @@ std::tuple<double, double, double> Tiny_Tree::place(const Sequence &s) {
                                           0); // freq index
 
   assert(distal_length <= original_branch_length_);
+  assert(distal_length >= 0.0);
 
   return make_tuple(logl, distal_length, pendant_length);
 }

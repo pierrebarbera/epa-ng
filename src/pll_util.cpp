@@ -274,7 +274,7 @@ pll_utree_t * make_tiny_tree_structure(const pll_utree_t * old_proximal, const p
     PLL_SCALE_BUFFER_NONE : TINY_DISTAL_CLV_INDEX;
 
   // set up branch lengths
-  double half_old = old_distal->length / 2;
+  double half_old = old_distal->length / 2.;
   new_tip->length = DEFAULT_BRANCH_LENGTH;
   new_tip->back->length = DEFAULT_BRANCH_LENGTH;
   proximal->length = half_old;

@@ -535,11 +535,6 @@ void compute_and_set_empirical_frequencies(pll_partition_t * partition, Model& m
 {
   double * empirical_freqs = pll_compute_empirical_frequencies (partition);
 
-  // double * empirical_freqs = new double[4];
-  // empirical_freqs[0] = 0.319698;
-  // empirical_freqs[1] = 0.272411;
-  // empirical_freqs[2] = 0.146794;
-  // empirical_freqs[3] = 0.261097;
   pll_set_frequencies (partition, 0, 0, empirical_freqs);
   model.base_frequencies(partition->frequencies[0], partition->states);
   free (empirical_freqs);
