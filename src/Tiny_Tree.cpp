@@ -85,8 +85,8 @@ Tiny_Tree::Tiny_Tree(pll_utree_t *edge_node, pll_partition_t *old_partition,
   ops_.child2_clv_index = TINY_PROXIMAL_CLV_INDEX;
   ops_.child2_scaler_index = tree_->next->next->back->scaler_index;
   ops_.parent_scaler_index = TINY_INNER_CLV_INDEX;
-  ops_.child1_matrix_index = 0;
-  ops_.child2_matrix_index = 1;
+  ops_.child1_matrix_index = 1;
+  ops_.child2_matrix_index = 0;
 
   /* heuristic insertion as described in EPA paper from 2011 (Berger et al.):
     original branch, now split by "inner", or base, node of the inserted sequence,
