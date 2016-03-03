@@ -81,7 +81,7 @@ tuple<pll_partition_t *, pll_utree_t *>  build_partition_from_file(const string&
   attributes = PLL_ATTRIB_ARCH_AVX;
 #endif
 
-  // attributes |= PLL_ATTRIB_PATTERN_TIP;
+  attributes |= PLL_ATTRIB_PATTERN_TIP;
 
   auto partition = pll_partition_create(nums.tip_nodes,
            nums.inner_nodes * 3, //number of extra clv buffers: 3 for every direction on the node

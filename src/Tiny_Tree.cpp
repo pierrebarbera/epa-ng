@@ -52,6 +52,25 @@ Tiny_Tree::Tiny_Tree(pll_utree_t *edge_node, pll_partition_t *old_partition,
   partition_->rates = old_partition->rates;
   partition_->subst_params = old_partition->subst_params;
   partition_->frequencies = old_partition->frequencies;
+  partition_->eigenvecs = old_partition->eigenvecs;
+  partition_->inv_eigenvecs = old_partition->inv_eigenvecs;
+  partition_->eigenvals = old_partition->eigenvals;
+  partition_->prop_invar = old_partition->prop_invar;
+  partition_->eigen_decomp_valid = old_partition->eigen_decomp_valid;
+  partition_->pattern_weights = old_partition->pattern_weights;
+
+  // shalow/deep copy tip_tip_pattern specific things
+  // shallow
+  partition_->lh_statepair = old_partition->lh_statepair;
+  partition_->charmap = old_partition->charmap;
+  partition_->revmap = old_partition->revmap;
+  // deep
+  partition_->maxstates = old_partition->maxstates;
+  partition_->log2_maxstates = old_partition->log2_maxstates;
+  partition_->log2_rates = old_partition->log2_rates;
+  partition_->log2_states = old_partition->log2_states;
+
+
 
 
   assert(old_partition->clv[old_proximal->clv_index] != NULL);
@@ -59,23 +78,29 @@ Tiny_Tree::Tiny_Tree(pll_utree_t *edge_node, pll_partition_t *old_partition,
 
   // deep copy clv's
   memcpy(partition_->clv[TINY_PROXIMAL_CLV_INDEX],
-         old_partition->clv[old_proximal->clv_index],
-         sizeof(double) * old_partition->sites * old_partition->rate_cats *
-             old_partition->states);
-  memcpy(partition_->clv[TINY_DISTAL_CLV_INDEX],
-         old_partition->clv[old_distal->clv_index],
-         sizeof(double) * old_partition->sites * old_partition->rate_cats *
-             old_partition->states);
+    old_partition->clv[old_proximal->clv_index],
+    sizeof(double) * old_partition->sites * old_partition->rate_cats *
+    old_partition->states);
+
+  if(tip_tip_case_)
+    memcpy(partition_->tipchars[TINY_DISTAL_CLV_INDEX],
+      old_partition->tipchars[old_distal->clv_index],
+      sizeof(char) * old_partition->sites );
+  else
+    memcpy(partition_->clv[TINY_DISTAL_CLV_INDEX],
+      old_partition->clv[old_distal->clv_index],
+      sizeof(double) * old_partition->sites * old_partition->rate_cats *
+      old_partition->states);
 
   // deep copy scalers
   if (old_proximal->scaler_index != PLL_SCALE_BUFFER_NONE)
     memcpy(partition_->scale_buffer[TINY_PROXIMAL_CLV_INDEX],
-           old_partition->scale_buffer[old_proximal->scaler_index],
-           sizeof(unsigned int) * old_partition->sites);
+      old_partition->scale_buffer[old_proximal->scaler_index],
+      sizeof(unsigned int) * old_partition->sites);
   if (old_distal->scaler_index != PLL_SCALE_BUFFER_NONE)
     memcpy(partition_->scale_buffer[TINY_DISTAL_CLV_INDEX],
-           old_partition->scale_buffer[old_distal->scaler_index],
-           sizeof(unsigned int) * old_partition->sites);
+      old_partition->scale_buffer[old_distal->scaler_index],
+      sizeof(unsigned int) * old_partition->sites);
 
   // precreate some of the operation fields that are static throughout the trees
   // lifetime TODO only need it once, shouldnt be object scope
@@ -118,6 +143,16 @@ Tiny_Tree::~Tiny_Tree() {
     partition_->rates = nullptr;
     partition_->subst_params = nullptr;
     partition_->frequencies = nullptr;
+    partition_->eigenvecs = nullptr;
+    partition_->inv_eigenvecs = nullptr;
+    partition_->eigenvals = nullptr;
+    partition_->prop_invar = nullptr;
+    partition_->eigen_decomp_valid = nullptr;
+    partition_->pattern_weights = nullptr;
+
+    partition_->lh_statepair = nullptr;
+    partition_->charmap = nullptr;
+    partition_->revmap = nullptr;
 
     pll_partition_destroy(partition_);
   }
@@ -141,7 +176,7 @@ std::tuple<double, double, double> Tiny_Tree::place(const Sequence &s) {
     Range range(0, partition_->sites);
 
     /* differentiate between the normal case and the tip tip case:
-      in the normal case we want to compute the partial toward the newly palced sequence.
+      in the normal case we want to compute the partial toward the newly placed sequence.
       In other words, we set the virtual root as the node whose back-neighbour is the new
       sequence, which is tree_. (*)
       */
@@ -157,12 +192,12 @@ std::tuple<double, double, double> Tiny_Tree::place(const Sequence &s) {
 
       /* setting the actual range of the ranged CLV computation to be the
         superset of the two tips ranges*/
-      range = superset(get_valid_range(s.sequence()), reference_tip_range_);
+      // range = superset(get_valid_range(s.sequence()), reference_tip_range_);
       // range = get_valid_range(s.sequence());
     }
 
     // logl = optimize_branch_triplet_ranged(partition_, virtual_root, range);
-    logl = optimize_branch_triplet_newton(partition_, virtual_root);
+    logl = optimize_branch_triplet_newton(partition_, virtual_root, range);
 
     assert(tree_->length >= 0);
     assert(tree_->next->length >= 0);
