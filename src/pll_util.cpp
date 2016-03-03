@@ -290,7 +290,18 @@ pll_utree_t * make_tiny_tree_structure(const pll_utree_t * old_proximal, const p
   inner->next->next->pmatrix_index = 0;
   proximal->pmatrix_index = 0;
 
+  // using the data pointer to indicate wether a tip node is a *real* tip that may have a char array
+  // instead of a clv
+  new_tip->data = (void*) 1l;
+  if (!old_distal->next)
+    distal->data = (void*) 1l;
+
   return inner;
+}
+
+bool is_char_tip(pll_utree_t * node)
+{
+  return node->data != NULL;
 }
 
 /* Function to return the tip node if either <node> or <node->back> is one. Otherweise
