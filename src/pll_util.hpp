@@ -21,6 +21,8 @@ void set_unique_clv_indices(pll_utree_t * tree, const int num_tip_nodes);
 void set_missing_branch_length(pll_utree_t * tree, double length);
 void set_branch_length(pll_utree_t * tree, double length);
 std::string get_numbered_newick_string(pll_utree_t * root);
-pll_utree_t * make_tiny_tree_structure(const pll_utree_t * old_left, const pll_utree_t * old_right);
-bool is_char_tip(pll_utree_t * node);
+pll_utree_t * make_tiny_tree_structure(const pll_utree_t * old_proximal, const pll_utree_t * old_distal,
+  const bool tip_tip_case);
+pll_partition_t * make_tiny_partition(const pll_partition_t * old_partition, const pll_utree_t * tree,
+  const pll_utree_t * old_proximal, const pll_utree_t * old_distal, const bool tip_tip_case);
 pll_utree_t * get_tip_node(pll_utree_t * node);

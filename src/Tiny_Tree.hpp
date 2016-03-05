@@ -12,15 +12,15 @@
 /* Encapsulates a smallest possible unrooted tree (3 tip nodes, 1 inner node)
   for use in edge insertion:
 
-             [2]
+             S:[-] C:[1]
            new_tip
               |
               |
-            inner [3]
+            inner S:[1] C:[3]
            /     \
           /       \
-      proximal  distal
-        [0]       [1]
+      proximal    distal
+    S:[0] C:[4]   S:[2] C:[2 or 5]
 
   where proximal/distal are the nodes adjacent to the insertion edge in the reference tree.
   new_tip represents the newly added sequence.
@@ -38,7 +38,7 @@ public:
   Tiny_Tree(Tiny_Tree const& other) = delete;
 
   Tiny_Tree(Tiny_Tree&& other)
-    : partition_(other.partition_), tree_(other.tree_), ops_(other.ops_),
+    : partition_(other.partition_), tree_(other.tree_), 
       opt_branches_(other.opt_branches_), original_branch_length_(other.original_branch_length_),
       model_(other.model_),
       reference_tip_range_(other.reference_tip_range_), tip_tip_case_(other.tip_tip_case_)
@@ -60,7 +60,6 @@ private:
   // pll structures
   pll_partition_t * partition_ = nullptr;
   pll_utree_t * tree_ = nullptr;
-  pll_operation_t ops_;
 
   bool opt_branches_;
   const double original_branch_length_;
