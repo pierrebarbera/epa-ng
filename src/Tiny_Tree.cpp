@@ -197,7 +197,7 @@ std::tuple<double, double, double> Tiny_Tree::place(const Sequence &s) {
     }
 
     // logl = optimize_branch_triplet_ranged(partition_, virtual_root, range);
-    logl = optimize_branch_triplet_newton(partition_, virtual_root, range);
+    logl = optimize_branch_triplet(partition_, virtual_root, range);
 
     assert(tree_->length >= 0);
     assert(tree_->next->length >= 0);

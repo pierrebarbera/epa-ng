@@ -33,7 +33,188 @@ static void update_matrices_partial_triplet(pll_partition_t * partition, pll_utr
 
 }
 
-double optimize_branch_triplet_newton(pll_partition_t * partition, pll_utree_t * tree, Range& range)
+/* Adapted from LLPLL: pll_optimize.c
+ * Original author: Diego Darriba
+ */
+static double recomp_iterative_ranged (pll_newton_tree_params_t * params,
+                                double *best_lnl,
+                                int radius,
+                                Range& range)
+{
+  double lnl = 0.0,
+     new_lnl = 0.0;
+  pll_utree_t *tr_p, *tr_q, *tr_z;
+
+  lnl = *best_lnl;
+  tr_p = params->tree;
+  tr_q = params->tree->next;
+  tr_z = tr_q?tr_q->next:NULL;
+
+  /* set Branch Length */
+  assert(d_equals(tr_p->length, tr_p->back->length));
+
+  double xmin, xguess, xmax;
+
+  pll_update_sumtable (params->partition,
+                       tr_p->clv_index,
+                       tr_p->back->clv_index,
+                       params->params_index,
+                       params->freqs_index,
+                       params->sumtable);
+
+  xmin   = PLL_OPT_MIN_BRANCH_LEN + PLL_LBFGSB_ERROR;
+  xmax   = PLL_OPT_MAX_BRANCH_LEN;
+  xguess = tr_p->length;
+  if (xguess < xmin || xguess > xmax)
+    xguess = PLL_OPT_DEFAULT_BRANCH_LEN;
+
+  double xres = pll_minimize_newton (xmin, xguess, xmax,
+                                     10, &new_lnl, params,
+                                     utree_derivative_func);
+
+  if (pll_errno)
+  {
+    return PLL_FAILURE;
+  }
+
+  if (new_lnl >= 0)
+    new_lnl = *best_lnl;
+
+  /* ensure that new_lnl is not NaN */
+  assert (new_lnl == new_lnl);
+
+  if (new_lnl > lnl)
+  {
+    /* consolidate */
+    tr_p->length = xres;
+    tr_p->back->length = tr_p->length;
+
+    pll_update_prob_matrices(params->partition,
+                             params->params_index,
+                             &(params->tree->pmatrix_index),
+                             &(tr_p->length),1);
+
+    *best_lnl = new_lnl;
+  }
+  else
+  {
+    /* revert */
+   pll_update_prob_matrices(params->partition,
+                             params->params_index,
+                             &tr_p->pmatrix_index,
+                             &tr_p->length, 1);
+
+  }
+
+  /* update children */
+  if (radius && tr_q && tr_z)
+  {
+    /* update children 'Q'
+     * CLV at P is recomputed with children P->back and Z->back
+     * Scaler is updated by subtracting Q->back and adding P->back
+     */
+
+    update_partials_and_scalers(params->partition,
+                      tr_q,
+                      tr_p,
+                      tr_z);
+
+    /* eval */
+    pll_newton_tree_params_t params_cpy;
+    memcpy(&params_cpy, params, sizeof(pll_newton_tree_params_t));
+    params_cpy.tree = tr_q->back;
+    lnl = recomp_iterative_ranged (&params_cpy, best_lnl, radius-1, range);
+
+    /* update children 'Z'
+     * CLV at P is recomputed with children P->back and Q->back
+     * Scaler is updated by subtracting Z->back and adding Q->back
+     */
+
+    update_partials_and_scalers(params->partition,
+                      tr_z,
+                      tr_q,
+                      tr_p);
+
+   /* eval */
+    params_cpy.tree = tr_z->back;
+    lnl = recomp_iterative_ranged (&params_cpy, best_lnl, radius-1, range);
+
+    /* reset to initial state
+     * CLV at P is recomputed with children Q->back and Z->back
+     * Scaler is updated by subtracting P->back and adding Z->back
+     */
+
+    update_partials_and_scalers(params->partition,
+                      tr_p,
+                      tr_z,
+                      tr_q);
+  }
+
+  return lnl;
+}
+
+/* Adapted from LLPLL: pll_optimize.c
+ * Original author: Diego Darriba
+ */
+static double optimize_branch_triplet_newton(pll_partition_t * partition, pll_utree_t * tree, Range& range,
+  const double tolerance, const int smoothings)
+{
+  unsigned int iters;
+  double lnl = 0.0;
+
+  /* get the initial likelihood score */
+  lnl = compute_edge_logl_ranged(partition, tree, range);
+
+  /**
+   * preconditions:
+   *    (1) CLVs must be updated towards 'tree'
+   *    (2) Pmatrix indices must be **unique** for each branch
+   */
+
+  /* set parameters for N-R optimization */
+  pll_newton_tree_params_t params;
+  params.partition    = partition;
+  params.tree         = tree;
+  params.params_index = 0; // TODO change if we ever have multiple freqs or params
+  params.freqs_index  = 0;
+  params.sumtable     = 0;
+
+  /* allocate the sumtable */
+  if ((params.sumtable = (double *) pll_aligned_alloc(
+      partition->sites * partition->rate_cats * partition->states *
+      sizeof(double), partition->alignment)) == NULL)
+  {
+    throw runtime_error{"Cannot allocate memory for bl opt variables"};
+  }
+
+  iters = smoothings;
+  while (iters)
+  {
+    double new_lnl = lnl;
+
+    /* iterate on first edge */
+    recomp_iterative (&params, &new_lnl, radius, keep_update);
+    assert(new_lnl >= lnl);
+
+    /* iterate on second edge */
+    params.tree = params.tree->back;
+    recomp_iterative (&params, &new_lnl, radius-1, keep_update);
+    assert(new_lnl >= lnl);
+
+    lnl = new_lnl;
+    iters --;
+
+    /* check convergence */
+    if (fabs (new_lnl - lnl) < tolerance) iters = 0;
+  }
+
+  free(params.sumtable);
+
+  return lnl;
+
+}
+
+double optimize_branch_triplet(pll_partition_t * partition, pll_utree_t * tree, Range& range)
 {
   if (!tree->next)
     tree = tree->back;
@@ -41,28 +222,20 @@ double optimize_branch_triplet_newton(pll_partition_t * partition, pll_utree_t *
   update_matrices_partial_triplet(partition, tree, range);
 
   auto logl = compute_edge_logl_ranged(partition, tree, range);
-  
+
   auto cur_logl = -numeric_limits<double>::infinity();
   int smoothings = 8;
 
   while (fabs (cur_logl - logl) > OPT_EPSILON)
   {
-    //  TODO needed?
-    update_matrices_partial_triplet(partition, tree, range);
-
     logl = cur_logl;
-    cur_logl = -pll_optimize_branch_lengths_local (
-                                                  partition,
-                                                  tree,
-                                                  0,
-                                                  0,
-                                                  OPT_BRANCH_EPSILON,
-                                                  smoothings,
-                                                  1,
-                                                  1);
+    cur_logl = optimize_branch_triplet_newton (partition,
+                                              tree,
+                                              OPT_BRANCH_EPSILON,
+                                              smoothings);
+    // re-update after change
+    update_matrices_partial_triplet(partition, tree, range);
   }
-
-  update_matrices_partial_triplet(partition, tree, range);
 
   cur_logl = compute_edge_logl_ranged(partition, tree, range);
 

@@ -4,6 +4,9 @@
 
 #include "pll_util.hpp"
 
+/* Adapted from LLPLL: pll_likelihood.c
+ * Original authors: Diego Darriba, Tomas Flouri
+ */
 static void core_update_partial_tiptip(unsigned int states,
                                       unsigned int sites,
                                       unsigned int rate_cats,
@@ -38,6 +41,9 @@ static void core_update_partial_tiptip(unsigned int states,
   }
 }
 
+/* Adapted from LLPLL: pll_likelihood.c
+ * Original authors: Diego Darriba, Tomas Flouri
+ */
 static void core_update_partial_tipinner(unsigned int states,
                                       unsigned int sites,
                                       unsigned int rate_cats,
@@ -214,6 +220,9 @@ void update_partial_ranged(pll_partition_t * partition, pll_utree_t * tree, Rang
       attrib);
 }
 
+/* Adapted from LLPLL: pll_likelihood.c
+ * Original authors: Diego Darriba, Tomas Flouri
+ */
 static double core_compute_edge_logl(const unsigned int states,
                                     const unsigned int states_padded,
                                     const unsigned int sites,
@@ -288,6 +297,9 @@ static double core_compute_edge_logl(const unsigned int states,
   return logl;
 }
 
+/* Adapted from LLPLL: pll_likelihood.c
+ * Original authors: Diego Darriba, Tomas Flouri
+ */
 static double core_compute_edge_logl_tipinner(const unsigned int states,
                                     const unsigned int states_padded,
                                     const unsigned int sites,
@@ -430,9 +442,7 @@ double compute_edge_logl_ranged(pll_partition_t * partition, pll_utree_t * tree,
       partition->rate_weights,
       partition->pattern_weights,
       partition->revmap,
-      partition->invariant
-
-    );
+      partition->invariant);
   else
     return core_compute_edge_logl(
       states,
