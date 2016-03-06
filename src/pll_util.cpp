@@ -261,22 +261,55 @@ pll_partition_t * make_tiny_partition(const pll_partition_t * old_partition, con
 
   assert(tiny);
 
-  // TODO release the buffers allocated for these
+  unsigned int i;
+  free(tiny->rates);
   tiny->rates = old_partition->rates;
+  if (tiny->subst_params)
+    for (i = 0; i < tiny->rate_matrices; ++i)
+      pll_aligned_free(tiny->subst_params[i]);
+  free(tiny->subst_params);
   tiny->subst_params = old_partition->subst_params;
+  if (tiny->frequencies)
+    for (i = 0; i < tiny->rate_matrices; ++i)
+      pll_aligned_free(tiny->frequencies[i]);
+  free(tiny->frequencies);
   tiny->frequencies = old_partition->frequencies;
+  if (tiny->eigenvecs)
+    for (i = 0; i < tiny->rate_matrices; ++i)
+      pll_aligned_free(tiny->eigenvecs[i]);
+  free(tiny->eigenvecs);
   tiny->eigenvecs = old_partition->eigenvecs;
+  if (tiny->inv_eigenvecs)
+    for (i = 0; i < tiny->rate_matrices; ++i)
+      pll_aligned_free(tiny->inv_eigenvecs[i]);
+  free(tiny->inv_eigenvecs);
   tiny->inv_eigenvecs = old_partition->inv_eigenvecs;
+  if (tiny->eigenvals)
+    for (i = 0; i < tiny->rate_matrices; ++i)
+      pll_aligned_free(tiny->eigenvals[i]);
+  free(tiny->eigenvals);
   tiny->eigenvals = old_partition->eigenvals;
+  if (tiny->prop_invar)
+    free(tiny->prop_invar);
   tiny->prop_invar = old_partition->prop_invar;
+  free(tiny->eigen_decomp_valid);
   tiny->eigen_decomp_valid = old_partition->eigen_decomp_valid;
+  if (tiny->pattern_weights)
+    free(tiny->pattern_weights);
   tiny->pattern_weights = old_partition->pattern_weights;
 
   // shalow/deep copy tip_tip_pattern specific things
   // shallow
+  if (tiny->lh_statepair)
+    free(tiny->lh_statepair);
+  if (tiny->charmap)
+    free(tiny->charmap);
+  if (tiny->revmap)
+    free(tiny->revmap);
   tiny->lh_statepair = old_partition->lh_statepair;
   tiny->charmap = old_partition->charmap;
   tiny->revmap = old_partition->revmap;
+
   // deep
   tiny->maxstates = old_partition->maxstates;
   tiny->log2_maxstates = old_partition->log2_maxstates;

@@ -39,6 +39,9 @@ MSA build_MSA_from_file(const string& msa_file)
   auto msa = MSA(sites);
   msa.append(header, sequence);
 
+  free(sequence);
+  free(header);
+
   /* read the rest */
   while (pll_fasta_getnext(file, &header, &header_length, &sequence, &sequence_length, &sequence_number))
   {
@@ -49,6 +52,8 @@ MSA build_MSA_from_file(const string& msa_file)
     if (!sites) sites = sequence_length;
 
     msa.append(header, sequence);
+    free(sequence);
+    free(header);
   }
 
   if (pll_errno != PLL_ERROR_FILE_EOF)
