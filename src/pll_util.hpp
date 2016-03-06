@@ -1,6 +1,7 @@
 #pragma once
 
 #include "pllhead.hpp"
+#include "Range.hpp"
 
 #include <string>
 #include <sstream>
@@ -27,3 +28,19 @@ pll_partition_t * make_tiny_partition(const pll_partition_t * old_partition, con
   const pll_utree_t * old_proximal, const pll_utree_t * old_distal, const bool tip_tip_case);
 void shift_partition_focus(pll_partition_t * partition, const int offset, const unsigned int span);
 pll_utree_t * get_tip_node(pll_utree_t * node);
+
+// templates
+template<typename Func, typename ...Args>
+double call_focused(pll_partition_t * partition, Range& range, Func func, Args && ...args)
+{
+  const auto num_sites = partition->sites;
+  // Shift there...
+  shift_partition_focus(partition, range.begin, range.span);
+
+  double ret = func(partition, args...);
+
+  // ... and shift back again
+  shift_partition_focus(partition, -range.begin, num_sites);
+
+  return ret;
+}

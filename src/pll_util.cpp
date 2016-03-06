@@ -8,14 +8,8 @@
 using namespace std;
 
 // helper functions
-void set_missing_branch_length_recursive(pll_utree_t * tree, double length);
-void set_branch_length_recursive(pll_utree_t * tree, double length);
-void set_unique_clv_indices_recursive(pll_utree_t * tree, const int num_tip_nodes);
-void utree_query_branches_recursive(pll_utree_t * node, pll_utree_t ** node_list, int * index);
-void free_node_data(pll_utree_t * node);
-void get_numbered_newick_string_recursive(pll_utree_t * node, std::ostringstream &ss);
 
-void set_missing_branch_length_recursive(pll_utree_t * tree, double length)
+static void set_missing_branch_length_recursive(pll_utree_t * tree, double length)
 {
   if (tree)
   {
@@ -67,7 +61,7 @@ void set_branch_length(pll_utree_t * tree, double length)
   set_branch_length_recursive(tree->back, length);
 }
 
-void set_unique_clv_indices_recursive(pll_utree_t * tree, const int num_tip_nodes)
+static void set_unique_clv_indices_recursive(pll_utree_t * tree, const int num_tip_nodes)
 {
   if (tree && tree->next)
   {
@@ -140,7 +134,7 @@ int cb_full_traversal(pll_utree_t * node)
   return 1;
 }
 
-void free_node_data(pll_utree_t * node)
+static void free_node_data(pll_utree_t * node)
 {
 
   // currently we don't allocate a data struct at the tips
@@ -168,7 +162,7 @@ int utree_free_node_data(pll_utree_t * node)
   return 1;
 }
 
-void utree_query_branches_recursive(pll_utree_t * node, pll_utree_t ** node_list, unsigned int * index)
+static void utree_query_branches_recursive(pll_utree_t * node, pll_utree_t ** node_list, unsigned int * index)
 {
   // Postorder traversal
 
@@ -196,7 +190,7 @@ unsigned int utree_query_branches(pll_utree_t * node, pll_utree_t ** node_list)
   return index;
 }
 
-void get_numbered_newick_string_recursive(pll_utree_t * node, ostringstream &ss, unsigned int * index)
+static void get_numbered_newick_string_recursive(pll_utree_t * node, ostringstream &ss, unsigned int * index)
 {
 
   if (node->next) // inner node

@@ -14,17 +14,6 @@
 
 using namespace std;
 
-static void fill_without(pll_partition_t * partition, unsigned int clv_index, Range& range, double value)
-{
-  auto size = partition->states * partition->rate_cats;
-  auto skip_clv = range.begin * size;
-  auto clv = partition->clv[clv_index];
-  std::fill_n(clv, skip_clv, value);
-  auto first_after_skip = (range.begin + range.span) * size;
-  std::fill_n(clv + first_after_skip,
-    (partition->sites * size) - first_after_skip, value);
-}
-
 static void traverse_update_partials(pll_utree_t * tree, pll_partition_t * partition,
     pll_utree_t ** travbuffer, double * branch_lengths, unsigned int * matrix_indices,
     pll_operation_t * operations)
