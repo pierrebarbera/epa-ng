@@ -120,9 +120,10 @@ std::tuple<double, double, double> Tiny_Tree::place(const Sequence &s) {
       /* setting the actual range of the ranged CLV computation to be the
         superset of the two tips ranges*/
       // range = superset(get_valid_range(s.sequence()), reference_tip_range_);
-      // range = get_valid_range(s.sequence());
+      range = get_valid_range(s.sequence());
     }
 
+    // optimize the branches using pnly the portion of the sites specified by range
     logl = call_focused(partition_, range, optimize_branch_triplet, virtual_root);
 
 
