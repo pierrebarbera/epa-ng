@@ -400,6 +400,33 @@ pll_utree_t * make_tiny_tree_structure(const pll_utree_t * old_proximal, const p
   return inner;
 }
 
+// TODO adjust when using pattern compression
+void shift_partition_focus(pll_partition_t * partition, const int offset, const unsigned int span)
+{
+  const auto clv_size = partition->rate_cats * partition->states_padded;
+  const auto num_tips = partition->tips;
+  const auto max_index = num_tips + partition->clv_buffers;
+
+  // shift the tip chars
+  for (unsigned int i = 0; i < num_tips; i++)
+    partition->tipchars[i] += offset;
+
+  // shift the clvs
+  for (unsigned int i = 0; i < max_index; i++)
+    partition->clv[i] += offset * (int)clv_size;
+
+  // shift the scalers
+  for (unsigned int i = 0; i < partition->scale_buffers; i++)
+    partition->scale_buffer[i] += offset;
+
+  // shift the pattern weights
+  partition->pattern_weights += offset;
+
+  // adjust the number of sites
+  partition->sites = span;
+
+}
+
 /* Function to return the tip node if either <node> or <node->back> is one. Otherweise
   returns null. */
 pll_utree_t * get_tip_node(pll_utree_t * node)
