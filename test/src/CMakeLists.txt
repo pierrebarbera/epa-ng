@@ -22,6 +22,8 @@ add_executable        (epa_test_module ${epa_test_sources})
 target_link_libraries (epa_test_module m)
 target_link_libraries (epa_test_module pll)
 target_link_libraries (epa_test_module pll_optimize)
+target_link_libraries (epa_test_module pll_tree)
+target_link_libraries (epa_test_module pll_msa)
 target_link_libraries (epa_test_module ${GTEST_BOTH_LIBRARIES} -pthread)
 
 set_target_properties (epa_test_module PROPERTIES OUTPUT_NAME epa_test)

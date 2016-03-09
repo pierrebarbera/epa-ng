@@ -88,7 +88,7 @@ TEST(set_manipulators, discard_bottom_x_percent)
   for (auto pq : pqs) {
     unsigned int num = 0;
     for (auto p : pq) {
-      // cout << to_string(p.lwr()) << endl;
+      (void)p;
       num++;
     }
     EXPECT_EQ(num, num_expected[i++]);

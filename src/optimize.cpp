@@ -286,7 +286,7 @@ void optimize(Model& model, pll_utree_t * tree, pll_partition_t * partition,
 
 void compute_and_set_empirical_frequencies(pll_partition_t * partition, Model& model)
 {
-  double * empirical_freqs = pll_compute_empirical_frequencies (partition);
+  double * empirical_freqs = pll_msa_empirical_frequencies (partition);
 
   pll_set_frequencies (partition, 0, 0, empirical_freqs);
   model.base_frequencies(partition->frequencies[0], partition->states);

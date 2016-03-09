@@ -4,19 +4,19 @@ LOGDIR=../test/log
 OUTDIR=/tmp/epa
 F+=
 CF+=
-TESTINPUT= $(TEST)/ref.tre $(TEST)/aln.fasta -q $(TEST)/query.fasta -w $(OUTDIR) $(F)
+TESTINPUT= $(TEST)/ref.tre $(TEST)/range_combined.fasta -g -w $(OUTDIR) $(F)
 
 CC=clang++
 #CC=g++
 DEFS=
 WARNINGS= -Wall -Wextra -pedantic -pedantic-errors
 DBG=-g
-CFLAGS= $(WARNINGS) -std=c++11 $(DBG) -O3 $(CF)
+CFLAGS= $(WARNINGS) -std=c++11 $(DBG) $(CF)
 LINKFLAGS=$(DBG) #$(CFLAGS)
 
 TARGET=$(BIN)/epamk
 
-LIBS=-lm -lpll -lpll_optimize
+LIBS=-lm -lpll -lpll_optimize -lpll_msa -lpll_tree
 CPP=$(wildcard *.cpp)
 OBJS=$(notdir $(CPP:.cpp=.o))
 OUT_OBJS=$(addprefix $(BIN)/,$(OBJS))

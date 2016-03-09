@@ -3,5 +3,7 @@
 extern "C" {
 #include "pll.h"
 #include "pll_optimize.h"
+#include "pll_tree.h"
+#include "pll_msa.h"
 }
 #endif
