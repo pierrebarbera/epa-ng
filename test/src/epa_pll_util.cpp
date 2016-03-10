@@ -33,7 +33,7 @@ TEST(epa_pll_util, link_tree_msa)
 
   for (auto n : tip_nodes) {
     ASSERT_NE(n, nullptr);
-    EXPECT_NE(part->clv[n->clv_index][0], 0.0);
+    EXPECT_NE(part->tipchars[n->clv_index][0], 0);
   }
 
   // teardown
