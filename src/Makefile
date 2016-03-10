@@ -28,10 +28,13 @@ omp: DBG=
 omp: LIBS+= -liomp5
 omp: CFLAGS+=-fopenmp=libomp
 ranged_test: TESTINPUT= $(TEST)/ref.tre $(TEST)/range_combined.fasta -w $(OUTDIR) $(F)
+mpi: CC=mpic++
 
 all:  $(TARGET)
 
 omp:  $(TARGET)
+
+mpi: $(TARGET)
 
 test: $(TARGET)
 	mkdir -p $(OUTDIR)
@@ -58,7 +61,6 @@ profile: $(TARGET)
 	mkdir -p $(OUTDIR)
 	$(TARGET) $(TESTINPUT) -b 10
 
-
 gdb: $(TARGET)
 	mkdir -p $(OUTDIR)
 	gdb --args $(TARGET) $(TESTINPUT)
@@ -69,7 +71,7 @@ $(TARGET): $(OUT_OBJS)
 $(OUT_OBJS): $(BIN)/%.o: %.cpp $(DEPS)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-.PHONY: clean
+.PHONY: clean, mpi, omp, all, test, ranged_test, valgrind, callgrind, gdb
 
 clean:
 	rm -f $(BIN)/*.o
