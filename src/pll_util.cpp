@@ -35,7 +35,7 @@ void set_missing_branch_lengths(pll_utree_t * tree, double length)
   set_missing_branch_lengths_recursive(tree->back, length);
 }
 
-static double sum_branch_lengths_recursive(pll_utree_t * tree)
+static double sum_branch_lengths_recursive(const pll_utree_t * const tree)
 {
   double length = 0.0;
   if (tree)
@@ -50,7 +50,7 @@ static double sum_branch_lengths_recursive(pll_utree_t * tree)
   return length;
 }
 
-double sum_branch_lengths(pll_utree_t * tree)
+double sum_branch_lengths(const pll_utree_t * const tree)
 {
   double length = sum_branch_lengths_recursive(tree);
   length += sum_branch_lengths_recursive(tree->back);

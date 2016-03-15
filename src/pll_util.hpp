@@ -28,7 +28,7 @@ pll_partition_t * make_tiny_partition(const pll_partition_t * old_partition, con
   const pll_utree_t * old_proximal, const pll_utree_t * old_distal, const bool tip_tip_case);
 void shift_partition_focus(pll_partition_t * partition, const int offset, const unsigned int span);
 pll_utree_t * get_tip_node(pll_utree_t * node);
-double sum_branch_lengths(pll_utree_t * tree);
+double sum_branch_lengths(const pll_utree_t * const tree);
 
 // templates
 template<typename Func, typename ...Args>
