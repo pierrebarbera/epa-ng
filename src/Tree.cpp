@@ -39,6 +39,8 @@ Tree::Tree(const string &tree_file, const MSA &msa, Model &model,
 
   lgr << to_string(model_);
 
+  lgr << "Tree length: " << sum_branch_lengths(tree_) << endl;
+
   precompute_clvs(tree_, partition_, nums_);
 
   lgr << "\nPost-optimization reference tree log-likelihood: ";
