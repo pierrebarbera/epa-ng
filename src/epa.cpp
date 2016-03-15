@@ -40,7 +40,7 @@ void epa(string& tree_file, string& reference_msa_file, string& query_msa_file, 
 
   // place query sequences
   auto start = chrono::high_resolution_clock::now();
-  auto pquerys = tree.place();
+  auto sample = tree.place();
   auto end = chrono::high_resolution_clock::now();
   auto runtime = chrono::duration_cast<chrono::seconds>(end - start).count();
 
@@ -48,6 +48,6 @@ void epa(string& tree_file, string& reference_msa_file, string& query_msa_file, 
 
   ofstream outfile(outdir + "epa_result.jplace");
   lgr << "\nWriting output to: " << outdir + "epa_result.jplace" << endl;
-  outfile << sample_to_jplace_string(pquerys, invocation) << endl;
+  outfile << sample_to_jplace_string(sample, invocation) << endl;
   outfile.close();
 }
