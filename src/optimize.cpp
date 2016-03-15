@@ -147,7 +147,7 @@ void optimize(Model& model, pll_utree_t * tree, pll_partition_t * partition,
     return;
 
   if (opt_branches)
-    set_branch_length(tree, DEFAULT_BRANCH_LENGTH);
+    set_branch_lengths(tree, DEFAULT_BRANCH_LENGTH);
 
   auto symmetries = (&(model.symmetries())[0]);
 

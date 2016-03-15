@@ -133,6 +133,21 @@ TEST(pll_util, get_numbered_newick_string)
   pll_utree_destroy(tree);
 }
 
+TEST(pll_util, sum_branch_lengths)
+{
+  MSA msa = build_MSA_from_file(env->reference_file);
+  Tree_Numbers nums = Tree_Numbers();
+  pll_partition_t * part;
+  pll_utree_t * tree;
+
+  tie(part, tree) = build_partition_from_file(env->tree_file, env->model, nums, msa.num_sites());
+  set_branch_lengths(tree, 1.0);
+  auto total_length = sum_branch_lengths(tree);
+
+  EXPECT_DOUBLE_EQ(nums.branches, total_length);
+
+}
+
 TEST(pll_util, shift_partition_focus_shifty)
 {
   // buildup

@@ -7,9 +7,7 @@
 
 using namespace std;
 
-// helper functions
-
-static void set_missing_branch_length_recursive(pll_utree_t * tree, double length)
+static void set_missing_branch_lengths_recursive(pll_utree_t * tree, double length)
 {
   if (tree)
   {
@@ -25,20 +23,41 @@ static void set_missing_branch_length_recursive(pll_utree_t * tree, double lengt
       if (!tree->next->next->length)
         tree->next->next->length = length;
 
-      set_missing_branch_length_recursive(tree->next->back, length);
-      set_missing_branch_length_recursive(tree->next->next->back, length);
+      set_missing_branch_lengths_recursive(tree->next->back, length);
+      set_missing_branch_lengths_recursive(tree->next->next->back, length);
     }
   }
 }
 
-void set_missing_branch_length(pll_utree_t * tree, double length)
+void set_missing_branch_lengths(pll_utree_t * tree, double length)
 {
-  set_missing_branch_length_recursive(tree, length);
-  set_missing_branch_length_recursive(tree->back, length);
+  set_missing_branch_lengths_recursive(tree, length);
+  set_missing_branch_lengths_recursive(tree->back, length);
 }
 
-void set_branch_length_recursive(pll_utree_t * tree,
-                                                double length)
+static double sum_branch_lengths_recursive(pll_utree_t * tree)
+{
+  double length = 0.0;
+  if (tree)
+  {
+    if (tree->next) // inner node
+    {
+      length = sum_branch_lengths_recursive(tree->next->back);
+      length += sum_branch_lengths_recursive(tree->next->next->back);
+    }
+    length += tree->length;
+  }
+  return length;
+}
+
+double sum_branch_lengths(pll_utree_t * tree)
+{
+  double length = sum_branch_lengths_recursive(tree);
+  length += sum_branch_lengths_recursive(tree->back);
+  return length - tree->length;
+}
+
+static void set_branch_lengths_recursive(pll_utree_t * tree, double length)
 {
   if (tree)
   {
@@ -49,16 +68,16 @@ void set_branch_length_recursive(pll_utree_t * tree,
       tree->next->length = length;
       tree->next->next->length = length;
 
-      set_branch_length_recursive(tree->next->back, length);
-      set_branch_length_recursive(tree->next->next->back, length);
+      set_branch_lengths_recursive(tree->next->back, length);
+      set_branch_lengths_recursive(tree->next->next->back, length);
     }
   }
 }
 
-void set_branch_length(pll_utree_t * tree, double length)
+void set_branch_lengths(pll_utree_t * tree, double length)
 {
-  set_branch_length_recursive(tree, length);
-  set_branch_length_recursive(tree->back, length);
+  set_branch_lengths_recursive(tree, length);
+  set_branch_lengths_recursive(tree->back, length);
 }
 
 static void set_unique_clv_indices_recursive(pll_utree_t * tree, const int num_tip_nodes)
