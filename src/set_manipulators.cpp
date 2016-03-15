@@ -7,9 +7,9 @@
 
 using namespace std;
 
-void compute_and_set_lwr(PQuery_Set& pqs)
+void compute_and_set_lwr(Sample& sample)
 {
-  for(auto &pq : pqs)
+  for(auto &pq : sample)
   {
     double total = 0.0;
     double max=-numeric_limits<double>::infinity();
@@ -36,11 +36,11 @@ static void sort_by_lwr(PQuery& pq)
   );
 }
 
-void discard_bottom_x_percent(PQuery_Set& pqs, const double x)
+void discard_bottom_x_percent(Sample& sample, const double x)
 {
   if (x < 0.0 || x > 1.0)
     throw range_error{"x is not a percentage (outside of [0,1])"};
-  for (auto &pq : pqs)
+  for (auto &pq : sample)
   {
     auto num_keep = (int)ceil((1.0 - x) * (double)pq.size());
     sort_by_lwr(pq);
@@ -50,11 +50,11 @@ void discard_bottom_x_percent(PQuery_Set& pqs, const double x)
   }
 }
 
-void discard_by_support_threshold(PQuery_Set& pqs, const double thresh)
+void discard_by_support_threshold(Sample& sample, const double thresh)
 {
   if (thresh < 0.0 || thresh > 1.0)
     throw range_error{"thresh is not a valid likelihood weight ratio (outside of [0,1])"};
-  for (auto &pq : pqs)
+  for (auto &pq : sample)
   {
     auto erase_iter = partition(pq.begin(), pq.end(),
     [thresh](Placement &p) -> bool {return (p.lwr() > thresh);});
@@ -62,14 +62,14 @@ void discard_by_support_threshold(PQuery_Set& pqs, const double thresh)
   }
 }
 
-void discard_by_accumulated_threshold(PQuery_Set& pqs, const double thresh)
+void discard_by_accumulated_threshold(Sample& sample, const double thresh)
 {
   // sorting phase
-  for (auto &pq : pqs)
+  for (auto &pq : sample)
     sort_by_lwr(pq);
 
   // accumulation and erasure phase
-  for (auto &pq : pqs)
+  for (auto &pq : sample)
   {
     double sum = 0.0;
 

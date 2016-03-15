@@ -62,7 +62,7 @@ Tree::~Tree()
   pll_utree_destroy(tree_);
 }
 
-PQuery_Set Tree::place()
+Sample Tree::place()
 {
   const auto num_branches = nums_.branches;
   const auto num_queries = query_msa_.size();
@@ -82,7 +82,7 @@ PQuery_Set Tree::place()
       we don't want that if the mode is prescoring */
 
   // output class
-  PQuery_Set pquerys(get_numbered_newick_string(tree_));
+  Sample pquerys(get_numbered_newick_string(tree_));
   for (const auto & s : query_msa_)
     pquerys.emplace_back(s, num_branches);
 

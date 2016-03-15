@@ -19,12 +19,12 @@ TEST(Tree, place)
   auto tree = Tree(env->tree_file, reference_msa, env->model, options, query_msa);
 
   // tests
-  auto pquery_set = tree.place();
+  auto sample = tree.place();
 
-  EXPECT_EQ(pquery_set.size(), 2);
+  EXPECT_EQ(sample.size(), 2);
 
   // check for zero entires and correct number
-  for (auto pquery : pquery_set)
+  for (auto pquery : sample)
   {
     int count = 0;
     for (auto p : pquery)
@@ -48,12 +48,12 @@ TEST(Tree, place_prescore)
   auto tree = Tree(env->tree_file, reference_msa, env->model, options, query_msa);
 
   // tests
-  auto pquery_set = tree.place();
+  auto sample = tree.place();
 
-  EXPECT_EQ(pquery_set.size(), 2);
+  EXPECT_EQ(sample.size(), 2);
 
   // check for zero entires and correct number
-  for (auto pquery : pquery_set)
+  for (auto pquery : sample)
   {
     int count = 0;
     for (auto p : pquery)

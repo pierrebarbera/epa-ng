@@ -8,7 +8,7 @@
 #include "MSA.hpp"
 #include "Model.hpp"
 #include "Tree_Numbers.hpp"
-#include "PQuery_Set.hpp"
+#include "Sample.hpp"
 #include "Tiny_Tree.hpp"
 #include "Options.hpp"
 #include "Range.hpp"
@@ -20,7 +20,7 @@ public:
   Tree(const std::string& tree_file, const MSA& msa, Model& model, Options options,
       const MSA& query = MSA());
   ~Tree();
-  PQuery_Set place();
+  Sample place();
 
   // member access
   inline Tree_Numbers nums() const {return nums_;};
