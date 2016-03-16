@@ -17,9 +17,11 @@ static void print_help()
   cout << "  -q \tPath to separate query MSA file. If none is provided, epa will assume" << endl;
   cout << "     \tquery reads are in the MSA_file (second parameter)" << endl;
   cout << "  -w \tPath to working directory" << endl;
-  cout << "  -g \tHeuristic insertion, determination of candidate edges using accumulative threshold" << endl;
+  cout << "  -r \tRanged heuristic: only consider portion of query sequence sites not flanked by gaps during insertion" << endl;
   cout << "     \t" << endl;
-  cout << "  -G \tHeuristic insertion, determination of candidate edges by specified percentage of total edges" << endl;
+  cout << "  -g \tTwo-phase heuristic, determination of candidate edges using accumulative threshold" << endl;
+  cout << "     \t" << endl;
+  cout << "  -G \tTwo-phase heuristic, determination of candidate edges by specified percentage of total edges" << endl;
   cout << "     \t" << endl;
   cout << "  -O \toptimize reference tree and model parameters" << endl;
   cout << "  -s \tspecify minimum likelihood weight below which a placement is discarded" << endl;
@@ -56,7 +58,7 @@ int main(int argc, char** argv)
   string work_dir("");
 
   int c;
-  while((c =  getopt(argc, argv, "hOq:s:S:w:g::G::")) != EOF)
+  while((c =  getopt(argc, argv, "hOq:s:S:w:g::G::r")) != EOF)
   {
     switch (c)
     {
@@ -112,6 +114,9 @@ int main(int argc, char** argv)
       case 'O':
         options.opt_branches = true;
         options.opt_model = true;
+        break;
+      case 'r':
+        options.ranged = true;
         break;
       case ':':
         inv("Missing option.");
