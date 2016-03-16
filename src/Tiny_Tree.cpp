@@ -41,15 +41,18 @@ Tiny_Tree::Tiny_Tree(pll_utree_t *edge_node, pll_partition_t *old_partition,
   // operation for computing the clv toward the new tip (for initialization and logl in non-blo case)
   auto distal = tree_->next->back;
   auto proximal = tree_->next->next->back;
-  pll_operation_t op;
-  op.parent_clv_index = tree_->clv_index;
-  op.child1_clv_index = distal->clv_index;
-  op.child1_scaler_index = distal->scaler_index;
-  op.child2_clv_index = proximal->clv_index;
-  op.child2_scaler_index = proximal->scaler_index;
-  op.parent_scaler_index = tree_->scaler_index;
-  op.child1_matrix_index = distal->pmatrix_index;
-  op.child2_matrix_index = proximal->pmatrix_index;
+  if (!opt_branches)
+  {
+    pll_operation_t op;
+    op.parent_clv_index = tree_->clv_index;
+    op.child1_clv_index = distal->clv_index;
+    op.child1_scaler_index = distal->scaler_index;
+    op.child2_clv_index = proximal->clv_index;
+    op.child2_scaler_index = proximal->scaler_index;
+    op.parent_scaler_index = tree_->scaler_index;
+    op.child1_matrix_index = distal->pmatrix_index;
+    op.child2_matrix_index = proximal->pmatrix_index;
+  }
 
   // wether heuristic is used or not, this is the initial branch length configuration
   double branch_lengths[3] = {proximal->length, distal->length, tree_->length};
@@ -57,7 +60,6 @@ Tiny_Tree::Tiny_Tree(pll_utree_t *edge_node, pll_partition_t *old_partition,
 
   // use branch lengths to compute the probability matrices
   pll_update_prob_matrices(partition_, 0, matrix_indices, branch_lengths, 3);
-
 
   if (!opt_branches_)
     pll_update_partials(partition_, &op, 1);
@@ -138,26 +140,9 @@ std::tuple<double, double, double> Tiny_Tree::place(const Sequence &s) {
     distal_length = (original_branch_length_ / new_total_branch_length) * distal_length;
     pendant_length = tree_->length;
 
-    // reset branch lenths to their default for the next insertion
-    tree_->length = DEFAULT_BRANCH_LENGTH;
-    tree_->back->length = DEFAULT_BRANCH_LENGTH;
-    double half_original = original_branch_length_ / 2.0;
-    tree_->next->length = half_original;
-    tree_->next->back->length = half_original;
-    tree_->next->next->length = half_original;
-    tree_->next->next->back->length = half_original;
-
-    tree_->pmatrix_index = 2;
-    tree_->back->pmatrix_index = 2;
-    tree_->next->pmatrix_index = 1;
-    tree_->next->back->pmatrix_index = 1;
-    tree_->next->next->pmatrix_index = 0;
-    tree_->next->next->back->pmatrix_index = 0;
-
-    double branch_lengths[3] = {half_original, half_original, DEFAULT_BRANCH_LENGTH};
-    unsigned int matrix_indices[3] = {0, 1, 2};
-    pll_update_prob_matrices(partition_, 0, matrix_indices, branch_lengths, 3);
-  } else
+    reset_triplet_lengths(tree_, partition_, original_branch_length_);
+    }
+    else
     logl = call_focused(partition_, range, pll_compute_edge_loglikelihood,
                                           tree_->back->clv_index,
                                           PLL_SCALE_BUFFER_NONE, // scaler_index
