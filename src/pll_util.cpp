@@ -426,13 +426,13 @@ pll_utree_t * make_tiny_tree_structure(const pll_utree_t * old_proximal, const p
   distal->scaler_index = (old_distal->scaler_index == PLL_SCALE_BUFFER_NONE) ?
     PLL_SCALE_BUFFER_NONE : distal_scaler_index;
 
-  
+
   reset_triplet_lengths(inner, nullptr, old_distal->length);
 
   return inner;
 }
 
-void reset_triplet_lengths(const pll_utree_t * toward_pendant, const pll_partition_t * partition, const double old_length)
+void reset_triplet_lengths(pll_utree_t * toward_pendant, pll_partition_t * partition, const double old_length)
 {
   double half_original = old_length / 2.0;
 

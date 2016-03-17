@@ -29,7 +29,7 @@ pll_partition_t * make_tiny_partition(const pll_partition_t * old_partition, con
 void shift_partition_focus(pll_partition_t * partition, const int offset, const unsigned int span);
 pll_utree_t * get_tip_node(pll_utree_t * node);
 double sum_branch_lengths(const pll_utree_t * const tree);
-void reset_triplet_lengths(const pll_utree_t * toward_pendant, const pll_partition_t * partition, const double old_length);
+void reset_triplet_lengths(pll_utree_t * toward_pendant, pll_partition_t * partition, const double old_length);
 
 // templates
 template<typename Func, typename ...Args>

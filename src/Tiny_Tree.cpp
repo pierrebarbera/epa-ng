@@ -41,18 +41,16 @@ Tiny_Tree::Tiny_Tree(pll_utree_t *edge_node, pll_partition_t *old_partition,
   // operation for computing the clv toward the new tip (for initialization and logl in non-blo case)
   auto distal = tree_->next->back;
   auto proximal = tree_->next->next->back;
-  if (!opt_branches)
-  {
-    pll_operation_t op;
-    op.parent_clv_index = tree_->clv_index;
-    op.child1_clv_index = distal->clv_index;
-    op.child1_scaler_index = distal->scaler_index;
-    op.child2_clv_index = proximal->clv_index;
-    op.child2_scaler_index = proximal->scaler_index;
-    op.parent_scaler_index = tree_->scaler_index;
-    op.child1_matrix_index = distal->pmatrix_index;
-    op.child2_matrix_index = proximal->pmatrix_index;
-  }
+
+  pll_operation_t op;
+  op.parent_clv_index = tree_->clv_index;
+  op.child1_clv_index = distal->clv_index;
+  op.child1_scaler_index = distal->scaler_index;
+  op.child2_clv_index = proximal->clv_index;
+  op.child2_scaler_index = proximal->scaler_index;
+  op.parent_scaler_index = tree_->scaler_index;
+  op.child1_matrix_index = distal->pmatrix_index;
+  op.child2_matrix_index = proximal->pmatrix_index;
 
   // wether heuristic is used or not, this is the initial branch length configuration
   double branch_lengths[3] = {proximal->length, distal->length, tree_->length};
