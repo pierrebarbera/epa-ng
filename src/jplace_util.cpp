@@ -50,7 +50,7 @@ string pquery_to_jplace_string(const PQuery& pquery)
   return output.str();
 }
 
-std::string sample_to_jplace_string(const Sample& ps, string& invocation)
+std::string sample_to_jplace_string(const Sample& ps, const string& invocation)
 {
   ostringstream output;
 
