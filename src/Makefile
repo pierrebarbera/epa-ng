@@ -16,7 +16,7 @@ LINKFLAGS=$(DBG) #$(CFLAGS)
 
 TARGET=$(BIN)/epamk
 
-LIBS=-lm -lpll -lpll_optimize -lpll_msa -lpll_tree
+LIBS=-lm -lpll -lpll_optimize -lpll_msa -lpll_tree -lpll_binary
 CPP=$(wildcard *.cpp)
 OBJS=$(notdir $(CPP:.cpp=.o))
 OUT_OBJS=$(addprefix $(BIN)/,$(OBJS))
