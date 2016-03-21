@@ -79,7 +79,7 @@ tuple<pll_partition_t *, pll_utree_t *>  build_partition_from_file(const string&
   if (nums.tip_nodes < 3)
     throw runtime_error{"Number of tip nodes too small"};
 
-  set_missing_branch_length(tree, DEFAULT_BRANCH_LENGTH);
+  set_missing_branch_lengths(tree, DEFAULT_BRANCH_LENGTH);
 
   auto attributes = PLL_ATTRIB_ARCH_SSE;
 #ifdef __AVX

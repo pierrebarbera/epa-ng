@@ -39,6 +39,8 @@ Tree::Tree(const string &tree_file, const MSA &msa, Model &model,
 
   lgr << to_string(model_);
 
+  lgr << "Tree length: " << sum_branch_lengths(tree_) << endl;
+
   precompute_clvs(tree_, partition_, nums_);
 
   lgr << "\nPost-optimization reference tree log-likelihood: ";
@@ -60,7 +62,7 @@ Tree::~Tree()
   pll_utree_destroy(tree_);
 }
 
-PQuery_Set Tree::place()
+Sample Tree::place()
 {
   const auto num_branches = nums_.branches;
   const auto num_queries = query_msa_.size();
@@ -80,9 +82,9 @@ PQuery_Set Tree::place()
       we don't want that if the mode is prescoring */
 
   // output class
-  PQuery_Set pquerys(get_numbered_newick_string(tree_));
+  Sample sample(get_numbered_newick_string(tree_));
   for (const auto & s : query_msa_)
-    pquerys.emplace_back(s, num_branches);
+    sample.emplace_back(s, num_branches);
 
   // place all s on every edge
   double logl, distal, pendant;
@@ -93,7 +95,7 @@ PQuery_Set Tree::place()
     for (unsigned int sequence_id = 0; sequence_id < num_queries; ++sequence_id)
     {
       tie(logl, distal, pendant) = insertion_trees[branch_id].place(query_msa_[sequence_id]);
-      pquerys[sequence_id][branch_id] = Placement(
+      sample[sequence_id][branch_id] = Placement(
         branch_id,
         logl,
         pendant,
@@ -101,7 +103,7 @@ PQuery_Set Tree::place()
     }
   }
   // now that everything has been placed, we can compute the likelihood weight ratio
-  compute_and_set_lwr(pquerys);
+  compute_and_set_lwr(sample);
 
   /* prescoring was chosen: perform a second round, but only on candidate edges identified
     during the first run */
@@ -111,13 +113,13 @@ PQuery_Set Tree::place()
   {
     lgr << "Entering second phase of placement. \n";
     if (options_.prescoring_by_percentage)
-      discard_bottom_x_percent(pquerys, (1.0 - options_.prescoring_threshold));
+      discard_bottom_x_percent(sample, (1.0 - options_.prescoring_threshold));
     else
-      discard_by_accumulated_threshold(pquerys, options_.prescoring_threshold);
+      discard_by_accumulated_threshold(sample, options_.prescoring_threshold);
 
     // build a list of placements per edge that need to be recomputed
     vector<vector<tuple<Placement *, const Sequence *>>> recompute_list(num_branches);
-    for (auto & pq : pquerys)
+    for (auto & pq : sample)
       for (auto & placement : pq)
         recompute_list[placement.branch_id()].push_back(make_tuple(&placement, &pq.sequence()));
 
@@ -138,14 +140,14 @@ PQuery_Set Tree::place()
         placement->distal_length(distal);
       }
     }
-    compute_and_set_lwr(pquerys);
+    compute_and_set_lwr(sample);
   }
 
   // finally, trim the output
   if (options_.acc_threshold)
-    discard_by_accumulated_threshold(pquerys, options_.support_threshold);
+    discard_by_accumulated_threshold(sample, options_.support_threshold);
   else
-    discard_by_support_threshold(pquerys, options_.support_threshold);
+    discard_by_support_threshold(sample, options_.support_threshold);
 
-  return pquerys;
+  return sample;
 }

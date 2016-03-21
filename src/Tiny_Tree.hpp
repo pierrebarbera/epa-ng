@@ -31,17 +31,18 @@ class Tiny_Tree
 public:
   Tiny_Tree(pll_utree_t * edge_node, pll_partition_t * old_partition, Model model,
     bool opt_branches) : Tiny_Tree(edge_node, old_partition,
-    model, opt_branches, Range(0, old_partition->sites)) {};
+    model, opt_branches, Range(0, old_partition->sites), false) {};
   Tiny_Tree(pll_utree_t * edge_node, pll_partition_t * old_partition, Model model,
-    bool opt_branches, Range reference_tip_range);
+    bool opt_branches, Range reference_tip_range, bool ranged);
 
   Tiny_Tree(Tiny_Tree const& other) = delete;
 
   Tiny_Tree(Tiny_Tree&& other)
-    : partition_(other.partition_), tree_(other.tree_), 
+    : partition_(other.partition_), tree_(other.tree_),
       opt_branches_(other.opt_branches_), original_branch_length_(other.original_branch_length_),
       model_(other.model_),
-      reference_tip_range_(other.reference_tip_range_), tip_tip_case_(other.tip_tip_case_)
+      reference_tip_range_(other.reference_tip_range_), tip_tip_case_(other.tip_tip_case_),
+      ranged_computation_(other.ranged_computation_)
   {
     other.partition_ = nullptr;
     other.tree_ = nullptr;
@@ -66,5 +67,6 @@ private:
   Model model_;
   Range reference_tip_range_;
   bool tip_tip_case_ = false;
+  bool ranged_computation_;
 
 };

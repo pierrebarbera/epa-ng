@@ -7,9 +7,7 @@
 
 using namespace std;
 
-// helper functions
-
-static void set_missing_branch_length_recursive(pll_utree_t * tree, double length)
+static void set_missing_branch_lengths_recursive(pll_utree_t * tree, double length)
 {
   if (tree)
   {
@@ -25,20 +23,41 @@ static void set_missing_branch_length_recursive(pll_utree_t * tree, double lengt
       if (!tree->next->next->length)
         tree->next->next->length = length;
 
-      set_missing_branch_length_recursive(tree->next->back, length);
-      set_missing_branch_length_recursive(tree->next->next->back, length);
+      set_missing_branch_lengths_recursive(tree->next->back, length);
+      set_missing_branch_lengths_recursive(tree->next->next->back, length);
     }
   }
 }
 
-void set_missing_branch_length(pll_utree_t * tree, double length)
+void set_missing_branch_lengths(pll_utree_t * tree, double length)
 {
-  set_missing_branch_length_recursive(tree, length);
-  set_missing_branch_length_recursive(tree->back, length);
+  set_missing_branch_lengths_recursive(tree, length);
+  set_missing_branch_lengths_recursive(tree->back, length);
 }
 
-void set_branch_length_recursive(pll_utree_t * tree,
-                                                double length)
+static double sum_branch_lengths_recursive(const pll_utree_t * const tree)
+{
+  double length = 0.0;
+  if (tree)
+  {
+    if (tree->next) // inner node
+    {
+      length = sum_branch_lengths_recursive(tree->next->back);
+      length += sum_branch_lengths_recursive(tree->next->next->back);
+    }
+    length += tree->length;
+  }
+  return length;
+}
+
+double sum_branch_lengths(const pll_utree_t * const tree)
+{
+  double length = sum_branch_lengths_recursive(tree);
+  length += sum_branch_lengths_recursive(tree->back);
+  return length - tree->length;
+}
+
+static void set_branch_lengths_recursive(pll_utree_t * tree, double length)
 {
   if (tree)
   {
@@ -49,16 +68,16 @@ void set_branch_length_recursive(pll_utree_t * tree,
       tree->next->length = length;
       tree->next->next->length = length;
 
-      set_branch_length_recursive(tree->next->back, length);
-      set_branch_length_recursive(tree->next->next->back, length);
+      set_branch_lengths_recursive(tree->next->back, length);
+      set_branch_lengths_recursive(tree->next->next->back, length);
     }
   }
 }
 
-void set_branch_length(pll_utree_t * tree, double length)
+void set_branch_lengths(pll_utree_t * tree, double length)
 {
-  set_branch_length_recursive(tree, length);
-  set_branch_length_recursive(tree->back, length);
+  set_branch_lengths_recursive(tree, length);
+  set_branch_lengths_recursive(tree->back, length);
 }
 
 static void set_unique_clv_indices_recursive(pll_utree_t * tree, const int num_tip_nodes)
@@ -407,24 +426,41 @@ pll_utree_t * make_tiny_tree_structure(const pll_utree_t * old_proximal, const p
   distal->scaler_index = (old_distal->scaler_index == PLL_SCALE_BUFFER_NONE) ?
     PLL_SCALE_BUFFER_NONE : distal_scaler_index;
 
-  // set up branch lengths
-  double half_old = old_distal->length / 2.0;
-  new_tip->length = DEFAULT_BRANCH_LENGTH;
-  new_tip->back->length = DEFAULT_BRANCH_LENGTH;
-  proximal->length = half_old;
-  proximal->back->length = half_old;
-  distal->length = half_old;
-  distal->back->length = half_old;
 
-  // set up pmatrix indices
-  inner->pmatrix_index = 2;
-  new_tip->pmatrix_index = 2;
-  inner->next->pmatrix_index = 1;
-  distal->pmatrix_index = 1;
-  inner->next->next->pmatrix_index = 0;
-  proximal->pmatrix_index = 0;
+  reset_triplet_lengths(inner, nullptr, old_distal->length);
 
   return inner;
+}
+
+void reset_triplet_lengths(pll_utree_t * toward_pendant, pll_partition_t * partition, const double old_length)
+{
+  double half_original = old_length / 2.0;
+
+  if (toward_pendant)
+  {
+    // set up branch lengths
+    toward_pendant->length = DEFAULT_BRANCH_LENGTH;
+    toward_pendant->back->length = DEFAULT_BRANCH_LENGTH;
+    toward_pendant->next->length = half_original;
+    toward_pendant->next->back->length = half_original;
+    toward_pendant->next->next->length = half_original;
+    toward_pendant->next->next->back->length = half_original;
+
+    // set up pmatrix indices
+    toward_pendant->pmatrix_index = 2;
+    toward_pendant->back->pmatrix_index = 2;
+    toward_pendant->next->pmatrix_index = 1;
+    toward_pendant->next->back->pmatrix_index = 1;
+    toward_pendant->next->next->pmatrix_index = 0;
+    toward_pendant->next->next->back->pmatrix_index = 0;
+  }
+
+  if (partition)
+  {
+    double branch_lengths[3] = {half_original, half_original, DEFAULT_BRANCH_LENGTH};
+    unsigned int matrix_indices[3] = {0, 1, 2};
+    pll_update_prob_matrices(partition, 0, matrix_indices, branch_lengths, 3);
+  }
 }
 
 // TODO adjust when using pattern compression
