@@ -29,6 +29,7 @@ omp: LIBS+= -liomp5
 omp: CFLAGS+=-fopenmp=libomp
 ranged_test: TESTINPUT= $(TEST)/ref.tre $(TEST)/range_combined.fasta -w $(OUTDIR) $(F)
 mpi: CC=mpic++
+mpi: CFLAGS+=-D__MPI
 
 all:  $(TARGET)
 

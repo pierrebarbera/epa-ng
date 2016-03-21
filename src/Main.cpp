@@ -3,6 +3,7 @@
 #include <string>
 #include <algorithm>
 
+#include "mpihead.hpp"
 #include "epa.hpp"
 #include "logging.hpp"
 
@@ -29,22 +30,33 @@ static void print_help()
   cout << "  -S \tspecify accumulated likelihood weight after which further placements are discarded" << endl;
   cout << "     \t  DEFAULT: OFF" << endl;
   cout << "  -m \tSpecify model of nucleotide substitution" <<  endl;
-  cout << "     \tGTR \tGeneralized time reversible`(DEFAULT)" << endl;
+  cout << "     \tGTR \tGeneralized time reversible (DEFAULT)" << endl;
   cout << "     \tJC69\tJukes-Cantor Model" << endl;
   cout << "     \tK80 \tKimura 80 Model" << endl;
 }
 
 static void inv(string msg)
 {
-  if (msg.size())
+  int mpi_rank = 0;
+  MPI_COMM_RANK(MPI_COMM_WORLD, &mpi_rank);
+  if (mpi_rank == 0)
+  {
+    if (msg.size())
     cerr << msg << endl;
-  print_help();
-  cout.flush();
+    print_help();
+    cout.flush();
+  }
+  MPI_FINALIZE();
   exit(EXIT_FAILURE);
 }
 
 int main(int argc, char** argv)
 {
+  MPI_INIT(NULL, NULL);
+
+  int mpi_rank = 0;
+  MPI_COMM_RANK(MPI_COMM_WORLD, &mpi_rank);
+
   string invocation("");
   string model_id("GTR");
   Options options;
@@ -140,5 +152,6 @@ int main(int argc, char** argv)
     options,
     invocation);
 
+  MPI_FINALIZE();
 	return 0;
 }
