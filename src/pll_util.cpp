@@ -336,7 +336,7 @@ pll_partition_t * make_tiny_partition(const pll_partition_t * old_partition, con
   tiny->log2_states = old_partition->log2_states;
 
   assert(old_partition->clv[old_proximal->clv_index] != NULL);
-  assert(old_partition->clv[old_distal->clv_index] != NULL);
+  assert(old_partition->clv[old_distal->clv_index] || old_partition->tipchars[old_distal->clv_index]);
 
   unsigned int clv_size = sizeof(double) * old_partition->sites * old_partition->rate_cats * old_partition->states;
 
