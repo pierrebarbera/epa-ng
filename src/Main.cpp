@@ -52,10 +52,7 @@ static void inv(string msg)
 
 int main(int argc, char** argv)
 {
-  MPI_INIT(NULL, NULL);
-
-  int mpi_rank = 0;
-  MPI_COMM_RANK(MPI_COMM_WORLD, &mpi_rank);
+  MPI_INIT(&argc, &argv);
 
   string invocation("");
   string model_id("GTR");
