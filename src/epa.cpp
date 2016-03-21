@@ -14,16 +14,23 @@ using namespace std;
 
 Log lgr;
 
-void epa(string& tree_file, string& reference_msa_file, string& query_msa_file, string& outdir,
-                Model model, Options options, string invocation)
+static void ensure_outdir_has_slash(string& outdir)
+{
+  if (outdir.length() > 0 && outdir.back() != '/')
+    outdir += "/";
+}
+
+void epa(const string& tree_file, const string& reference_msa_file, const string& query_msa_file, string& outdir,
+                Model model, const Options& options, const string& invocation)
 {
 	// sanitize input
   file_check(tree_file);
   file_check(reference_msa_file);
   if(query_msa_file.length() > 0)
     file_check(query_msa_file);
-  if (outdir.length() > 0 && outdir.back() != '/')
-    outdir += "/";
+
+  ensure_outdir_has_slash(outdir);
+
   lgr = Log(outdir + "epa_info.log");
 
   lgr << "EPA - Evolutionary Placement Algorithm" << endl;
@@ -50,4 +57,13 @@ void epa(string& tree_file, string& reference_msa_file, string& query_msa_file, 
   lgr << "\nWriting output to: " << outdir + "epa_result.jplace" << endl;
   outfile << sample_to_jplace_string(sample, invocation) << endl;
   outfile.close();
+}
+
+void epa(const string& binary_file, const string &query_msa_file, string& outdir, Options& options)
+{
+  file_check(binary_file);
+  file_check(query_msa_file);
+
+  ensure_outdir_has_slash(outdir);
+
 }
