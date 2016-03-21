@@ -10,10 +10,9 @@
 // forward declarations
 class MSA;
 
-/* reads in sequences from a file
-  msa_file: string specifying the file path
-*/
 MSA build_MSA_from_file(const std::string& msa_file);
-std::tuple<pll_partition_t *, pll_utree_t *> build_partition_from_file(
-  const std::string& tree_file, const Model& model, Tree_Numbers& nums, const int num_sites);
+pll_utree_t * build_tree_from_file(const std::string& tree_file, Tree_Numbers& nums);
+pll_partition_t *  build_partition_from_file(const Model& model,
+  Tree_Numbers& nums,  const int num_sites);
 void file_check(const std::string& file_path);
+pll_partition_t *  build_partition_from_binary(const std::string& bin_file, const bool out_of_core);

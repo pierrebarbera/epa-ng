@@ -12,8 +12,8 @@ public:
     nodes = inner_nodes + tip_nodes;
     branches = nodes - 1;
   };
-  unsigned int tip_nodes;
-  unsigned int inner_nodes;
-  unsigned int nodes;
-  unsigned int branches;
+  unsigned int tip_nodes = 0;
+  unsigned int inner_nodes = 0;
+  unsigned int nodes = 0;
+  unsigned int branches = 0;
 };

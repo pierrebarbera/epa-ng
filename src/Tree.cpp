@@ -17,11 +17,10 @@ using namespace std;
 
 Tree::Tree(const string &tree_file, const MSA &msa, Model &model,
            Options options, const MSA &query)
-    : ref_msa_(msa), query_msa_(query), model_(model), options_(options)
+    : ref_msa_(msa), query_msa_(query), model_(model), options_(options), out_of_core_(false)
 {
-  // parse, build tree
-  nums_ = Tree_Numbers();
-  tie(partition_, tree_) = build_partition_from_file(tree_file, model_, nums_, ref_msa_.num_sites());
+  tree_ = build_tree_from_file(tree_file, nums_);
+  partition_ = build_partition_from_file(model_, nums_, ref_msa_.num_sites());
 
   // split msa if no separate query msa was supplied
   if (query.num_sites() == 0)
@@ -47,8 +46,20 @@ Tree::Tree(const string &tree_file, const MSA &msa, Model &model,
   lgr << to_string(this->ref_tree_logl()) << endl;
 }
 
+/**
+  Constructs the structures from binary files and sets the relevant out-of-core structures.
+  Mainly this involves using MSA_Stream and having the partition only be as big as needed 
+*/
+Tree::Tree(const string& bin_file, const string& tree_file, Options& options) : options_(options), out_of_core_(true)
+{
+  tree_ = build_tree_from_file(tree_file, nums_);
+  partition_ = build_partition_from_binary(bin_file, out_of_core_);
+
+}
+
 double Tree::ref_tree_logl()
 {
+  // TODO senseless if out-of-core
   return pll_compute_edge_loglikelihood(
       partition_, tree_->clv_index, tree_->scaler_index, tree_->back->clv_index,
       tree_->back->scaler_index, tree_->pmatrix_index, 0);

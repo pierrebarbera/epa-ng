@@ -19,6 +19,7 @@ class Tree
 public:
   Tree(const std::string& tree_file, const MSA& msa, Model& model, Options options,
       const MSA& query = MSA());
+  Tree(const std::string& bin_file, const std::string& tree_file, Options& options);
   ~Tree();
   Sample place();
 
@@ -45,6 +46,7 @@ private:
   // useful internal strucutres
   std::vector<Range> valid_map_;
 
-  double place_on_edge(const Sequence& s, pll_utree_t * node, bool optimize=false) const;
+  // flags
+  const bool out_of_core_;
 
 };

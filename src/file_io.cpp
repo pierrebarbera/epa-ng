@@ -64,22 +64,25 @@ MSA build_MSA_from_file(const string& msa_file)
   return msa;
 }
 
-tuple<pll_partition_t *, pll_utree_t *>  build_partition_from_file(const string& tree_file, const Model& model,
-                  Tree_Numbers& nums,  const int num_sites)
+pll_utree_t * build_tree_from_file(const string& tree_file, Tree_Numbers& nums)
 {
   unsigned int num_tip_nodes;
 
-  /* first we call the appropriate pll parsing function to obtain a pll_utree structure,
-    on which our partition object will be based */
   auto tree = pll_utree_parse_newick(tree_file.c_str(), &num_tip_nodes);
 
-  // we then derive some numbers about the graph
-  nums.init(num_tip_nodes);
-
-  if (nums.tip_nodes < 3)
+  if (num_tip_nodes < 3)
     throw runtime_error{"Number of tip nodes too small"};
 
+  nums.init(num_tip_nodes);
+
   set_missing_branch_lengths(tree, DEFAULT_BRANCH_LENGTH);
+
+  return tree;
+}
+
+pll_partition_t *  build_partition_from_file(const Model& model, Tree_Numbers& nums,  const int num_sites)
+{
+  assert(nums.tip_nodes); // nums must have been initialized correctly
 
   auto attributes = PLL_ATTRIB_ARCH_SSE;
 #ifdef __AVX
@@ -109,8 +112,37 @@ tuple<pll_partition_t *, pll_utree_t *>  build_partition_from_file(const string&
   pll_set_subst_params(partition, 0, 0, &(model.substitution_rates()[0]));
   pll_set_category_rates(partition, rate_cats);
 
-  return make_tuple(partition, tree);
+  return partition;
 
+}
+
+static pll_partition_t * create_out_of_core_partition(FILE * bin_file)
+{
+  auto attributes = PLL_BINARY_ATTRIB_PARTITION_DUMP_CLV | PLL_BINARY_ATTRIB_PARTITION_DUMP_WGT;
+  auto partition = pll_binary_load_partition(bin_file, nullptr, attributes, pll_map_nt);
+  if (!partition)
+    throw runtime_error{"Error while building partition from binary file."};
+
+  return partition;
+}
+
+pll_partition_t *  build_partition_from_binary(const string& bin_file, const bool out_of_core)
+{
+  // savely open the file
+  FILE * bin_file_ptr;
+  if(!(bin_file_ptr = fopen(bin_file.c_str(), "r")))
+    throw runtime_error{"Couldn't open binary file."};
+
+  // decide whether to load the full partition, clv's and all
+  pll_partition_t * shell_partition = out_of_core ? create_out_of_core_partition(bin_file_ptr) : nullptr;
+
+  auto attributes = PLL_BINARY_ATTRIB_PARTITION_DUMP_CLV | PLL_BINARY_ATTRIB_PARTITION_DUMP_WGT;
+  if (out_of_core)
+    attributes = 0;
+
+  auto partition = pll_binary_load_partition(bin_file_ptr, shell_partition, attributes, pll_map_nt);
+
+  return partition;
 }
 
 void file_check(const string& file_path)
