@@ -1,13 +1,11 @@
 #pragma once
 
-#include <tuple>
-#include <vector>
-
 #include "pllhead.hpp"
 #include "Sequence.hpp"
 #include "constants.hpp"
 #include "Model.hpp"
 #include "Range.hpp"
+#include "Placement.hpp"
 
 /* Encapsulates a smallest possible unrooted tree (3 tip nodes, 1 inner node)
   for use in edge insertion:
@@ -29,10 +27,10 @@
 class Tiny_Tree
 {
 public:
-  Tiny_Tree(pll_utree_t * edge_node, pll_partition_t * old_partition, Model model,
-    bool opt_branches) : Tiny_Tree(edge_node, old_partition,
+  Tiny_Tree(pll_utree_t * edge_node, unsigned int branch_id, pll_partition_t * old_partition, Model model,
+    bool opt_branches) : Tiny_Tree(edge_node, branch_id, old_partition,
     model, opt_branches, Range(0, old_partition->sites), false) {};
-  Tiny_Tree(pll_utree_t * edge_node, pll_partition_t * old_partition, Model model,
+  Tiny_Tree(pll_utree_t * edge_node , unsigned int branch_id, pll_partition_t * old_partition, Model model,
     bool opt_branches, Range reference_tip_range, bool ranged);
 
   Tiny_Tree(Tiny_Tree const& other) = delete;
@@ -53,7 +51,7 @@ public:
   Tiny_Tree& operator = (Tiny_Tree && other) = delete;
 
   // returns, in order, : likelihood, distal length, pendant length
-  std::tuple<double, double, double> place(const Sequence& s);
+  Placement place(const Sequence& s);
 
   void opt_branches(bool b) {opt_branches_ = b;};
 
@@ -68,5 +66,6 @@ private:
   Range reference_tip_range_;
   bool tip_tip_case_ = false;
   bool ranged_computation_;
+  unsigned int branch_id_;
 
 };

@@ -11,11 +11,11 @@
 
 using namespace std;
 
-Tiny_Tree::Tiny_Tree(pll_utree_t *edge_node, pll_partition_t *old_partition,
+Tiny_Tree::Tiny_Tree(pll_utree_t *edge_node, unsigned int branch_id, pll_partition_t *old_partition,
                      Model model, bool opt_branches, Range reference_tip_range, bool ranged)
-    : opt_branches_(opt_branches), original_branch_length_(edge_node->length),
-      model_(model), reference_tip_range_(reference_tip_range), ranged_computation_(ranged)
-
+    : opt_branches_(opt_branches), original_branch_length_(edge_node->length)
+      , model_(model), reference_tip_range_(reference_tip_range), ranged_computation_(ranged)
+      , branch_id_(branch_id)
 {
   assert(edge_node != NULL);
   assert(old_partition != NULL);
@@ -88,7 +88,7 @@ Tiny_Tree::~Tiny_Tree() {
     pll_utree_destroy(tree_);
 }
 
-std::tuple<double, double, double> Tiny_Tree::place(const Sequence &s) {
+Placement Tiny_Tree::place(const Sequence &s) {
   assert(partition_ != NULL);
 
   // init the new tip with s.sequence(), branch length
@@ -152,5 +152,5 @@ std::tuple<double, double, double> Tiny_Tree::place(const Sequence &s) {
   assert(distal_length <= original_branch_length_);
   assert(distal_length >= 0.0);
 
-  return make_tuple(logl, distal_length, pendant_length);
+  return Placement(branch_id_, logl, pendant_length, distal_length);
 }

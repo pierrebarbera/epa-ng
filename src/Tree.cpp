@@ -48,7 +48,7 @@ Tree::Tree(const string &tree_file, const MSA &msa, Model &model,
 
 /**
   Constructs the structures from binary files and sets the relevant out-of-core structures.
-  Mainly this involves using MSA_Stream and having the partition only be as big as needed 
+  Mainly this involves using MSA_Stream and having the partition only be as big as needed
 */
 Tree::Tree(const string& bin_file, const string& tree_file, Options& options) : options_(options), out_of_core_(true)
 {
@@ -59,7 +59,7 @@ Tree::Tree(const string& bin_file, const string& tree_file, Options& options) : 
 
 double Tree::ref_tree_logl()
 {
-  // TODO senseless if out-of-core
+  // TODO useless if out-of-core
   return pll_compute_edge_loglikelihood(
       partition_, tree_->clv_index, tree_->scaler_index, tree_->back->clv_index,
       tree_->back->scaler_index, tree_->pmatrix_index, 0);
@@ -87,8 +87,8 @@ Sample Tree::place()
 
   // build all tiny trees with corresponding edges
   vector<Tiny_Tree> insertion_trees;
-  for (auto node : branches)
-    insertion_trees.emplace_back(node, partition_, model_, !options_.prescoring);
+  for (unsigned int branch_id = 0; branch_id < num_branches; ++branch_id)
+    insertion_trees.emplace_back(branches[branch_id], branch_id, partition_, model_, !options_.prescoring);
     /* clarification: last arg here is a flag specifying whether to optimize the branches.
       we don't want that if the mode is prescoring */
 
@@ -97,20 +97,14 @@ Sample Tree::place()
   for (const auto & s : query_msa_)
     sample.emplace_back(s, num_branches);
 
-  // place all s on every edge
-  double logl, distal, pendant;
 
-  #pragma omp parallel for schedule(dynamic) private(logl, distal, pendant)
+  // place all s on every edge
+  #pragma omp parallel for schedule(dynamic)
   for (unsigned int branch_id = 0; branch_id < num_branches; ++branch_id)
   {
     for (unsigned int sequence_id = 0; sequence_id < num_queries; ++sequence_id)
     {
-      tie(logl, distal, pendant) = insertion_trees[branch_id].place(query_msa_[sequence_id]);
-      sample[sequence_id][branch_id] = Placement(
-        branch_id,
-        logl,
-        pendant,
-        distal);
+      sample[sequence_id][branch_id] = insertion_trees[branch_id].place(query_msa_[sequence_id]);
     }
   }
   // now that everything has been placed, we can compute the likelihood weight ratio
@@ -118,8 +112,6 @@ Sample Tree::place()
 
   /* prescoring was chosen: perform a second round, but only on candidate edges identified
     during the first run */
-  // TODO for MPI: think about how to split up the work, probably build list of sequences
-  // per branch, then pass
   if (options_.prescoring)
   {
     lgr << "Entering second phase of placement. \n";
@@ -134,7 +126,7 @@ Sample Tree::place()
       for (auto & placement : pq)
         recompute_list[placement.branch_id()].push_back(make_tuple(&placement, &pq.sequence()));
 
-    #pragma omp parallel for schedule(dynamic) private(logl, distal, pendant)
+    #pragma omp parallel for schedule(dynamic)
     for (unsigned int branch_id = 0; branch_id < num_branches; branch_id++)
     {
       Placement * placement;
@@ -145,10 +137,10 @@ Sample Tree::place()
       {
         // tie(placement, sequence) = recomp_tuple;
         placement = get<0>(recomp_tuple);
-        tie(logl, distal, pendant) = branch.place(*get<1>(recomp_tuple));
-        placement->likelihood(logl);
-        placement->pendant_length(pendant);
-        placement->distal_length(distal);
+        Placement replaced = branch.place(*get<1>(recomp_tuple));
+        placement->likelihood(replaced.likelihood());
+        placement->pendant_length(replaced.pendant_length());
+        placement->distal_length(replaced.distal_length());
       }
     }
     compute_and_set_lwr(sample);
