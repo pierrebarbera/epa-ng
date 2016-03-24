@@ -50,15 +50,41 @@ string pquery_to_jplace_string(const PQuery& pquery)
   return output.str();
 }
 
-std::string sample_to_jplace_string(const Sample& ps, const string& invocation)
+string init_jplace_string(const string& numbered_newick)
 {
   ostringstream output;
 
   output << "{" << NEWL;
-
-  output << "  \"tree\": \"" << ps.newick() << "\"," << NEWL;
+  output << "  \"tree\": \"" << numbered_newick << "\"," << NEWL;
   output << "  \"placements\": " << NEWL;
   output << "  [" << NEWL;
+
+  return output.str();
+}
+
+string finalize_jplace_string(const string& invocation)
+{
+  assert(invocation.length() > 0);
+
+  ostringstream output;
+
+  output << "  \"metadata\": {\"invocation\": \"" << invocation << "\"}," << NEWL;
+
+  output << "  \"version\": 3," << NEWL;
+  output << "  \"fields\": ";
+  output << "[\"edge_num\", \"likelihood\", \"like_weight_ratio\", \"distal_length\"";
+  output << ", \"pendant_length\"]" << NEWL;
+
+  output << "}" << NEWL;
+
+  return output.str();
+}
+
+string sample_to_jplace_string(const Sample& ps, const string& invocation)
+{
+  ostringstream output;
+
+  output << init_jplace_string(ps.newick());
 
   for (auto p : ps)
     output << pquery_to_jplace_string(p) << "," << NEWL;
@@ -70,15 +96,7 @@ std::string sample_to_jplace_string(const Sample& ps, const string& invocation)
   output << "  ]," << NEWL;
 
   // metadata string
-  if (invocation.length() > 0)
-    output << "  \"metadata\": {\"invocation\": \"" << invocation << "\"}," << NEWL;
-
-  output << "  \"version\": 3," << NEWL;
-  output << "  \"fields\": ";
-  output << "[\"edge_num\", \"likelihood\", \"like_weight_ratio\", \"distal_length\"";
-  output << ", \"pendant_length\"]" << NEWL;
-
-  output << "}" << NEWL;
+  output << finalize_jplace_string(invocation);
 
   return output.str();
 }
