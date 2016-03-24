@@ -16,7 +16,7 @@
 using namespace std;
 
 Tree::Tree(const string &tree_file, const MSA &msa, Model &model,
-           Options options, const MSA &query)
+           Options options, MSA &query)
     : ref_msa_(msa), query_msa_(query), model_(model), options_(options), out_of_core_(false)
 {
   tree_ = build_tree_from_file(tree_file, nums_);
@@ -94,8 +94,8 @@ Sample Tree::place()
 
   // output class
   Sample sample(get_numbered_newick_string(tree_));
-  for (const auto & s : query_msa_)
-    sample.emplace_back(s, num_branches);
+  for (unsigned int sequence_id = 0; sequence_id < num_queries; sequence_id++)
+    sample.emplace_back(sequence_id, num_branches);
 
 
   // place all s on every edge
@@ -121,10 +121,10 @@ Sample Tree::place()
       discard_by_accumulated_threshold(sample, options_.prescoring_threshold);
 
     // build a list of placements per edge that need to be recomputed
-    vector<vector<tuple<Placement *, const Sequence *>>> recompute_list(num_branches);
+    vector<vector<tuple<Placement *, const unsigned int>>> recompute_list(num_branches);
     for (auto & pq : sample)
       for (auto & placement : pq)
-        recompute_list[placement.branch_id()].push_back(make_tuple(&placement, &pq.sequence()));
+        recompute_list[placement.branch_id()].push_back(make_tuple(&placement, pq.sequence_id()));
 
     #pragma omp parallel for schedule(dynamic)
     for (unsigned int branch_id = 0; branch_id < num_branches; branch_id++)
@@ -135,12 +135,9 @@ Sample Tree::place()
       branch.opt_branches(true); // TODO only needs to be done once
       for (auto recomp_tuple : recompute_list[branch_id])
       {
-        // tie(placement, sequence) = recomp_tuple;
         placement = get<0>(recomp_tuple);
-        Placement replaced = branch.place(*get<1>(recomp_tuple));
-        placement->likelihood(replaced.likelihood());
-        placement->pendant_length(replaced.pendant_length());
-        placement->distal_length(replaced.distal_length());
+        *placement = branch.place(query_msa_[get<1>(recomp_tuple)]);
+
       }
     }
     compute_and_set_lwr(sample);

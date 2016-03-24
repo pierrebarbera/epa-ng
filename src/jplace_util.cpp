@@ -17,7 +17,7 @@ string placement_to_jplace_string(const Placement& p)
   return output.str();
 }
 
-string pquery_to_jplace_string(const PQuery& pquery)
+string pquery_to_jplace_string(const PQuery& pquery, const MSA& msa)
 {
   ostringstream output;
 
@@ -37,7 +37,7 @@ string pquery_to_jplace_string(const PQuery& pquery)
   // closing bracket for pquery array, and start of name column
   output << "      ]," << NEWL <<"    \"n\": [";
   // list of sequence headers
-  for (const auto& header : pquery.sequence().header_list() )
+  for (const auto& header : msa[pquery.sequence_id()].header_list() )
     output << "\"" << header.c_str() << "\",";
 
   // rewind last comma
@@ -80,14 +80,14 @@ string finalize_jplace_string(const string& invocation)
   return output.str();
 }
 
-string sample_to_jplace_string(const Sample& ps, const string& invocation)
+string sample_to_jplace_string(const Sample& sample, const string& invocation, const MSA& msa)
 {
   ostringstream output;
 
-  output << init_jplace_string(ps.newick());
+  output << init_jplace_string(sample.newick());
 
-  for (auto p : ps)
-    output << pquery_to_jplace_string(p) << "," << NEWL;
+  for (auto p : sample)
+    output << pquery_to_jplace_string(p, msa) << "," << NEWL;
 
   // undo the last comma
   rwnd(output, 2);

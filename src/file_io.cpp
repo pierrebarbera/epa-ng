@@ -142,6 +142,8 @@ pll_partition_t *  build_partition_from_binary(const string& bin_file, const boo
 
   auto partition = pll_binary_load_partition(bin_file_ptr, shell_partition, attributes, pll_map_nt);
 
+  fclose(bin_file_ptr);
+
   return partition;
 }
 

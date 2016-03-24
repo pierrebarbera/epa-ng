@@ -17,14 +17,15 @@ class Tree
 {
 public:
   Tree(const std::string& tree_file, const MSA& msa, Model& model, Options options,
-      const MSA& query = MSA());
+      MSA& query);
   Tree(const std::string& bin_file, const std::string& tree_file, Options& options);
   ~Tree();
   Sample place();
 
   // member access
-  inline Tree_Numbers nums() const {return nums_;};
-  inline Model model() {return model_;};
+  Tree_Numbers& nums() {return nums_;};
+  Model& model() {return model_;};
+  MSA& query_msa(){return query_msa_;};
 
   double ref_tree_logl();
 

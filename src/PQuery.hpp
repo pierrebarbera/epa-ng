@@ -11,9 +11,11 @@ public:
   typedef typename std::vector<value_type>::iterator        iterator;
   typedef typename std::vector<value_type>::const_iterator  const_iterator;
 
-  PQuery() : sequence_() {};
-  PQuery (const Sequence & s, const unsigned int size)
-    : placements_(size), sequence_(s) {};
+  PQuery() : sequence_id_(0) {};
+  PQuery (const unsigned int seq_id, const unsigned int size)
+    : placements_(size), sequence_id_(seq_id) {};
+  PQuery (const unsigned int seq_id)
+    : sequence_id_(seq_id) {};
   ~PQuery() = default;
 
   // needs to be in the header
@@ -24,7 +26,7 @@ public:
 
   // member access
   Placement& back() {return placements_.back();};
-  const Sequence& sequence() const {return sequence_;};
+  unsigned int sequence_id() const {return sequence_id_;};
   unsigned int size() const {return placements_.size();};
   void erase(iterator begin, iterator end) {placements_.erase(begin, end);};
 
@@ -43,5 +45,5 @@ public:
   }
 private:
   std::vector<Placement> placements_;
-  const Sequence sequence_;// TODO really only needs the header, not the sequence
+  const unsigned int sequence_id_;
 };

@@ -55,15 +55,17 @@ void epa(const string& tree_file, const string& reference_msa_file, const string
 
   ofstream outfile(outdir + "epa_result.jplace");
   lgr << "\nWriting output to: " << outdir + "epa_result.jplace" << endl;
-  outfile << sample_to_jplace_string(sample, invocation) << endl;
+  outfile << sample_to_jplace_string(sample, invocation, tree.query_msa()) << endl;
   outfile.close();
 }
 
-void epa(const string& binary_file, const string &query_msa_file, string& outdir, Options& options)
-{
-  file_check(binary_file);
-  file_check(query_msa_file);
-
-  ensure_outdir_has_slash(outdir);
-
-}
+// void epa(const string& binary_file, const string& tree_file, const string &query_msa_file, string& outdir, Options& options)
+// {
+//   file_check(binary_file);
+//   file_check(query_msa_file);
+//
+//   ensure_outdir_has_slash(outdir);
+//
+//   auto tree = Tree(bin_file, tree_file, options);
+//
+// }

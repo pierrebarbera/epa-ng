@@ -21,6 +21,7 @@ public:
   PQuery& back() {return pquerys_.back();};
   unsigned int size() {return pquerys_.size();};
   const std::string& newick() const {return newick_;};
+  void clear() {pquerys_.clear();};
 
   // needs to be in the header
   template<typename ...Args> void emplace_back(Args && ...args)
