@@ -7,6 +7,8 @@
 #include "src/Tiny_Tree.hpp"
 #include "src/MSA.hpp"
 #include "src/Range.hpp"
+#include "src/pll_util.hpp"
+#include "src/epa_pll_util.hpp"
 
 #include <tuple>
 
@@ -25,6 +27,10 @@ TEST(Tiny_Tree, place_heuristic)
 
   tree = build_tree_from_file(env->tree_file, nums);
   part = build_partition_from_file( env->model, nums, msa.num_sites());
+
+  auto valid_map = vector<Range>(nums.tip_nodes);
+  link_tree_msa(tree, part, msa, nums.tip_nodes, valid_map);
+  precompute_clvs(tree, part, nums);
 
   // tests
   Tiny_Tree tt(tree, 0, part, env->model, false);
@@ -55,6 +61,10 @@ TEST(Tiny_Tree, place_BLO)
 
   tree = build_tree_from_file(env->tree_file, nums);
   part = build_partition_from_file( env->model, nums, msa.num_sites());
+
+  auto valid_map = vector<Range>(nums.tip_nodes);
+  link_tree_msa(tree, part, msa, nums.tip_nodes, valid_map);
+  precompute_clvs(tree, part, nums);
 
   // tests
   Tiny_Tree tt(tree, 0, part, env->model, true);
