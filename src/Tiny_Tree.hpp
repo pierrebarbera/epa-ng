@@ -40,7 +40,7 @@ public:
       opt_branches_(other.opt_branches_), original_branch_length_(other.original_branch_length_),
       model_(other.model_),
       reference_tip_range_(other.reference_tip_range_), tip_tip_case_(other.tip_tip_case_),
-      ranged_computation_(other.ranged_computation_)
+      ranged_computation_(other.ranged_computation_), branch_id_(other.branch_id_)
   {
     other.partition_ = nullptr;
     other.tree_ = nullptr;
