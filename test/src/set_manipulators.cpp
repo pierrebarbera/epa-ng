@@ -9,6 +9,47 @@
 
 using namespace std;
 
+TEST(set_manipulators, merge_sample)
+{
+  // setup
+  Sample sample_1;
+  Sample sample_2;
+  unsigned int s_a = 0, s_b = 1, s_c = 2, s_d = 3;
+  sample_1.emplace_back(s_a, 0);
+  sample_1.back().emplace_back(1,-10,0.9,0.9);
+  sample_1.emplace_back(s_b, 0);
+  sample_1.back().emplace_back(2,-10,0.9,0.9);
+  sample_1.emplace_back(s_c, 0);
+  sample_1.back().emplace_back(3,-10,0.9,0.9);
+
+  assert(sample_1.size() == 3);
+  assert(sample_1[0].size() == 1);
+  assert(sample_1[1].size() == 1);
+  assert(sample_1[2].size() == 1);
+
+  sample_2.emplace_back(s_c, 0);
+  sample_2.back().emplace_back(1,-10,0.9,0.9);
+  sample_2.emplace_back(s_b, 0);
+  sample_2.back().emplace_back(0,-10,0.9,0.9);
+  sample_2.emplace_back(s_d, 0);
+  sample_2.back().emplace_back(3,-10,0.9,0.9);
+
+  assert(sample_2.size() == 3);
+  assert(sample_2[0].size() == 1);
+  assert(sample_2[1].size() == 1);
+  assert(sample_2[2].size() == 1);
+
+  merge(sample_1, sample_2);
+
+  EXPECT_EQ(sample_1.size(), 4);
+
+  EXPECT_EQ(sample_1[0].size(), 1);
+  EXPECT_EQ(sample_1[1].size(), 2);
+  EXPECT_EQ(sample_1[2].size(), 2);
+  EXPECT_EQ(sample_1[3].size(), 1);
+
+}
+
 TEST(set_manipulators, find_collapse_equal_sequences)
 {
   // buildup
