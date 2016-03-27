@@ -1,14 +1,14 @@
 #pragma once
 
-#include "PQuery.hpp"
-
-#include <utility>
 #include <string>
 #include <vector>
+#include <cereal/types/vector.hpp>
+
+#include "PQuery.hpp"
 
 class Sample {
 public:
-  typedef PQuery                                       value_type;
+  typedef PQuery                                            value_type;
   typedef typename std::vector<value_type>::iterator        iterator;
   typedef typename std::vector<value_type>::const_iterator  const_iterator;
 
@@ -42,6 +42,13 @@ public:
   {
     return pquerys_[index];
   }
+
+  // serialization
+  template <class Archive>
+  void save(Archive & ar) const { ar( pquerys_ ); }
+
+  template <class Archive>
+  void load(Archive & ar) { ar( pquerys_ ); }
 
 private:
   // TODO if this is indexed by unique query indexes it could be good for

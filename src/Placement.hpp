@@ -31,6 +31,10 @@ public:
   void pendant_length(double value) {pendant_length_ = value;};
   void distal_length(double value) {distal_length_ = value;};
 
+  // serialization
+  template<class Archive>
+  void serialize(Archive& ar) { ar(branch_id_, likelihood_, lwr_, pendant_length_, distal_length_); }
+
 private:
   unsigned int branch_id_;
   double likelihood_;

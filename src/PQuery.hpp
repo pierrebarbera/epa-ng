@@ -1,19 +1,20 @@
 #pragma once
 
 #include <vector>
+#include <cereal/types/vector.hpp>
 
 #include "Sequence.hpp"
 #include "Placement.hpp"
 
 class PQuery {
 public:
-  typedef Placement                                       value_type;
+  typedef Placement                                         value_type;
   typedef typename std::vector<value_type>::iterator        iterator;
   typedef typename std::vector<value_type>::const_iterator  const_iterator;
 
   PQuery() : sequence_id_(0) {};
   PQuery (const unsigned int seq_id, const unsigned int size)
-    : placements_(size), sequence_id_(seq_id) {};
+    : sequence_id_(seq_id), placements_(size) {};
   PQuery (const unsigned int seq_id)
     : sequence_id_(seq_id) {};
   ~PQuery() = default;
@@ -43,7 +44,11 @@ public:
   {
     return placements_[index];
   }
+
+  // serialization
+  template<class Archive>
+  void serialize(Archive& ar) { ar(sequence_id_, placements_); }
 private:
-  std::vector<Placement> placements_;
   const unsigned int sequence_id_;
+  std::vector<Placement> placements_;
 };

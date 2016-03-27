@@ -2,6 +2,7 @@ BIN=../bin
 TEST=../test/data
 LOGDIR=../test/log
 OUTDIR=/tmp/epa
+CEREAL=../../cereal/include/
 F+=
 CF+=
 TESTINPUT= $(TEST)/ref.tre $(TEST)/range_combined.fasta -g -w $(OUTDIR) $(F)
@@ -11,7 +12,7 @@ CC=clang++
 DEFS=
 WARNINGS= -Wall -Wextra -pedantic -pedantic-errors
 DBG=-g
-CFLAGS= $(WARNINGS) -std=c++11 $(DBG) $(CF)
+CFLAGS= $(WARNINGS) -std=c++11 $(DBG) -I$(CEREAL) $(CF)
 LINKFLAGS=$(DBG) #$(CFLAGS)
 
 TARGET=$(BIN)/epamk
