@@ -4,6 +4,7 @@
 #include "Range.hpp"
 #include "MSA.hpp"
 
+void merge(Sample& dest, const Sample &src);
 void compute_and_set_lwr(Sample& sample);
 void discard_bottom_x_percent(Sample& sample, const double x);
 void discard_by_support_threshold(Sample& sample, const double thresh);

@@ -7,6 +7,24 @@
 
 using namespace std;
 
+void merge(Sample& dest, const Sample &src)
+{
+  // merge in every source pquery...
+  for (const auto & pquery : src)
+  {
+    // ... by checking if its sequence already exists in destination
+    auto input_iter = find(dest.begin(), dest.end(), pquery);
+    // if not, create a record
+    if (input_iter == dest.end())
+    {
+      dest.emplace_back(pquery.sequence_id());
+      input_iter = --(dest.end());
+    }
+    // then concat their vectors
+    input_iter->insert(input_iter->end(), pquery.begin(), pquery.end());
+  }
+}
+
 void compute_and_set_lwr(Sample& sample)
 {
   for(auto &pq : sample)
