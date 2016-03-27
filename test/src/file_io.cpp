@@ -31,7 +31,8 @@ TEST(file_io, build_partition_from_file)
   pll_partition_t * part;
   pll_utree_t * tree;
 
-  tie(part, tree) = build_partition_from_file(env->tree_file, env->model, nums, msa.num_sites());
+  tree = build_tree_from_file(env->tree_file, nums);
+  part = build_partition_from_file( env->model, nums, msa.num_sites());
 
   EXPECT_EQ(nums.tip_nodes, 8);
   EXPECT_EQ(nums.nodes, 14);

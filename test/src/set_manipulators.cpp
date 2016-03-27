@@ -63,7 +63,7 @@ TEST(set_manipulators, discard_bottom_x_percent)
 {
   // setup
   Sample sample;
-  Sequence s_a, s_b, s_c;
+  unsigned int s_a = 0, s_b = 1, s_c = 2;
   sample.emplace_back(s_a, 0);
   vector<double> weights_a({0.001,0.23,0.05,0.02,0.4,0.009,0.2,0.09});
   vector<double> weights_b({0.01,0.02,0.005,0.002,0.94,0.003,0.02});
@@ -100,7 +100,7 @@ TEST(set_manipulators, discard_by_accumulated_threshold)
 {
   // setup
   Sample sample;
-  Sequence s_a, s_b, s_c;
+  unsigned int s_a = 0, s_b = 1, s_c = 2;
   sample.emplace_back(s_a, 0);
   vector<double> weights_a({0.001,0.23,0.05,0.02,0.4,0.009,0.2,0.09});
   vector<double> weights_b({0.01,0.02,0.005,0.002,0.94,0.003,0.02});
@@ -140,7 +140,7 @@ TEST(set_manipulators, discard_by_support_threshold)
 {
   // setup
   Sample sample;
-  Sequence s_a, s_b, s_c;
+  unsigned int s_a = 0, s_b = 1, s_c = 2;
   sample.emplace_back(s_a, 0);
   vector<double> weights_a{0.001,0.23,0.05,0.02,0.4,0.009,0.2,0.09};
   vector<double> weights_b{0.01,0.02,0.005,0.002,0.94,0.003,0.02};

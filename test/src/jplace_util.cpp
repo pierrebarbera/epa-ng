@@ -25,7 +25,7 @@ TEST(jplace_util, pquery_to_jplace_string)
   vector<string> out;
 
   for (auto const &p : pquerys)
-    out.push_back(pquery_to_jplace_string(p));
+    out.push_back(pquery_to_jplace_string(p, query_msa));
 
   EXPECT_EQ(out.size(), 2);
 

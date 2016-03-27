@@ -22,7 +22,8 @@ TEST(pll_util, utree_query_branches)
   pll_partition_t * part;
   pll_utree_t * tree;
 
-  tie(part, tree) = build_partition_from_file(env->tree_file, env->model, nums, msa.num_sites());
+  tree = build_tree_from_file(env->tree_file, nums);
+  part = build_partition_from_file( env->model, nums, msa.num_sites());
 
   // tests
   vector<pll_utree_t *> node_list(nums.branches);
@@ -57,7 +58,8 @@ TEST(pll_util, set_unique_clv_indices)
   pll_partition_t * part;
   pll_utree_t * tree;
 
-  tie(part, tree) = build_partition_from_file(env->tree_file, env->model, nums, msa.num_sites());
+  tree = build_tree_from_file(env->tree_file, nums);
+  part = build_partition_from_file( env->model, nums, msa.num_sites());
   set_unique_clv_indices(tree, nums.tip_nodes);
 
   // tests
@@ -110,7 +112,8 @@ TEST(pll_util, get_numbered_newick_string)
   pll_partition_t * part;
   pll_utree_t * tree;
 
-  tie(part, tree) = build_partition_from_file(env->tree_file, env->model, nums, msa.num_sites());
+  tree = build_tree_from_file(env->tree_file, nums);
+  part = build_partition_from_file( env->model, nums, msa.num_sites());
   auto valid_map = vector<Range>(nums.tip_nodes);
   link_tree_msa(tree, part, msa, nums.tip_nodes, valid_map);
 
@@ -140,7 +143,8 @@ TEST(pll_util, sum_branch_lengths)
   pll_partition_t * part;
   pll_utree_t * tree;
 
-  tie(part, tree) = build_partition_from_file(env->tree_file, env->model, nums, msa.num_sites());
+  tree = build_tree_from_file(env->tree_file, nums);
+  part = build_partition_from_file( env->model, nums, msa.num_sites());
   set_branch_lengths(tree, 1.0);
   auto total_length = sum_branch_lengths(tree);
 

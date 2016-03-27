@@ -70,5 +70,6 @@ TEST(Tree, place_prescore)
 TEST(Tree, combined_input_file)
 {
   auto combined_msa = build_MSA_from_file(env->combined_file);
-  auto tree = Tree(env->tree_file, combined_msa, env->model, env->options);
+  MSA query;
+  auto tree = Tree(env->tree_file, combined_msa, env->model, env->options, query);
 }

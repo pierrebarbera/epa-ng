@@ -23,18 +23,18 @@ TEST(Tiny_Tree, place_heuristic)
   pll_partition_t * part;
   pll_utree_t * tree;
 
-  tie(part, tree) = build_partition_from_file(env->tree_file, env->model, nums, msa.num_sites());
+  tree = build_tree_from_file(env->tree_file, nums);
+  part = build_partition_from_file( env->model, nums, msa.num_sites());
 
   // tests
-  Tiny_Tree tt(tree, part, env->model, false, range);
+  Tiny_Tree tt(tree, 0, part, env->model, false);
 
-  double logl, pendant, distal;
   for (auto const &x : queries)
   {
-    tie(logl, distal, pendant) = tt.place(x);
-    EXPECT_NE(logl, 0.0);
-    EXPECT_NE(distal, 0.0);
-    EXPECT_NE(pendant, 0.0);
+    auto place = tt.place(x);
+    EXPECT_NE(place.likelihood(), 0.0);
+    EXPECT_NE(place.distal_length(), 0.0);
+    EXPECT_NE(place.pendant_length(), 0.0);
   }
 
   // teardown
@@ -42,33 +42,32 @@ TEST(Tiny_Tree, place_heuristic)
   pll_utree_destroy(tree);
 }
 
-// TEST(Tiny_Tree, place_BLO)
-// {
-//   // buildup
-//   MSA msa = build_MSA_from_file(env->reference_file);
-//   MSA queries = build_MSA_from_file(env->query_file);
-//   Tree_Numbers nums = Tree_Numbers();
-//   pll_partition_t * part;
-//   pll_utree_t * tree;
-//   Range range;
-//   range.span = msa.num_sites();
-//
-//   tie(part, tree) = build_partition_from_file(env->tree_file, env->model, nums, msa.num_sites());
-//
-//   // tests
-//   Tiny_Tree tt(tree, part, env->model, true, range);
-//
-//   double logl, pendant, distal;
-//   for (auto const &x : queries)
-//   {
-//     tie(logl, distal, pendant) = tt.place(x);
-//     EXPECT_NE(logl, 0.0);
-//     EXPECT_NE(distal, 0.0);
-//     EXPECT_NE(pendant, 0.0);
-//   }
-//
-//
-//   // teardown
-//   pll_partition_destroy(part);
-//   pll_utree_destroy(tree);
-// }
+TEST(Tiny_Tree, place_BLO)
+{
+  // buildup
+  MSA msa = build_MSA_from_file(env->reference_file);
+  MSA queries = build_MSA_from_file(env->query_file);
+  Tree_Numbers nums = Tree_Numbers();
+  pll_partition_t * part;
+  pll_utree_t * tree;
+  Range range;
+  range.span = msa.num_sites();
+
+  tree = build_tree_from_file(env->tree_file, nums);
+  part = build_partition_from_file( env->model, nums, msa.num_sites());
+
+  // tests
+  Tiny_Tree tt(tree, 0, part, env->model, true);
+
+  for (auto const &x : queries)
+  {
+    auto place = tt.place(x);
+    EXPECT_NE(place.likelihood(), 0.0);
+    EXPECT_NE(place.distal_length(), 0.0);
+    EXPECT_NE(place.pendant_length(), 0.0);
+  }
+
+  // teardown
+  pll_partition_destroy(part);
+  pll_utree_destroy(tree);
+}

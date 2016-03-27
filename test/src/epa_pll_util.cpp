@@ -21,7 +21,8 @@ TEST(epa_pll_util, link_tree_msa)
   pll_partition_t * part;
   pll_utree_t * tree;
 
-  tie(part, tree) = build_partition_from_file(env->tree_file, env->model, nums, msa.num_sites());
+  tree = build_tree_from_file(env->tree_file, nums);
+  part = build_partition_from_file( env->model, nums, msa.num_sites());
   auto valid_map = vector<Range>(nums.tip_nodes);
   link_tree_msa(tree, part, msa, nums.tip_nodes, valid_map);
 
@@ -50,7 +51,8 @@ TEST(epa_pll_util, precompute_clvs)
   pll_partition_t * part;
   pll_utree_t * tree;
 
-  tie(part, tree) = build_partition_from_file(env->tree_file, env->model, nums, msa.num_sites());
+  tree = build_tree_from_file(env->tree_file, nums);
+  part = build_partition_from_file( env->model, nums, msa.num_sites());
   auto valid_map = vector<Range>(nums.tip_nodes);
   link_tree_msa(tree, part, msa, nums.tip_nodes, valid_map);
   precompute_clvs(tree, part, nums);
@@ -95,8 +97,8 @@ TEST(epa_pll_util, split_combined_msa)
   pll_partition_t * part;
   pll_utree_t * tree;
 
-  tie(part, tree) = build_partition_from_file(env->tree_file, env->model, nums,
-    combined_msa.num_sites());
+  tree = build_tree_from_file(env->tree_file, nums);
+  part = build_partition_from_file( env->model, nums, combined_msa.num_sites());
 
   // tests
   split_combined_msa(combined_msa, query_msa, tree, nums.tip_nodes);
