@@ -12,7 +12,7 @@ using namespace std;
 TEST(set_manipulators, split_sample)
 {
   Sample sample_1;
-  unsigned int s_a = 0, s_b = 1, s_c = 2, s_d = 3;
+  unsigned int s_a = 0, s_b = 1, s_c = 2;
   sample_1.emplace_back(s_a, 0);
   sample_1.back().emplace_back(1,-10,0.9,0.9);
   sample_1.emplace_back(s_b, 0);

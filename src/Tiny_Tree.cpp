@@ -3,6 +3,7 @@
 #include <vector>
 #include <cassert>
 
+#include "tiny_util.hpp"
 #include "pll_util.hpp"
 #include "optimize.hpp"
 #include "Tree_Numbers.hpp"
@@ -65,24 +66,8 @@ Tiny_Tree::Tiny_Tree(pll_utree_t *edge_node, unsigned int branch_id, pll_partiti
 // use update_partials to compute the clv pointing toward the new tip
 
 Tiny_Tree::~Tiny_Tree() {
-  if (partition_ != nullptr) {
-    // unset shallow copied things
-    partition_->rates = nullptr;
-    partition_->subst_params = nullptr;
-    partition_->frequencies = nullptr;
-    partition_->eigenvecs = nullptr;
-    partition_->inv_eigenvecs = nullptr;
-    partition_->eigenvals = nullptr;
-    partition_->prop_invar = nullptr;
-    partition_->eigen_decomp_valid = nullptr;
-    partition_->pattern_weights = nullptr;
-
-    partition_->lh_statepair = nullptr;
-    partition_->charmap = nullptr;
-    partition_->revmap = nullptr;
-
-    pll_partition_destroy(partition_);
-  }
+  if (partition_ != nullptr)
+    destroy_tiny_partition(partition_);
 
   if (tree_ != nullptr)
     pll_utree_destroy(tree_);
