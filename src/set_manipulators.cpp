@@ -7,10 +7,49 @@
 
 using namespace std;
 
-void merge(Sample& dest, const Sample &src)
+/**
+  Splits a Sample <source> into <parts> according to <split_map>.
+
+  <split_map> is structured as such: splitmap[part_id] = {<set of sequence id's that will be moved to the part>}
+  assumes <parts> to be empty / that its content won't be missed
+
+*/
+void split(Sample& source, vector<Sample>& parts, const vector<vector<unsigned int>>& split_map)
+{
+  parts.clear();
+  for (const auto& part_move_list : split_map)
+  {
+    parts.push_back(Sample());
+    // move all instances of pquery specified in split_map for the current part from source to parts[part_id]
+    for (auto sequence_to_move : part_move_list)
+    {
+      // using already implemented == behaviour of PQuery to find the correct pquery to move
+      PQuery query(sequence_to_move);
+      auto to_move = find(source.begin(), source.end(), query);
+
+      if (to_move != source.end())
+      {
+        // auto move_to = parts.back().end();
+        // move(to_move, to_move + 1, move_to);
+        // move the entry (leaves original entry in undefined but valid state)
+        parts.back().push_back(move(*to_move));
+
+        // remove the original entry
+        source.erase(to_move, to_move + 1);
+      }
+      // TODO fail if sequence not found?
+    }
+  }
+  assert(parts.size() == split_map.size());
+}
+
+/**
+  Merges a Sample <src> into a Sample <dest>. Leaves <src> intact.
+*/
+void merge(Sample& dest, const Sample& src)
 {
   // merge in every source pquery...
-  for (const auto & pquery : src)
+  for (const auto& pquery : src)
   {
     // ... by checking if its sequence already exists in destination
     auto input_iter = find(dest.begin(), dest.end(), pquery);

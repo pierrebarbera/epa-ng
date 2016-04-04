@@ -13,8 +13,8 @@ public:
   Placement(Placement const& other) = default;
   Placement(Placement&& other) = default;
 
-  Placement& operator = (Placement const& other) = default;
-  Placement& operator = (Placement && other) = default;
+  Placement& operator= (Placement const& other) = default;
+  Placement& operator= (Placement && other) = default;
 
   ~Placement() = default;
 

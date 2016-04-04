@@ -18,22 +18,25 @@ public:
   ~Sample() = default;
 
   // member access
-  PQuery& back() {return pquerys_.back();};
-  unsigned int size() {return pquerys_.size();};
-  const std::string& newick() const {return newick_;};
-  void clear() {pquerys_.clear();};
+  PQuery& back() { return pquerys_.back(); }
+  unsigned int size() { return pquerys_.size(); }
+  const std::string& newick() const { return newick_; }
+  void clear() { pquerys_.clear(); }
+  void push_back(PQuery&& pq) { pquerys_.push_back(pq); }
+  void push_back(PQuery& pq) { pquerys_.push_back(pq); }
+  void erase(iterator begin, iterator end) { pquerys_.erase(begin, end); }
 
   // needs to be in the header
   template<typename ...Args>
   void emplace_back(Args && ...args) { pquerys_.emplace_back(std::forward<Args>(args)...); }
 
   // Iterator Compatibility
-  iterator begin() {return pquerys_.begin();};
-  iterator end() {return pquerys_.end();};
-  const_iterator begin() const {return pquerys_.cbegin();};
-  const_iterator end() const {return pquerys_.cend();};
-  const_iterator cbegin() {return pquerys_.cbegin();};
-  const_iterator cend() {return pquerys_.cend();};
+  iterator begin() { return pquerys_.begin(); }
+  iterator end() { return pquerys_.end(); }
+  const_iterator begin() const { return pquerys_.cbegin(); }
+  const_iterator end() const { return pquerys_.cend(); }
+  const_iterator cbegin() { return pquerys_.cbegin(); }
+  const_iterator cend() { return pquerys_.cend(); }
 
   // Operator overloads
   PQuery& operator[] (const unsigned int index) { return pquerys_[index]; }
@@ -46,8 +49,6 @@ public:
   void load(Archive & ar) { ar( pquerys_ ); }
 
 private:
-  // TODO if this is indexed by unique query indexes it could be good for
-  // resukt retrieval in mp*
   std::vector<PQuery> pquerys_;
   std::string newick_;
 };

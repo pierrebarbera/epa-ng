@@ -19,6 +19,13 @@ public:
     : sequence_id_(seq_id) {}
   ~PQuery() = default;
 
+  // move and copy semantics
+  PQuery(PQuery const& other) = default;
+  PQuery(PQuery&& other) = default;
+
+  PQuery& operator= (PQuery const& other) = default;
+  PQuery& operator= (PQuery && other) = default;
+
   // needs to be in the header
   template<typename ...Args> void emplace_back(Args && ...args)
   {
@@ -31,7 +38,8 @@ public:
   unsigned int size() const { return placements_.size(); }
   void erase(iterator begin, iterator end) { placements_.erase(begin, end); }
 
-  void insert(iterator this_first, const_iterator begin, const_iterator end) { placements_.insert(this_first, begin, end); }
+  void insert(iterator this_first, const_iterator begin, const_iterator end)
+  { placements_.insert(this_first, begin, end); }
 
   // Iterator Compatibility
   iterator begin() { return placements_.begin(); }
@@ -50,6 +58,6 @@ public:
   template<class Archive>
   void serialize(Archive& ar) { ar(sequence_id_, placements_); }
 private:
-  const unsigned int sequence_id_;
+  unsigned int sequence_id_;
   std::vector<Placement> placements_;
 };
