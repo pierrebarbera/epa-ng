@@ -24,10 +24,8 @@ public:
   void clear() {pquerys_.clear();};
 
   // needs to be in the header
-  template<typename ...Args> void emplace_back(Args && ...args)
-  {
-    pquerys_.emplace_back(std::forward<Args>(args)...);
-  }
+  template<typename ...Args>
+  void emplace_back(Args && ...args) { pquerys_.emplace_back(std::forward<Args>(args)...); }
 
   // Iterator Compatibility
   iterator begin() {return pquerys_.begin();};
@@ -38,10 +36,7 @@ public:
   const_iterator cend() {return pquerys_.cend();};
 
   // Operator overloads
-  PQuery& operator[] (const unsigned int index)
-  {
-    return pquerys_[index];
-  }
+  PQuery& operator[] (const unsigned int index) { return pquerys_[index]; }
 
   // serialization
   template <class Archive>
