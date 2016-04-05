@@ -40,3 +40,13 @@ void Model::substitution_rates(double *source, unsigned int length)
     substitution_rates_[i] = source[i];
 
 }
+
+void Model::symmetries(int* source, unsigned int length)
+{
+  if (subs_symmetries_.size() != length)
+    throw runtime_error{"Inappropriate number of substitution symmetries"};
+
+  for (unsigned int i = 0; i < length; ++i)
+    subs_symmetries_[i] = source[i];
+
+}

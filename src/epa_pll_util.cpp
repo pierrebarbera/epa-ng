@@ -115,3 +115,14 @@ bool operator==(const Sequence& s, const pll_utree_t * node)
 {
   return operator==(node, s);
 }
+
+Model get_model(pll_partition_t* partition)
+{
+  Model model("GTR");
+
+  model.base_frequencies(partition->frequencies[0], partition->states);
+  model.substitution_rates(partition->subst_params[0], partition->rate_cats);
+  // model.symmetries(partition->subst_params, 6);
+
+  return model;
+}
