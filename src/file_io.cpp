@@ -116,36 +116,36 @@ pll_partition_t *  build_partition_from_file(const Model& model, Tree_Numbers& n
 
 }
 
-static pll_partition_t * create_out_of_core_partition(FILE * bin_file)
-{
-  auto attributes = PLL_BINARY_ATTRIB_PARTITION_DUMP_CLV | PLL_BINARY_ATTRIB_PARTITION_DUMP_WGT;
-  auto partition = pll_binary_load_partition(bin_file, nullptr, attributes, pll_map_nt);
-  if (!partition)
-    throw runtime_error{"Error while building partition from binary file."};
-
-  return partition;
-}
-
-pll_partition_t *  build_partition_from_binary(const string& bin_file, const bool out_of_core)
-{
-  // savely open the file
-  FILE * bin_file_ptr;
-  if(!(bin_file_ptr = fopen(bin_file.c_str(), "r")))
-    throw runtime_error{"Couldn't open binary file."};
-
-  // decide whether to load the full partition, clv's and all
-  pll_partition_t * shell_partition = out_of_core ? create_out_of_core_partition(bin_file_ptr) : nullptr;
-
-  auto attributes = PLL_BINARY_ATTRIB_PARTITION_DUMP_CLV | PLL_BINARY_ATTRIB_PARTITION_DUMP_WGT;
-  if (out_of_core)
-    attributes = 0;
-
-  auto partition = pll_binary_load_partition(bin_file_ptr, shell_partition, attributes, pll_map_nt);
-
-  fclose(bin_file_ptr);
-
-  return partition;
-}
+// static pll_partition_t * create_out_of_core_partition(FILE * bin_file)
+// {
+//   auto attributes = PLL_BINARY_ATTRIB_PARTITION_DUMP_CLV | PLL_BINARY_ATTRIB_PARTITION_DUMP_WGT;
+//   auto partition = pll_binary_partition_load(bin_file, nullptr, attributes, pll_map_nt);
+//   if (!partition)
+//     throw runtime_error{"Error while building partition from binary file."};
+//
+//   return partition;
+// }
+//
+// pll_partition_t *  build_partition_from_binary(const string& bin_file, const bool out_of_core)
+// {
+//   // savely open the file
+//   FILE * bin_file_ptr;
+//   if(!(bin_file_ptr = fopen(bin_file.c_str(), "r")))
+//     throw runtime_error{"Couldn't open binary file."};
+//
+//   // decide whether to load the full partition, clv's and all
+//   pll_partition_t * shell_partition = out_of_core ? create_out_of_core_partition(bin_file_ptr) : nullptr;
+//
+//   auto attributes = PLL_BINARY_ATTRIB_PARTITION_DUMP_CLV | PLL_BINARY_ATTRIB_PARTITION_DUMP_WGT;
+//   if (out_of_core)
+//     attributes = 0;
+//
+//   auto partition = pll_binary_partition_load(bin_file_ptr, shell_partition, attributes, pll_map_nt);
+//
+//   fclose(bin_file_ptr);
+//
+//   return partition;
+// }
 
 void file_check(const string& file_path)
 {
