@@ -9,4 +9,9 @@
 #define MPI_INIT(argc, argv)
 #define MPI_FINALIZE()
 #define MPI_COMM_RANK(comm, rank)
-#endif
+#endif // __MPI
+
+constexpr int EPA_MPI_STAGE_1_COMPUTE   =   0;
+constexpr int EPA_MPI_STAGE_1_AGGREGATE =   1;
+constexpr int EPA_MPI_STAGE_2_COMPUTE   =   2;
+constexpr int EPA_MPI_STAGE_2_AGGREGATE =   3;
