@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 #include <iostream>
+#include <cstdio>
 #include <omp.h>
 
 #include "pll_util.hpp"
@@ -15,9 +16,8 @@
 
 using namespace std;
 
-Tree::Tree(const string &tree_file, const MSA &msa, Model &model,
-           Options options, MSA &query)
-    : ref_msa_(msa), query_msa_(query), model_(model), options_(options), out_of_core_(false)
+Tree::Tree(const string &tree_file, const MSA &msa, Model &model, Options options, MSA &query)
+    : ref_msa_(msa), query_msa_(query), model_(model), options_(options)
 {
   tree_ = build_tree_from_file(tree_file, nums_);
   partition_ = build_partition_from_file(model_, nums_, ref_msa_.num_sites());
@@ -47,14 +47,45 @@ Tree::Tree(const string &tree_file, const MSA &msa, Model &model,
 }
 
 /**
-  Constructs the structures from binary files and sets the relevant out-of-core structures.
-  Mainly this involves using MSA_Stream and having the partition only be as big as needed
+  Constructs the structures from binary file.
 */
-Tree::Tree(const string& bin_file, const string& tree_file, Options& options) : options_(options), out_of_core_(true)
+Tree::Tree(const string& bin_file, const string& tree_file, Options& options)
+  : options_(options),  binary_(bin_file)
 {
   tree_ = build_tree_from_file(tree_file, nums_);
-  partition_ = build_partition_from_binary(bin_file, out_of_core_);
 
+  partition_ = binary_.load_partition();
+
+  // mirror the model from the partition to the model_ object
+  model_ = get_model(partition_);
+}
+
+void * Tree::get_clv(unsigned int i)
+{
+  assert(i < partition_->tips + partition_->clv_buffers);
+  void* clv_ptr;
+  if (i < partition_->tips)
+  {
+    clv_ptr = partition_->tipchars[i];
+    // dynamically load from disk if not in memory
+    if(!clv_ptr)
+    {
+      binary_.load_tipchars(partition_, i);
+      clv_ptr = partition_->tipchars[i];
+    }
+  }
+  else
+  {
+    clv_ptr = partition_->clv[i];
+    // dynamically load from disk if not in memory
+    if(!clv_ptr)
+    {
+      binary_.load_clv(partition_, i);
+      clv_ptr = partition_->clv[i];
+    }
+  }
+  assert(clv_ptr);
+  return clv_ptr;
 }
 
 double Tree::ref_tree_logl()
