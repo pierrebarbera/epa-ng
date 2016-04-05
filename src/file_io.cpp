@@ -155,3 +155,8 @@ void file_check(const string& file_path)
 
   file.close();
 }
+
+void dump_to_binary(const Tree& tree, const string& file)
+{
+
+}

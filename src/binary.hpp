@@ -14,6 +14,7 @@ public:
   // access functions
   void load_clv(pll_partition_t * partition, const unsigned int clv_index);
   void load_tipchars(pll_partition_t * partition, const unsigned int tipchars_index);
+  void load_scaler(pll_partition_t * partition, const unsigned int scaler_index);
   pll_partition_t* load_partition();
 private:
   FILE* bin_fptr_;

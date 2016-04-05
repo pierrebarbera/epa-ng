@@ -2,32 +2,41 @@
 #include <unistd.h>
 #include <string>
 #include <algorithm>
+#include <chrono>
 
 #include "mpihead.hpp"
-#include "epa.hpp"
-#include "logging.hpp"
+#include "file_io.hpp"
+#include "Tree.hpp"
+#include "MSA.hpp"
+#include "MSA_Stream.hpp"
+#include "Model.hpp"
+#include "Options.hpp"
+#include "place.hpp"
+
 
 using namespace std;
 
 static void print_help()
 {
   cout << "EPA - Evolutionary Placement Algorithm" << endl << endl;
-  cout << "USAGE: epa [options] <tree_file> <MSA_file>" << endl << endl;
+  cout << "USAGE: epa [options]" << endl << endl;
   cout << "OPTIONS:" << endl;
   cout << "  -h \tDisplay this page" << endl;
+  cout << "  -t \tPath to Tree file" << endl;
+  cout << "  -s \tPath to reference MSA file. May also include the query sequences." << endl;
   cout << "  -q \tPath to separate query MSA file. If none is provided, epa will assume" << endl;
-  cout << "     \tquery reads are in the MSA_file (second parameter)" << endl;
+  cout << "     \tquery reads are in the reference MSA file (-s)" << endl;
   cout << "  -w \tPath to working directory" << endl;
   cout << "  -r \tRanged heuristic: only consider portion of query sequence sites not flanked by gaps during insertion" << endl;
-  cout << "     \t" << endl;
+  cout << "     \t  DEFAULT: OFF" << endl;
   cout << "  -g \tTwo-phase heuristic, determination of candidate edges using accumulative threshold" << endl;
   cout << "     \t" << endl;
   cout << "  -G \tTwo-phase heuristic, determination of candidate edges by specified percentage of total edges" << endl;
   cout << "     \t" << endl;
   cout << "  -O \toptimize reference tree and model parameters" << endl;
-  cout << "  -s \tspecify minimum likelihood weight below which a placement is discarded" << endl;
+  cout << "  -l \tspecify minimum likelihood weight below which a placement is discarded" << endl;
   cout << "     \t  DEFAULT: 0.01" << endl;
-  cout << "  -S \tspecify accumulated likelihood weight after which further placements are discarded" << endl;
+  cout << "  -L \tspecify accumulated likelihood weight after which further placements are discarded" << endl;
   cout << "     \t  DEFAULT: OFF" << endl;
   cout << "  -m \tSpecify model of nucleotide substitution" <<  endl;
   cout << "     \tGTR \tGeneralized time reversible (DEFAULT)" << endl;
@@ -50,6 +59,12 @@ static void inv(string msg)
   exit(EXIT_FAILURE);
 }
 
+static void ensure_dir_has_slash(string& dir)
+{
+  if (dir.length() > 0 && dir.back() != '/')
+    dir += "/";
+}
+
 int main(int argc, char** argv)
 {
   MPI_INIT(&argc, &argv);
@@ -65,26 +80,35 @@ int main(int argc, char** argv)
 
   string query_file("");
   string work_dir("");
+  string tree_file("");
+  string reference_file("");
+  string binary_file("");
 
   int c;
-  while((c =  getopt(argc, argv, "hOq:s:S:w:g::G::r")) != EOF)
+  while((c =  getopt(argc, argv, "hOBb:t:s:q:l:L:w:g::G::r")) != EOF)
   {
     switch (c)
     {
+      case 't':
+        tree_file += optarg;
+        break;
+      case 's':
+        reference_file += optarg;
+        break;
       case 'q':
         query_file += optarg;
         break;
       case 'w':
         work_dir += optarg;
         break;
-      case 's':
+      case 'l':
         options.support_threshold = stod(optarg);
         if (options.support_threshold < 0.0)
           inv("Support threshold cutoff too small! Range: [0,1)");
         if (options.support_threshold >= 1.0)
           inv("Support threshold cutoff too large! Range: [0,1)");
         break;
-      case 'S':
+      case 'L':
         options.support_threshold = stod(optarg);
         if (options.support_threshold <= 0.0)
           inv("Accumulated support threshold cutoff too small! Range: (0,1]");
@@ -127,28 +151,64 @@ int main(int argc, char** argv)
       case 'r':
         options.ranged = true;
         break;
+      case 'B':
+        options.dump_binary_mode = true;
+        break;
+      case 'b':
+        options.load_binary_mode = true;
+        binary_file += optarg;
+        break;
       case ':':
-        inv("Missing option.");
+        inv("Invalid option.");
         break;
       }
   }
 
-  if (argc < 2)
-    inv("Insufficient parameters!");
+  //================================================================
+  //============    EPA    =========================================
+  //================================================================
 
-  // first two params are always the reference tree and msa file paths
-  string tree_file(argv[optind]);
-  string reference_file(argv[optind + 1]);
+  ensure_dir_has_slash(work_dir);
 
+  auto ref_msa = build_MSA_from_file(reference_file);
+
+  MSA_Stream queries;
+  if (query_file.size() != 0)
+    queries = MSA_Stream(query_file);
+
+  // Tree tree;
   Model model(model_id);
-  epa(tree_file,
-    reference_file,
-    query_file,
-    work_dir,
-    model,
-    options,
-    invocation);
+
+  Tree tree;
+
+  if (options.load_binary_mode)
+  {
+    tree = Tree(binary_file, tree_file, options);
+  }
+  else
+  {
+    // build the full tree with all possible clv's
+    MSA dummy;
+    tree = Tree(tree_file, ref_msa, model, options, dummy);
+  }
+
+  // dump to binary if specified
+  if (options.dump_binary_mode)
+  {
+    string dump_file(work_dir + "epa_binary_file");
+    dump_to_binary(tree, dump_file);
+    MPI_FINALIZE();
+  	return EXIT_SUCCESS;
+  }
+
+  // start the placement process and write to file
+  auto start = chrono::high_resolution_clock::now();
+  process(tree, queries, work_dir, options, invocation);
+  auto end = chrono::high_resolution_clock::now();
+  auto runtime = chrono::duration_cast<chrono::seconds>(end - start).count();
+
+  cout << "\nTime spent placing: " << runtime << "s" << endl;
 
   MPI_FINALIZE();
-	return 0;
+	return EXIT_SUCCESS;
 }

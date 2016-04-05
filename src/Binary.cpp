@@ -47,6 +47,7 @@ Binary::Binary(const string& binary_file_path) : bin_fptr_(nullptr)
 void Binary::load_clv(pll_partition_t * partition, const unsigned int clv_index)
 {
   assert(bin_fptr_);
+  assert(clv_index < partition->clv_buffers + partition->tips);
 
   unsigned int attributes;
   auto err = pll_binary_clv_load(
@@ -64,9 +65,19 @@ void Binary::load_clv(pll_partition_t * partition, const unsigned int clv_index)
 void Binary::load_tipchars(pll_partition_t * partition, const unsigned int tipchars_index)
 {
   assert(bin_fptr_);
-  
+  assert(tipchars_index < partition->tips);
+
   (void)partition;
   (void)tipchars_index;
+}
+
+void Binary::load_scaler(pll_partition_t * partition, const unsigned int scaler_index)
+{
+  assert(bin_fptr_);
+  assert(scaler_index < partition->scale_buffers);
+
+  (void)partition;
+  (void)scaler_index;
 }
 
 static pll_partition_t* skeleton_partition()
@@ -93,6 +104,9 @@ static pll_partition_t* skeleton_partition()
 
   if (!partition)
     throw runtime_error{string("Creating skeleton partition failed with pll_errno: ") + to_string(pll_errno)};
+
+  // ensure clv, tipchar and scaler fields are only shallowly allocated
+
 
   return partition;
 }

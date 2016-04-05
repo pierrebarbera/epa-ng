@@ -6,6 +6,7 @@
 #include "Tree_Numbers.hpp"
 #include "Model.hpp"
 #include "pllhead.hpp"
+#include "Tree.hpp"
 
 // forward declarations
 class MSA;
@@ -16,3 +17,4 @@ pll_partition_t *  build_partition_from_file(const Model& model,
   Tree_Numbers& nums,  const int num_sites);
 void file_check(const std::string& file_path);
 // pll_partition_t *  build_partition_from_binary(const std::string& bin_file, const bool out_of_core);
+void dump_to_binary(const Tree& tree, const std::string& file);

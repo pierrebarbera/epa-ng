@@ -10,6 +10,7 @@
 class MSA_Stream {
 public:
   MSA_Stream (const std::string& msa_file);
+  MSA_Stream() : fptr_(nullptr) { }
   ~MSA_Stream () { pll_fasta_close(fptr_); }
 
   void clear() { sequence_list_.clear(); }

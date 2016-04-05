@@ -11,6 +11,7 @@ MSA_Stream::MSA_Stream (const string& msa_file)
 
 const Sequence& MSA_Stream::operator[](const unsigned int idx) const
 {
+  assert(fptr_);
   if((size_t) idx >= sequence_list_.size())
     throw runtime_error{string("Trying to access MSA entry out of bounds. i = ") + to_string(idx) };
 
@@ -19,6 +20,7 @@ const Sequence& MSA_Stream::operator[](const unsigned int idx) const
 
 unsigned int MSA_Stream::read_next(const unsigned int number)
 {
+  assert(fptr_);
   int sites = 0;
   unsigned int number_left = number;
 
