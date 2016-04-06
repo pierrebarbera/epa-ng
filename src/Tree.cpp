@@ -99,9 +99,13 @@ double Tree::ref_tree_logl()
 Tree::~Tree()
 {
   // free data segment of tree nodes
-  utree_free_node_data(tree_);
-  pll_partition_destroy(partition_);
-  pll_utree_destroy(tree_);
+  if (tree_)
+  {
+    utree_free_node_data(tree_);
+    pll_utree_destroy(tree_);
+  }
+  if (partition_)
+    pll_partition_destroy(partition_);
 }
 
 Sample Tree::place()
