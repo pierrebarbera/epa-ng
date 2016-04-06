@@ -5,7 +5,7 @@ OUTDIR=/tmp/epa
 CEREAL=../../cereal/include/
 F+=
 CF+=
-TESTINPUT= $(TEST)/ref.tre $(TEST)/range_combined.fasta -g -w $(OUTDIR) $(F)
+TESTINPUT= -t $(TEST)/ref.tre -s $(TEST)/range_combined.fasta -g -w $(OUTDIR) $(F)
 
 CC=clang++
 #CC=g++
@@ -28,7 +28,7 @@ profile: CFLAGS= $(WARNINGS) -std=c++11 -O2
 omp: DBG=
 omp: LIBS+= -liomp5
 omp: CFLAGS+=-fopenmp=libomp
-ranged_test: TESTINPUT= $(TEST)/ref.tre $(TEST)/range_combined.fasta -w $(OUTDIR) $(F)
+ranged_test: TESTINPUT= -t $(TEST)/ref.tre -s $(TEST)/range_combined.fasta -r -w $(OUTDIR) $(F)
 mpi: CC=mpic++
 mpi: CFLAGS+=-D__MPI
 
