@@ -5,7 +5,7 @@ OUTDIR=/tmp/epa
 CEREAL=../../cereal/include/
 F+=
 CF+=
-TESTINPUT= -t $(TEST)/ref.tre -s $(TEST)/range_combined.fasta -g -w $(OUTDIR) $(F)
+TESTINPUT= -t $(TEST)/ref.tre -s $(TEST)/aln.fasta -q $(TEST)/query.fasta -g -w $(OUTDIR) $(F)
 
 CC=clang++
 #CC=g++
@@ -40,7 +40,7 @@ mpi: $(TARGET)
 
 test: $(TARGET)
 	mkdir -p $(OUTDIR)
-	rm $(OUTDIR)/*
+	rm -f $(OUTDIR)/*
 	$(TARGET) $(TESTINPUT)
 
 ranged_test: $(TARGET)

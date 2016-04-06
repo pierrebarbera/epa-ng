@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <fstream>
 #include <chrono>
+#include <omp.h>
 
 #include "file_io.hpp"
 #include "jplace_util.hpp"
@@ -11,6 +12,8 @@
 #include "logging.hpp"
 #include "Tiny_Tree.hpp"
 #include "mpihead.hpp"
+#include "pll_util.hpp"
+#include "epa_pll_util.hpp"
 
 using namespace std;
 
@@ -30,9 +33,12 @@ static int assign_color(int rank, int )
   return color;
 }
 
-void process(Tree& tree, MSA_Stream& msa_stream, const string& outdir,
+void process(Tree& epa_tree, MSA_Stream& msa_stream, const string& outdir,
               const Options& options, const string& invocation)
 {
+  auto model = epa_tree.model();
+  auto partition = epa_tree.partition();
+  auto tree = epa_tree.tree();
 
   lgr = Log(outdir + "epa_info.log");
 
@@ -82,26 +88,37 @@ void process(Tree& tree, MSA_Stream& msa_stream, const string& outdir,
   // prepare all structures
   // TODO build edge set / OOC tree
 
-  unsigned int num_branches = 0;
   unsigned int chunk_size = 100;
   unsigned int num_sequences;
 
+  auto nums = epa_tree.nums();
+  const auto num_branches = nums.branches;
+
+  // get all edges
+  vector<pll_utree_t *> branches(num_branches);
+  auto num_traversed_branches = utree_query_branches(tree, &branches[0]);
+  assert(num_traversed_branches == num_branches);
+
   // build all tiny trees with corresponding edges
   vector<Tiny_Tree> insertion_trees;
-  for (auto node : branches)
-    insertion_trees.emplace_back(node, partition, model, !options.prescoring);
+  for (unsigned int branch_id = 0; branch_id < num_branches; branch_id++)
+  {
+    // TODO check if current mpi node is supposed to get this branch id
+    auto node = branches[branch_id];
+    insertion_trees.emplace_back(node, branch_id, partition, model, !options.prescoring);
+  }
 
   // create output file
   ofstream outfile(outdir + "epa_result.jplace");
   lgr << "\nOutput file: " << outdir + "epa_result.jplace" << endl;
-  outfile << init_jplace(get_numbered_newick_string(tree));
+  outfile << init_jplace_string(get_numbered_newick_string(tree));
 
   // output class
-  Sample sample();
+  Sample sample;
 
   // while data
   // TODO this could be a stream read, such that cat msa.fasta | epa .... would work
-  while ((num_sequences = msa.read_next(chunk_size)) > 0)
+  while ((num_sequences = msa_stream.read_next(chunk_size)) > 0)
   {
     #ifdef __MPI
     //==============================================================
@@ -119,7 +136,7 @@ void process(Tree& tree, MSA_Stream& msa_stream, const string& outdir,
     {
       for (unsigned int cur_seq_id = 0; cur_seq_id < num_sequences; cur_seq_id++)
       {
-        sample[cur_seq_id][local_branch_id] = insertion_trees[local_branch_id].place(msa[cur_seq_id]);
+        sample[cur_seq_id][local_branch_id] = insertion_trees[local_branch_id].place(msa_stream[cur_seq_id]);
       }
     }
 
@@ -151,10 +168,10 @@ void process(Tree& tree, MSA_Stream& msa_stream, const string& outdir,
     // build lwrs, discard
     compute_and_set_lwr(sample);
 
-    if (options_.acc_threshold)
-      discard_by_accumulated_threshold(sample, options_.support_threshold);
+    if (options.acc_threshold)
+      discard_by_accumulated_threshold(sample, options.support_threshold);
     else
-      discard_by_support_threshold(sample, options_.support_threshold);
+      discard_by_support_threshold(sample, options.support_threshold);
 
     #ifdef __MPI
     } // endif (local_stage == EPA_MPI_STAGE_1_AGGREGATE)
@@ -177,8 +194,96 @@ void process(Tree& tree, MSA_Stream& msa_stream, const string& outdir,
     // save to jplace (MPI: get file lock)
 
     sample.clear();
-    msa.clear();
+    msa_stream.clear();
   }
-  outfile << finalize_jplace(invocation);
+  outfile << finalize_jplace_string(invocation);
   outfile.close();
+}
+
+// ================== LEGACY CODE ==========================================
+
+
+Sample place(Tree& epa_tree, MSA& query_msa_)
+{
+  auto options_ = epa_tree.options();
+  auto model_ = epa_tree.model();
+  auto tree_ = epa_tree.tree();
+  auto partition_ = epa_tree.partition();
+  auto nums_ = epa_tree.nums();
+
+  const auto num_branches = nums_.branches;
+  const auto num_queries = query_msa_.size();
+  // get all edges
+  vector<pll_utree_t *> branches(num_branches);
+  auto num_traversed_branches = utree_query_branches(tree_, &branches[0]);
+  assert(num_traversed_branches == num_branches);
+
+  lgr << "\nPlacing "<< to_string(num_queries) << " reads on " <<
+    to_string(num_branches) << " branches." << endl;
+
+  // build all tiny trees with corresponding edges
+  vector<Tiny_Tree> insertion_trees;
+  for (unsigned int branch_id = 0; branch_id < num_branches; ++branch_id)
+    insertion_trees.emplace_back(branches[branch_id], branch_id, partition_, model_, !options_.prescoring);
+    /* clarification: last arg here is a flag specifying whether to optimize the branches.
+      we don't want that if the mode is prescoring */
+
+  // output class
+  Sample sample(get_numbered_newick_string(tree_));
+  for (unsigned int sequence_id = 0; sequence_id < num_queries; sequence_id++)
+    sample.emplace_back(sequence_id, num_branches);
+
+
+  // place all s on every edge
+  #pragma omp parallel for schedule(dynamic)
+  for (unsigned int branch_id = 0; branch_id < num_branches; ++branch_id)
+  {
+    for (unsigned int sequence_id = 0; sequence_id < num_queries; ++sequence_id)
+    {
+      sample[sequence_id][branch_id] = insertion_trees[branch_id].place(query_msa_[sequence_id]);
+    }
+  }
+  // now that everything has been placed, we can compute the likelihood weight ratio
+  compute_and_set_lwr(sample);
+
+  /* prescoring was chosen: perform a second round, but only on candidate edges identified
+    during the first run */
+  if (options_.prescoring)
+  {
+    lgr << "Entering second phase of placement. \n";
+    if (options_.prescoring_by_percentage)
+      discard_bottom_x_percent(sample, (1.0 - options_.prescoring_threshold));
+    else
+      discard_by_accumulated_threshold(sample, options_.prescoring_threshold);
+
+    // build a list of placements per edge that need to be recomputed
+    vector<vector<tuple<Placement *, const unsigned int>>> recompute_list(num_branches);
+    for (auto & pq : sample)
+      for (auto & placement : pq)
+        recompute_list[placement.branch_id()].push_back(make_tuple(&placement, pq.sequence_id()));
+
+    #pragma omp parallel for schedule(dynamic)
+    for (unsigned int branch_id = 0; branch_id < num_branches; branch_id++)
+    {
+      Placement * placement;
+      // Sequence * sequence;
+      auto& branch = insertion_trees[branch_id];
+      branch.opt_branches(true); // TODO only needs to be done once
+      for (auto recomp_tuple : recompute_list[branch_id])
+      {
+        placement = get<0>(recomp_tuple);
+        *placement = branch.place(query_msa_[get<1>(recomp_tuple)]);
+
+      }
+    }
+    compute_and_set_lwr(sample);
+  }
+
+  // finally, trim the output
+  if (options_.acc_threshold)
+    discard_by_accumulated_threshold(sample, options_.support_threshold);
+  else
+    discard_by_support_threshold(sample, options_.support_threshold);
+
+  return sample;
 }

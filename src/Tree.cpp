@@ -58,6 +58,8 @@ Tree::Tree(const string& bin_file, const string&, Options& options)
 
   // mirror the model from the partition to the model_ object
   model_ = get_model(partition_.get());
+
+  nums_.init(partition_->tips);
 }
 
 Tree::~Tree()

@@ -5,14 +5,7 @@
 #include <chrono>
 
 #include "mpihead.hpp"
-#include "file_io.hpp"
-#include "Tree.hpp"
-#include "MSA.hpp"
-#include "MSA_Stream.hpp"
-#include "Model.hpp"
-#include "Options.hpp"
-#include "place.hpp"
-
+#include "epa.hpp"
 
 using namespace std;
 
@@ -176,7 +169,6 @@ int main(int argc, char** argv)
   if (query_file.size() != 0)
     queries = MSA_Stream(query_file);
 
-  // Tree tree;
   Model model(model_id);
 
   Tree tree;
@@ -188,8 +180,7 @@ int main(int argc, char** argv)
   else
   {
     // build the full tree with all possible clv's
-    MSA dummy;
-    tree = Tree(tree_file, ref_msa, model, options, dummy);
+    tree = Tree(tree_file, ref_msa, model, options);
   }
 
   // dump to binary if specified
@@ -203,7 +194,9 @@ int main(int argc, char** argv)
 
   // start the placement process and write to file
   auto start = chrono::high_resolution_clock::now();
-  process(tree, queries, work_dir, options, invocation);
+  // process(tree, queries, work_dir, invocation);
+  MSA full_msa = build_MSA_from_file(query_file);
+  place(tree, full_msa);
   auto end = chrono::high_resolution_clock::now();
   auto runtime = chrono::duration_cast<chrono::seconds>(end - start).count();
 
