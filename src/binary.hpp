@@ -9,7 +9,7 @@ class Binary {
 public:
   Binary(const std::string& bin_file_path);
   Binary() : bin_fptr_(nullptr) { }
-  ~Binary() { fclose(bin_fptr_); }
+  ~Binary() { if(bin_fptr_) fclose(bin_fptr_); }
 
   // access functions
   void load_clv(pll_partition_t * partition, const unsigned int clv_index);

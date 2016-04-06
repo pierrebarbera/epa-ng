@@ -14,7 +14,7 @@ TEST(Tree, place)
   // buildup
   auto query_msa = build_MSA_from_file(env->query_file);
   auto reference_msa = build_MSA_from_file(env->reference_file);
-  Options options(false,false,false);
+  Options options;
   options.support_threshold = 0.0;
   auto tree = Tree(env->tree_file, reference_msa, env->model, options, query_msa);
 
@@ -43,7 +43,10 @@ TEST(Tree, place_prescore)
   // buildup
   auto query_msa = build_MSA_from_file(env->query_file);
   auto reference_msa = build_MSA_from_file(env->reference_file);
-  Options options(true,true,true);
+  Options options;
+  options.prescoring = true;
+  options.opt_model = true;
+  options.opt_branches = true;
   options.support_threshold = 0.0;
   auto tree = Tree(env->tree_file, reference_msa, env->model, options, query_msa);
 
