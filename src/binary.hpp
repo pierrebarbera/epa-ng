@@ -16,9 +16,7 @@ public:
   void load_tipchars(pll_partition_t * partition, const unsigned int tipchars_index);
   void load_scaler(pll_partition_t * partition, const unsigned int scaler_index);
   pll_partition_t* load_partition();
+  pll_utree_t* load_utree();
 private:
   FILE* bin_fptr_;
-  long int tipchars_offset_;
-  long int clv_offset_;
-  long int partition_offset_;
 };
