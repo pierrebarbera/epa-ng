@@ -49,11 +49,12 @@ Tree::Tree(const string &tree_file, const MSA &msa, Model &model, Options option
 /**
   Constructs the structures from binary file.
 */
-Tree::Tree(const string& bin_file, const string& tree_file, Options& options)
+Tree::Tree(const string& bin_file, const string&, Options& options)
   : options_(options),  binary_(bin_file)
 {
-  tree_ = build_tree_from_file(tree_file, nums_);
+  // tree_ = build_tree_from_file(tree_file, nums_);
 
+  tree_ = binary_.load_utree();
   partition_ = binary_.load_partition();
 
   // mirror the model from the partition to the model_ object

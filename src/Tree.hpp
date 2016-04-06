@@ -24,9 +24,11 @@ public:
   Sample place();
 
   // member access
-  Tree_Numbers& nums() {return nums_;};
-  Model& model() {return model_;};
-  MSA& query_msa(){return query_msa_;};
+  Tree_Numbers& nums() { return nums_; }
+  Model& model() { return model_; }
+  MSA& query_msa() { return query_msa_; }
+  pll_partition_t * partition() { return partition_; }
+  pll_utree_t * tree() { return tree_; }
 
   void * get_clv(unsigned int i);
 
