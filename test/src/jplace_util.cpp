@@ -6,6 +6,7 @@
 #include "src/jplace_util.hpp"
 #include "src/Tree.hpp"
 #include "src/MSA.hpp"
+#include "src/place.hpp"
 
 #include <string>
 #include <vector>
@@ -18,13 +19,13 @@ TEST(jplace_util, pquery_to_jplace_string)
   // buildup
   auto query_msa = build_MSA_from_file(env->query_file);
   auto reference_msa = build_MSA_from_file(env->reference_file);
-  auto tree = Tree(env->tree_file, reference_msa, env->model, env->options, query_msa);
+  auto tree = Tree(env->tree_file, reference_msa, env->model, env->options);
 
   // tests
-  auto pquerys = tree.place();
+  auto sample = place(tree, query_msa);
   vector<string> out;
 
-  for (auto const &p : pquerys)
+  for (auto const &p : sample)
     out.push_back(pquery_to_jplace_string(p, query_msa));
 
   EXPECT_EQ(out.size(), 2);

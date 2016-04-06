@@ -3,6 +3,7 @@
 #include "src/file_io.hpp"
 #include "src/Tree.hpp"
 #include "src/MSA.hpp"
+#include "src/place.hpp"
 
 #include <string>
 #include <vector>
@@ -16,10 +17,10 @@ TEST(Tree, place)
   auto reference_msa = build_MSA_from_file(env->reference_file);
   Options options;
   options.support_threshold = 0.0;
-  auto tree = Tree(env->tree_file, reference_msa, env->model, options, query_msa);
+  auto tree = Tree(env->tree_file, reference_msa, env->model, options);
 
   // tests
-  auto sample = tree.place();
+  auto sample = place(tree, query_msa);
 
   EXPECT_EQ(sample.size(), 2);
 
@@ -48,10 +49,10 @@ TEST(Tree, place_prescore)
   options.opt_model = true;
   options.opt_branches = true;
   options.support_threshold = 0.0;
-  auto tree = Tree(env->tree_file, reference_msa, env->model, options, query_msa);
+  auto tree = Tree(env->tree_file, reference_msa, env->model, options);
 
   // tests
-  auto sample = tree.place();
+  auto sample = place(tree, query_msa);
 
   EXPECT_EQ(sample.size(), 2);
 
@@ -73,6 +74,5 @@ TEST(Tree, place_prescore)
 TEST(Tree, combined_input_file)
 {
   auto combined_msa = build_MSA_from_file(env->combined_file);
-  MSA query;
-  auto tree = Tree(env->tree_file, combined_msa, env->model, env->options, query);
+  auto tree = Tree(env->tree_file, combined_msa, env->model, env->options);
 }
