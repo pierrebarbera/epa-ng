@@ -23,4 +23,5 @@ TEST(MSA_Stream, reading)
     }
     EXPECT_EQ(complete_msa[i], streamed_msa[i % chunk_size]);
   }
+  MSA_Stream dummy;
 }

@@ -11,7 +11,7 @@ class MSA_Stream {
 public:
   MSA_Stream (const std::string& msa_file);
   MSA_Stream() : fptr_(nullptr) { }
-  ~MSA_Stream () { pll_fasta_close(fptr_); }
+  ~MSA_Stream () { if(fptr_) pll_fasta_close(fptr_); }
 
   void clear() { sequence_list_.clear(); }
   unsigned int read_next(const unsigned int number);
