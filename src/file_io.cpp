@@ -116,37 +116,6 @@ pll_partition_t *  build_partition_from_file(const Model& model, Tree_Numbers& n
 
 }
 
-// static pll_partition_t * create_out_of_core_partition(FILE * bin_file)
-// {
-//   auto attributes = PLL_BINARY_ATTRIB_PARTITION_DUMP_CLV | PLL_BINARY_ATTRIB_PARTITION_DUMP_WGT;
-//   auto partition = pll_binary_partition_load(bin_file, nullptr, attributes, pll_map_nt);
-//   if (!partition)
-//     throw runtime_error{"Error while building partition from binary file."};
-//
-//   return partition;
-// }
-//
-// pll_partition_t *  build_partition_from_binary(const string& bin_file, const bool out_of_core)
-// {
-//   // savely open the file
-//   FILE * bin_file_ptr;
-//   if(!(bin_file_ptr = fopen(bin_file.c_str(), "r")))
-//     throw runtime_error{"Couldn't open binary file."};
-//
-//   // decide whether to load the full partition, clv's and all
-//   pll_partition_t * shell_partition = out_of_core ? create_out_of_core_partition(bin_file_ptr) : nullptr;
-//
-//   auto attributes = PLL_BINARY_ATTRIB_PARTITION_DUMP_CLV | PLL_BINARY_ATTRIB_PARTITION_DUMP_WGT;
-//   if (out_of_core)
-//     attributes = 0;
-//
-//   auto partition = pll_binary_partition_load(bin_file_ptr, shell_partition, attributes, pll_map_nt);
-//
-//   fclose(bin_file_ptr);
-//
-//   return partition;
-// }
-
 void file_check(const string& file_path)
 {
   ifstream file(file_path.c_str());
@@ -154,46 +123,4 @@ void file_check(const string& file_path)
     throw runtime_error{string("file_check failed: ") + file_path};
 
   file.close();
-}
-
-void dump_to_binary(Tree& tree, const string& file)
-{
-  auto num_clvs = tree.partition()->clv_buffers;
-  auto num_tips = tree.partition()->tips;
-  auto num_scalers = tree.partition()->scale_buffers;
-  auto max_clv_index = num_clvs + num_tips;
-
-  pll_binary_header_t header;
-  auto fptr =  pll_binary_create(
-    file.c_str(),
-    &header,
-    PLL_BINARY_ACCESS_RANDOM,
-    2 + num_clvs + num_tips + num_scalers);
-
-  unsigned int attributes = PLL_BINARY_ATTRIB_UPDATE_MAP | PLL_BINARY_ATTRIB_PARTITION_DUMP_WGT;
-
-  int block_id = -2;
-
-  pll_binary_utree_dump(fptr, block_id++, tree.tree(), num_tips, attributes);
-
-  pll_binary_partition_dump(fptr, block_id++, tree.partition(), attributes);
-
-  for (unsigned int tip_index = 0; tip_index < num_tips; tip_index++)
-  {
-    pll_binary_custom_dump(fptr, block_id++, tree.partition()->tipchars[tip_index],
-      tree.partition()->sites * sizeof(char), attributes);
-  }
-
-  for (unsigned int clv_index = num_tips; clv_index < max_clv_index; clv_index++)
-  {
-    pll_binary_clv_dump(fptr, block_id++, tree.partition(), clv_index, attributes);
-  }
-
-  for (unsigned int scaler_index = 0; scaler_index < num_scalers; scaler_index++)
-  {
-    pll_binary_custom_dump(fptr, block_id++, tree.partition()->scale_buffer[scaler_index],
-      tree.partition()->sites * sizeof(unsigned int), attributes);
-  }
-
-  fclose(fptr);
 }

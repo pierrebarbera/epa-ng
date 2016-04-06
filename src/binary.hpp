@@ -20,3 +20,7 @@ public:
 private:
   FILE* bin_fptr_;
 };
+
+class Tree;
+
+void dump_to_binary(Tree& tree, const std::string& file);
