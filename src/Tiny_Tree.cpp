@@ -1,7 +1,6 @@
 #include "Tiny_Tree.hpp"
 
 #include <vector>
-#include <cassert>
 
 #include "tiny_util.hpp"
 #include "pll_util.hpp"
@@ -14,12 +13,12 @@ using namespace std;
 
 Tiny_Tree::Tiny_Tree(pll_utree_t *edge_node, unsigned int branch_id, pll_partition_t *old_partition,
                      Model model, bool opt_branches, Range reference_tip_range, bool ranged)
-    : opt_branches_(opt_branches), original_branch_length_(edge_node->length)
-      , model_(model), reference_tip_range_(reference_tip_range), ranged_computation_(ranged)
-      , branch_id_(branch_id)
+    : partition_(nullptr, tiny_partition_destroy), tree_(nullptr, utree_destroy), opt_branches_(opt_branches)
+    , original_branch_length_(edge_node->length), model_(model), reference_tip_range_(reference_tip_range)
+    , ranged_computation_(ranged), branch_id_(branch_id)
 {
-  assert(edge_node != NULL);
-  assert(old_partition != NULL);
+  assert(edge_node);
+  assert(old_partition);
 
   const pll_utree_t *old_proximal = edge_node->back;
   const pll_utree_t *old_distal = edge_node;
@@ -35,9 +34,13 @@ Tiny_Tree::Tiny_Tree(pll_utree_t *edge_node, unsigned int branch_id, pll_partiti
     old_proximal = old_distal->back;
   }
 
-  tree_ = make_tiny_tree_structure(old_proximal, old_distal, tip_tip_case_);
+  tree_ = unique_ptr<pll_utree_t, utree_deleter>(
+      	                    make_tiny_tree_structure(old_proximal, old_distal, tip_tip_case_),
+                            utree_destroy);
 
-  partition_ = make_tiny_partition(old_partition, tree_, old_proximal, old_distal, tip_tip_case_);
+  partition_ = unique_ptr<pll_partition_t, partition_deleter>(
+                                make_tiny_partition(old_partition, tree_.get(), old_proximal, old_distal, tip_tip_case_),
+                                tiny_partition_destroy);
 
   // operation for computing the clv toward the new tip (for initialization and logl in non-blo case)
   auto distal = tree_->next->back;
@@ -58,26 +61,19 @@ Tiny_Tree::Tiny_Tree(pll_utree_t *edge_node, unsigned int branch_id, pll_partiti
   unsigned int matrix_indices[3] = {proximal->pmatrix_index, distal->pmatrix_index, tree_->pmatrix_index};
 
   // use branch lengths to compute the probability matrices
-  pll_update_prob_matrices(partition_, 0, matrix_indices, branch_lengths, 3);
+  pll_update_prob_matrices(partition_.get(), 0, matrix_indices, branch_lengths, 3);
 
   if (!opt_branches_)
-    pll_update_partials(partition_, &op, 1);
-}
-// use update_partials to compute the clv pointing toward the new tip
-
-Tiny_Tree::~Tiny_Tree() {
-  if (partition_ != nullptr)
-    destroy_tiny_partition(partition_);
-
-  if (tree_ != nullptr)
-    pll_utree_destroy(tree_);
+    pll_update_partials(partition_.get(), &op, 1);
+    // use update_partials to compute the clv pointing toward the new tip
 }
 
 Placement Tiny_Tree::place(const Sequence &s) {
-  assert(partition_ != NULL);
+  assert(partition_);
+  assert(tree_);
 
   // init the new tip with s.sequence(), branch length
-  pll_set_tip_states(partition_, tree_->back->clv_index, pll_map_nt,
+  pll_set_tip_states(partition_.get(), tree_->back->clv_index, pll_map_nt,
                      s.sequence().c_str());
 
   auto distal_length = tree_->next->length;
@@ -85,8 +81,8 @@ Placement Tiny_Tree::place(const Sequence &s) {
   double logl = 0.0;
 
   Range range(0, partition_->sites);
-  if (ranged_computation_)
-    range = get_valid_range(s.sequence());
+  // if (ranged_computation_)
+  //   range = get_valid_range(s.sequence());
     // range = superset(get_valid_range(s.sequence()), reference_tip_range_);
 
   if (opt_branches_)
@@ -97,7 +93,7 @@ Placement Tiny_Tree::place(const Sequence &s) {
       In other words, we set the virtual root as the node whose back-neighbour is the new
       sequence, which is tree_. (*)
       */
-    auto virtual_root = tree_;
+    auto virtual_root = tree_.get();
 
     if (tip_tip_case_)
     {
@@ -109,7 +105,7 @@ Placement Tiny_Tree::place(const Sequence &s) {
     }
 
     // optimize the branches using pnly the portion of the sites specified by range
-    logl = call_focused(partition_, range, optimize_branch_triplet, virtual_root);
+    logl = call_focused(partition_.get(), range, optimize_branch_triplet, virtual_root);
 
 
     assert(tree_->length >= 0);
@@ -123,10 +119,10 @@ Placement Tiny_Tree::place(const Sequence &s) {
     distal_length = (original_branch_length_ / new_total_branch_length) * distal_length;
     pendant_length = tree_->length;
 
-    reset_triplet_lengths(tree_, partition_, original_branch_length_);
+    reset_triplet_lengths(tree_.get(), partition_.get(), original_branch_length_);
     }
     else
-    logl = call_focused(partition_, range, pll_compute_edge_loglikelihood,
+    logl = call_focused(partition_.get(), range, pll_compute_edge_loglikelihood,
                                           tree_->back->clv_index,
                                           PLL_SCALE_BUFFER_NONE, // scaler_index
                                           tree_->clv_index,

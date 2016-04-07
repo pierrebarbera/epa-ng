@@ -122,7 +122,7 @@ pll_partition_t * make_tiny_partition(const pll_partition_t * old_partition, con
   return tiny;
 }
 
-void destroy_tiny_partition(pll_partition_t * partition)
+void tiny_partition_destroy(pll_partition_t * partition)
 {
   if(partition)
   {
