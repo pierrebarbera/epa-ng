@@ -2,14 +2,12 @@
 
 using namespace std;
 
-void safe_fasta_close(pll_fasta_t* fptr) { if(fptr) pll_fasta_close(fptr); }
-
 MSA_Stream::MSA_Stream (const string& msa_file)
-  : fptr_(nullptr, safe_fasta_close)
+  : fptr_(nullptr, fasta_close)
 {
   fptr_ = unique_ptr<pll_fasta_t, fasta_deleter>(
                       pll_fasta_open(msa_file.c_str(), pll_map_fasta),
-                      safe_fasta_close);
+                      fasta_close);
   if(!fptr_)
     throw runtime_error{string("Cannot open file: ") + msa_file};
 }

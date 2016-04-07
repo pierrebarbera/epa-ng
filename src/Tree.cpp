@@ -4,7 +4,6 @@
 #include <iostream>
 #include <cstdio>
 
-#include "pll_util.hpp"
 #include "epa_pll_util.hpp"
 #include "file_io.hpp"
 #include "Sequence.hpp"
@@ -15,22 +14,13 @@
 
 using namespace std;
 
-static void custom_utree_destroy(pll_utree_t * tree)
-{
-  if (tree)
-  {
-    utree_free_node_data(tree);
-    pll_utree_destroy(tree);
-  }
-}
-
 Tree::Tree(const string &tree_file, const MSA &msa, Model &model, Options& options)
-    : partition_(nullptr, pll_partition_destroy), tree_(nullptr, custom_utree_destroy)
+    : partition_(nullptr, pll_partition_destroy), tree_(nullptr, utree_destroy)
     , ref_msa_(msa), model_(model), options_(options)
 {
   tree_ = unique_ptr<pll_utree_t, utree_deleter>(
                       build_tree_from_file(tree_file, nums_),
-                      custom_utree_destroy);
+                      utree_destroy);
   partition_ = unique_ptr<pll_partition_t, partition_deleter>(
                             build_partition_from_file(model_, nums_, ref_msa_.num_sites()),
                             pll_partition_destroy);
@@ -66,12 +56,12 @@ Tree::Tree(const string &tree_file, const MSA &msa, Model &model, Options& optio
   Constructs the structures from binary file.
 */
 Tree::Tree(const string& bin_file, Options& options)
-  : partition_(nullptr, pll_partition_destroy), tree_(nullptr, custom_utree_destroy)
+  : partition_(nullptr, pll_partition_destroy), tree_(nullptr, utree_destroy)
   , options_(options), binary_(bin_file)
 {
   tree_ = unique_ptr<pll_utree_t, utree_deleter>(
                       binary_.load_utree(),
-                      custom_utree_destroy);
+                      utree_destroy);
   partition_ = unique_ptr<pll_partition_t, partition_deleter>(
                             binary_.load_partition(),
                             pll_partition_destroy);

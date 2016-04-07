@@ -124,22 +124,25 @@ pll_partition_t * make_tiny_partition(const pll_partition_t * old_partition, con
 
 void destroy_tiny_partition(pll_partition_t * partition)
 {
-  // unset shallow copied things
-  partition->rates = nullptr;
-  partition->subst_params = nullptr;
-  partition->frequencies = nullptr;
-  partition->eigenvecs = nullptr;
-  partition->inv_eigenvecs = nullptr;
-  partition->eigenvals = nullptr;
-  partition->prop_invar = nullptr;
-  partition->eigen_decomp_valid = nullptr;
-  partition->pattern_weights = nullptr;
+  if(partition)
+  {
+    // unset shallow copied things
+    partition->rates = nullptr;
+    partition->subst_params = nullptr;
+    partition->frequencies = nullptr;
+    partition->eigenvecs = nullptr;
+    partition->inv_eigenvecs = nullptr;
+    partition->eigenvals = nullptr;
+    partition->prop_invar = nullptr;
+    partition->eigen_decomp_valid = nullptr;
+    partition->pattern_weights = nullptr;
 
-  partition->lh_statepair = nullptr;
-  partition->charmap = nullptr;
-  partition->revmap = nullptr;
+    partition->lh_statepair = nullptr;
+    partition->charmap = nullptr;
+    partition->revmap = nullptr;
 
-  pll_partition_destroy(partition);
+    pll_partition_destroy(partition);
+  }
 }
 
 pll_utree_t * make_tiny_tree_structure(const pll_utree_t * old_proximal, const pll_utree_t * old_distal,

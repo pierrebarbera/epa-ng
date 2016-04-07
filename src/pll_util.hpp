@@ -11,7 +11,14 @@ typedef struct
   int clv_valid;
 } node_info_t;
 
-/* some code adapted from libpll examples */
+// deleter typedefs
+typedef void(*partition_deleter)(pll_partition_t*);
+typedef void(*utree_deleter)(pll_utree_t*);
+typedef void (*fasta_deleter)(pll_fasta_t*);
+
+// deleters
+void fasta_close(pll_fasta_t* fptr);
+void utree_destroy(pll_utree_t * tree);
 
 // interface
 int cb_partial_traversal(pll_utree_t * node);

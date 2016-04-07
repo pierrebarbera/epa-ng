@@ -7,15 +7,12 @@
 
 #include "pllhead.hpp"
 #include "Sequence.hpp"
-
-void safe_fasta_close(pll_fasta_t* fptr);
+#include "pll_util.hpp"
 
 class MSA_Stream {
 public:
-  typedef void (*fasta_deleter)(pll_fasta_t*);
-
   MSA_Stream (const std::string& msa_file);
-  MSA_Stream() : fptr_(nullptr, safe_fasta_close) { }
+  MSA_Stream() : fptr_(nullptr, fasta_close) { }
   ~MSA_Stream () = default;
 
   MSA_Stream(MSA_Stream const& other) = delete;

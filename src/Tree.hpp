@@ -8,18 +8,15 @@
 #include "MSA.hpp"
 #include "Model.hpp"
 #include "Tree_Numbers.hpp"
-#include "Tiny_Tree.hpp"
 #include "Options.hpp"
 #include "Range.hpp"
 #include "Binary.hpp"
+#include "pll_util.hpp"
 
 /* Encapsulates the pll data structures for ML computation */
 class Tree
 {
 public:
-  typedef void(*partition_deleter)(pll_partition_t*);
-  typedef void(*utree_deleter)(pll_utree_t*);
-
   Tree(const std::string& tree_file, const MSA& msa, Model& model, Options& options);
   Tree(const std::string& bin_file, Options& options);
   Tree() : partition_(nullptr, pll_partition_destroy), tree_(nullptr, pll_utree_destroy) { }
