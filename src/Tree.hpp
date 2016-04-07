@@ -23,7 +23,7 @@ public:
   Tree(const std::string& tree_file, const MSA& msa, Model& model, Options& options);
   Tree(const std::string& bin_file, const std::string& tree_file, Options& options);
   Tree() : partition_(nullptr, pll_partition_destroy), tree_(nullptr, pll_utree_destroy) { }
-  ~Tree();
+  ~Tree() = default;
 
   Tree(Tree const& other) = delete;
   Tree(Tree&& other) = default;

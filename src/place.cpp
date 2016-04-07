@@ -19,20 +19,6 @@ using namespace std;
 
 Log lgr;
 
-/**
-  Schedules MPI processes to pipeline stages
-*/
-static int assign_color(int rank, int )
-{
-  int color = 0;
-  if (rank != 0)
-    color = EPA_MPI_STAGE_1_COMPUTE;
-  else
-    color = EPA_MPI_STAGE_1_AGGREGATE;
-
-  return color;
-}
-
 void process(Tree& epa_tree, MSA_Stream& msa_stream, const string& outdir,
               const Options& options, const string& invocation)
 {
