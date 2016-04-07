@@ -17,9 +17,12 @@
 class Tree
 {
 public:
+  typedef void(*partition_deleter)(pll_partition_t*);
+  typedef void(*utree_deleter)(pll_utree_t*);
+
   Tree(const std::string& tree_file, const MSA& msa, Model& model, Options& options);
   Tree(const std::string& bin_file, const std::string& tree_file, Options& options);
-  Tree() : partition_(nullptr), tree_(nullptr) { }
+  Tree() : partition_(nullptr, pll_partition_destroy), tree_(nullptr, pll_utree_destroy) { }
   ~Tree();
 
   Tree(Tree const& other) = delete;
@@ -41,8 +44,8 @@ public:
 
 private:
   // pll structures
-  std::unique_ptr<pll_partition_t> partition_;
-  std::unique_ptr<pll_utree_t> tree_; // must be top level node as parsed in newick! (for jplace)
+  std::unique_ptr<pll_partition_t, partition_deleter> partition_;
+  std::unique_ptr<pll_utree_t, utree_deleter> tree_; // must be top level node as parsed in newick! (for jplace)
 
   // tree related numbers
   Tree_Numbers nums_;
