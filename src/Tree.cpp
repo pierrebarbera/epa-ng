@@ -28,12 +28,12 @@ Tree::Tree(const string &tree_file, const MSA &msa, Model &model, Options& optio
     : partition_(nullptr, pll_partition_destroy), tree_(nullptr, custom_utree_destroy)
     , ref_msa_(msa), model_(model), options_(options)
 {
-  tree_ = std::unique_ptr<pll_utree_t, utree_deleter>(
-                            build_tree_from_file(tree_file, nums_),
-                            custom_utree_destroy);
-  partition_ = std::unique_ptr<pll_partition_t, partition_deleter>(
-                                build_partition_from_file(model_, nums_, ref_msa_.num_sites()),
-                                pll_partition_destroy);
+  tree_ = unique_ptr<pll_utree_t, utree_deleter>(
+                      build_tree_from_file(tree_file, nums_),
+                      custom_utree_destroy);
+  partition_ = unique_ptr<pll_partition_t, partition_deleter>(
+                            build_partition_from_file(model_, nums_, ref_msa_.num_sites()),
+                            pll_partition_destroy);
 
   // split msa if it is intermingled with (supposed) query sequences
   if (ref_msa_.size() > nums_.tip_nodes)
@@ -65,12 +65,10 @@ Tree::Tree(const string &tree_file, const MSA &msa, Model &model, Options& optio
 /**
   Constructs the structures from binary file.
 */
-Tree::Tree(const string& bin_file, const string&, Options& options)
+Tree::Tree(const string& bin_file, Options& options)
   : partition_(nullptr, pll_partition_destroy), tree_(nullptr, custom_utree_destroy)
   , options_(options), binary_(bin_file)
 {
-  // tree_ = build_tree_from_file(tree_file, nums_);
-
   tree_ = unique_ptr<pll_utree_t, utree_deleter>(
                       binary_.load_utree(),
                       custom_utree_destroy);

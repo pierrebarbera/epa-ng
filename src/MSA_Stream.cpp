@@ -2,9 +2,14 @@
 
 using namespace std;
 
+void safe_fasta_close(pll_fasta_t* fptr) { if(fptr) pll_fasta_close(fptr); }
+
 MSA_Stream::MSA_Stream (const string& msa_file)
+  : fptr_(nullptr, safe_fasta_close)
 {
-  fptr_ = pll_fasta_open(msa_file.c_str(), pll_map_fasta);
+  fptr_ = unique_ptr<pll_fasta_t, fasta_deleter>(
+                      pll_fasta_open(msa_file.c_str(), pll_map_fasta),
+                      safe_fasta_close);
   if(!fptr_)
     throw runtime_error{string("Cannot open file: ") + msa_file};
 }
@@ -24,13 +29,14 @@ unsigned int MSA_Stream::read_next(const unsigned int number)
   int sites = 0;
   unsigned int number_left = number;
 
-  char * sequence = NULL;
-  char * header = NULL;
+  char * sequence = nullptr;
+  char * header = nullptr;
   long sequence_length;
   long header_length;
   long sequence_number;
 
-  while (number_left and pll_fasta_getnext(fptr_, &header, &header_length, &sequence, &sequence_length, &sequence_number))
+  while (number_left and
+    pll_fasta_getnext(fptr_.get(), &header, &header_length, &sequence, &sequence_length, &sequence_number))
   {
     if (sites && (sites != sequence_length))
       throw runtime_error{"MSA file does not contain equal size sequences"};

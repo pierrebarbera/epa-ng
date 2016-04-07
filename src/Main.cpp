@@ -175,7 +175,7 @@ int main(int argc, char** argv)
 
   if (options.load_binary_mode)
   {
-    tree = Tree(binary_file, tree_file, options);
+    tree = Tree(binary_file, options);
   }
   else
   {
