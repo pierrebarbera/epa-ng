@@ -28,6 +28,8 @@ int main(int argc, char** argv)
   env->query_file += "query.fasta";
   env->combined_file  = std::string(env->data_dir);
   env->combined_file += "combined.fasta";
+  env->binary_file  = std::string(env->data_dir);
+  env->binary_file += "persisted.bin";
 
   ::testing::InitGoogleTest(&argc, argv);
 

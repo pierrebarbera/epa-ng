@@ -36,6 +36,7 @@ public:
   std::string reference_file;
   std::string combined_file;
   std::string query_file;
+  std::string binary_file;
   Model model = Model("GTR");
   Options options;
 

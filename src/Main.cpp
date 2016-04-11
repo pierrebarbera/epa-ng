@@ -163,7 +163,9 @@ int main(int argc, char** argv)
 
   ensure_dir_has_slash(work_dir);
 
-  auto ref_msa = build_MSA_from_file(reference_file);
+  MSA ref_msa;
+  if (reference_file.size())
+    ref_msa = build_MSA_from_file(reference_file);
 
   MSA_Stream queries;
   if (query_file.size() != 0)

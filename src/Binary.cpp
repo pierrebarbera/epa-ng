@@ -89,7 +89,8 @@ void Binary::load_scaler(pll_partition_t * partition, const unsigned int scaler_
   unsigned int type, attributes;
   size_t size;
 
-  auto ptr = pll_binary_custom_load(bin_fptr_, block_offset + scaler_index, &size, &type, &attributes, PLL_BINARY_ACCESS_SEEK);
+  auto ptr = pll_binary_custom_load(bin_fptr_, block_offset + scaler_index,
+    &size, &type, &attributes, PLL_BINARY_ACCESS_SEEK);
   if (!ptr)
     throw runtime_error{string("Loading scaler failed with pll_errno: ") + to_string(pll_errno)};
 
@@ -155,35 +156,44 @@ void dump_to_binary(Tree& tree, const string& file)
   auto max_clv_index = num_clvs + num_tips;
 
   pll_binary_header_t header;
+  // memset(&header, 0, sizeof(pll_binary_header_t));
   auto fptr =  pll_binary_create(
     file.c_str(),
     &header,
     PLL_BINARY_ACCESS_RANDOM,
     2 + num_clvs + num_tips + num_scalers);
 
+  if(!fptr)
+    throw runtime_error{string("Opening binary file for writing failed with pll_errno: ") + to_string(pll_errno)};
+
   unsigned int attributes = PLL_BINARY_ATTRIB_UPDATE_MAP | PLL_BINARY_ATTRIB_PARTITION_DUMP_WGT;
 
   int block_id = -2;
 
-  pll_binary_utree_dump(fptr, block_id++, tree.tree(), num_tips, attributes);
+  if(pll_binary_utree_dump(fptr, block_id++, tree.tree(), num_tips, attributes) != PLL_SUCCESS)
+    throw runtime_error{string("Dumping the utree to binary failed with pll_errno: ") + to_string(pll_errno)};
 
-  pll_binary_partition_dump(fptr, block_id++, tree.partition(), attributes);
+  if(!pll_binary_partition_dump(fptr, block_id++, tree.partition(), attributes))
+    throw runtime_error{string("Dumping partition to binary failed with pll_errno: ") + to_string(pll_errno)};
 
   for (unsigned int tip_index = 0; tip_index < num_tips; tip_index++)
   {
-    pll_binary_custom_dump(fptr, block_id++, tree.partition()->tipchars[tip_index],
-      tree.partition()->sites * sizeof(char), attributes);
+    if(!pll_binary_custom_dump(fptr, block_id++, tree.partition()->tipchars[tip_index],
+      tree.partition()->sites * sizeof(char), attributes))
+      throw runtime_error{string("Dumping tipchars to binary failed with pll_errno: ") + to_string(pll_errno)};
   }
 
   for (unsigned int clv_index = num_tips; clv_index < max_clv_index; clv_index++)
   {
-    pll_binary_clv_dump(fptr, block_id++, tree.partition(), clv_index, attributes);
+    if(!pll_binary_clv_dump(fptr, block_id++, tree.partition(), clv_index, attributes))
+      throw runtime_error{string("Dumping clvs to binary failed with pll_errno: ") + to_string(pll_errno)};
   }
 
   for (unsigned int scaler_index = 0; scaler_index < num_scalers; scaler_index++)
   {
-    pll_binary_custom_dump(fptr, block_id++, tree.partition()->scale_buffer[scaler_index],
-      tree.partition()->sites * sizeof(unsigned int), attributes);
+    if(!pll_binary_custom_dump(fptr, block_id++, tree.partition()->scale_buffer[scaler_index],
+      tree.partition()->sites * sizeof(unsigned int), attributes))
+      throw runtime_error{string("Dumping scalers to binary failed with pll_errno: ") + to_string(pll_errno)};
   }
 
   fclose(fptr);

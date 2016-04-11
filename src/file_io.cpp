@@ -103,6 +103,8 @@ pll_partition_t *  build_partition_from_file(const Model& model, Tree_Numbers& n
            pll_map_nt,
            attributes);
 
+  assert(partition);
+
   double rate_cats[RATE_CATS] = {0};
 
   /* compute the discretized category rates from a gamma distribution

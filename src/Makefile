@@ -5,7 +5,7 @@ OUTDIR=/tmp/epa
 CEREAL=../../cereal/include/
 F+=
 CF+=
-TESTINPUT= -t $(TEST)/ref.tre -s $(TEST)/aln.fasta -q $(TEST)/query.fasta -g -w $(OUTDIR) $(F)
+TESTINPUT= -t $(TEST)/ref.tre -s $(TEST)/aln.fasta -q $(TEST)/query.fasta -g -B -w $(OUTDIR) $(F)
 
 CC=clang++
 #CC=g++
