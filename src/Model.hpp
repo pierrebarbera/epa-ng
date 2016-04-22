@@ -17,7 +17,7 @@ const std::unordered_map<std::string, std::vector<int>> MODEL_MAP(
   TODO possible basepoint of model class hierarchy */
 class Model {
 public:
-  Model() = default;
+  Model() : Model("GTR") { }
   Model(std::string model_id);
   ~Model() = default;
 
