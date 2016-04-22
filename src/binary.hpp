@@ -2,6 +2,7 @@
 
 #include <string>
 #include <cstdio>
+#include <vector>
 
 #include "pllhead.hpp"
 
@@ -19,6 +20,7 @@ public:
   pll_utree_t* load_utree();
 private:
   FILE* bin_fptr_;
+  std::vector<pll_block_map_t> map_;
 };
 
 class Tree;
