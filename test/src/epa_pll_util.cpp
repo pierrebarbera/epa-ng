@@ -62,6 +62,7 @@ TEST(epa_pll_util, precompute_clvs)
   utree_query_branches(tree, &node_list[0]);
 
   // all edge logl should be the same
+  auto first = true;
   double log_old = 0.0;
   double log_new;
   for (auto x : node_list)
@@ -73,11 +74,13 @@ TEST(epa_pll_util, precompute_clvs)
                                          x->back->scaler_index,
                                          x->pmatrix_index,
                                          0);
-    if (log_old != 0.0)
+    if (!first)
+    {
       EXPECT_DOUBLE_EQ(log_old, log_new);
+    }
 
     log_old = log_new;
-
+    first = false;
   }
 
   EXPECT_NE(log_new, 0.0);
