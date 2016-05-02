@@ -19,6 +19,7 @@ static void traverse_update_partials(pll_utree_t * tree, pll_partition_t * parti
     pll_operation_t * operations)
 {
   unsigned int num_matrices, num_ops;
+  unsigned int param_indices[RATE_CATS] = {0};
   /* perform a full traversal*/
   assert(tree->next != nullptr);
   unsigned int traversal_size;
@@ -38,7 +39,7 @@ static void traverse_update_partials(pll_utree_t * tree, pll_partition_t * parti
                               &num_ops);
 
   pll_update_prob_matrices(partition,
-                           0,             // use model 0
+                           param_indices,             // use model 0
                            matrix_indices,// matrices to update
                            branch_lengths,
                            num_matrices); // how many should be updated

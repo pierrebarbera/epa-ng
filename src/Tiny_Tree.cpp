@@ -61,7 +61,8 @@ Tiny_Tree::Tiny_Tree(pll_utree_t *edge_node, unsigned int branch_id, pll_partiti
   unsigned int matrix_indices[3] = {proximal->pmatrix_index, distal->pmatrix_index, tree_->pmatrix_index};
 
   // use branch lengths to compute the probability matrices
-  pll_update_prob_matrices(partition_.get(), 0, matrix_indices, branch_lengths, 3);
+  unsigned int param_indices[RATE_CATS] = {0};
+  pll_update_prob_matrices(partition_.get(), param_indices, matrix_indices, branch_lengths, 3);
 
   if (!opt_branches_)
     pll_update_partials(partition_.get(), &op, 1);

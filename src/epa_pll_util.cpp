@@ -45,6 +45,7 @@ void link_tree_msa(pll_utree_t * tree, pll_partition_t * partition,
 void precompute_clvs(pll_utree_t * tree, pll_partition_t * partition, const Tree_Numbers& nums)
 {
   unsigned int num_matrices, num_ops;
+  unsigned int param_indices[RATE_CATS] = {0};
 
   /* various buffers for creating a postorder traversal and operations structures */
   vector<pll_utree_t*> travbuffer(nums.nodes);
@@ -80,7 +81,7 @@ void precompute_clvs(pll_utree_t * tree, pll_partition_t * partition, const Tree
                                 &num_ops);
 
     pll_update_prob_matrices(partition,
-                             0,             // use model 0
+                             param_indices,             // use model 0
                              &matrix_indices[0],// matrices to update
                              &branch_lengths[0],
                              num_matrices); // how many should be updated
