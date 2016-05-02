@@ -23,6 +23,14 @@ test: update
 	@./test/bin/epa_test
 .PHONY: test
 
+pll:
+	@make -C libs/pll-modules/libs/libpll/src
+	@make -C libs/pll-modules/src/binary
+	@make -C libs/pll-modules/src/msa
+	@make -C libs/pll-modules/src/optimize
+	@make -C libs/pll-modules/src/tree
+.PHONY: pll
+		
 clean:
 	@echo "Cleaning"
 	@rm -rf build

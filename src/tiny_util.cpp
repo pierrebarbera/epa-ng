@@ -25,7 +25,6 @@ pll_partition_t * make_tiny_partition(const pll_partition_t * old_partition, con
     3, // tips
     1 + num_clv_tips, // extra clv's
     old_partition->states, old_partition->sites,
-    0, // number of mixture models
     old_partition->rate_matrices,
     3, // number of prob. matrices (one per possible unique branch length)
     old_partition->rate_cats,
@@ -74,21 +73,21 @@ pll_partition_t * make_tiny_partition(const pll_partition_t * old_partition, con
 
   // shalow/deep copy tip_tip_pattern specific things
   // shallow
-  if (tiny->lh_statepair)
-    free(tiny->lh_statepair);
   if (tiny->charmap)
     free(tiny->charmap);
-  if (tiny->revmap)
-    free(tiny->revmap);
-  tiny->lh_statepair = old_partition->lh_statepair;
+  if (tiny->tipmap)
+    free(tiny->tipmap);
+  if (tiny->ttlookup)
+    free(tiny->ttlookup);
   tiny->charmap = old_partition->charmap;
-  tiny->revmap = old_partition->revmap;
+  tiny->tipmap = old_partition->tipmap;
+  tiny->ttlookup = old_partition->ttlookup;
 
   // deep
   tiny->maxstates = old_partition->maxstates;
   tiny->log2_maxstates = old_partition->log2_maxstates;
-  tiny->log2_rates = old_partition->log2_rates;
   tiny->log2_states = old_partition->log2_states;
+  tiny->log2_rates = old_partition->log2_rates;
 
   assert(old_partition->clv[old_proximal->clv_index] != NULL);
   assert(old_partition->clv[old_distal->clv_index] || old_partition->tipchars[old_distal->clv_index]);
@@ -137,9 +136,9 @@ void tiny_partition_destroy(pll_partition_t * partition)
     partition->eigen_decomp_valid = nullptr;
     partition->pattern_weights = nullptr;
 
-    partition->lh_statepair = nullptr;
+    partition->ttlookup = nullptr;
     partition->charmap = nullptr;
-    partition->revmap = nullptr;
+    partition->tipmap = nullptr;
 
     pll_partition_destroy(partition);
   }

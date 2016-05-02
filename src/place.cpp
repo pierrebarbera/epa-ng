@@ -14,6 +14,7 @@
 #include "mpihead.hpp"
 #include "pll_util.hpp"
 #include "epa_pll_util.hpp"
+#include "Timer.hpp"
 
 using namespace std;
 
@@ -69,6 +70,8 @@ void process(Tree& epa_tree, MSA_Stream& msa_stream, const string& outdir,
   stage_size[EPA_MPI_STAGE_2_COMPUTE] = stage_2_compute_size;
   stage_size[EPA_MPI_STAGE_2_AGGREGATE] = stage_2_aggregate_size;
 
+  Timer timer;
+
   #endif // __MPI
 
   // prepare all structures
@@ -112,6 +115,7 @@ void process(Tree& epa_tree, MSA_Stream& msa_stream, const string& outdir,
     //==============================================================
     if (local_stage == EPA_MPI_STAGE_1_COMPUTE)
     {
+    timer.start();
     #endif // __MPI
     // prepare placement structure
     for (unsigned int cur_seq_id = 0; cur_seq_id < num_sequences; cur_seq_id++)
@@ -127,6 +131,7 @@ void process(Tree& epa_tree, MSA_Stream& msa_stream, const string& outdir,
     }
 
     #ifdef __MPI
+    timer.stop();
     // MPI: split the result and send the part to correct aggregate node
     epa_mpi_send(sample, global_rank[EPA_MPI_STAGE_1_AGGREGATE][], MPI_COMM_WORLD);
 
@@ -143,6 +148,7 @@ void process(Tree& epa_tree, MSA_Stream& msa_stream, const string& outdir,
     //==============================================================
     if (local_stage == EPA_MPI_STAGE_1_AGGREGATE)
     {
+    timer.start();
     // (MPI: recieve results, merge them)
     for (auto rank : global_rank[EPA_MPI_STAGE_1_COMPUTE])
     {
@@ -160,6 +166,7 @@ void process(Tree& epa_tree, MSA_Stream& msa_stream, const string& outdir,
       discard_by_support_threshold(sample, options.support_threshold);
 
     #ifdef __MPI
+    timer.stop();
     } // endif (local_stage == EPA_MPI_STAGE_1_AGGREGATE)
     //==============================================================
     // EPA_MPI_STAGE_1_AGGREGATE === END

@@ -64,11 +64,14 @@ double optimize_branch_triplet(pll_partition_t * partition, pll_utree_t * tree)
 
   pll_errno = 0; // hotfix
 
+  unsigned int param_indices[RATE_CATS] = {0};
   auto logl = pll_compute_edge_loglikelihood (partition, tree->clv_index,
                                                 tree->scaler_index,
                                                 tree->back->clv_index,
                                                 tree->back->scaler_index,
-                                                tree->pmatrix_index, 0);
+                                                tree->pmatrix_index,
+                                                param_indices,
+                                                nullptr);
   auto cur_logl = -numeric_limits<double>::infinity();
   int smoothings = 8;
 
@@ -81,12 +84,11 @@ double optimize_branch_triplet(pll_partition_t * partition, pll_utree_t * tree)
     cur_logl = -pll_optimize_branch_lengths_local (
                                                   partition,
                                                   tree,
-                                                  0,
-                                                  0,
+                                                  param_indices,
                                                   OPT_BRANCH_EPSILON,
                                                   smoothings,
-                                                  1,
-                                                  1);
+                                                  1, // radius
+                                                  1); // keep update
   }
 // TODO tiny tree specific func
   traverse_update_partials(tree, partition, &travbuffer[0], &branch_lengths[0],
@@ -98,7 +100,7 @@ double optimize_branch_triplet(pll_partition_t * partition, pll_utree_t * tree)
                                                 tree->scaler_index,
                                                 tree->back->clv_index,
                                                 tree->back->scaler_index,
-                                                tree->pmatrix_index, 0);
+                                                tree->pmatrix_index, param_indices, nullptr);
 
   return cur_logl;
 }
@@ -114,10 +116,16 @@ static double optimize_branch_lengths(pll_utree_t * tree, pll_partition_t * part
 
   pll_errno = 0; // hotfix
 
+  unsigned int param_indices[RATE_CATS] = {0};
+
   cur_logl = -1 * pll_optimize_branch_lengths_iterative(
-      partition, tree, 0, 0,
-      OPT_BRANCH_EPSILON, *smoothings, 1); // last param = 1 means branch lengths are iteratively
-                                      // updated during the call
+    partition,
+    tree,
+    param_indices,
+    OPT_BRANCH_EPSILON,
+    *smoothings,
+    1); // keep updating BLs during call
+
   if (cur_logl+1e-6 < lnl_monitor)
     throw runtime_error{string("cur_logl < lnl_monitor: ") + to_string(cur_logl) + string(" : ")
     + to_string(lnl_monitor)};
@@ -135,7 +143,7 @@ static double optimize_branch_lengths(pll_utree_t * tree, pll_partition_t * part
                                                   tree->scaler_index,
                                                   tree->back->clv_index,
                                                   tree->back->scaler_index,
-                                                  tree->pmatrix_index, 0);
+                                                  tree->pmatrix_index, param_indices, nullptr);
 
   return cur_logl;
 }
@@ -150,6 +158,7 @@ void optimize(Model& model, pll_utree_t * tree, pll_partition_t * partition,
     set_branch_lengths(tree, DEFAULT_BRANCH_LENGTH);
 
   auto symmetries = (&(model.symmetries())[0]);
+  unsigned int param_indices[RATE_CATS] = {0};
 
   // sadly we explicitly need these buffers here and in the params structure
   vector<pll_utree_t*> travbuffer(nums.nodes);
@@ -165,7 +174,7 @@ void optimize(Model& model, pll_utree_t * tree, pll_partition_t * partition,
                                                 tree->scaler_index,
                                                 tree->back->clv_index,
                                                 tree->back->scaler_index,
-                                                tree->pmatrix_index, 0);
+                                                tree->pmatrix_index, param_indices, nullptr);
 
   // double cur_logl = -numeric_limits<double>::infinity();
   int smoothings = 32;
@@ -178,7 +187,6 @@ void optimize(Model& model, pll_utree_t * tree, pll_partition_t * partition,
   params.lk_params.branch_lengths = &branch_lengths[0];
   params.lk_params.matrix_indices = &matrix_indices[0];
   params.lk_params.alpha_value = model.alpha();
-  params.lk_params.freqs_index = 0;
   params.lk_params.rooted = 0;
   params.lk_params.where.unrooted_t.parent_clv_index = tree->clv_index;
   params.lk_params.where.unrooted_t.parent_scaler_index = tree->scaler_index;
@@ -189,7 +197,6 @@ void optimize(Model& model, pll_utree_t * tree, pll_partition_t * partition,
 
   /* optimization parameters */
   params.params_index = 0;
-  params.mixture_index = 0;
   params.subst_params_symmetries = symmetries;
   params.factr = OPT_FACTR;
   params.pgtol = OPT_PARAM_EPSILON;
@@ -288,7 +295,7 @@ void compute_and_set_empirical_frequencies(pll_partition_t * partition, Model& m
 {
   double * empirical_freqs = pll_msa_empirical_frequencies (partition);
 
-  pll_set_frequencies (partition, 0, 0, empirical_freqs);
+  pll_set_frequencies (partition, 0, empirical_freqs);
   model.base_frequencies(partition->frequencies[0], partition->states);
   free (empirical_freqs);
 }

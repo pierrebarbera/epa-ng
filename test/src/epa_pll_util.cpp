@@ -65,6 +65,7 @@ TEST(epa_pll_util, precompute_clvs)
   auto first = true;
   double log_old = 0.0;
   double log_new;
+  unsigned int param_indices[RATE_CATS] = {0};
   for (auto x : node_list)
   {
     log_new = pll_compute_edge_loglikelihood(part,
@@ -73,7 +74,7 @@ TEST(epa_pll_util, precompute_clvs)
                                          x->back->clv_index,
                                          x->back->scaler_index,
                                          x->pmatrix_index,
-                                         0);
+                                         param_indices, nullptr);
     if (!first)
     {
       EXPECT_DOUBLE_EQ(log_old, log_new);

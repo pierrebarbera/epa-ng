@@ -79,6 +79,7 @@ Placement Tiny_Tree::place(const Sequence &s) {
   auto distal_length = tree_->next->length;
   auto pendant_length = tree_->length;
   double logl = 0.0;
+  unsigned int param_indices[RATE_CATS] = {0};
 
   Range range(0, partition_->sites);
   // if (ranged_computation_)
@@ -128,7 +129,7 @@ Placement Tiny_Tree::place(const Sequence &s) {
                                           tree_->clv_index,
                                           tree_->scaler_index, // scaler_index
                                           tree_->pmatrix_index,
-                                          0); // freq index
+                                          param_indices, nullptr); // freq index
 
   assert(distal_length <= original_branch_length_);
   assert(distal_length >= 0.0);

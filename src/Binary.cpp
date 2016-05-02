@@ -124,7 +124,7 @@ static pll_partition_t* skeleton_partition()
     0, // number of extra clv buffers
     STATES,
     0, // number of sites
-    0, // number of mixture models
+    // 0, // number of mixture models
     1, // number of cincurrent subs. models
     0, // number of probabillity matrices
     RATE_CATS,
@@ -161,6 +161,10 @@ pll_utree_t* Binary::load_utree()
   return tree;
 }
 
+/**
+  Writes the structures and data encapsulated in Tree to the specified file in the binary format.
+  Writes them in such a way that the Binary class can read them.
+*/
 void dump_to_binary(Tree& tree, const string& file)
 {
   auto num_clvs = tree.partition()->clv_buffers;
@@ -182,12 +186,15 @@ void dump_to_binary(Tree& tree, const string& file)
 
   int block_id = -2;
 
+  // dump the utree structure
   if(!pll_binary_utree_dump(fptr, block_id++, tree.tree(), num_tips, attributes))
     throw runtime_error{string("Dumping the utree to binary: ") + pll_errmsg};
 
+  // dump the partition
   if(!pll_binary_partition_dump(fptr, block_id++, tree.partition(), attributes))
     throw runtime_error{string("Dumping partition to binary: ") + pll_errmsg};
 
+  // dump the tipchars
   for (unsigned int tip_index = 0; tip_index < num_tips; tip_index++)
   {
     if(!pll_binary_custom_dump(fptr, block_id++, tree.partition()->tipchars[tip_index],
@@ -195,12 +202,14 @@ void dump_to_binary(Tree& tree, const string& file)
       throw runtime_error{string("Dumping tipchars to binary: ") + pll_errmsg};
   }
 
+  // dump the clvs
   for (unsigned int clv_index = num_tips; clv_index < max_clv_index; clv_index++)
   {
     if(!pll_binary_clv_dump(fptr, block_id++, tree.partition(), clv_index, attributes))
       throw runtime_error{string("Dumping clvs to binary: ") + pll_errmsg};
   }
 
+  // dump the scalers
   for (unsigned int scaler_index = 0; scaler_index < num_scalers; scaler_index++)
   {
     if(!pll_binary_custom_dump(fptr, block_id++, tree.partition()->scale_buffer[scaler_index],

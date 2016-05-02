@@ -95,7 +95,7 @@ pll_partition_t *  build_partition_from_file(const Model& model, Tree_Numbers& n
            nums.inner_nodes * 3, //number of extra clv buffers: 3 for every direction on the node
            STATES,
            num_sites,
-           0, // number of mixture models
+          //  0, // number of mixture models
            1,
            nums.branches,
            RATE_CATS,
@@ -110,8 +110,8 @@ pll_partition_t *  build_partition_from_file(const Model& model, Tree_Numbers& n
   /* compute the discretized category rates from a gamma distribution
      with alpha shape */
   pll_compute_gamma_cats(model.alpha(), RATE_CATS, rate_cats);
-  pll_set_frequencies(partition, 0, 0, &(model.base_frequencies()[0]));
-  pll_set_subst_params(partition, 0, 0, &(model.substitution_rates()[0]));
+  pll_set_frequencies(partition, 0, &(model.base_frequencies()[0]));
+  pll_set_subst_params(partition, 0, &(model.substitution_rates()[0]));
   pll_set_category_rates(partition, rate_cats);
 
   return partition;

@@ -160,7 +160,6 @@ TEST(pll_util, shift_partition_focus_shifty)
     3, // tips
     1, // extra clv's
     4, 10,
-    0, // number of mixture models
     1,
     3, // number of prob. matrices (one per possible unique branch length)
     4,
@@ -218,7 +217,6 @@ TEST(pll_util, shift_partition_focus_logtest)
     3, // tips
     1, // extra clv's
     4, 10,
-    0, // number of mixture models
     1,
     3, // number of prob. matrices (one per possible unique branch length)
     4,
@@ -236,10 +234,10 @@ TEST(pll_util, shift_partition_focus_logtest)
   pll_compute_gamma_cats(1.0, 4, rate_cats);
 
   /* set frequencies */
-  pll_set_frequencies(part, 0, 0, frequencies);
+  pll_set_frequencies(part, 0, frequencies);
 
   /* set substitution parameters */
-  pll_set_subst_params(part, 0, 0, subst_params);
+  pll_set_subst_params(part, 0, subst_params);
 
   /* set rate categories */
   pll_set_category_rates(part, rate_cats);
@@ -267,14 +265,14 @@ TEST(pll_util, shift_partition_focus_logtest)
   pll_update_partials(part, &op, 1);
 
   // tests
-
+  unsigned int param_indices[RATE_CATS] = {0};
   double full_logl = pll_compute_edge_loglikelihood(part,
                                         0,
                                         PLL_SCALE_BUFFER_NONE,
                                         3,
                                         0,
                                         0,
-                                        0);
+                                        param_indices, nullptr);
 
   shift_partition_focus(part, 2, 4);
 
@@ -286,7 +284,7 @@ TEST(pll_util, shift_partition_focus_logtest)
                                         3,
                                         0,
                                         0,
-                                        0);
+                                        param_indices, nullptr);
 
   EXPECT_DOUBLE_EQ(full_logl, ranged_logl);
 
@@ -300,7 +298,7 @@ TEST(pll_util, shift_partition_focus_logtest)
                                         3,
                                         0,
                                         0,
-                                        0);
+                                        param_indices, nullptr);
 
   EXPECT_TRUE(abs(full_logl - false_logl) > 1.0 );
   printf("Full:\t %.40f\n", full_logl);
@@ -319,7 +317,7 @@ TEST(pll_util, shift_partition_focus_logtest)
                                         3,
                                         0,
                                         0,
-                                        0);
+                                        param_indices, nullptr);
   printf("False+missing:\t %.40f\n", false_logl);
 
   shift_partition_focus(part, 1, 4);
@@ -332,7 +330,7 @@ TEST(pll_util, shift_partition_focus_logtest)
                                         3,
                                         0,
                                         0,
-                                        0);
+                                        param_indices, nullptr);
   printf("f+m+right:\t %.40f\n", false_logl);
 
   shift_partition_focus(part, -6, 2);
@@ -345,7 +343,7 @@ TEST(pll_util, shift_partition_focus_logtest)
                                         3,
                                         0,
                                         0,
-                                        0);
+                                        param_indices, nullptr);
   printf("fmr+left:\t %.40f\n", false_logl);
 
   shift_partition_focus(part, 0, 10);
