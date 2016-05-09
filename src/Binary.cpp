@@ -120,15 +120,14 @@ static pll_partition_t* skeleton_partition()
   attributes |= PLL_ATTRIB_PATTERN_TIP;
 
   auto partition = pll_partition_create(
-    0, // number of tip nodes
-    0, // number of extra clv buffers
+    3, // number of tip nodes
+    1, // number of extra clv buffers
     STATES,
-    0, // number of sites
-    // 0, // number of mixture models
-    1, // number of cincurrent subs. models
-    0, // number of probabillity matrices
+    1, // number of sites
+    1, // number of concurrent subs. models
+    1, // number of probabillity matrices
     RATE_CATS,
-    0, // number of scale buffers
+    1, // number of scale buffers
     pll_map_nt,
     attributes);
 
@@ -144,7 +143,7 @@ static pll_partition_t* skeleton_partition()
 pll_partition_t* Binary::load_partition()
 {
   // make skeleton partition that only allocates the pointers to the clv/tipchar buffers
-  auto skelly = skeleton_partition();
+  auto skelly = nullptr;// skeleton_partition();
   unsigned int attributes = PLL_BINARY_ATTRIB_PARTITION_DUMP_WGT;
   auto partition =  pll_binary_partition_load(bin_fptr_, 0, skelly, &attributes, pll_map_nt, get_offset(map_, -1));
   if (!partition)
