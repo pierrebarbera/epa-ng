@@ -250,7 +250,8 @@ TEST(pll_util, shift_partition_focus_logtest)
 
   double branch_lengths[3] = {0.123, 0.123, 0.123};
   unsigned int matrix_indices[3] = {0, 1, 2};
-  pll_update_prob_matrices(part, 0, matrix_indices, branch_lengths, 3);
+  unsigned int param_indices[RATE_CATS] = {0};
+  pll_update_prob_matrices(part, param_indices, matrix_indices, branch_lengths, 3);
 
   pll_operation_t op;
   op.parent_clv_index = 3;
@@ -265,7 +266,6 @@ TEST(pll_util, shift_partition_focus_logtest)
   pll_update_partials(part, &op, 1);
 
   // tests
-  unsigned int param_indices[RATE_CATS] = {0};
   double full_logl = pll_compute_edge_loglikelihood(part,
                                         0,
                                         PLL_SCALE_BUFFER_NONE,

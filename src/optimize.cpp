@@ -187,6 +187,7 @@ void optimize(Model& model, pll_utree_t * tree, pll_partition_t * partition,
   params.lk_params.operations = &operations[0];
   params.lk_params.branch_lengths = &branch_lengths[0];
   params.lk_params.matrix_indices = &matrix_indices[0];
+  params.lk_params.params_indices = param_indices;
   params.lk_params.alpha_value = model.alpha();
   params.lk_params.rooted = 0;
   params.lk_params.where.unrooted_t.parent_clv_index = tree->clv_index;
