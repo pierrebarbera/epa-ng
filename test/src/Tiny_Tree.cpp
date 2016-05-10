@@ -22,18 +22,14 @@ TEST(Tiny_Tree, place_heuristic)
   Tree_Numbers nums = Tree_Numbers();
   Range range;
   range.span = msa.num_sites();
-  pll_partition_t * part;
-  pll_utree_t * tree;
 
-  tree = build_tree_from_file(env->tree_file, nums);
-  part = build_partition_from_file( env->model, nums, msa.num_sites());
+  Options options;
+  auto ref_tree = Tree(env->tree_file, msa, env->model, options);
 
-  auto valid_map = vector<Range>(nums.tip_nodes);
-  link_tree_msa(tree, part, msa, nums.tip_nodes, valid_map);
-  precompute_clvs(tree, part, nums);
+  auto tree = ref_tree.tree();
 
   // tests
-  Tiny_Tree tt(tree, 0, part, env->model, false);
+  Tiny_Tree tt(tree, 0, ref_tree, env->model, false);
 
   for (auto const &x : queries)
   {
@@ -44,8 +40,6 @@ TEST(Tiny_Tree, place_heuristic)
   }
 
   // teardown
-  pll_partition_destroy(part);
-  pll_utree_destroy(tree);
 }
 
 TEST(Tiny_Tree, place_BLO)
@@ -54,20 +48,17 @@ TEST(Tiny_Tree, place_BLO)
   MSA msa = build_MSA_from_file(env->reference_file);
   MSA queries = build_MSA_from_file(env->query_file);
   Tree_Numbers nums = Tree_Numbers();
-  pll_partition_t * part;
-  pll_utree_t * tree;
+
   Range range;
   range.span = msa.num_sites();
 
-  tree = build_tree_from_file(env->tree_file, nums);
-  part = build_partition_from_file( env->model, nums, msa.num_sites());
+  Options options;
+  auto ref_tree = Tree(env->tree_file, msa, env->model, options);
 
-  auto valid_map = vector<Range>(nums.tip_nodes);
-  link_tree_msa(tree, part, msa, nums.tip_nodes, valid_map);
-  precompute_clvs(tree, part, nums);
+  auto tree = ref_tree.tree();
 
   // tests
-  Tiny_Tree tt(tree, 0, part, env->model, true);
+  Tiny_Tree tt(tree, 0, ref_tree, env->model, true);
 
   for (auto const &x : queries)
   {
@@ -78,6 +69,4 @@ TEST(Tiny_Tree, place_BLO)
   }
 
   // teardown
-  pll_partition_destroy(part);
-  pll_utree_destroy(tree);
 }

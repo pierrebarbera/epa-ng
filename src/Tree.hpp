@@ -35,7 +35,7 @@ public:
   pll_partition_t * partition() { return partition_.get(); }
   pll_utree_t * tree() { return tree_.get(); }
 
-  void * get_clv(pll_utree_t*);
+  void * get_clv(const pll_utree_t*);
 
   double ref_tree_logl();
 

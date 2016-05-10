@@ -8,6 +8,7 @@
 #include "Model.hpp"
 #include "Range.hpp"
 #include "Placement.hpp"
+#include "Tree.hpp"
 #include "pll_util.hpp"
 
 /* Encapsulates a smallest possible unrooted tree (3 tip nodes, 1 inner node)
@@ -30,10 +31,10 @@
 class Tiny_Tree
 {
 public:
-  Tiny_Tree(pll_utree_t * edge_node, unsigned int branch_id, pll_partition_t * old_partition, Model model,
-    bool opt_branches) : Tiny_Tree(edge_node, branch_id, old_partition,
-    model, opt_branches, Range(0, old_partition->sites), false) {};
-  Tiny_Tree(pll_utree_t * edge_node , unsigned int branch_id, pll_partition_t * old_partition, Model model,
+  Tiny_Tree(pll_utree_t * edge_node, unsigned int branch_id, Tree& reference_tree, Model model,
+    bool opt_branches) : Tiny_Tree(edge_node, branch_id, reference_tree,
+    model, opt_branches, Range(0, reference_tree.partition()->sites), false) {};
+  Tiny_Tree(pll_utree_t * edge_node , unsigned int branch_id, Tree& reference_tree, Model model,
     bool opt_branches, Range reference_tip_range, bool ranged);
 
   ~Tiny_Tree() = default;

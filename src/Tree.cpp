@@ -77,7 +77,7 @@ Tree::Tree(const string& bin_file, Options& options)
   If they are not currently in memory, fetches them from file.
   Ensures that associated scalers are allocated and ready on return.
 */
-void * Tree::get_clv(pll_utree_t* node)
+void * Tree::get_clv(const pll_utree_t* node)
 {
   auto i = node->clv_index;
   auto scaler = node->scaler_index;
@@ -112,7 +112,7 @@ void * Tree::get_clv(pll_utree_t* node)
   }
 
   // dynamically load the scaler if needed
-  if(!(partition_->scale_buffer[scaler]))
+  if(scaler != PLL_SCALE_BUFFER_NONE && !(partition_->scale_buffer[scaler]))
     binary_.load_scaler(partition_.get(), scaler);
 
   assert(clv_ptr);

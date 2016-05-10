@@ -3,7 +3,7 @@
 #include "pll_util.hpp"
 
 
-pll_partition_t * make_tiny_partition(const pll_partition_t * old_partition, const pll_utree_t * tree,
+pll_partition_t * make_tiny_partition(Tree& reference_tree, const pll_utree_t * tree,
   const pll_utree_t * old_proximal, const pll_utree_t * old_distal, const bool tip_tip_case)
 {
   /**
@@ -14,6 +14,9 @@ pll_partition_t * make_tiny_partition(const pll_partition_t * old_partition, con
     number of tips. This results in a acceptable amount of wasted memory that is never used (num_sites * bytes
     * number of clv-tips)
   */
+  pll_partition_t *old_partition = reference_tree.partition();
+  assert(old_partition);
+
   unsigned int num_clv_tips = 2; // tip_inner case: both reference nodes are inner nodes
   if (tip_tip_case)
     num_clv_tips = 1; // one for the "proximal" clv tip
@@ -96,16 +99,16 @@ pll_partition_t * make_tiny_partition(const pll_partition_t * old_partition, con
 
   // deep copy clv's
   memcpy(tiny->clv[proximal->clv_index],
-    old_partition->clv[old_proximal->clv_index],
+    reference_tree.get_clv(old_proximal),
     clv_size);
 
   if(tip_tip_case)
     memcpy(tiny->tipchars[distal->clv_index],
-      old_partition->tipchars[old_distal->clv_index],
-      sizeof(char) * old_partition->sites );
+      reference_tree.get_clv(old_distal),
+      sizeof(char) * old_partition->sites);
   else
     memcpy(tiny->clv[distal->clv_index],
-      old_partition->clv[old_distal->clv_index],
+      reference_tree.get_clv(old_distal),
       clv_size);
 
   // deep copy scalers

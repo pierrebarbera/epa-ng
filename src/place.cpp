@@ -20,12 +20,12 @@ using namespace std;
 
 Log lgr;
 
-void process(Tree& epa_tree, MSA_Stream& msa_stream, const string& outdir,
+void process(Tree& reference_tree, MSA_Stream& msa_stream, const string& outdir,
               const Options& options, const string& invocation)
 {
-  auto model = epa_tree.model();
-  auto partition = epa_tree.partition();
-  auto tree = epa_tree.tree();
+  auto model = reference_tree.model();
+  auto partition = reference_tree.partition();
+  auto tree = reference_tree.tree();
 
   lgr = Log(outdir + "epa_info.log");
 
@@ -80,7 +80,7 @@ void process(Tree& epa_tree, MSA_Stream& msa_stream, const string& outdir,
   unsigned int chunk_size = 100;
   unsigned int num_sequences;
 
-  auto nums = epa_tree.nums();
+  auto nums = reference_tree.nums();
   const auto num_branches = nums.branches;
 
   // get all edges
@@ -94,7 +94,7 @@ void process(Tree& epa_tree, MSA_Stream& msa_stream, const string& outdir,
   {
     // TODO check if current mpi node is supposed to get this branch id
     auto node = branches[branch_id];
-    insertion_trees.emplace_back(node, branch_id, partition, model, !options.prescoring);
+    insertion_trees.emplace_back(node, branch_id, reference_tree, model, !options.prescoring);
   }
 
   // create output file
@@ -196,13 +196,13 @@ void process(Tree& epa_tree, MSA_Stream& msa_stream, const string& outdir,
 // ================== LEGACY CODE ==========================================
 
 
-Sample place(Tree& epa_tree, MSA& query_msa_)
+Sample place(Tree& reference_tree, MSA& query_msa_)
 {
-  auto options_ = epa_tree.options();
-  auto model_ = epa_tree.model();
-  auto tree_ = epa_tree.tree();
-  auto partition_ = epa_tree.partition();
-  auto nums_ = epa_tree.nums();
+  auto options_ = reference_tree.options();
+  auto model_ = reference_tree.model();
+  auto tree_ = reference_tree.tree();
+  auto partition_ = reference_tree.partition();
+  auto nums_ = reference_tree.nums();
 
   const auto num_branches = nums_.branches;
   const auto num_queries = query_msa_.size();
@@ -217,7 +217,7 @@ Sample place(Tree& epa_tree, MSA& query_msa_)
   // build all tiny trees with corresponding edges
   vector<Tiny_Tree> insertion_trees;
   for (unsigned int branch_id = 0; branch_id < num_branches; ++branch_id)
-    insertion_trees.emplace_back(branches[branch_id], branch_id, partition_, model_, !options_.prescoring);
+    insertion_trees.emplace_back(branches[branch_id], branch_id, reference_tree, model_, !options_.prescoring);
     /* clarification: last arg here is a flag specifying whether to optimize the branches.
       we don't want that if the mode is prescoring */
 

@@ -11,14 +11,13 @@
 
 using namespace std;
 
-Tiny_Tree::Tiny_Tree(pll_utree_t *edge_node, unsigned int branch_id, pll_partition_t *old_partition,
+Tiny_Tree::Tiny_Tree(pll_utree_t *edge_node, unsigned int branch_id, Tree& reference_tree,
                      Model model, bool opt_branches, Range reference_tip_range, bool ranged)
     : partition_(nullptr, tiny_partition_destroy), tree_(nullptr, utree_destroy), opt_branches_(opt_branches)
     , original_branch_length_(edge_node->length), model_(model), reference_tip_range_(reference_tip_range)
     , ranged_computation_(ranged), branch_id_(branch_id)
 {
   assert(edge_node);
-  assert(old_partition);
 
   const pll_utree_t *old_proximal = edge_node->back;
   const pll_utree_t *old_distal = edge_node;
@@ -39,7 +38,7 @@ Tiny_Tree::Tiny_Tree(pll_utree_t *edge_node, unsigned int branch_id, pll_partiti
                             utree_destroy);
 
   partition_ = unique_ptr<pll_partition_t, partition_deleter>(
-                                make_tiny_partition(old_partition, tree_.get(), old_proximal, old_distal, tip_tip_case_),
+                                make_tiny_partition(reference_tree, tree_.get(), old_proximal, old_distal, tip_tip_case_),
                                 tiny_partition_destroy);
 
   // operation for computing the clv toward the new tip (for initialization and logl in non-blo case)
