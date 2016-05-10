@@ -72,16 +72,29 @@ Tree::Tree(const string& bin_file, Options& options)
   nums_.init(partition_->tips);
 }
 
-void * Tree::get_clv(unsigned int i)
+/**
+  Returns a pointer either to the CLV or tipchar buffer, depending on the index.
+  If they are not currently in memory, fetches them from file.
+  Ensures that associated scalers are allocated and ready on return.
+*/
+void * Tree::get_clv(pll_utree_t* node)
 {
-  assert(i < partition_.get()->tips + partition_.get()->clv_buffers);
+  auto i = node->clv_index;
+  auto scaler = node->scaler_index;
+
+  bool loaded_from_file = false;
+
+  if(i >= partition_->tips + partition_->clv_buffers)
+    throw runtime_error{"Node index out of bounds"};
+
   void* clv_ptr;
-  if (i < partition_.get()->tips)
+  if (i < partition_->tips)
   {
-    clv_ptr = partition_.get()->tipchars[i];
+    clv_ptr = partition_->tipchars[i];
     // dynamically load from disk if not in memory
     if(!clv_ptr)
     {
+      loaded_from_file = true;
       binary_.load_tipchars(partition_.get(), i);
       clv_ptr = partition_->tipchars[i];
     }
@@ -92,10 +105,16 @@ void * Tree::get_clv(unsigned int i)
     // dynamically load from disk if not in memory
     if(!clv_ptr)
     {
+      loaded_from_file = true;
       binary_.load_clv(partition_.get(), i);
       clv_ptr = partition_->clv[i];
     }
   }
+
+  // dynamically load the scaler if needed
+  if(!(partition_->scale_buffer[scaler]))
+    binary_.load_scaler(partition_.get(), scaler);
+
   assert(clv_ptr);
   return clv_ptr;
 }

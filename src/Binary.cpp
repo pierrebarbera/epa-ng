@@ -35,8 +35,6 @@ Binary::Binary(const string& binary_file_path) : bin_fptr_(nullptr)
   for (size_t i = 0; i < n_blocks; i++)
   {
     map_.push_back(block_map[i]);
-    // printf("block: %d type: %d\n", block_map[i].block_id, block_map[i].);
-    //   fflush(stdout);
   }
 
   free(block_map);
@@ -62,6 +60,13 @@ void Binary::load_clv(pll_partition_t * partition, const unsigned int clv_index)
   assert(bin_fptr_);
   assert(clv_index < partition->clv_buffers + partition->tips);
   assert(clv_index >= partition->tips);
+
+  if (!(partition->clv[clv_index]))
+  {
+    size_t clv_size = partition->sites * partition->states_padded *
+                      partition->rate_cats;
+    partition->clv[clv_index] = (double*) calloc(clv_size, sizeof(double));
+  }
 
   unsigned int attributes;
   auto err = pll_binary_clv_load(
@@ -140,6 +145,35 @@ static pll_partition_t* skeleton_partition()
   return partition;
 }
 
+static void dealloc_buffers(pll_partition_t* part)
+{
+  // dealloc clvs and tipchars
+  if (part->tipchars)
+    for (size_t i = 0; i < part->tips; ++i)
+    {
+      pll_aligned_free(part->tipchars[i]);
+      part->tipchars[i] = nullptr;
+    }
+
+  if (part->clv)
+  {
+    for (size_t i = part->tips; i < part->clv_buffers + part->tips; ++i)
+    {
+      pll_aligned_free(part->clv[i]);
+      part->clv[i] = nullptr;
+    }
+  }
+
+  if (part->scale_buffer)
+  {
+    for (size_t i = 0; i < part->scale_buffers; ++i)
+    {
+      free(part->scale_buffer[i]);
+      part->scale_buffer[i] = nullptr;
+    }
+  }
+}
+
 pll_partition_t* Binary::load_partition()
 {
   // make skeleton partition that only allocates the pointers to the clv/tipchar buffers
@@ -147,7 +181,12 @@ pll_partition_t* Binary::load_partition()
   unsigned int attributes = PLL_BINARY_ATTRIB_PARTITION_DUMP_WGT;
   auto partition =  pll_binary_partition_load(bin_fptr_, 0, skelly, &attributes, pll_map_nt, get_offset(map_, -1));
   if (!partition)
-    throw runtime_error{string("Loading partition: ") + pll_errmsg};
+    throw runtime_error{string("Error loading partition: ") + pll_errmsg};
+
+  // free up buffers for things we want to load on demand
+  // TODO never alloc in the first place
+  dealloc_buffers(partition);
+
   return partition;
 }
 

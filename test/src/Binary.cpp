@@ -6,6 +6,35 @@
 #include "src/Model.hpp"
 #include "src/file_io.hpp"
 
+void check_equal(pll_utree_t* a, pll_utree_t* b)
+{
+  EXPECT_DOUBLE_EQ(a->length, b->length);
+  printf("AA %f is %f\n", a->length, b->length);
+
+  if (!(a->next) || !(b->next))
+  {
+    ASSERT_FALSE(!(a->next) != !(b->next));
+    return;
+  }
+
+  check_equal(a->back, b->back);
+
+  a = a->next;
+  b = b->next;
+  EXPECT_DOUBLE_EQ(a->length, b->length);
+  printf("BB %f is %f\n", a->length, b->length);
+
+  check_equal(a->back, b->back);
+
+  a = a->next;
+  b = b->next;
+  EXPECT_DOUBLE_EQ(a->length, b->length);
+  printf("CC %f is %f\n", a->length, b->length);
+
+  check_equal(a->back, b->back);
+
+}
+
 
 TEST(Binary, write)
 {
@@ -26,15 +55,96 @@ TEST(Binary, read)
   auto msa = build_MSA_from_file(env->reference_file);
   Model model;
   double freqs[4] = {0.1,0.2,0.3,0.4};
+  double alpha = 42.42;
+  double subs[6] = {0.1,0.2,0.3,0.4,0.5,0.6};
+  int symm[6] = {1,2,1,2,1,2};
   model.base_frequencies(freqs, 4);
+  model.substitution_rates(subs, 6);
+  model.symmetries(symm, 6);
+  model.alpha(alpha);
   Options options;
   Tree original_tree(env->tree_file, msa, model, options);
   dump_to_binary(original_tree, env->binary_file);
 
   // test
   Tree read_tree(env->binary_file, options);
-  auto read_freqs = read_tree.model().base_frequencies();
 
+  auto read_freqs = read_tree.model().base_frequencies();
   for (size_t i = 0; i < 4; i++)
     EXPECT_DOUBLE_EQ(freqs[i], read_freqs[i]);
+
+  // auto read_alpha = read_tree.model().alpha();
+  // EXPECT_DOUBLE_EQ(alpha, read_alpha);
+
+  auto read_subs = read_tree.model().substitution_rates();
+  for(size_t i = 0; i < 6; i++)
+  {
+    EXPECT_DOUBLE_EQ(subs[i], read_subs[i]);
+  }
+
+  // auto read_symm = read_tree.model().symmetries();
+  // for(size_t i = 0; i < 6; i++)
+  // {
+  //   EXPECT_DOUBLE_EQ(symm[i], read_symm[i]);
+  // }
+
+  auto utree = original_tree.tree();
+  auto read_utree = read_tree.tree();
+
+  // if (!utree->next)
+  //   utree = utree->back;
+  // if (!read_utree->next)
+  //   read_utree = read_utree->back;
+
+  // check_equal(utree, read_utree);
+
+  auto part = original_tree.partition();
+  auto read_part = read_tree.partition();
+
+  ASSERT_EQ(part->sites, read_part->sites);
+  ASSERT_EQ(part->states, read_part->states);
+  ASSERT_EQ(part->states_padded, read_part->states_padded);
+  ASSERT_EQ(part->rate_cats, read_part->rate_cats);
+  ASSERT_EQ(part->tips, read_part->tips);
+  ASSERT_EQ(part->clv_buffers, read_part->clv_buffers);
+  ASSERT_EQ(part->attributes, read_part->attributes);
+
+  // compare tips
+  for (size_t i = 0; i < part->tips; i++)
+  {
+    pll_utree_t node;
+    node.clv_index = i;
+    node.scaler_index = 0;
+    char* read_tipchars = (char*) read_tree.get_clv(&node);
+    for (size_t j = 0; j < part->sites; j++)
+    {
+      EXPECT_EQ(part->tipchars[i][j], read_tipchars[j]);
+    }
+  }
+
+  // compare clvs
+  for (size_t i = part->tips; i < part->tips + part->clv_buffers; i++)
+  {
+    pll_utree_t node;
+    node.clv_index = i;
+    node.scaler_index = 0;
+    double* read_clv = (double*) read_tree.get_clv(&node);
+    for (size_t j = 0; j < part->sites + part->states_padded + part->rate_cats; j++)
+    {
+      EXPECT_DOUBLE_EQ(part->clv[i][j], read_clv[j]);
+    }
+  }
+
+  // check scalers
+  for (size_t i = 0; i < part->scale_buffers; i++)
+  {
+    pll_utree_t node;
+    node.clv_index = 0;
+    node.scaler_index = i;
+    read_tree.get_clv(&node);
+    for (size_t j = 0; j < part->sites; j++)
+    {
+      EXPECT_EQ(part->scale_buffer[i][j], read_part->scale_buffer[i][j]);
+    }
+  }
 }

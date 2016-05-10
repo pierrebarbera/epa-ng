@@ -11,7 +11,7 @@ void utree_destroy(pll_utree_t * tree)
 {
   if (tree)
   {
-    utree_free_node_data(tree);
+    // utree_free_node_data(tree);
     pll_utree_destroy(tree);
   }
 }
@@ -171,9 +171,15 @@ static void free_node_data(pll_utree_t * node)
   if (node->next) // we are at a inner node
   {
     // free all memory behind data of current node triplet
-    free(node->data);
-    free(node->next->data);
-    free(node->next->next->data);
+    if (node->data)
+    {
+      free(node->data);
+      free(node->next->data);
+      free(node->next->next->data);
+      node->data = nullptr;
+      node->next->data = nullptr;
+      node->next->next->data = nullptr;
+    }
     // recurse to sub trees
     free_node_data(node->next->back);
     free_node_data(node->next->next->back);
