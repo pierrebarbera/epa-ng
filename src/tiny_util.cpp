@@ -92,10 +92,8 @@ pll_partition_t * make_tiny_partition(Tree& reference_tree, const pll_utree_t * 
   tiny->log2_states = old_partition->log2_states;
   tiny->log2_rates = old_partition->log2_rates;
 
-  assert(old_partition->clv[old_proximal->clv_index] != NULL);
-  assert(old_partition->clv[old_distal->clv_index] || old_partition->tipchars[old_distal->clv_index]);
-
-  unsigned int clv_size = sizeof(double) * old_partition->sites * old_partition->rate_cats * old_partition->states_padded;
+  unsigned int clv_size = sizeof(double) * old_partition->sites * old_partition->rate_cats
+    * old_partition->states_padded;
 
   // deep copy clv's
   memcpy(tiny->clv[proximal->clv_index],

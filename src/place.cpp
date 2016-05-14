@@ -24,7 +24,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const string& outdir,
               const Options& options, const string& invocation)
 {
   auto model = reference_tree.model();
-  auto partition = reference_tree.partition();
+  // auto partition = reference_tree.partition();
   auto tree = reference_tree.tree();
 
   lgr = Log(outdir + "epa_info.log");
@@ -32,8 +32,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const string& outdir,
   lgr << "EPA - Evolutionary Placement Algorithm" << endl;
   lgr << "\nInvocation: \n" << invocation << endl;
 
-
-  #ifdef __MPI
+#ifdef __MPI
   int stage_rank, stage_size, world_rank, world_size;
   MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
@@ -71,8 +70,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const string& outdir,
   stage_size[EPA_MPI_STAGE_2_AGGREGATE] = stage_2_aggregate_size;
 
   Timer timer;
-
-  #endif // __MPI
+#endif // __MPI
 
   // prepare all structures
   // TODO build edge set / OOC tree
@@ -109,14 +107,14 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const string& outdir,
   // TODO this could be a stream read, such that cat msa.fasta | epa .... would work
   while ((num_sequences = msa_stream.read_next(chunk_size)) > 0)
   {
-    #ifdef __MPI
+#ifdef __MPI
     //==============================================================
     // EPA_MPI_STAGE_1_COMPUTE === BEGIN
     //==============================================================
     if (local_stage == EPA_MPI_STAGE_1_COMPUTE)
     {
     timer.start();
-    #endif // __MPI
+#endif // __MPI
     // prepare placement structure
     for (unsigned int cur_seq_id = 0; cur_seq_id < num_sequences; cur_seq_id++)
       sample.emplace_back(cur_seq_id, num_branches);
@@ -130,7 +128,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const string& outdir,
       }
     }
 
-    #ifdef __MPI
+#ifdef __MPI
     timer.stop();
     // MPI: split the result and send the part to correct aggregate node
     epa_mpi_send(sample, global_rank[EPA_MPI_STAGE_1_AGGREGATE][], MPI_COMM_WORLD);
@@ -156,7 +154,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const string& outdir,
       epa_mpi_recieve(remote_sample, MPI_ANY_SOURCE, MPI_COMM_WORLD);
       merge(sample, remote_sample);
     }
-    #endif // __MPI
+#endif // __MPI
     // build lwrs, discard
     compute_and_set_lwr(sample);
 
@@ -165,15 +163,15 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const string& outdir,
     else
       discard_by_support_threshold(sample, options.support_threshold);
 
-    #ifdef __MPI
+    outfile << sample_to_jplace_string(sample, msa_stream);
+
+#ifdef __MPI
     timer.stop();
     } // endif (local_stage == EPA_MPI_STAGE_1_AGGREGATE)
     //==============================================================
     // EPA_MPI_STAGE_1_AGGREGATE === END
     //==============================================================
-    #endif // __MPI
-
-
+#endif // __MPI
     // produce map of what sequence needs to recompute what
     // MPI: scatter all such partial maps to the second compute stage
 
@@ -201,7 +199,7 @@ Sample place(Tree& reference_tree, MSA& query_msa_)
   auto options_ = reference_tree.options();
   auto model_ = reference_tree.model();
   auto tree_ = reference_tree.tree();
-  auto partition_ = reference_tree.partition();
+  // auto partition_ = reference_tree.partition();
   auto nums_ = reference_tree.nums();
 
   const auto num_branches = nums_.branches;

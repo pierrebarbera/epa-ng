@@ -82,8 +82,6 @@ void * Tree::get_clv(const pll_utree_t* node)
   auto i = node->clv_index;
   auto scaler = node->scaler_index;
 
-  bool loaded_from_file = false;
-
   if(i >= partition_->tips + partition_->clv_buffers)
     throw runtime_error{"Node index out of bounds"};
 
@@ -94,7 +92,6 @@ void * Tree::get_clv(const pll_utree_t* node)
     // dynamically load from disk if not in memory
     if(!clv_ptr)
     {
-      loaded_from_file = true;
       binary_.load_tipchars(partition_.get(), i);
       clv_ptr = partition_->tipchars[i];
     }
@@ -105,7 +102,6 @@ void * Tree::get_clv(const pll_utree_t* node)
     // dynamically load from disk if not in memory
     if(!clv_ptr)
     {
-      loaded_from_file = true;
       binary_.load_clv(partition_.get(), i);
       clv_ptr = partition_->clv[i];
     }
