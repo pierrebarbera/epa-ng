@@ -32,6 +32,7 @@ public:
 
   // Objects declared here can be used by all tests in the test case for Foo.
   std::string data_dir;
+  std::string out_dir;
   std::string tree_file;
   std::string reference_file;
   std::string combined_file;

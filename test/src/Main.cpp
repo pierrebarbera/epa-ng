@@ -28,8 +28,11 @@ int main(int argc, char** argv)
   env->query_file += "query.fasta";
   env->combined_file  = std::string(env->data_dir);
   env->combined_file += "combined.fasta";
-  env->binary_file  = std::string("/tmp/");
-  env->binary_file += "persisted.bin";
+  env->out_dir  = std::string("/tmp/epatest/");
+  std::string cmd("mkdir ");
+  cmd += env->out_dir.c_str();
+  system(cmd.c_str());
+  env->binary_file = env->out_dir + "persisted.bin";
 
   ::testing::InitGoogleTest(&argc, argv);
 
