@@ -87,6 +87,15 @@ TEST(Tree, process_from_binary)
 
   process(read_tree, queries, env->out_dir, options, invocation);
 
+  Tree mvstree;
+
+  // mvstree = read_tree;
+  // process(mvstree, queries, env->out_dir, options, invocation);
+
+  mvstree = Tree(env->binary_file, options);
+
+  process(mvstree, queries, env->out_dir, options, invocation);
+
   // teardown
 }
 

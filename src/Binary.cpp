@@ -8,11 +8,13 @@
 
 using namespace std;
 
-Binary::Binary(const string& binary_file_path) : bin_fptr_(nullptr)
+int safe_fclose(FILE* fptr) { return fptr ? fclose(fptr) : 0; }
+
+Binary::Binary(const string& binary_file_path) : bin_fptr_(nullptr, safe_fclose)
 {
   // open the binary file
   pll_binary_header_t header;
-  bin_fptr_ = pll_binary_open(binary_file_path.c_str(), &header);
+  bin_fptr_ = unique_fptr(pll_binary_open(binary_file_path.c_str(), &header), safe_fclose);
 
   if (!bin_fptr_)
     throw runtime_error{"Could not open binary file for reading."};
@@ -27,7 +29,7 @@ Binary::Binary(const string& binary_file_path) : bin_fptr_(nullptr)
   // proccess the random access map
   unsigned int n_blocks;
   pll_block_map_t* block_map;
-  block_map = pll_binary_get_map(bin_fptr_, &n_blocks);
+  block_map = pll_binary_get_map(bin_fptr_.get(), &n_blocks);
 
   assert(block_map);
   assert(n_blocks);
@@ -70,7 +72,7 @@ void Binary::load_clv(pll_partition_t * partition, const unsigned int clv_index)
 
   unsigned int attributes;
   auto err = pll_binary_clv_load(
-    bin_fptr_,
+    bin_fptr_.get(),
     0,
     partition,
     clv_index,
@@ -90,7 +92,7 @@ void Binary::load_tipchars(pll_partition_t * partition, const unsigned int tipch
   unsigned int type, attributes;
   size_t size;
 
-  auto ptr = pll_binary_custom_load(bin_fptr_, 0, &size, &type, &attributes, get_offset(map_, tipchars_index));
+  auto ptr = pll_binary_custom_load(bin_fptr_.get(), 0, &size, &type, &attributes, get_offset(map_, tipchars_index));
   if (!ptr)
     throw runtime_error{string("Loading tipchar failed: ") + pll_errmsg};
 
@@ -107,7 +109,7 @@ void Binary::load_scaler(pll_partition_t * partition, const unsigned int scaler_
   unsigned int type, attributes;
   size_t size;
 
-  auto ptr = pll_binary_custom_load(bin_fptr_, 0,
+  auto ptr = pll_binary_custom_load(bin_fptr_.get(), 0,
     &size, &type, &attributes, get_offset(map_, block_offset + scaler_index));
   if (!ptr)
     throw runtime_error{string("Loading scaler failed: ") + pll_errmsg};
@@ -179,7 +181,7 @@ pll_partition_t* Binary::load_partition()
   // make skeleton partition that only allocates the pointers to the clv/tipchar buffers
   auto skelly = nullptr;// skeleton_partition();
   unsigned int attributes = PLL_BINARY_ATTRIB_PARTITION_DUMP_WGT;
-  auto partition =  pll_binary_partition_load(bin_fptr_, 0, skelly, &attributes, pll_map_nt, get_offset(map_, -1));
+  auto partition =  pll_binary_partition_load(bin_fptr_.get(), 0, skelly, &attributes, pll_map_nt, get_offset(map_, -1));
   if (!partition)
     throw runtime_error{string("Error loading partition: ") + pll_errmsg};
 
@@ -193,7 +195,7 @@ pll_partition_t* Binary::load_partition()
 pll_utree_t* Binary::load_utree()
 {
   unsigned int attributes = 0;
-  auto tree =  pll_binary_utree_load(bin_fptr_, 0, &attributes, get_offset(map_, -2));
+  auto tree =  pll_binary_utree_load(bin_fptr_.get(), 0, &attributes, get_offset(map_, -2));
   if (!tree)
     throw runtime_error{string("Loading tree: ") + pll_errmsg};
   return tree;

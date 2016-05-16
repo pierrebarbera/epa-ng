@@ -29,7 +29,7 @@ TEST(Tiny_Tree, place_heuristic)
   auto tree = ref_tree.tree();
 
   // tests
-  Tiny_Tree tt(tree, 0, ref_tree, env->model, false);
+  Tiny_Tree tt(tree, 0, ref_tree, false);
 
   for (auto const &x : queries)
   {
@@ -58,7 +58,7 @@ TEST(Tiny_Tree, place_BLO)
   auto tree = ref_tree.tree();
 
   // tests
-  Tiny_Tree tt(tree, 0, ref_tree, env->model, true);
+  Tiny_Tree tt(tree, 0, ref_tree, true);
 
   for (auto const &x : queries)
   {

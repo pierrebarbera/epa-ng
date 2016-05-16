@@ -1,7 +1,7 @@
 #pragma once
 
 #include <sstream>
-#include <unique_ptr>
+#include <memory>
 #include <cereal/archives/binary.hpp>
 
 #include "mpihead.hpp"
@@ -30,10 +30,10 @@ static void err_check(int errval)
         msg << "Invalid source or destination rank.";
         break;
       default:
-        msg << "unknown"
+        msg << "unknown";
     }
-    msg << endl;
-    throw runtime_error{msg.str()};
+    msg << std::endl;
+    throw std::runtime_error{msg.str()};
   }
 }
 
@@ -45,8 +45,10 @@ void epa_mpi_send(Sample& sample, int dest_rank, MPI_Comm comm)
   out_archive(sample);
 
   // send sample to specified node
-  std::string data(ss);
-  err_check(MPI_Send(data.c_str(), data.length(), MPI_CHAR, dest_rank, 0, comm));
+  std::string data = ss.str();
+  std::unique_ptr<char> buffer(new char[data.size()]);
+  memcpy(buffer.get(), data.c_str(), data.size() * sizeof(char));
+  err_check(MPI_Send(buffer.get(), data.size(), MPI_CHAR, dest_rank, 0, comm));
 
 }
 
@@ -59,14 +61,14 @@ void epa_mpi_recieve(Sample& sample, int source_rank, MPI_Comm comm)
   MPI_Get_count(&status, MPI_CHAR, &size);
 
   // prepare buffer
-  std::unique_ptr<char> buffer = new char[size];
+  std::unique_ptr<char> buffer(new char[size]);
 
   //  get the actual payload
-  err_check(MPI_Recv(buffer, size, MPI_CHAR, source_rank, 0, comm, &status));
+  err_check(MPI_Recv(buffer.get(), size, MPI_CHAR, source_rank, 0, comm, &status));
 
   // deserialization
   std::stringstream ss;
-  ss.write(buffer, size);
+  ss.write(buffer.get(), size);
   cereal::BinaryInputArchive in_archive(ss);
 
   // build the sample object

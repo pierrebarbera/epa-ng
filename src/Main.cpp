@@ -177,6 +177,7 @@ int main(int argc, char** argv)
 
   if (options.load_binary_mode)
   {
+    cout << "Loading from binary" << endl;
     tree = Tree(binary_file, options);
   }
   else
@@ -188,6 +189,7 @@ int main(int argc, char** argv)
   // dump to binary if specified
   if (options.dump_binary_mode)
   {
+    cout << "Writing to binary" << endl;
     string dump_file(work_dir + "epa_binary_file");
     dump_to_binary(tree, dump_file);
     MPI_FINALIZE();
@@ -196,9 +198,9 @@ int main(int argc, char** argv)
 
   // start the placement process and write to file
   auto start = chrono::high_resolution_clock::now();
-  // process(tree, queries, work_dir, invocation);
-  MSA full_msa = build_MSA_from_file(query_file);
-  place(tree, full_msa);
+  process(tree, queries, work_dir, options, invocation);
+  // MSA full_msa = build_MSA_from_file(query_file);
+  // place(tree, full_msa);
   auto end = chrono::high_resolution_clock::now();
   auto runtime = chrono::duration_cast<chrono::seconds>(end - start).count();
 

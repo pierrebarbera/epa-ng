@@ -12,10 +12,10 @@
 using namespace std;
 
 Tiny_Tree::Tiny_Tree(pll_utree_t *edge_node, unsigned int branch_id, Tree& reference_tree,
-                     Model model, bool opt_branches, Range reference_tip_range, bool ranged)
+                     bool opt_branches, Range reference_tip_range, bool ranged)
     : partition_(nullptr, tiny_partition_destroy), tree_(nullptr, utree_destroy), opt_branches_(opt_branches)
-    , original_branch_length_(edge_node->length), model_(model), reference_tip_range_(reference_tip_range)
-    , ranged_computation_(ranged), branch_id_(branch_id)
+    , original_branch_length_(edge_node->length), model_(reference_tree.model())
+    , reference_tip_range_(reference_tip_range), ranged_computation_(ranged), branch_id_(branch_id)
 {
   assert(edge_node);
 

@@ -16,6 +16,10 @@
 #include "epa_pll_util.hpp"
 #include "Timer.hpp"
 
+#ifdef __MPI
+#include "epa_mpi_util.hpp"
+#endif
+
 using namespace std;
 
 Log lgr;
@@ -24,23 +28,16 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const string& outdir,
               const Options& options, const string& invocation)
 {
   auto model = reference_tree.model();
-  // auto partition = reference_tree.partition();
-  auto tree = reference_tree.tree();
 
   lgr = Log(outdir + "epa_info.log");
 
-  lgr << "EPA - Evolutionary Placement Algorithm" << endl;
-  lgr << "\nInvocation: \n" << invocation << endl;
-
 #ifdef __MPI
-  int stage_rank, stage_size, world_rank, world_size;
+  int world_rank, world_size;
   MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
   // shuffle available nodes to the different stages
-  // map[stage_id][stage_rank] = global_rank
   unordered_map<int, unordered_map<int, int>> global_rank;
-  // map[stage_id] = stage_size
   unordered_map<int, int> stage_size;
   int stage_1_compute_size = 0;
   int stage_1_aggregate_size = 0;
@@ -70,6 +67,16 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const string& outdir,
   stage_size[EPA_MPI_STAGE_2_AGGREGATE] = stage_2_aggregate_size;
 
   Timer timer;
+
+  if (world_rank == 0)
+  {
+#endif // __MPI
+  lgr << "EPA - Evolutionary Placement Algorithm\n";
+  lgr << "\nInvocation: \n" << invocation << "\n";
+#ifdef __MPI
+  } else {
+    lgr << "Rank " << world_rank << " checking in.\n";
+  }
 #endif // __MPI
 
   // prepare all structures
@@ -78,12 +85,11 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const string& outdir,
   unsigned int chunk_size = 100;
   unsigned int num_sequences;
 
-  auto nums = reference_tree.nums();
-  const auto num_branches = nums.branches;
+  const auto num_branches = reference_tree.nums().branches;
 
   // get all edges
   vector<pll_utree_t *> branches(num_branches);
-  auto num_traversed_branches = utree_query_branches(tree, &branches[0]);
+  auto num_traversed_branches = utree_query_branches(reference_tree.tree(), &branches[0]);
   assert(num_traversed_branches == num_branches);
 
   // build all tiny trees with corresponding edges
@@ -91,14 +97,13 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const string& outdir,
   for (unsigned int branch_id = 0; branch_id < num_branches; branch_id++)
   {
     // TODO check if current mpi node is supposed to get this branch id
-    auto node = branches[branch_id];
-    insertion_trees.emplace_back(node, branch_id, reference_tree, model, !options.prescoring);
+    insertion_trees.emplace_back(branches[branch_id], branch_id, reference_tree, !options.prescoring);
   }
 
   // create output file
   ofstream outfile(outdir + "epa_result.jplace");
   lgr << "\nOutput file: " << outdir + "epa_result.jplace" << endl;
-  outfile << init_jplace_string(get_numbered_newick_string(tree));
+  outfile << init_jplace_string(get_numbered_newick_string(reference_tree.tree()));
 
   // output class
   Sample sample;
@@ -131,8 +136,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const string& outdir,
 #ifdef __MPI
     timer.stop();
     // MPI: split the result and send the part to correct aggregate node
-    epa_mpi_send(sample, global_rank[EPA_MPI_STAGE_1_AGGREGATE][], MPI_COMM_WORLD);
-
+    epa_mpi_send(sample, global_rank[EPA_MPI_STAGE_1_AGGREGATE][0], MPI_COMM_WORLD);
 
     // MPI Barrier first compute stage TODO for now implicit barrier by synchronous comm
 
@@ -150,6 +154,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const string& outdir,
     // (MPI: recieve results, merge them)
     for (auto rank : global_rank[EPA_MPI_STAGE_1_COMPUTE])
     {
+      (void)rank;// surpress warning
       Sample remote_sample;
       epa_mpi_recieve(remote_sample, MPI_ANY_SOURCE, MPI_COMM_WORLD);
       merge(sample, remote_sample);
@@ -196,17 +201,13 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const string& outdir,
 
 Sample place(Tree& reference_tree, MSA& query_msa_)
 {
-  auto options_ = reference_tree.options();
-  auto model_ = reference_tree.model();
-  auto tree_ = reference_tree.tree();
-  // auto partition_ = reference_tree.partition();
-  auto nums_ = reference_tree.nums();
+  auto options = reference_tree.options();
 
-  const auto num_branches = nums_.branches;
+  const auto num_branches = reference_tree.nums().branches;
   const auto num_queries = query_msa_.size();
   // get all edges
   vector<pll_utree_t *> branches(num_branches);
-  auto num_traversed_branches = utree_query_branches(tree_, &branches[0]);
+  auto num_traversed_branches = utree_query_branches(reference_tree.tree(), &branches[0]);
   assert(num_traversed_branches == num_branches);
 
   lgr << "\nPlacing "<< to_string(num_queries) << " reads on " <<
@@ -215,12 +216,12 @@ Sample place(Tree& reference_tree, MSA& query_msa_)
   // build all tiny trees with corresponding edges
   vector<Tiny_Tree> insertion_trees;
   for (unsigned int branch_id = 0; branch_id < num_branches; ++branch_id)
-    insertion_trees.emplace_back(branches[branch_id], branch_id, reference_tree, model_, !options_.prescoring);
+    insertion_trees.emplace_back(branches[branch_id], branch_id, reference_tree, !options.prescoring);
     /* clarification: last arg here is a flag specifying whether to optimize the branches.
       we don't want that if the mode is prescoring */
 
   // output class
-  Sample sample(get_numbered_newick_string(tree_));
+  Sample sample(get_numbered_newick_string(reference_tree.tree()));
   for (unsigned int sequence_id = 0; sequence_id < num_queries; sequence_id++)
     sample.emplace_back(sequence_id, num_branches);
 
@@ -239,13 +240,13 @@ Sample place(Tree& reference_tree, MSA& query_msa_)
 
   /* prescoring was chosen: perform a second round, but only on candidate edges identified
     during the first run */
-  if (options_.prescoring)
+  if (options.prescoring)
   {
     lgr << "Entering second phase of placement. \n";
-    if (options_.prescoring_by_percentage)
-      discard_bottom_x_percent(sample, (1.0 - options_.prescoring_threshold));
+    if (options.prescoring_by_percentage)
+      discard_bottom_x_percent(sample, (1.0 - options.prescoring_threshold));
     else
-      discard_by_accumulated_threshold(sample, options_.prescoring_threshold);
+      discard_by_accumulated_threshold(sample, options.prescoring_threshold);
 
     // build a list of placements per edge that need to be recomputed
     vector<vector<tuple<Placement *, const unsigned int>>> recompute_list(num_branches);
@@ -271,10 +272,10 @@ Sample place(Tree& reference_tree, MSA& query_msa_)
   }
 
   // finally, trim the output
-  if (options_.acc_threshold)
-    discard_by_accumulated_threshold(sample, options_.support_threshold);
+  if (options.acc_threshold)
+    discard_by_accumulated_threshold(sample, options.support_threshold);
   else
-    discard_by_support_threshold(sample, options_.support_threshold);
+    discard_by_support_threshold(sample, options.support_threshold);
 
   return sample;
 }

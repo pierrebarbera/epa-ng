@@ -87,9 +87,9 @@ TEST(Binary, read)
   // {
   //   EXPECT_DOUBLE_EQ(symm[i], read_symm[i]);
   // }
-
-  auto utree = original_tree.tree();
-  auto read_utree = read_tree.tree();
+  // 
+  // auto utree = original_tree.tree();
+  // auto read_utree = read_tree.tree();
 
   // if (!utree->next)
   //   utree = utree->back;
