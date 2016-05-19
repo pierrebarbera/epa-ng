@@ -6,6 +6,8 @@
 #include "src/file_io.hpp"
 #include "src/Tree_Numbers.hpp"
 #include "src/Model.hpp"
+#include "src/Options.hpp"
+#include "src/Tree.hpp"
 #include "src/MSA.hpp"
 #include "src/Range.hpp"
 
@@ -96,16 +98,15 @@ TEST(epa_pll_util, split_combined_msa)
 {
   // buildup
   auto combined_msa = build_MSA_from_file(env->combined_file);
-  MSA query_msa;
   Tree_Numbers nums = Tree_Numbers();
-  pll_partition_t * part;
-  pll_utree_t * tree;
+  Model model;
+  Options options;
 
-  tree = build_tree_from_file(env->tree_file, nums);
-  part = build_partition_from_file( env->model, nums, combined_msa.num_sites());
+  Tree tree(env->tree_file, combined_msa, model, options);
 
   // tests
-  split_combined_msa(combined_msa, query_msa, tree, nums.tip_nodes);
+  MSA query_msa;
+  split_combined_msa(combined_msa, query_msa, tree);
 
   EXPECT_EQ(combined_msa.num_sites(), query_msa.num_sites());
   EXPECT_EQ(combined_msa.size(), 8);
@@ -116,6 +117,4 @@ TEST(epa_pll_util, split_combined_msa)
       EXPECT_STRNE(x.header().c_str(), y.header().c_str());
 
   // teardown
-  pll_partition_destroy(part);
-  pll_utree_destroy(tree);
 }

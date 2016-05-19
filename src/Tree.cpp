@@ -25,12 +25,6 @@ Tree::Tree(const string &tree_file, const MSA &msa, Model &model, Options& optio
                             build_partition_from_file(model_, nums_, ref_msa_.num_sites()),
                             pll_partition_destroy);
 
-  // split msa if it is intermingled with (supposed) query sequences
-  if (ref_msa_.size() > nums_.tip_nodes)
-  {
-    MSA queries;
-    split_combined_msa(ref_msa_, queries, tree_.get(), nums_.tip_nodes);
-  }
 
   valid_map_ = vector<Range>(nums_.tip_nodes);
   link_tree_msa(tree_.get(), partition_.get(), ref_msa_, nums_.tip_nodes, valid_map_);

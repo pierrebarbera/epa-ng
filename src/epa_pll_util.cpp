@@ -28,15 +28,18 @@ void link_tree_msa(pll_utree_t * tree, pll_partition_t * partition,
   for (auto const &s : msa)
   {
     auto map_value = map.find(s.header());
-    auto clv_index = map_value->second;
 
+    // failure tolerance: the MSA may also contain query sequences
     if (map_value == map.end())
-      throw runtime_error{string("Sequence with header does not appear in the tree: ") + s.header()};
+    {
+      continue;
+      // throw runtime_error{string("Sequence with header does not appear in the tree: ") + s.header()};
+    }
 
+    auto clv_index = map_value->second;
     // associates the sequence with the tip by calculating the tips clv buffers
     pll_set_tip_states(partition, clv_index, pll_map_nt, s.sequence().c_str());
 
-    // TODO improvement?
     // remember the valid-range of the sequence, indexed by tip clv index
     valid_map[clv_index] = get_valid_range(s.sequence());
   }
@@ -92,10 +95,10 @@ void precompute_clvs(pll_utree_t * tree, pll_partition_t * partition, const Tree
   }
 }
 
-void split_combined_msa(MSA& source, MSA& target, pll_utree_t * tree, unsigned int num_tip_nodes)
+void split_combined_msa(MSA& source, MSA& target, Tree& tree)
 {
-  vector<pll_utree_t*> tip_nodes(num_tip_nodes);
-  pll_utree_query_tipnodes(tree, &tip_nodes[0]);
+  vector<pll_utree_t*> tip_nodes(tree.nums().tip_nodes);
+  pll_utree_query_tipnodes(tree.tree(), &tip_nodes[0]);
 
   auto falsegroup_begin = partition(source.begin(), source.end(),
     [&tip_nodes](const Sequence& em)

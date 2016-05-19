@@ -167,14 +167,10 @@ int main(int argc, char** argv)
   if (reference_file.size())
     ref_msa = build_MSA_from_file(reference_file);
 
-  MSA_Stream queries;
-  if (query_file.size() != 0)
-    queries = MSA_Stream(query_file);
-
   Model model(model_id);
 
+  // build the Tree
   Tree tree;
-
   if (options.load_binary_mode)
   {
     cout << "Loading from binary" << endl;
@@ -184,6 +180,20 @@ int main(int argc, char** argv)
   {
     // build the full tree with all possible clv's
     tree = Tree(tree_file, ref_msa, model, options);
+  }
+
+  // build the query stream
+  MSA_Stream queries;
+  if (query_file.size() != 0)
+  {
+    queries = MSA_Stream(query_file);
+
+  }
+  // attempt to split msa if it is intermingled with (supposed) query sequences
+  else
+  {
+    throw runtime_error{"Combined MSA files not currently supported, please split them and specify using -s and -q."};
+    // split_combined_msa(ref_msa, queries, tree);
   }
 
   // dump to binary if specified
