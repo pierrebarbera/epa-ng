@@ -48,11 +48,11 @@ jplace_rhs = sys.argv[3]
 
 # Load files.
 
-jpp = placement.JplaceProcessor()
+jpp = placement.JplaceReader()
 jpp.report_invalid_numbers = True
 
-pmap_lhs = placement.PlacementMap()
-pmap_rhs = placement.PlacementMap()
+pmap_lhs = placement.SampleSet()
+pmap_rhs = placement.SampleSet()
 
 jpp.from_file(jplace_lhs, pmap_lhs)
 jpp.from_file(jplace_rhs, pmap_rhs)

@@ -7,7 +7,7 @@ from subprocess import call
 import glob
 
 def help():
-    print "USAGE:\traxml_path epa_path tree_file MSA_file output_dir [number of runs]"
+    print "USAGE:\traxml_path epa_path tree_file reference_MSA_file query_MSA_file output_dir [number of runs]"
 def wrng(msg):
     print msg
     help()
@@ -17,7 +17,7 @@ def err(msg):
     print "Aborting"
     exit()
 
-if len(sys.argv) < 6 or len(sys.argv) > 7:
+if len(sys.argv) < 7 or len(sys.argv) > 7:
     print "incorrect number of arguments"
     help()
     exit()
@@ -28,10 +28,11 @@ runs=0
 raxml = sys.argv[1]
 epa = sys.argv[2]
 tree_file = os.path.abspath(sys.argv[3])
-MSA_file = os.path.abspath(sys.argv[4])
-output_dir = os.path.abspath(sys.argv[5])
-if len(sys.argv) == 7:
-    runs = int(sys.argv[6])
+ref_MSA_file = os.path.abspath(sys.argv[4])
+query_MSA_file = os.path.abspath(sys.argv[5])
+output_dir = os.path.abspath(sys.argv[6])
+if len(sys.argv) == 8:
+    runs = int(sys.argv[7])
     first_x = True
 
 if not os.path.isfile(raxml):
@@ -40,14 +41,16 @@ if not os.path.isfile(epa):
     wrng("epa doesn't exist or isn't a file")
 if not os.path.isfile(tree_file):
     wrng("tree_file doesn't exist or isn't a file")
-if not os.path.isfile(MSA_file):
-    wrng("MSA_file doesn't exist or isn't a file")
+if not os.path.isfile(ref_MSA_file):
+    wrng("reference_MSA_file doesn't exist or isn't a file")
+if not os.path.isfile(query_MSA_file):
+    wrng("query_MSA_file doesn't exist or isn't a file")
 if not os.path.isdir(output_dir):
     wrng("output_dir doesn't exist or isn't a directory")
 
 # read in tree and MSA files
 tree = Tree.get(path=tree_file, schema="newick", rooting="force-unrooted")
-msa = DnaCharacterMatrix.get(path=MSA_file, schema="fasta")
+msa = DnaCharacterMatrix.get(path=ref_MSA_file, schema="fasta")
 
 num_failed = 0
 num_run = 0
@@ -79,16 +82,22 @@ with open(os.path.join(output_dir, "results.log"), 'wb') as log_file:
 
         # call raxml with trimmed files
         # print "calling raxml:"
-        params = [raxml, "-f", "v", "-s", MSA_file, "-t", cur_treefile, "-n", "leave_one_out", "-m","GTRGAMMA",
+        params = [raxml, "-f", "v", "-s", ref_MSA_file, "-t", cur_treefile, "-n", "leave_one_out", "-m","GTRGAMMA",
         "-w", cur_outdir]
         # print params
         ret = call(params, stdout=open(os.devnull, 'wb'))
 
         # call epa with trimmed files
-        # print "calling epa: "
-        params = [epa, "-t", cur_treefile,"-s", MSA_file, "-O", "-w", cur_outdir]
+        print "calling epa to dump binary: "
+        params = [epa, "-t", cur_treefile,"-s", ref_MSA_file, "-q", query_MSA_file, "-OB", "-w", cur_outdir]
+        ret = call(params, stdout=open(os.devnull, 'wb'))
+
+        print "calling epa from binary file: "
+        binfile = os.path.join(cur_outdir, "epa_binary_file")
+        params = [epa, "-b", binfile, "-q", query_MSA_file, "-w", cur_outdir]
         # print params
         ret = call(params, stdout=open(os.devnull, 'wb'))
+
 
         # call validation script on both jplace files, log to log file
         jplace_files = glob.glob(os.path.join(cur_outdir, "*.jplace"))
@@ -98,9 +107,15 @@ with open(os.path.join(output_dir, "results.log"), 'wb') as log_file:
         epa_jplace = os.path.join(cur_outdir, "epa_result.jplace")
 
         # print "calling compare script:"
-        params = ["./jplace_compare.py", "-v", raxml_jplace, epa_jplace]
-        # print params
+        # params = ["./jplace_compare.py", "-v", raxml_jplace, epa_jplace]
+        # # print params
+        # ret = call(params, stdout=log_file)
+
+        # print "calling compare script:"
+        params = ["./pquery_emd", raxml_jplace, epa_jplace]
+        print params
         ret = call(params, stdout=log_file)
+
 
         num_failed += ret
         num_run += 1
