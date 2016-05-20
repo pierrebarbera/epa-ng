@@ -45,6 +45,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const string& outdir,
   int stage_2_aggregate_size = 0;
   int local_stage;
 
+
   for (int i = 0; i < world_size; i++)
   {
     if (i == 0)
@@ -53,13 +54,24 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const string& outdir,
       if (world_rank == i)
         local_stage = EPA_MPI_STAGE_1_AGGREGATE;
     }
-    else
+    else if (i == 1)
     {
       global_rank[EPA_MPI_STAGE_1_COMPUTE][stage_1_compute_size++] = i;
       if (world_rank == i)
         local_stage = EPA_MPI_STAGE_1_COMPUTE;
     }
-
+    else if (i == 2)
+    {
+      global_rank[EPA_MPI_STAGE_2_AGGREGATE][stage_2_aggregate_size++] = i;
+      if (world_rank == i)
+        local_stage = EPA_MPI_STAGE_2_AGGREGATE;
+    }
+    else if (i == 3)
+    {
+      global_rank[EPA_MPI_STAGE_2_COMPUTE][stage_2_compute_size++] = i;
+      if (world_rank == i)
+        local_stage = EPA_MPI_STAGE_2_COMPUTE;
+    }
   }
   stage_size[EPA_MPI_STAGE_1_COMPUTE] = stage_1_compute_size;
   stage_size[EPA_MPI_STAGE_1_AGGREGATE] = stage_1_aggregate_size;
@@ -109,16 +121,16 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const string& outdir,
   Sample sample;
 
   // while data
-  // TODO this could be a stream read, such that cat msa.fasta | epa .... would work
+  // TODO this could be a stream read, such that cat msa.fasta | epa ... would work
   while ((num_sequences = msa_stream.read_next(chunk_size)) > 0)
   {
 #ifdef __MPI
+    timer.start(); // start timer of any stage
     //==============================================================
     // EPA_MPI_STAGE_1_COMPUTE === BEGIN
     //==============================================================
     if (local_stage == EPA_MPI_STAGE_1_COMPUTE)
     {
-    timer.start();
 #endif // __MPI
     // prepare placement structure
     for (unsigned int cur_seq_id = 0; cur_seq_id < num_sequences; cur_seq_id++)
@@ -134,8 +146,8 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const string& outdir,
     }
 
 #ifdef __MPI
-    timer.stop();
     // MPI: split the result and send the part to correct aggregate node
+    // TODO split!
     epa_mpi_send(sample, global_rank[EPA_MPI_STAGE_1_AGGREGATE][0], MPI_COMM_WORLD);
 
     // MPI Barrier first compute stage TODO for now implicit barrier by synchronous comm
@@ -150,7 +162,6 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const string& outdir,
     //==============================================================
     if (local_stage == EPA_MPI_STAGE_1_AGGREGATE)
     {
-    timer.start();
     // (MPI: recieve results, merge them)
     for (auto rank : global_rank[EPA_MPI_STAGE_1_COMPUTE])
     {
@@ -160,35 +171,110 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const string& outdir,
       merge(sample, remote_sample);
     }
 #endif // __MPI
-    // build lwrs, discard
+    // build lwrs
     compute_and_set_lwr(sample);
 
+    // if this was a prescring run, select the candidate edges
+    if(options.prescoring)
+    {
+      if (options.prescoring_by_percentage)
+        discard_bottom_x_percent(sample, (1.0 - options.prescoring_threshold));
+      else
+        discard_by_accumulated_threshold(sample, options.prescoring_threshold);
+    }
+#ifdef __MPI
+    // if prescoring was selected, we need to send the intermediate results off to thorough placement
+    if(options.prescoring)
+    {
+      // TODO split!
+      epa_mpi_send(sample, global_rank[EPA_MPI_STAGE_2_COMPUTE][0], MPI_COMM_WORLD);
+    }
+    } // endif (local_stage == EPA_MPI_STAGE_1_AGGREGATE)
+    //==============================================================
+    // EPA_MPI_STAGE_1_AGGREGATE === END
+    //==============================================================
+
+    //==============================================================
+    // EPA_MPI_STAGE_2_COMPUTE === BEGIN
+    //==============================================================
+    if (local_stage == EPA_MPI_STAGE_2_COMPUTE)
+    {
+    // (MPI: recieve results, merge them)
+    for (auto rank : global_rank[EPA_MPI_STAGE_1_AGGREGATE])
+    {
+      (void)rank;// surpress warning
+      Sample remote_sample;
+      epa_mpi_recieve(remote_sample, MPI_ANY_SOURCE, MPI_COMM_WORLD);
+      merge(sample, remote_sample);
+    }
+#endif // __MPI
+    if (options.prescoring)
+    {
+      // build a list of placements per edge that need to be recomputed
+      vector<vector<tuple<Placement *, const unsigned int>>> recompute_list(num_branches);
+      for (auto & pq : sample)
+        for (auto & placement : pq)
+          recompute_list[placement.branch_id()].push_back(make_tuple(&placement, pq.sequence_id()));
+
+      // #pragma omp parallel for schedule(dynamic)
+      for (unsigned int branch_id = 0; branch_id < num_branches; branch_id++)
+      {
+        Placement * placement;
+        // Sequence * sequence;
+        auto& branch = insertion_trees[branch_id];
+        branch.opt_branches(true); // TODO only needs to be done once
+        for (auto recomp_tuple : recompute_list[branch_id])
+        {
+          placement = get<0>(recomp_tuple);
+          *placement = branch.place(msa_stream[get<1>(recomp_tuple)]);
+        }
+      }
+    }
+#ifdef __MPI
+    if(options.prescoring)
+    {
+      // TODO split!
+      epa_mpi_send(sample, global_rank[EPA_MPI_STAGE_2_AGGREGATE][0], MPI_COMM_WORLD);
+    }
+    } // endif (local_stage == EPA_MPI_STAGE_2_COMPUTE)
+    //==============================================================
+    // EPA_MPI_STAGE_2_COMPUTE === END
+    //==============================================================
+
+    //==============================================================
+    // EPA_MPI_STAGE_2_AGGREGATE === BEGIN
+    //==============================================================
+    if ((local_stage == EPA_MPI_STAGE_1_AGGREGATE and not options.prescoring) or
+        (local_stage == EPA_MPI_STAGE_2_AGGREGATE and options.prescoring))
+    {
+    // only if this is the 4th stage do we need to get from mpi
+    if (local_stage == EPA_MPI_STAGE_2_AGGREGATE)
+    {
+    // (MPI: recieve results, merge them)
+    for (auto rank : global_rank[EPA_MPI_STAGE_2_COMPUTE])
+    {
+      (void)rank;// surpress warning
+      Sample remote_sample;
+      epa_mpi_recieve(remote_sample, MPI_ANY_SOURCE, MPI_COMM_WORLD);
+      merge(sample, remote_sample);
+    }
+    }
+#endif // __MPI
+    // recompute the lwrs
+    if (options.prescoring)
+      compute_and_set_lwr(sample);
+    // discard uninteresting placements
     if (options.acc_threshold)
       discard_by_accumulated_threshold(sample, options.support_threshold);
     else
       discard_by_support_threshold(sample, options.support_threshold);
 
+    // finally, write to file
     outfile << sample_to_jplace_string(sample, msa_stream);
-
 #ifdef __MPI
-    timer.stop();
-    } // endif (local_stage == EPA_MPI_STAGE_1_AGGREGATE)
-    //==============================================================
-    // EPA_MPI_STAGE_1_AGGREGATE === END
-    //==============================================================
+    } // endif aggregate cleanup
+    timer.stop(); // stop timer of any stage
 #endif // __MPI
-    // produce map of what sequence needs to recompute what
-    // MPI: scatter all such partial maps to the second compute stage
-
-    // take recompute list (MPI: recieve times number of aggregators)
-    // MPI: compute what current rank needs to recompute
-    // recompute based on list
-    // produce placements (MPI: send to correct 2nd phase aggregator)
-
-    // take re-placed placements (MPI: recieve)
-    // rebuild their lwrs, do second stage discard
-    // save to jplace (MPI: get file lock)
-
     sample.clear();
     msa_stream.clear();
   }

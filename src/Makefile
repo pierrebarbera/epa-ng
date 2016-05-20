@@ -11,7 +11,7 @@ PLL_MSA=../libs/pll-modules/src/msa/
 F+=
 CF+=
 BINARY_WRITE= -t $(TEST)/ref.tre -s $(TEST)/aln.fasta -q $(TEST)/query.fasta -g -B -w $(OUTDIR) $(F)
-BINARY_READ=-b $(OUTDIR)/epa_binary_file -q $(TEST)/query.fasta -w $(OUTDIR)
+BINARY_READ=-b $(OUTDIR)/epa_binary_file -q $(TEST)/query.fasta  -w $(OUTDIR)
 
 CC=clang++
 # CC=g++s
@@ -61,11 +61,18 @@ ranged_test: $(TARGET)
 	$(TARGET) $(BINARY_WRITE)
 	$(TARGET) $(BINARY_READ)
 
+mpi_test_valgrind: $(mpi)
+	mkdir -p $(OUTDIR)
+	-rm $(OUTDIR)*
+	$(TARGET) $(BINARY_WRITE)
+	mpirun -np 4 valgrind --log-file=$(LOGDIR)/mpi.valgrind.%p $(TARGET) $(BINARY_READ) -g
+
 mpi_test: $(mpi)
 	mkdir -p $(OUTDIR)
 	-rm $(OUTDIR)*
 	$(TARGET) $(BINARY_WRITE)
-	mpirun -np 2 valgrind --log-file=$(LOGDIR)/mpi.valgrind.%p $(TARGET) $(BINARY_READ)
+	mpirun -np 4 $(TARGET) $(BINARY_READ) -g
+
 
 valgrind: $(TARGET)
 	mkdir -p $(OUTDIR)

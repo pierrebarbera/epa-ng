@@ -87,6 +87,9 @@ TEST(Tree, process_from_binary)
 
   process(read_tree, queries, env->out_dir, options, invocation);
 
+  options.prescoring = true;
+  process(read_tree, queries, env->out_dir, options, invocation);
+
   Tree mvstree;
 
   // mvstree = read_tree;
