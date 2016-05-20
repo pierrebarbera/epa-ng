@@ -97,7 +97,7 @@ TEST(Tiny_Tree, place_from_binary)
   for (size_t i = 0; i < original_traversed; i++)
   {
     Tiny_Tree original_tiny(original_branches[i], 0, original_tree, false);
-    Tiny_Tree read_tiny(original_branches[i], 0, read_tree, false);
+    Tiny_Tree read_tiny(read_branches[i], 0, read_tree, false);
     for(auto& seq : queries)
     {
       auto original_place = original_tiny.place(seq);

@@ -160,8 +160,8 @@ TEST(Tree, place_from_binary)
       ASSERT_TRUE(found_p);
 
       EXPECT_DOUBLE_EQ(original_place.likelihood(), read_place.likelihood());
-      printf("edgenum %d/%d: %f vs %f\n",original_place.branch_id(), read_place.branch_id(),
-      original_place.likelihood(), read_place.likelihood());
+      // printf("edgenum %d/%d: %f vs %f\n",original_place.branch_id(), read_place.branch_id(),
+      // original_place.likelihood(), read_place.likelihood());
     }
   }
   // teardown

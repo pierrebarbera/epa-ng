@@ -73,6 +73,12 @@ TEST(Binary, read)
   // test
   Tree read_tree(env->binary_file, options);
 
+  // compare numbered jplace strings
+  string original_nns(get_numbered_newick_string(original_tree.tree()));
+  string read_nns(get_numbered_newick_string(read_tree.tree()->back));
+
+  EXPECT_STREQ(original_nns.c_str(), read_nns.c_str());
+
   auto read_freqs = read_tree.model().base_frequencies();
   for (size_t i = 0; i < 4; i++)
     EXPECT_DOUBLE_EQ(freqs[i], read_freqs[i]);
@@ -102,26 +108,27 @@ TEST(Binary, read)
   // check_equal(utree, read_utree);
 
   // compare tree traversals
-  ASSERT_EQ(original_tree.nums().branches, read_tree.nums().branches);
-  vector<pll_utree_t *> original_branches(original_tree.nums().branches);
-  vector<pll_utree_t *> read_branches(read_tree.nums().branches);
-  auto original_traversed  = utree_query_branches(original_tree.tree(), &original_branches[0]);
-  auto read_traversed  = utree_query_branches(read_tree.tree(), &read_branches[0]);
+  ASSERT_EQ(original_tree.nums().nodes, read_tree.nums().nodes);
+  vector<pll_utree_t *> original_nodes(original_tree.nums().nodes);
+  vector<pll_utree_t *> read_nodes(read_tree.nums().nodes);
+  unsigned int original_traversed, read_traversed;
+  pll_utree_traverse(original_tree.tree(), cb_full_traversal, &original_nodes[0], &original_traversed);
+  pll_utree_traverse(read_tree.tree(), cb_full_traversal, &read_nodes[0], &read_traversed);
 
   ASSERT_EQ(original_traversed, read_traversed);
-  ASSERT_EQ(original_traversed, original_tree.nums().branches);
+  ASSERT_EQ(original_traversed, original_tree.nums().nodes);
 
   for (size_t i = 0; i < read_traversed; i++)
   {
-    auto o = original_branches[i];
-    auto r = read_branches[i];
-    printf("orig: %d back: %d\n", o->clv_index, o->back->clv_index);
-    printf("read: %d back: %d\n", r->clv_index, r->back->clv_index);
-    // EXPECT_EQ(o->clv_index, r->clv_index);
-    // EXPECT_DOUBLE_EQ(o->length, r->length);
-    //
-    // EXPECT_EQ(o->back->clv_index, r->back->clv_index);
-    // EXPECT_DOUBLE_EQ(o->back->length, r->back->length);
+    auto o = original_nodes[i];
+    auto r = read_nodes[i];
+    // printf("orig: %d back: %d\n", o->clv_index, o->back->clv_index);
+    // printf("read: %d back: %d\n", r->clv_index, r->back->clv_index);
+    EXPECT_EQ(o->clv_index, r->clv_index);
+    EXPECT_DOUBLE_EQ(o->length, r->length);
+
+    EXPECT_EQ(o->back->clv_index, r->back->clv_index);
+    EXPECT_DOUBLE_EQ(o->back->length, r->back->length);
 
   }
 
