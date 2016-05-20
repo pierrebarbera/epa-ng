@@ -1,10 +1,14 @@
 #include "Epatest.hpp"
 
+#include <vector>
+
 #include "src/Tree.hpp"
 #include "src/Binary.hpp"
 #include "src/Options.hpp"
 #include "src/Model.hpp"
 #include "src/file_io.hpp"
+
+using namespace std;
 
 void check_equal(pll_utree_t* a, pll_utree_t* b)
 {
@@ -87,16 +91,40 @@ TEST(Binary, read)
   // {
   //   EXPECT_DOUBLE_EQ(symm[i], read_symm[i]);
   // }
-  // 
+
   // auto utree = original_tree.tree();
   // auto read_utree = read_tree.tree();
-
   // if (!utree->next)
   //   utree = utree->back;
   // if (!read_utree->next)
   //   read_utree = read_utree->back;
-
+  //
   // check_equal(utree, read_utree);
+
+  // compare tree traversals
+  ASSERT_EQ(original_tree.nums().branches, read_tree.nums().branches);
+  vector<pll_utree_t *> original_branches(original_tree.nums().branches);
+  vector<pll_utree_t *> read_branches(read_tree.nums().branches);
+  auto original_traversed  = utree_query_branches(original_tree.tree(), &original_branches[0]);
+  auto read_traversed  = utree_query_branches(read_tree.tree(), &read_branches[0]);
+
+  ASSERT_EQ(original_traversed, read_traversed);
+  ASSERT_EQ(original_traversed, original_tree.nums().branches);
+
+  for (size_t i = 0; i < read_traversed; i++)
+  {
+    auto o = original_branches[i];
+    auto r = read_branches[i];
+    printf("orig: %d back: %d\n", o->clv_index, o->back->clv_index);
+    printf("read: %d back: %d\n", r->clv_index, r->back->clv_index);
+    // EXPECT_EQ(o->clv_index, r->clv_index);
+    // EXPECT_DOUBLE_EQ(o->length, r->length);
+    //
+    // EXPECT_EQ(o->back->clv_index, r->back->clv_index);
+    // EXPECT_DOUBLE_EQ(o->back->length, r->back->length);
+
+  }
+
 
   auto part = original_tree.partition();
   auto read_part = read_tree.partition();

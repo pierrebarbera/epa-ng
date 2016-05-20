@@ -107,7 +107,7 @@ Placement Tiny_Tree::place(const Sequence &s) {
 
     // optimize the branches using pnly the portion of the sites specified by range
     logl = call_focused(partition_.get(), range, optimize_branch_triplet, virtual_root);
-
+    // logl = optimize_branch_triplet(partition_.get(), virtual_root);
 
     assert(tree_->length >= 0);
     assert(tree_->next->length >= 0);

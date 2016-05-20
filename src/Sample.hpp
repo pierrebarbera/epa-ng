@@ -13,8 +13,7 @@ public:
   typedef typename std::vector<value_type>::const_iterator  const_iterator;
 
   Sample() = default;
-  Sample(const std::string newick)
-    : newick_(newick) {};
+  Sample(const std::string newick) : newick_(newick) {};
   ~Sample() = default;
 
   // member access

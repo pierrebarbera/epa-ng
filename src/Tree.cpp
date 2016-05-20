@@ -112,7 +112,10 @@ void * Tree::get_clv(const pll_utree_t* node)
 double Tree::ref_tree_logl()
 {
   unsigned int param_indices[RATE_CATS] = {0};
-  // TODO useless if out-of-core
+  // ensure clvs are there
+  this->get_clv(tree_.get());
+  this->get_clv(tree_.get()->back);
+
   return pll_compute_edge_loglikelihood(
       partition_.get(), tree_->clv_index, tree_->scaler_index, tree_->back->clv_index,
       tree_->back->scaler_index, tree_->pmatrix_index, param_indices, nullptr);

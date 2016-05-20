@@ -319,6 +319,7 @@ Sample place(Tree& reference_tree, MSA& query_msa_)
     for (unsigned int sequence_id = 0; sequence_id < num_queries; ++sequence_id)
     {
       sample[sequence_id][branch_id] = insertion_trees[branch_id].place(query_msa_[sequence_id]);
+      // printf("sequence %d branch %d:%f\n",sequence_id, branch_id, sample[sequence_id][branch_id].likelihood());
     }
   }
   // now that everything has been placed, we can compute the likelihood weight ratio
