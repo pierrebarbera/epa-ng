@@ -184,7 +184,7 @@ int main(int argc, char** argv)
 
   // build the query stream
   MSA_Stream queries;
-  if (query_file.size() != 0)
+  if ((query_file.size() != 0) and not options.dump_binary_mode)
   {
     queries = MSA_Stream(query_file);
 
