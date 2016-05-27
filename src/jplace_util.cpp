@@ -68,6 +68,8 @@ string finalize_jplace_string(const string& invocation)
 
   ostringstream output;
 
+  output << "  ]," << NEWL;
+
   output << "  \"metadata\": {\"invocation\": \"" << invocation << "\"}," << NEWL;
 
   output << "  \"version\": 3," << NEWL;
@@ -90,9 +92,6 @@ string sample_to_jplace_string(const Sample& sample, const MSA_Stream& msa)
   // undo the last comma
   rwnd(output, 2);
   output << NEWL;
-
-  output << "  ]," << NEWL;
-
   return output.str();
 }
 
