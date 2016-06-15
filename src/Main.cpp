@@ -184,18 +184,20 @@ int main(int argc, char** argv)
 
   // build the query stream
   MSA_Stream queries;
-  if ((query_file.size() != 0) and not options.dump_binary_mode)
+  if (not options.dump_binary_mode)
   {
-    queries = MSA_Stream(query_file);
+    if (query_file.size() != 0)
+    {
+      queries = MSA_Stream(query_file);
 
+    }
+    // attempt to split msa if it is intermingled with (supposed) query sequences
+    else
+    {
+      throw runtime_error{"Combined MSA files not currently supported, please split them and specify using -s and -q."};
+      // split_combined_msa(ref_msa, queries, tree);
+    }
   }
-  // attempt to split msa if it is intermingled with (supposed) query sequences
-  else
-  {
-    throw runtime_error{"Combined MSA files not currently supported, please split them and specify using -s and -q."};
-    // split_combined_msa(ref_msa, queries, tree);
-  }
-
   // dump to binary if specified
   if (options.dump_binary_mode)
   {

@@ -35,10 +35,10 @@ OUT_OBJS=$(addprefix $(BIN)/,$(OBJS))
 
 callgrind: CFLAGS= $(WARNINGS) -std=c++11 -O2
 profile: CFLAGS= $(WARNINGS) -std=c++11 -O2
-# omp: CC=g++
+omp: CC=g++
 omp: DBG=
-omp: LIBS+= -liomp5
-omp: CFLAGS+=-fopenmp=libomp
+omp: LIBS+=-lgomp
+omp: CFLAGS+=-fopenmp
 ranged_test: BINARY_WRITE= -t $(TEST)/ref.tre -s $(TEST)/range_combined.fasta -r -w $(OUTDIR) $(F)
 mpi: CC=mpic++
 mpi: CFLAGS+=-D__MPI

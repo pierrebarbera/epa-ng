@@ -137,6 +137,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const string& outdir,
       sample.emplace_back(cur_seq_id, num_branches);
 
     // place sequences
+    #pragma omp parallel for schedule(dynamic)
     for (unsigned int local_branch_id = 0; local_branch_id < num_branches; ++local_branch_id)
     {
       for (unsigned int cur_seq_id = 0; cur_seq_id < num_sequences; cur_seq_id++)
@@ -216,7 +217,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const string& outdir,
         for (auto & placement : pq)
           recompute_list[placement.branch_id()].push_back(make_tuple(&placement, pq.sequence_id()));
 
-      // #pragma omp parallel for schedule(dynamic)
+      #pragma omp parallel for schedule(dynamic)
       for (unsigned int branch_id = 0; branch_id < num_branches; branch_id++)
       {
         Placement * placement;
