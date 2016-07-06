@@ -61,7 +61,7 @@ void precompute_clvs(pll_utree_t * tree, pll_partition_t * partition, const Tree
   pll_utree_query_tipnodes(tree, &tip_nodes[0]);
 
   /* adjust clv indices such that every direction has its own */
-  set_unique_clv_indices(tree, nums.tip_nodes);
+  set_unique_clv_indices(tree, nums.tip_nodes); /* in pll_util.cpp */
 
   for (auto node : tip_nodes)
   {
