@@ -84,7 +84,7 @@ pll_partition_t *  build_partition_from_file(const Model& model, Tree_Numbers& n
 {
   assert(nums.tip_nodes); // nums must have been initialized correctly
 
-  auto attributes = PLL_ATTRIB_ARCH_SSE;
+  unsigned int attributes = PLL_ATTRIB_ARCH_SSE;
 #ifdef __AVX
   attributes = PLL_ATTRIB_ARCH_AVX;
 #endif
@@ -100,7 +100,7 @@ pll_partition_t *  build_partition_from_file(const Model& model, Tree_Numbers& n
            nums.branches,
            RATE_CATS,
            (nums.inner_nodes * 3) + nums.tip_nodes, /* number of scaler buffers */
-           pll_map_nt,
+          //  pll_map_nt,
            attributes);
 
   assert(partition);

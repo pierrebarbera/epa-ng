@@ -34,7 +34,7 @@ pll_partition_t * make_tiny_partition(Tree& reference_tree, const pll_utree_t * 
     3, // number of prob. matrices (one per possible unique branch length)
     old_partition->rate_cats,
     3, // number of scale buffers (one per possible inner node)
-    pll_map_nt,
+    // pll_map_nt,
     old_partition->attributes);
 
   assert(tiny);
@@ -76,24 +76,6 @@ pll_partition_t * make_tiny_partition(Tree& reference_tree, const pll_utree_t * 
     free(tiny->pattern_weights);
   tiny->pattern_weights = old_partition->pattern_weights;
 
-  // shalow/deep copy tip_tip_pattern specific things
-  // shallow
-  if (tiny->charmap)
-    free(tiny->charmap);
-  if (tiny->tipmap)
-    free(tiny->tipmap);
-  if (tiny->ttlookup)
-    free(tiny->ttlookup);
-  tiny->charmap = old_partition->charmap;
-  tiny->tipmap = old_partition->tipmap;
-  tiny->ttlookup = old_partition->ttlookup;
-
-  // deep
-  tiny->maxstates = old_partition->maxstates;
-  tiny->log2_maxstates = old_partition->log2_maxstates;
-  tiny->log2_states = old_partition->log2_states;
-  tiny->log2_rates = old_partition->log2_rates;
-
   unsigned int clv_size = sizeof(double) * old_partition->sites * old_partition->rate_cats
     * old_partition->states_padded;
 
@@ -105,7 +87,7 @@ pll_partition_t * make_tiny_partition(Tree& reference_tree, const pll_utree_t * 
   if(tip_tip_case && use_tipchars)
     memcpy(tiny->tipchars[distal->clv_index],
       reference_tree.get_clv(old_distal),
-      sizeof(char) * old_partition->sites);
+      sizeof(unsigned char) * old_partition->sites);
   else
     memcpy(tiny->clv[distal->clv_index],
       reference_tree.get_clv(old_distal),

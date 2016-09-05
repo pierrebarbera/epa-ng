@@ -12,9 +12,10 @@ F+=
 CF+=
 BINARY_WRITE= -t $(TEST)/ref.tre -s $(TEST)/aln.fasta -q $(TEST)/query.fasta -g -B -w $(OUTDIR) $(F)
 BINARY_READ=-b $(OUTDIR)/epa_binary_file -q $(TEST)/query.fasta  -w $(OUTDIR)
+NORM_TEST=-t $(TEST)/ref.tre -s $(TEST)/aln.fasta -q $(TEST)/query.fasta -g -w $(OUTDIR) $(F)
 
-CC=clang++
-# CC=g++s
+#CC=clang++
+CC=g++
 DEFS=
 WARNINGS= -Wall -Wextra -pedantic -pedantic-errors
 DBG=-g
@@ -76,6 +77,7 @@ mpi_test: $(mpi)
 
 valgrind: $(TARGET)
 	mkdir -p $(OUTDIR)
+	valgrind $(TARGET) $(NORM_TEST)
 	valgrind $(TARGET) $(BINARY_WRITE)
 	valgrind $(TARGET) $(BINARY_READ)
 
@@ -87,7 +89,7 @@ callgrind: $(TARGET)
 
 gdb: $(TARGET)
 	mkdir -p $(OUTDIR)
-	gdb --args $(TARGET) $(BINARY_WRITE)
+	gdb --args $(TARGET) $(NORM_TEST)
 
 $(TARGET): $(OUT_OBJS)
 	$(CC) $(LINKFLAGS) -o $@ $+ $(LIBS)

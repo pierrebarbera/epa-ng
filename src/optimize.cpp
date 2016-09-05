@@ -82,10 +82,12 @@ double optimize_branch_triplet(pll_partition_t * partition, pll_utree_t * tree)
       &matrix_indices[0], &operations[0]);
 
     logl = cur_logl;
-    cur_logl = -pll_optimize_branch_lengths_local (
+    cur_logl = -pllmod_opt_optimize_branch_lengths_local (
                                                   partition,
                                                   tree,
                                                   param_indices,
+                                                  PLLMOD_OPT_MIN_BRANCH_LEN,
+                                                  PLLMOD_OPT_MAX_BRANCH_LEN,
                                                   OPT_BRANCH_EPSILON,
                                                   smoothings,
                                                   1, // radius
@@ -119,10 +121,12 @@ static double optimize_branch_lengths(pll_utree_t * tree, pll_partition_t * part
 
   unsigned int param_indices[RATE_CATS] = {0};
 
-  cur_logl = -1 * pll_optimize_branch_lengths_iterative(
+  cur_logl = -1 * pllmod_opt_optimize_branch_lengths_iterative(
     partition,
     tree,
     param_indices,
+    PLLMOD_OPT_MIN_BRANCH_LEN,
+    PLLMOD_OPT_MAX_BRANCH_LEN,
     OPT_BRANCH_EPSILON,
     *smoothings,
     1); // keep updating BLs during call
@@ -236,8 +240,8 @@ void optimize(Model& model, pll_utree_t * tree, pll_partition_t * partition,
     if (opt_model)
     {
 
-      params.which_parameters = PLL_PARAMETER_SUBST_RATES;
-      cur_logl = -pll_optimize_parameters_multidim(&params, min_rates, max_rates);
+      params.which_parameters = PLLMOD_OPT_PARAM_SUBST_RATES;
+      cur_logl = -pllmod_opt_optimize_multidim(&params, min_rates, max_rates);
 
       lgr << "after rates: " << to_string(cur_logl) << "\n";
 
@@ -266,8 +270,8 @@ void optimize(Model& model, pll_utree_t * tree, pll_partition_t * partition,
 
       // params.which_parameters = PLL_PARAMETER_PINV;
       // cur_logl = -1 * pll_optimize_parameters_brent(&params);
-      params.which_parameters = PLL_PARAMETER_ALPHA;
-      cur_logl = -pll_optimize_parameters_onedim(&params, 0.02, 10000.);
+      params.which_parameters = PLLMOD_OPT_PARAM_ALPHA;
+      cur_logl = -pllmod_opt_optimize_onedim(&params, 0.02, 10000.);
 
       lgr << "after alpha: " << to_string(cur_logl) << "\n";
 
@@ -295,7 +299,7 @@ void optimize(Model& model, pll_utree_t * tree, pll_partition_t * partition,
 
 void compute_and_set_empirical_frequencies(pll_partition_t * partition, Model& model)
 {
-  double * empirical_freqs = pll_msa_empirical_frequencies (partition);
+  double * empirical_freqs = pllmod_msa_empirical_frequencies (partition);
 
   pll_set_frequencies (partition, 0, empirical_freqs);
   model.base_frequencies(partition->frequencies[0], partition->states);

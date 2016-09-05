@@ -14,12 +14,12 @@ Binary::Binary(const string& binary_file_path) : bin_fptr_(nullptr, safe_fclose)
 {
   // open the binary file
   pll_binary_header_t header;
-  bin_fptr_ = unique_fptr(pll_binary_open(binary_file_path.c_str(), &header), safe_fclose);
+  bin_fptr_ = unique_fptr(pllmod_binary_open(binary_file_path.c_str(), &header), safe_fclose);
 
   if (!bin_fptr_)
     throw runtime_error{"Could not open binary file for reading."};
 
-  if (header.access_type != PLL_BINARY_ACCESS_RANDOM)
+  if (header.access_type != PLLMOD_BIN_ACCESS_RANDOM)
     throw runtime_error{"Binary file must be random access enabled."};
 
   if (header.n_blocks <= 0)
@@ -29,7 +29,7 @@ Binary::Binary(const string& binary_file_path) : bin_fptr_(nullptr, safe_fclose)
   // proccess the random access map
   unsigned int n_blocks;
   pll_block_map_t* block_map;
-  block_map = pll_binary_get_map(bin_fptr_.get(), &n_blocks);
+  block_map = pllmod_binary_get_map(bin_fptr_.get(), &n_blocks);
 
   assert(block_map);
   assert(n_blocks);
@@ -72,7 +72,7 @@ void Binary::load_clv(pll_partition_t * partition, const unsigned int clv_index)
   }
 
   unsigned int attributes;
-  auto err = pll_binary_clv_load(
+  auto err = pllmod_binary_clv_load(
     bin_fptr_.get(),
     0,
     partition,
@@ -94,11 +94,11 @@ void Binary::load_tipchars(pll_partition_t * partition, const unsigned int tipch
   unsigned int type, attributes;
   size_t size;
 
-  auto ptr = pll_binary_custom_load(bin_fptr_.get(), 0, &size, &type, &attributes, get_offset(map_, tipchars_index));
+  auto ptr = pllmod_binary_custom_load(bin_fptr_.get(), 0, &size, &type, &attributes, get_offset(map_, tipchars_index));
   if (!ptr)
     throw runtime_error{string("Loading tipchar failed: ") + pll_errmsg};
 
-  partition->tipchars[tipchars_index] = (char*)ptr;
+  partition->tipchars[tipchars_index] = (unsigned char*)ptr;
 }
 
 void Binary::load_scaler(pll_partition_t * partition, const unsigned int scaler_index)
@@ -111,7 +111,7 @@ void Binary::load_scaler(pll_partition_t * partition, const unsigned int scaler_
   unsigned int type, attributes;
   size_t size;
 
-  auto ptr = pll_binary_custom_load(bin_fptr_.get(), 0,
+  auto ptr = pllmod_binary_custom_load(bin_fptr_.get(), 0,
     &size, &type, &attributes, get_offset(map_, block_offset + scaler_index));
   if (!ptr)
     throw runtime_error{string("Loading scaler failed: ") + pll_errmsg};
@@ -137,7 +137,7 @@ static pll_partition_t* skeleton_partition()
     1, // number of probabillity matrices
     RATE_CATS,
     1, // number of scale buffers
-    pll_map_nt,
+    //pll_map_nt,
     attributes);
 
   if (!partition)
@@ -182,8 +182,11 @@ pll_partition_t* Binary::load_partition()
 {
   // make skeleton partition that only allocates the pointers to the clv/tipchar buffers
   auto skelly = nullptr;// skeleton_partition();
-  unsigned int attributes = PLL_BINARY_ATTRIB_PARTITION_DUMP_WGT;
-  auto partition =  pll_binary_partition_load(bin_fptr_.get(), 0, skelly, &attributes, pll_map_nt, get_offset(map_, -1));
+  unsigned int attributes = PLLMOD_BIN_ATTRIB_PARTITION_DUMP_WGT;
+  auto partition =  pllmod_binary_partition_load(bin_fptr_.get(), 0, skelly, &attributes,
+    // pll_map_nt, 
+    get_offset(map_, -1));
+
   if (!partition)
     throw runtime_error{string("Error loading partition: ") + pll_errmsg};
 
@@ -197,7 +200,7 @@ pll_partition_t* Binary::load_partition()
 pll_utree_t* Binary::load_utree()
 {
   unsigned int attributes = 0;
-  auto tree =  pll_binary_utree_load(bin_fptr_.get(), 0, &attributes, get_offset(map_, -2));
+  auto tree =  pllmod_binary_utree_load(bin_fptr_.get(), 0, &attributes, get_offset(map_, -2));
   if (!tree)
     throw runtime_error{string("Loading tree: ") + pll_errmsg};
   return tree;
@@ -215,26 +218,26 @@ void dump_to_binary(Tree& tree, const string& file)
   auto max_clv_index = num_clvs + num_tips;
 
   pll_binary_header_t header;
-  auto fptr =  pll_binary_create(
+  auto fptr =  pllmod_binary_create(
     file.c_str(),
     &header,
-    PLL_BINARY_ACCESS_RANDOM,
+    PLLMOD_BIN_ACCESS_RANDOM,
     2 + num_clvs + num_tips + num_scalers);
 
   if(!fptr)
     throw runtime_error{string("Opening binary file for writing: ") + pll_errmsg};
 
-  unsigned int attributes = PLL_BINARY_ATTRIB_UPDATE_MAP | PLL_BINARY_ATTRIB_PARTITION_DUMP_WGT;
+  unsigned int attributes = PLLMOD_BIN_ATTRIB_UPDATE_MAP | PLLMOD_BIN_ATTRIB_PARTITION_DUMP_WGT;
 
   int block_id = -2;
   bool use_tipchars = tree.partition()->attributes & PLL_ATTRIB_PATTERN_TIP;
 
   // dump the utree structure
-  if(!pll_binary_utree_dump(fptr, block_id++, tree.tree(), num_tips, attributes))
+  if(!pllmod_binary_utree_dump(fptr, block_id++, tree.tree(), num_tips, attributes))
     throw runtime_error{string("Dumping the utree to binary: ") + pll_errmsg};
 
   // dump the partition
-  if(!pll_binary_partition_dump(fptr, block_id++, tree.partition(), attributes))
+  if(!pllmod_binary_partition_dump(fptr, block_id++, tree.partition(), attributes))
     throw runtime_error{string("Dumping partition to binary: ") + pll_errmsg};
 
   // dump the tipchars, but only if partition uses them
@@ -243,7 +246,7 @@ void dump_to_binary(Tree& tree, const string& file)
   {
     for (tip_index = 0; tip_index < num_tips; tip_index++)
     {
-      if(!pll_binary_custom_dump(fptr, block_id++, tree.partition()->tipchars[tip_index],
+      if(!pllmod_binary_custom_dump(fptr, block_id++, tree.partition()->tipchars[tip_index],
       tree.partition()->sites * sizeof(char), attributes))
         throw runtime_error{string("Dumping tipchars to binary: ") + pll_errmsg};
     }
@@ -252,14 +255,14 @@ void dump_to_binary(Tree& tree, const string& file)
   // dump the clvs
   for (unsigned int clv_index = tip_index; clv_index < max_clv_index; clv_index++)
   {
-    if(!pll_binary_clv_dump(fptr, block_id++, tree.partition(), clv_index, attributes))
+    if(!pllmod_binary_clv_dump(fptr, block_id++, tree.partition(), clv_index, attributes))
       throw runtime_error{string("Dumping clvs to binary: ") + pll_errmsg};
   }
 
   // dump the scalers
   for (unsigned int scaler_index = 0; scaler_index < num_scalers; scaler_index++)
   {
-    if(!pll_binary_custom_dump(fptr, block_id++, tree.partition()->scale_buffer[scaler_index],
+    if(!pllmod_binary_custom_dump(fptr, block_id++, tree.partition()->scale_buffer[scaler_index],
       tree.partition()->sites * sizeof(unsigned int), attributes))
       throw runtime_error{string("Dumping scalers to binary: ") + pll_errmsg};
   }
