@@ -75,12 +75,13 @@ void * Tree::get_clv(const pll_utree_t* node)
 {
   auto i = node->clv_index;
   auto scaler = node->scaler_index;
+  bool use_tipchars = partition_->attributes & PLL_ATTRIB_PATTERN_TIP;
 
   if(i >= partition_->tips + partition_->clv_buffers)
     throw runtime_error{"Node index out of bounds"};
 
   void* clv_ptr;
-  if (i < partition_->tips)
+  if (use_tipchars && i < partition_->tips)
   {
     clv_ptr = partition_->tipchars[i];
     // dynamically load from disk if not in memory

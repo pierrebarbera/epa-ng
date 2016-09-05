@@ -17,6 +17,8 @@ pll_partition_t * make_tiny_partition(Tree& reference_tree, const pll_utree_t * 
   pll_partition_t *old_partition = reference_tree.partition();
   assert(old_partition);
 
+  bool use_tipchars = old_partition->attributes & PLL_ATTRIB_PATTERN_TIP;
+
   unsigned int num_clv_tips = 2; // tip_inner case: both reference nodes are inner nodes
   if (tip_tip_case)
     num_clv_tips = 1; // one for the "proximal" clv tip
@@ -100,7 +102,7 @@ pll_partition_t * make_tiny_partition(Tree& reference_tree, const pll_utree_t * 
     reference_tree.get_clv(old_proximal),
     clv_size);
 
-  if(tip_tip_case)
+  if(tip_tip_case && use_tipchars)
     memcpy(tiny->tipchars[distal->clv_index],
       reference_tree.get_clv(old_distal),
       sizeof(char) * old_partition->sites);

@@ -61,7 +61,8 @@ void Binary::load_clv(pll_partition_t * partition, const unsigned int clv_index)
 {
   assert(bin_fptr_);
   assert(clv_index < partition->clv_buffers + partition->tips);
-  assert(clv_index >= partition->tips);
+  if (partition->attributes & PLL_ATTRIB_PATTERN_TIP)
+    assert(clv_index >= partition->tips);
 
   if (!(partition->clv[clv_index]))
   {
@@ -88,6 +89,7 @@ void Binary::load_tipchars(pll_partition_t * partition, const unsigned int tipch
 {
   assert(bin_fptr_);
   assert(tipchars_index < partition->tips);
+  assert(partition->attributes & PLL_ATTRIB_PATTERN_TIP);
 
   unsigned int type, attributes;
   size_t size;
@@ -225,6 +227,7 @@ void dump_to_binary(Tree& tree, const string& file)
   unsigned int attributes = PLL_BINARY_ATTRIB_UPDATE_MAP | PLL_BINARY_ATTRIB_PARTITION_DUMP_WGT;
 
   int block_id = -2;
+  bool use_tipchars = tree.partition()->attributes & PLL_ATTRIB_PATTERN_TIP;
 
   // dump the utree structure
   if(!pll_binary_utree_dump(fptr, block_id++, tree.tree(), num_tips, attributes))
@@ -234,16 +237,20 @@ void dump_to_binary(Tree& tree, const string& file)
   if(!pll_binary_partition_dump(fptr, block_id++, tree.partition(), attributes))
     throw runtime_error{string("Dumping partition to binary: ") + pll_errmsg};
 
-  // dump the tipchars
-  for (unsigned int tip_index = 0; tip_index < num_tips; tip_index++)
+  // dump the tipchars, but only if partition uses them
+  unsigned int tip_index = 0;
+  if (use_tipchars)
   {
-    if(!pll_binary_custom_dump(fptr, block_id++, tree.partition()->tipchars[tip_index],
+    for (tip_index = 0; tip_index < num_tips; tip_index++)
+    {
+      if(!pll_binary_custom_dump(fptr, block_id++, tree.partition()->tipchars[tip_index],
       tree.partition()->sites * sizeof(char), attributes))
-      throw runtime_error{string("Dumping tipchars to binary: ") + pll_errmsg};
+        throw runtime_error{string("Dumping tipchars to binary: ") + pll_errmsg};
+    }
   }
 
   // dump the clvs
-  for (unsigned int clv_index = num_tips; clv_index < max_clv_index; clv_index++)
+  for (unsigned int clv_index = tip_index; clv_index < max_clv_index; clv_index++)
   {
     if(!pll_binary_clv_dump(fptr, block_id++, tree.partition(), clv_index, attributes))
       throw runtime_error{string("Dumping clvs to binary: ") + pll_errmsg};
