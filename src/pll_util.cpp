@@ -304,8 +304,9 @@ void shift_partition_focus(pll_partition_t * partition, const int offset, const 
   const auto max_index = num_tips + partition->clv_buffers;
 
   // shift the tip chars
-  for (unsigned int i = 0; i < num_tips; i++)
-    partition->tipchars[i] += offset;
+  if (partition->attributes & PLL_ATTRIB_PATTERN_TIP)
+    for (unsigned int i = 0; i < num_tips; i++)
+      partition->tipchars[i] += offset;
 
   // shift the clvs
   for (unsigned int i = 0; i < max_index; i++)

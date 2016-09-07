@@ -161,7 +161,8 @@ static void dealloc_buffers(pll_partition_t* part)
 
   if (part->clv)
   {
-    for (size_t i = part->tips; i < part->clv_buffers + part->tips; ++i)
+    size_t start = (part->attributes & PLL_ATTRIB_PATTERN_TIP) ? part->tips : 0;
+    for (size_t i = start; i < part->clv_buffers + part->tips; ++i)
     {
       pll_aligned_free(part->clv[i]);
       part->clv[i] = nullptr;
@@ -184,7 +185,6 @@ pll_partition_t* Binary::load_partition()
   auto skelly = nullptr;// skeleton_partition();
   unsigned int attributes = PLLMOD_BIN_ATTRIB_PARTITION_DUMP_WGT;
   auto partition =  pllmod_binary_partition_load(bin_fptr_.get(), 0, skelly, &attributes,
-    // pll_map_nt, 
     get_offset(map_, -1));
 
   if (!partition)

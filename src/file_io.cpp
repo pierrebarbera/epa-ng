@@ -87,6 +87,7 @@ pll_partition_t *  build_partition_from_file(const Model& model, Tree_Numbers& n
   unsigned int attributes = PLL_ATTRIB_ARCH_SSE;
 #ifdef __AVX
   attributes = PLL_ATTRIB_ARCH_AVX;
+  printf("AVX enabled\n");
 #endif
 
   attributes |= PLL_ATTRIB_PATTERN_TIP;

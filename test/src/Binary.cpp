@@ -145,20 +145,23 @@ TEST(Binary, read)
   ASSERT_EQ(part->attributes, read_part->attributes);
 
   // compare tips
-  for (size_t i = 0; i < part->tips; i++)
-  {
-    pll_utree_t node;
-    node.clv_index = i;
-    node.scaler_index = 0;
-    char* read_tipchars = (char*) read_tree.get_clv(&node);
-    for (size_t j = 0; j < part->sites; j++)
+  if (read_part->attributes & PLL_ATTRIB_PATTERN_TIP)
+    for (size_t i = 0; i < part->tips; i++)
     {
-      EXPECT_EQ(part->tipchars[i][j], read_tipchars[j]);
+      pll_utree_t node;
+      node.clv_index = i;
+      node.scaler_index = 0;
+      char* read_tipchars = (char*) read_tree.get_clv(&node);
+      for (size_t j = 0; j < part->sites; j++)
+      {
+        EXPECT_EQ(part->tipchars[i][j], read_tipchars[j]);
+      }
     }
-  }
 
   // compare clvs
-  for (size_t i = part->tips; i < part->tips + part->clv_buffers; i++)
+  size_t start = (read_part->attributes & PLL_ATTRIB_PATTERN_TIP) ? part->tips : 0;
+
+  for (size_t i = start; i < part->tips + part->clv_buffers; i++)
   {
     pll_utree_t node;
     node.clv_index = i;
@@ -166,7 +169,7 @@ TEST(Binary, read)
     double* read_clv = (double*) read_tree.get_clv(&node);
     for (size_t j = 0; j < part->sites + part->states_padded + part->rate_cats; j++)
     {
-      EXPECT_DOUBLE_EQ(part->clv[i][j], read_clv[j]);
+      ASSERT_DOUBLE_EQ(part->clv[i][j], read_clv[j]);
     }
   }
 

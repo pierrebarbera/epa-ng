@@ -103,7 +103,7 @@ TEST(Tiny_Tree, place_from_binary)
       auto original_place = original_tiny.place(seq);
       auto read_place = read_tiny.place(seq);
 
-      EXPECT_DOUBLE_EQ(original_place.likelihood(), read_place.likelihood());
+      ASSERT_DOUBLE_EQ(original_place.likelihood(), read_place.likelihood());
       // printf("%f vs %f\n", original_place.likelihood(), read_place.likelihood());
     }
   }

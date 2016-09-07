@@ -114,8 +114,8 @@ TEST(Tree, place_from_binary)
 
 
   // test
-  EXPECT_DOUBLE_EQ(original_tree.options().support_threshold, read_tree.options().support_threshold);
-  EXPECT_DOUBLE_EQ(original_tree.ref_tree_logl(), read_tree.ref_tree_logl());
+  ASSERT_DOUBLE_EQ(original_tree.options().support_threshold, read_tree.options().support_threshold);
+  ASSERT_DOUBLE_EQ(original_tree.ref_tree_logl(), read_tree.ref_tree_logl());
 
   auto original_sample = place(original_tree, queries);
   auto read_sample = place(read_tree, queries);

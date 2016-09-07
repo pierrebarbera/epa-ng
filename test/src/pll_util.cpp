@@ -164,7 +164,7 @@ TEST(pll_util, shift_partition_focus_shifty)
     3, // number of prob. matrices (one per possible unique branch length)
     4,
     1, // number of scale buffers (one per possible inner node)
-    pll_map_nt,
+    // pll_map_nt,
     PLL_ATTRIB_PATTERN_TIP | PLL_ATTRIB_ARCH_CPU);
 
   // tests
@@ -221,7 +221,7 @@ TEST(pll_util, shift_partition_focus_logtest)
     3, // number of prob. matrices (one per possible unique branch length)
     4,
     1, // number of scale buffers (one per possible inner node)
-    pll_map_nt,
+    // pll_map_nt,
     PLL_ATTRIB_PATTERN_TIP | PLL_ATTRIB_ARCH_CPU);
 
   double frequencies[4] = { 0.17, 0.19, 0.25, 0.39 };
