@@ -4,10 +4,12 @@ test/bin/
 test/log/
 test/20k/
 test/lou/
+test/MA-TESTS/
 test/data/lucas/
 test/data/bacvag/
-include/
 test/pquery_emd
+test/README.txt
+include/
 
 # output files
 *.jplace

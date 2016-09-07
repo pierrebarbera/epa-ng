@@ -2,6 +2,12 @@
 
 #include "pll_util.hpp"
 
+const unsigned int proximal_clv_index = 4;
+const unsigned int inner_clv_index = 3;
+const unsigned int new_tip_clv_index = 1;
+const unsigned int distal_clv_index_if_tip = 2;
+const unsigned int distal_clv_index_if_inner = 5;
+
 
 pll_partition_t * make_tiny_partition(Tree& reference_tree, const pll_utree_t * tree,
   const pll_utree_t * old_proximal, const pll_utree_t * old_distal, const bool tip_tip_case)
@@ -76,22 +82,40 @@ pll_partition_t * make_tiny_partition(Tree& reference_tree, const pll_utree_t * 
     free(tiny->pattern_weights);
   tiny->pattern_weights = old_partition->pattern_weights;
 
-  unsigned int clv_size = sizeof(double) * old_partition->sites * old_partition->rate_cats
-    * old_partition->states_padded;
 
-  // deep copy clv's
-  memcpy(tiny->clv[proximal->clv_index],
-    reference_tree.get_clv(old_proximal),
-    clv_size);
+  // shallow copy major buffers
+  pll_aligned_free(tiny->clv[proximal->clv_index]);
+  tiny->clv[proximal->clv_index] =
+    (double*)reference_tree.get_clv(old_proximal);
+
 
   if(tip_tip_case && use_tipchars)
-    memcpy(tiny->tipchars[distal->clv_index],
-      reference_tree.get_clv(old_distal),
-      sizeof(unsigned char) * old_partition->sites);
+  {
+    pll_aligned_free(tiny->tipchars[distal->clv_index]);
+    tiny->tipchars[distal->clv_index] = (unsigned char*) reference_tree.get_clv(old_distal);
+  }
   else
-    memcpy(tiny->clv[distal->clv_index],
-      reference_tree.get_clv(old_distal),
-      clv_size);
+  {
+    pll_aligned_free(tiny->clv[distal->clv_index]);
+    tiny->clv[distal->clv_index] = (double*) reference_tree.get_clv(old_distal);
+  }
+
+  // unsigned int clv_size = sizeof(double) * old_partition->sites * old_partition->rate_cats
+  //   * old_partition->states_padded;
+  
+  // deep copy clv's
+  // memcpy(tiny->clv[proximal->clv_index],
+  //   reference_tree.get_clv(old_proximal),
+  //   clv_size);
+
+  // if(tip_tip_case && use_tipchars)
+  //   memcpy(tiny->tipchars[distal->clv_index],
+  //     reference_tree.get_clv(old_distal),
+  //     sizeof(unsigned char) * old_partition->sites);
+  // else
+  //   memcpy(tiny->clv[distal->clv_index],
+  //     reference_tree.get_clv(old_distal),
+  //     clv_size);
 
   // deep copy scalers
   if (old_proximal->scaler_index != PLL_SCALE_BUFFER_NONE)
@@ -125,6 +149,14 @@ void tiny_partition_destroy(pll_partition_t * partition)
     partition->charmap = nullptr;
     partition->tipmap = nullptr;
 
+    partition->clv[proximal_clv_index] = nullptr;
+
+    if (partition->clv_buffers == 3) // means tip-inner case... TODO make this cleaner
+      partition->clv[distal_clv_index_if_inner] = nullptr;
+
+    if (partition->attributes & PLL_ATTRIB_PATTERN_TIP)
+      partition->tipchars[distal_clv_index_if_tip] = nullptr;
+
     pll_partition_destroy(partition);
   }
 }
@@ -145,13 +177,7 @@ pll_utree_t * make_tiny_tree_structure(const pll_utree_t * old_proximal, const p
     * number of clv-tips)
   */
   // if tip-inner case
-  unsigned int distal_clv_index = 5;
-  const unsigned int proximal_clv_index = 4;
-  const unsigned int inner_clv_index = 3;
-  const unsigned int new_tip_clv_index = 1;
-
-  if (tip_tip_case)
-    distal_clv_index = 2;
+  unsigned int distal_clv_index = (tip_tip_case) ? distal_clv_index_if_tip : distal_clv_index_if_inner;
 
   pll_utree_t * inner = (pll_utree_t *) calloc(1,sizeof(pll_utree_t));
   inner->next = (pll_utree_t *) calloc(1,sizeof(pll_utree_t));
