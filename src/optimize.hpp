@@ -7,7 +7,7 @@
 
 constexpr double OPT_EPSILON = 1.0;
 constexpr double OPT_PARAM_EPSILON = 1e-4;
-constexpr double OPT_BRANCH_EPSILON = 1e-4;
+constexpr double OPT_BRANCH_EPSILON = 1e-1;
 constexpr double OPT_FACTR = 1e7;
 
 // interface
