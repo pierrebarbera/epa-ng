@@ -67,8 +67,10 @@ void Binary::load_clv(pll_partition_t * partition, const unsigned int clv_index)
   if (!(partition->clv[clv_index]))
   {
     size_t clv_size = partition->sites * partition->states_padded *
-                      partition->rate_cats;
-    partition->clv[clv_index] = (double*) calloc(clv_size, sizeof(double));
+                      partition->rate_cats*sizeof(double);
+    partition->clv[clv_index] = (double*) pll_aligned_alloc(clv_size, partition->alignment);
+    if (!partition->clv[i])
+      throw runtime_error{"Could not allocate CLV memory"};
   }
 
   unsigned int attributes;
