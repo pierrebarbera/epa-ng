@@ -1,6 +1,9 @@
 #include "tiny_util.hpp"
 
+// #include <except>
+
 #include "pll_util.hpp"
+
 
 const unsigned int proximal_clv_index = 4;
 const unsigned int inner_clv_index = 3;
@@ -90,6 +93,9 @@ pll_partition_t * make_tiny_partition(Tree& reference_tree, const pll_utree_t * 
 
   if(tip_tip_case && use_tipchars)
   {
+    std::string sequence(tiny->sites, 'A');
+    if(pll_set_tip_states(tiny, distal->clv_index, pll_map_nt, sequence.c_str()) == PLL_FAILURE)
+      throw std::runtime_error{"Error setting tip state"};
     pll_aligned_free(tiny->tipchars[distal->clv_index]);
     tiny->tipchars[distal->clv_index] = (unsigned char*) reference_tree.get_clv(old_distal);
   }
@@ -98,23 +104,6 @@ pll_partition_t * make_tiny_partition(Tree& reference_tree, const pll_utree_t * 
     pll_aligned_free(tiny->clv[distal->clv_index]);
     tiny->clv[distal->clv_index] = (double*) reference_tree.get_clv(old_distal);
   }
-
-  // unsigned int clv_size = sizeof(double) * old_partition->sites * old_partition->rate_cats
-  //   * old_partition->states_padded;
-
-  // deep copy clv's
-  // memcpy(tiny->clv[proximal->clv_index],
-  //   reference_tree.get_clv(old_proximal),
-  //   clv_size);
-
-  // if(tip_tip_case && use_tipchars)
-  //   memcpy(tiny->tipchars[distal->clv_index],
-  //     reference_tree.get_clv(old_distal),
-  //     sizeof(unsigned char) * old_partition->sites);
-  // else
-  //   memcpy(tiny->clv[distal->clv_index],
-  //     reference_tree.get_clv(old_distal),
-  //     clv_size);
 
   // deep copy scalers
   if (old_proximal->scaler_index != PLL_SCALE_BUFFER_NONE)
