@@ -93,6 +93,7 @@ void precompute_clvs(pll_utree_t * tree, pll_partition_t * partition, const Tree
        will be carried out sequentially starting from operation 0 towrds num_ops-1 */
     pll_update_partials(partition, &operations[0], num_ops);
   }
+  utree_free_node_data(tree);
 }
 
 void split_combined_msa(MSA& source, MSA& target, Tree& tree)

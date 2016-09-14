@@ -82,7 +82,6 @@ pll_partition_t * make_tiny_partition(Tree& reference_tree, const pll_utree_t * 
     free(tiny->pattern_weights);
   tiny->pattern_weights = old_partition->pattern_weights;
 
-
   // shallow copy major buffers
   pll_aligned_free(tiny->clv[proximal->clv_index]);
   tiny->clv[proximal->clv_index] =
@@ -102,7 +101,7 @@ pll_partition_t * make_tiny_partition(Tree& reference_tree, const pll_utree_t * 
 
   // unsigned int clv_size = sizeof(double) * old_partition->sites * old_partition->rate_cats
   //   * old_partition->states_padded;
-  
+
   // deep copy clv's
   // memcpy(tiny->clv[proximal->clv_index],
   //   reference_tree.get_clv(old_proximal),
@@ -145,16 +144,12 @@ void tiny_partition_destroy(pll_partition_t * partition)
     partition->eigen_decomp_valid = nullptr;
     partition->pattern_weights = nullptr;
 
-    partition->ttlookup = nullptr;
-    partition->charmap = nullptr;
-    partition->tipmap = nullptr;
-
     partition->clv[proximal_clv_index] = nullptr;
 
     if (partition->clv_buffers == 3) // means tip-inner case... TODO make this cleaner
       partition->clv[distal_clv_index_if_inner] = nullptr;
 
-    if (partition->attributes & PLL_ATTRIB_PATTERN_TIP)
+    if (partition->attributes & PLL_ATTRIB_PATTERN_TIP && partition->clv_buffers == 2)
       partition->tipchars[distal_clv_index_if_tip] = nullptr;
 
     pll_partition_destroy(partition);
