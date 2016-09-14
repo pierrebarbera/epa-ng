@@ -211,8 +211,6 @@ int main(int argc, char** argv)
   // start the placement process and write to file
   auto start = chrono::high_resolution_clock::now();
   process(tree, queries, work_dir, options, invocation);
-  // MSA full_msa = build_MSA_from_file(query_file);
-  // place(tree, full_msa);
   auto end = chrono::high_resolution_clock::now();
   auto runtime = chrono::duration_cast<chrono::seconds>(end - start).count();
 
