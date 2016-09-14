@@ -68,7 +68,23 @@ pll_utree_t * build_tree_from_file(const string& tree_file, Tree_Numbers& nums)
 {
   unsigned int num_tip_nodes;
 
-  auto tree = pll_utree_parse_newick(tree_file.c_str(), &num_tip_nodes);
+  pll_utree_t * tree;
+  pll_rtree_t * rtree;
+
+  // load the tree unrooted
+  if (!(rtree = pll_rtree_parse_newick(tree_file.c_str(), &num_tip_nodes)))
+  {
+   if (!(tree = pll_utree_parse_newick(tree_file.c_str(), &num_tip_nodes)))
+     throw runtime_error{"Treeparsing failed!"};
+  }
+  else
+  {
+   tree = pll_rtree_unroot(rtree);
+   pll_rtree_destroy(rtree);
+
+   /* optional step if using default PLL clv/pmatrix index assignments */
+   pll_utree_reset_template_indices(tree, num_tip_nodes);
+  }
 
   if (num_tip_nodes < 3)
     throw runtime_error{"Number of tip nodes too small"};
