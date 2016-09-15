@@ -88,13 +88,15 @@ with open(os.path.join(output_dir, "results.log"), 'wb') as log_file:
         ret = call(params, stdout=open(os.devnull, 'wb'))
 
         # call epa with trimmed files
-        # print "calling epa to dump binary: "
-        params = [epa, "-t", cur_treefile,"-s", ref_MSA_file, "-q", query_MSA_file, "-OB", "-w", cur_outdir]
-        ret = call(params, stdout=open(os.devnull, 'wb'))
+	params = [epa, "-t", cur_treefile, "-s", ref_MSA_file,"-q", ref_MSA_file , "-w", cur_outdir]        
+
+	# print "calling epa to dump binary: "
+        #params = [epa, "-t", cur_treefile,"-s", ref_MSA_file, "-OB", "-w", cur_outdir]
+        #ret = call(params, stdout=open(os.devnull, 'wb'))
 
         # print "calling epa from binary file: "
-        binfile = os.path.join(cur_outdir, "epa_binary_file")
-        params = [epa, "-b", binfile, "-q", query_MSA_file, "-w", cur_outdir]
+        #binfile = os.path.join(cur_outdir, "epa_binary_file")
+        #params = [epa, "-b", binfile, "-q", ref_MSA_file, "-w", cur_outdir]
         # print params
         ret = call(params, stdout=open(os.devnull, 'wb'))
 
@@ -107,15 +109,15 @@ with open(os.path.join(output_dir, "results.log"), 'wb') as log_file:
         epa_jplace = os.path.join(cur_outdir, "epa_result.jplace")
 
         # print "calling compare script:"
-        # params = ["./jplace_compare.py", "-v", raxml_jplace, epa_jplace]
+        params = ["./pquery_emd", raxml_jplace, epa_jplace]
         # # print params
-        # ret = call(params, stdout=log_file)
+        ret = call(params, stdout=log_file)
 
         # print "calling compare script:"
-        params = ["./pquery_emd", raxml_jplace, epa_jplace]
+       	#params = ["./pquery_emd", raxml_jplace, epa_jplace]
         # print params
-        log_file.flush()
-        ret = call(params, stdout=log_file)
+       	#log_file.flush()
+        #ret = call(params, stdout=log_file)
 
         log_file.write("\n")
 
@@ -131,7 +133,7 @@ with open(os.path.join(output_dir, "results.log"), 'wb') as log_file:
         if  (progress - progress_old) > 1:
             print str(progress) + "%"
 
-    # failed_string = "Failed " + str(num_failed) + " out of " + str(num_run) + " tests"
-    # log_file.write(failed_string + "\n")
+    failed_string = "Failed " + str(num_failed) + " out of " + str(num_run) + " tests"
+    log_file.write(failed_string + "\n")
 
-# print failed_string
+print failed_string
