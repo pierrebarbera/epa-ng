@@ -7,7 +7,7 @@ test/lou/
 test/MA-TESTS/
 test/data/lucas/
 test/data/bacvag/
-test/pquery_emd
+test/compare_jplace_files
 test/README.txt
 include/
 
