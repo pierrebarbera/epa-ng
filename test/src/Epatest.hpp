@@ -34,6 +34,7 @@ public:
   std::string data_dir;
   std::string out_dir;
   std::string tree_file;
+  std::string tree_file_rooted;
   std::string reference_file;
   std::string combined_file;
   std::string query_file;

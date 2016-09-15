@@ -22,6 +22,8 @@ int main(int argc, char** argv)
 
   env->tree_file = std::string(env->data_dir);
   env->tree_file += "ref.tre";
+  env->tree_file_rooted = std::string(env->data_dir);
+  env->tree_file_rooted += "ref_rooted.tre";
   env->reference_file  = std::string(env->data_dir);
   env->reference_file += "aln.fasta";
   env->query_file  = std::string(env->data_dir);
