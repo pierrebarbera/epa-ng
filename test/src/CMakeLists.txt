@@ -29,6 +29,18 @@ target_link_libraries (epa_test_module ${pll_msa_dir}/libpll_msa.so)
 
 target_link_libraries (epa_test_module ${GTEST_BOTH_LIBRARIES} -pthread)
 
+target_link_libraries (epa_test_module ${MPI_CXX_LIBRARIES})
+
+if(MPI_COMPILE_FLAGS)
+  set_target_properties(epa_test_module PROPERTIES
+  COMPILE_FLAGS "${MPI_COMPILE_FLAGS}")
+endif()
+
+if(MPI_LINK_FLAGS)
+  set_target_properties(epa_test_module PROPERTIES
+    LINK_FLAGS "${MPI_LINK_FLAGS}")
+endif()
+
 set_target_properties (epa_test_module PROPERTIES OUTPUT_NAME epa_test)
 set_target_properties (epa_test_module PROPERTIES PREFIX "")
 
