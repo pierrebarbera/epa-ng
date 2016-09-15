@@ -1,11 +1,10 @@
-#pragma once
-
 #include "epa_mpi_util.hpp"
 
 #include <sstream>
 #include <memory>
 #include <cereal/archives/binary.hpp>
 
+#ifdef __MPI
 static void err_check(int errval)
 {
   if (errval != MPI_SUCCESS)
@@ -73,3 +72,4 @@ void epa_mpi_recieve(Sample& sample, int source_rank, MPI_Comm comm)
   // build the sample object
   in_archive(sample);
 };
+#endif
