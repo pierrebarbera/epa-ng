@@ -1,6 +1,5 @@
 #include "place.hpp"
 
-#include <stdexcept>
 #include <fstream>
 #include <chrono>
 #include <omp.h>
@@ -20,12 +19,8 @@
 #include "epa_mpi_util.hpp"
 #endif
 
-using namespace std;
-
-// Log lgr;
-
-void process(Tree& reference_tree, MSA_Stream& msa_stream, const string& outdir,
-              const Options& options, const string& invocation)
+void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& outdir,
+              const Options& options, const std::string& invocation)
 {
   auto model = reference_tree.model();
 
@@ -37,8 +32,8 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const string& outdir,
   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
   // shuffle available nodes to the different stages
-  unordered_map<int, unordered_map<int, int>> global_rank;
-  unordered_map<int, int> stage_size;
+  std::unordered_map<int, std::unordered_map<int, int>> global_rank;
+  std::unordered_map<int, int> stage_size;
   int stage_1_compute_size = 0;
   int stage_1_aggregate_size = 0;
   int stage_2_compute_size = 0;
@@ -87,7 +82,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const string& outdir,
   lgr << "\nInvocation: \n" << invocation << "\n";
 #ifdef __MPI
   } else {
-    lgr << "Rank " << world_rank << " checking in.\n";
+    std::cout << "Rank " << world_rank << " checking in." << std::endl;
   }
 #endif // __MPI
 
@@ -100,12 +95,12 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const string& outdir,
   const auto num_branches = reference_tree.nums().branches;
 
   // get all edges
-  vector<pll_utree_t *> branches(num_branches);
+  std::vector<pll_utree_t *> branches(num_branches);
   auto num_traversed_branches = utree_query_branches(reference_tree.tree(), &branches[0]);
   assert(num_traversed_branches == num_branches);
 
   // build all tiny trees with corresponding edges
-  vector<Tiny_Tree> insertion_trees;
+  std::vector<Tiny_Tree> insertion_trees;
   for (unsigned int branch_id = 0; branch_id < num_branches; branch_id++)
   {
     // TODO check if current mpi node is supposed to get this branch id
@@ -113,8 +108,8 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const string& outdir,
   }
 
   // create output file
-  ofstream outfile(outdir + "epa_result.jplace");
-  lgr << "\nOutput file: " << outdir + "epa_result.jplace" << endl;
+  std::ofstream outfile(outdir + "epa_result.jplace");
+  lgr << "\nOutput file: " << outdir + "epa_result.jplace" << std::endl;
   outfile << init_jplace_string(get_numbered_newick_string(reference_tree.tree()));
 
   // output class
@@ -212,10 +207,10 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const string& outdir,
     if (options.prescoring)
     {
       // build a list of placements per edge that need to be recomputed
-      vector<vector<tuple<Placement *, const unsigned int>>> recompute_list(num_branches);
+      std::vector<std::vector<std::tuple<Placement *, const unsigned int>>> recompute_list(num_branches);
       for (auto & pq : sample)
         for (auto & placement : pq)
-          recompute_list[placement.branch_id()].push_back(make_tuple(&placement, pq.sequence_id()));
+          recompute_list[placement.branch_id()].push_back(std::make_tuple(&placement, pq.sequence_id()));
 
       #pragma omp parallel for schedule(dynamic)
       for (unsigned int branch_id = 0; branch_id < num_branches; branch_id++)
@@ -226,8 +221,8 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const string& outdir,
         branch.opt_branches(true); // TODO only needs to be done once
         for (auto recomp_tuple : recompute_list[branch_id])
         {
-          placement = get<0>(recomp_tuple);
-          *placement = branch.place(msa_stream[get<1>(recomp_tuple)]);
+          placement = std::get<0>(recomp_tuple);
+          *placement = branch.place(msa_stream[std::get<1>(recomp_tuple)]);
         }
       }
     }
@@ -293,15 +288,15 @@ Sample place(Tree& reference_tree, MSA& query_msa_)
   const auto num_branches = reference_tree.nums().branches;
   const auto num_queries = query_msa_.size();
   // get all edges
-  vector<pll_utree_t *> branches(num_branches);
+  std::vector<pll_utree_t *> branches(num_branches);
   auto num_traversed_branches = utree_query_branches(reference_tree.tree(), &branches[0]);
   assert(num_traversed_branches == num_branches);
 
-  lgr << "\nPlacing "<< to_string(num_queries) << " reads on " <<
-    to_string(num_branches) << " branches." << endl;
+  lgr << "\nPlacing "<< std::to_string(num_queries) << " reads on " <<
+    std::to_string(num_branches) << " branches." << std::endl;
 
   // build all tiny trees with corresponding edges
-  vector<Tiny_Tree> insertion_trees;
+  std::vector<Tiny_Tree> insertion_trees;
   for (unsigned int branch_id = 0; branch_id < num_branches; ++branch_id)
     insertion_trees.emplace_back(branches[branch_id], branch_id, reference_tree, !options.prescoring);
     /* clarification: last arg here is a flag specifying whether to optimize the branches.
@@ -337,10 +332,10 @@ Sample place(Tree& reference_tree, MSA& query_msa_)
       discard_by_accumulated_threshold(sample, options.prescoring_threshold);
 
     // build a list of placements per edge that need to be recomputed
-    vector<vector<tuple<Placement *, const unsigned int>>> recompute_list(num_branches);
+    std::vector<std::vector<std::tuple<Placement *, const unsigned int>>> recompute_list(num_branches);
     for (auto & pq : sample)
       for (auto & placement : pq)
-        recompute_list[placement.branch_id()].push_back(make_tuple(&placement, pq.sequence_id()));
+        recompute_list[placement.branch_id()].push_back(std::make_tuple(&placement, pq.sequence_id()));
 
     #pragma omp parallel for schedule(dynamic)
     for (unsigned int branch_id = 0; branch_id < num_branches; branch_id++)
@@ -351,8 +346,8 @@ Sample place(Tree& reference_tree, MSA& query_msa_)
       branch.opt_branches(true); // TODO only needs to be done once
       for (auto recomp_tuple : recompute_list[branch_id])
       {
-        placement = get<0>(recomp_tuple);
-        *placement = branch.place(query_msa_[get<1>(recomp_tuple)]);
+        placement = std::get<0>(recomp_tuple);
+        *placement = branch.place(query_msa_[std::get<1>(recomp_tuple)]);
 
       }
     }

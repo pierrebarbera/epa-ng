@@ -17,7 +17,7 @@ NORM_TEST=-t $(TEST)/ref.tre -s $(TEST)/aln.fasta -q $(TEST)/query.fasta -g -w $
 #CC=clang++
 CC=g++
 DEFS=
-WARNINGS= -Wall -Wextra -pedantic -pedantic-errors
+WARNINGS= -Wall -Wextra
 DBG=-g
 
 INCLUDES=-I$(CEREAL) -I$(PLL) -I$(PLL_BINARY) -I$(PLL_OPTIMIZE) -I$(PLL_MSA)
