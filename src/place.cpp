@@ -22,7 +22,7 @@
 
 using namespace std;
 
-Log lgr;
+// Log lgr;
 
 void process(Tree& reference_tree, MSA_Stream& msa_stream, const string& outdir,
               const Options& options, const string& invocation)

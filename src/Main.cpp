@@ -5,9 +5,12 @@
 #include <chrono>
 
 #include "mpihead.hpp"
+#include "logging.hpp"
 #include "epa.hpp"
 
 using namespace std;
+
+Log lgr;
 
 static void print_help()
 {
@@ -44,9 +47,9 @@ static void inv(string msg)
   if (mpi_rank == 0)
   {
     if (msg.size())
-    cerr << msg << endl;
+    lgr << msg << endl;
     print_help();
-    cout.flush();
+    lgr.flush();
   }
   MPI_FINALIZE();
   exit(EXIT_FAILURE);
@@ -173,7 +176,7 @@ int main(int argc, char** argv)
   Tree tree;
   if (options.load_binary_mode)
   {
-    cout << "Loading from binary" << endl;
+    lgr << "Loading from binary" << endl;
     tree = Tree(binary_file, options);
   }
   else
@@ -201,7 +204,7 @@ int main(int argc, char** argv)
   // dump to binary if specified
   if (options.dump_binary_mode)
   {
-    cout << "Writing to binary" << endl;
+    lgr << "Writing to binary" << endl;
     string dump_file(work_dir + "epa_binary_file");
     dump_to_binary(tree, dump_file);
     MPI_FINALIZE();
@@ -214,7 +217,7 @@ int main(int argc, char** argv)
   auto end = chrono::high_resolution_clock::now();
   auto runtime = chrono::duration_cast<chrono::seconds>(end - start).count();
 
-  cout << "\nTime spent placing: " << runtime << "s" << endl;
+  lgr << "\nTime spent placing: " << runtime << "s" << endl;
 
   MPI_FINALIZE();
 	return EXIT_SUCCESS;

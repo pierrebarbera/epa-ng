@@ -70,7 +70,7 @@ mpi_test_valgrind: $(mpi)
 
 mpi_test: $(mpi)
 	mkdir -p $(OUTDIR)
-	-rm $(OUTDIR)*
+	-rm $(OUTDIR)/*
 	$(TARGET) $(BINARY_WRITE)
 	mpirun -np 4 $(TARGET) $(BINARY_READ) -g
 

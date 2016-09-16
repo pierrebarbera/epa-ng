@@ -71,5 +71,5 @@ void epa_mpi_recieve(Sample& sample, int source_rank, MPI_Comm comm)
 
   // build the sample object
   in_archive(sample);
-};
+}
 #endif
