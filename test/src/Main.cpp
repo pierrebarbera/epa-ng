@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "Epatest.hpp"
+#include "src/mpihead.hpp"
 #include "src/logging.hpp"
 
 Epatest* env;
@@ -37,7 +38,9 @@ int main(int argc, char** argv)
   env->binary_file = env->out_dir + "persisted.bin";
 
   ::testing::InitGoogleTest(&argc, argv);
-
+  MPI_INIT(&argc, &argv);
   ::testing::AddGlobalTestEnvironment(env);
-  return RUN_ALL_TESTS();
+  auto result = RUN_ALL_TESTS();
+  MPI_FINALIZE();
+  return result;
 }
