@@ -42,3 +42,7 @@ include/
 *.exe
 *.out
 *.app
+
+# project files
+*.sublime-project
+*.sublime-workspace
