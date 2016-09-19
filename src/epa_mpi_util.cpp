@@ -44,10 +44,10 @@ void epa_mpi_send(Sample& sample, int dest_rank, MPI_Comm comm)
 
   // send sample to specified node
   std::string data = ss.str();
-  std::unique_ptr<char> buffer(new char[data.size()]);
-  memcpy(buffer.get(), data.c_str(), data.size() * sizeof(char));
-  err_check(MPI_Send(buffer.get(), data.size(), MPI_CHAR, dest_rank, 0, comm));
-
+  auto buffer = new char[data.size()];
+  memcpy(buffer, data.c_str(), data.size() * sizeof(char));
+  err_check(MPI_Send(buffer, data.size(), MPI_CHAR, dest_rank, 0, comm));
+  delete[] buffer;
 }
 
 void epa_mpi_recieve(Sample& sample, int source_rank, MPI_Comm comm)
@@ -59,17 +59,19 @@ void epa_mpi_recieve(Sample& sample, int source_rank, MPI_Comm comm)
   MPI_Get_count(&status, MPI_CHAR, &size);
 
   // prepare buffer
-  std::unique_ptr<char> buffer(new char[size]);
+  auto buffer = new char[size];
 
   //  get the actual payload
-  err_check(MPI_Recv(buffer.get(), size, MPI_CHAR, source_rank, 0, comm, &status));
+  err_check(MPI_Recv(buffer, size, MPI_CHAR, source_rank, 0, comm, &status));
 
   // deserialization
   std::stringstream ss;
-  ss.write(buffer.get(), size);
+  ss.write(buffer, size);
   cereal::BinaryInputArchive in_archive(ss);
 
   // build the sample object
   in_archive(sample);
+
+  delete[] buffer;
 }
 #endif

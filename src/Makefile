@@ -64,7 +64,8 @@ ranged_test: $(TARGET)
 
 mpi_test_valgrind: $(mpi)
 	mkdir -p $(OUTDIR)
-	-rm $(OUTDIR)*
+	-rm $(OUTDIR)/*
+	-rm $(LOGDIR)/mpi.valgrind.*
 	$(TARGET) $(BINARY_WRITE)
 	mpirun -np 4 valgrind --log-file=$(LOGDIR)/mpi.valgrind.%p $(TARGET) $(BINARY_READ) -g
 
