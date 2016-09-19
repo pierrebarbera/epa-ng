@@ -159,11 +159,11 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     if (local_stage == EPA_MPI_STAGE_1_AGGREGATE)
     {
     // (MPI: recieve results, merge them)
-    for (auto rank : global_rank[EPA_MPI_STAGE_1_COMPUTE])
+    for (auto rank_pair : global_rank[EPA_MPI_STAGE_1_COMPUTE])
     {
-      (void)rank;// surpress warning
+      int rank = rank_pair.second;
       Sample remote_sample;
-      epa_mpi_recieve(remote_sample, MPI_ANY_SOURCE, MPI_COMM_WORLD);
+      epa_mpi_recieve(remote_sample, rank, MPI_COMM_WORLD);
       merge(sample, remote_sample);
     }
 #endif // __MPI
@@ -196,11 +196,11 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     if (local_stage == EPA_MPI_STAGE_2_COMPUTE)
     {
     // (MPI: recieve results, merge them)
-    for (auto rank : global_rank[EPA_MPI_STAGE_1_AGGREGATE])
+    for (auto rank_pair : global_rank[EPA_MPI_STAGE_1_AGGREGATE])
     {
-      (void)rank;// surpress warning
+      int rank = rank_pair.second;
       Sample remote_sample;
-      epa_mpi_recieve(remote_sample, MPI_ANY_SOURCE, MPI_COMM_WORLD);
+      epa_mpi_recieve(remote_sample, rank, MPI_COMM_WORLD);
       merge(sample, remote_sample);
     }
 #endif // __MPI
@@ -247,11 +247,11 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     if (local_stage == EPA_MPI_STAGE_2_AGGREGATE)
     {
     // (MPI: recieve results, merge them)
-    for (auto rank : global_rank[EPA_MPI_STAGE_2_COMPUTE])
+    for (auto rank_pair : global_rank[EPA_MPI_STAGE_2_COMPUTE])
     {
-      (void)rank;// surpress warning
+      int rank = rank_pair.second;
       Sample remote_sample;
-      epa_mpi_recieve(remote_sample, MPI_ANY_SOURCE, MPI_COMM_WORLD);
+      epa_mpi_recieve(remote_sample, rank, MPI_COMM_WORLD);
       merge(sample, remote_sample);
     }
     }
