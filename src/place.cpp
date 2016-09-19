@@ -43,25 +43,25 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
 
   for (int i = 0; i < world_size; i++)
   {
-    if (i == 0)
+    if (i == EPA_MPI_STAGE_1_AGGREGATE)
     {
       global_rank[EPA_MPI_STAGE_1_AGGREGATE][stage_1_aggregate_size++] = i;
       if (world_rank == i)
         local_stage = EPA_MPI_STAGE_1_AGGREGATE;
     }
-    else if (i == 1)
+    else if (i == EPA_MPI_STAGE_1_COMPUTE)
     {
       global_rank[EPA_MPI_STAGE_1_COMPUTE][stage_1_compute_size++] = i;
       if (world_rank == i)
         local_stage = EPA_MPI_STAGE_1_COMPUTE;
     }
-    else if (i == 2)
+    else if (i == EPA_MPI_STAGE_2_AGGREGATE)
     {
       global_rank[EPA_MPI_STAGE_2_AGGREGATE][stage_2_aggregate_size++] = i;
       if (world_rank == i)
         local_stage = EPA_MPI_STAGE_2_AGGREGATE;
     }
-    else if (i == 3)
+    else if (i == EPA_MPI_STAGE_2_COMPUTE)
     {
       global_rank[EPA_MPI_STAGE_2_COMPUTE][stage_2_compute_size++] = i;
       if (world_rank == i)
@@ -193,13 +193,13 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     //==============================================================
     // EPA_MPI_STAGE_2_COMPUTE === BEGIN
     //==============================================================
-    if (local_stage == EPA_MPI_STAGE_2_COMPUTE)
+    if (local_stage == EPA_MPI_STAGE_2_COMPUTE and options.prescoring)
     {
     // (MPI: recieve results, merge them)
     for (auto rank_pair : global_rank[EPA_MPI_STAGE_1_AGGREGATE])
     {
       int rank = rank_pair.second;
-      Sample remote_sample;
+      Sample remote_sample; 
       epa_mpi_recieve(remote_sample, rank, MPI_COMM_WORLD);
       merge(sample, remote_sample);
     }
@@ -240,8 +240,8 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     //==============================================================
     // EPA_MPI_STAGE_2_AGGREGATE === BEGIN
     //==============================================================
-    if ((local_stage == EPA_MPI_STAGE_1_AGGREGATE and not options.prescoring) or
-        (local_stage == EPA_MPI_STAGE_2_AGGREGATE and options.prescoring))
+    if (((local_stage == EPA_MPI_STAGE_1_AGGREGATE) and not options.prescoring) or
+        ((local_stage == EPA_MPI_STAGE_2_AGGREGATE) and options.prescoring))
     {
     // only if this is the 4th stage do we need to get from mpi
     if (local_stage == EPA_MPI_STAGE_2_AGGREGATE)
@@ -274,8 +274,12 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     sample.clear();
     msa_stream.clear();
   }
-  outfile << finalize_jplace_string(invocation);
-  outfile.close();
+  MPI_BARRIER(MPI_COMM_WORLD);
+  if (world_rank == 0)
+  {
+    outfile << finalize_jplace_string(invocation);
+    outfile.close();
+  }
 }
 
 // ================== LEGACY CODE ==========================================
