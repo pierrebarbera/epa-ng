@@ -7,7 +7,7 @@
 #include "src/logging.hpp"
 
 Epatest* env;
-// Log lgr;
+Log lgr;
 
 int main(int argc, char** argv)
 {
