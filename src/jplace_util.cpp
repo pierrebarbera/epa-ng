@@ -4,6 +4,20 @@
 
 using namespace std;
 
+void merge_into(ofstream& dest, vector<string>& sources)
+{
+  for(auto& file_n : sources)
+  {
+    ifstream file(file_n);
+    dest << file.rdbuf();
+    rwnd(dest, 1);
+    dest << "," << NEWL;
+    file.close();
+  }
+  rwnd(dest, 2);
+  dest << NEWL;
+}
+
 string placement_to_jplace_string(const Placement& p)
 {
   ostringstream output;
