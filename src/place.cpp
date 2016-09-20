@@ -26,8 +26,9 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
 
   lgr = Log(outdir + "epa_info.log");
 
+  int world_rank = 0;
 #ifdef __MPI
-  int world_rank, world_size;
+  int world_size;
   MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 

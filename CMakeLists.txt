@@ -9,8 +9,8 @@ set (CMAKE_DISABLE_SOURCE_CHANGES  ON)
 
 project (epa C CXX)
 
-find_package(MPI)
-include_directories(${MPI_INCLUDE_PATH})
+#find_package(MPI)
+#include_directories(${MPI_INCLUDE_PATH})
 
 # set (epa_VERSION_MAJOR 0)
 # set (epa_VERSION_MINOR 1)
@@ -26,7 +26,7 @@ set (CMAKE_CXX_FLAGS          "-std=c++11 ${WARN_FLAGS}")
 
 set (CMAKE_CXX_FLAGS_DEBUG    "-g")
 set (CMAKE_CXX_FLAGS_RELEASE  "-O3")
-set (MPI_COMPILE_FLAGS        "-D__MPI")
+#set (MPI_COMPILE_FLAGS        "-D__MPI")
 
 include_directories(${PROJECT_SOURCE_DIR}/../cereal/include)
 
