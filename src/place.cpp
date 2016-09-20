@@ -24,8 +24,6 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
 {
   auto model = reference_tree.model();
 
-  lgr = Log(outdir + "epa_info.log");
-
   int world_rank = 0;
 #ifdef __MPI
   int world_size;

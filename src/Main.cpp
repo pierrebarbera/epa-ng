@@ -166,6 +166,8 @@ int main(int argc, char** argv)
 
   ensure_dir_has_slash(work_dir);
 
+  lgr = Log(work_dir + "epa_info.log");
+  
   MSA ref_msa;
   if (reference_file.size())
     ref_msa = build_MSA_from_file(reference_file);
