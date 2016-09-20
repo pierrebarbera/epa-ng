@@ -75,6 +75,10 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
 
   Timer timer;
 
+  const auto EPA_MPI_STAGE_LAST_AGGREGATE 
+    = options.prescoring ? EPA_MPI_STAGE_2_AGGREGATE : EPA_MPI_STAGE_1_AGGREGATE;
+  const auto EPA_MPI_DEDICATED_WRITE_RANK = 0; // TODO should really be one of the last rank aggr
+
   if (world_rank == 0)
   {
 #endif // __MPI
@@ -107,13 +111,12 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     insertion_trees.emplace_back(branches[branch_id], branch_id, reference_tree, !options.prescoring);
   }
 
-  // create output file
-  std::ofstream outfile(outdir + "epa_result.jplace");
-  lgr << "\nOutput file: " << outdir + "epa_result.jplace" << std::endl;
-  outfile << init_jplace_string(get_numbered_newick_string(reference_tree.tree()));
-
   // output class
   Sample sample;
+
+  auto chunk_num = 0;
+  std::vector<std::string> part_names;
+
 
   // while data
   // TODO this could be a stream read, such that cat msa.fasta | epa ... would work
@@ -240,8 +243,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     //==============================================================
     // EPA_MPI_STAGE_2_AGGREGATE === BEGIN
     //==============================================================
-    if (((local_stage == EPA_MPI_STAGE_1_AGGREGATE) and not options.prescoring) or
-        ((local_stage == EPA_MPI_STAGE_2_AGGREGATE) and options.prescoring))
+    if (local_stage == EPA_MPI_STAGE_LAST_AGGREGATE)
     {
     // only if this is the 4th stage do we need to get from mpi
     if (local_stage == EPA_MPI_STAGE_2_AGGREGATE)
@@ -265,21 +267,54 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     else
       discard_by_support_threshold(sample, options.support_threshold);
 
-    // finally, write to file
-    outfile << sample_to_jplace_string(sample, msa_stream);
+    // write results of current last stage aggregator node to a part file
+    std::string part_file_name(outdir + "epa." + std::to_string(world_rank) 
+      + "." + std::to_string(chunk_num) + ".part");
+    std::ofstream part_file(part_file_name);
+    part_file << sample_to_jplace_string(sample, msa_stream);
+    part_names.push_back(part_file_name);
+    part_file.close();
+
 #ifdef __MPI
     } // endif aggregate cleanup
     timer.stop(); // stop timer of any stage
 #endif // __MPI
     sample.clear();
     msa_stream.clear();
+    chunk_num++;
   }
   MPI_BARRIER(MPI_COMM_WORLD);
-  if (world_rank == 0)
+
+  // finally, paste all part files together
+#ifdef __MPI
+  if (world_rank != EPA_MPI_DEDICATED_WRITE_RANK)
   {
+    if (local_stage == EPA_MPI_STAGE_LAST_AGGREGATE)
+    {
+      epa_mpi_send(part_names, EPA_MPI_DEDICATED_WRITE_RANK, MPI_COMM_WORLD);
+    }
+  }
+  else
+  {
+  for (auto rank_pair : global_rank[EPA_MPI_STAGE_LAST_AGGREGATE])
+  {
+    int rank = rank_pair.second;
+    std::vector<std::string> remote_obj;
+    epa_mpi_recieve(remote_obj, rank, MPI_COMM_WORLD);
+    // merge(part_names, remote_obj);
+    part_names.insert(part_names.end(), remote_obj.begin(), remote_obj.end());
+  }
+#endif
+    // create output file
+    std::ofstream outfile(outdir + "epa_result.jplace");
+    lgr << "\nOutput file: " << outdir + "epa_result.jplace" << std::endl;
+    outfile << init_jplace_string(get_numbered_newick_string(reference_tree.tree()));
+    merge_into(outfile, part_names);
     outfile << finalize_jplace_string(invocation);
     outfile.close();
+#ifdef __MPI
   }
+#endif
 }
 
 // ================== LEGACY CODE ==========================================
