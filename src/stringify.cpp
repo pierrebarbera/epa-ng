@@ -2,7 +2,7 @@
 
 using namespace std;
 
-void rwnd(ostringstream& ss, unsigned int chars)
+void rwnd(ostream& ss, unsigned int chars)
 {
   long pos = ss.tellp();
   ss.seekp (pos - (chars * sizeof(char)));
