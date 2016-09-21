@@ -20,7 +20,7 @@ set (CMAKE_CXX_FLAGS         "-std=c++11 ${WARN_FLAGS}")
 set (CMAKE_CXX_FLAGS_DEBUG   "-g")
 set (CMAKE_CXX_FLAGS_RELEASE "-O3")
 
-include_directories(${PROJECT_SOURCE_DIR}/../cereal/include)
+include_directories(${PROJECT_SOURCE_DIR}/libs/cereal/include)
 
 set(pll_dir ${PROJECT_SOURCE_DIR}/libs/pll-modules/libs/libpll/src)
 set(pll_binary_dir ${PROJECT_SOURCE_DIR}/libs/pll-modules/src/binary)
