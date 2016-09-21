@@ -28,7 +28,7 @@ set (CMAKE_CXX_FLAGS_DEBUG    "-g")
 set (CMAKE_CXX_FLAGS_RELEASE  "-O3")
 #set (MPI_COMPILE_FLAGS        "-D__MPI")
 
-include_directories(${PROJECT_SOURCE_DIR}/../cereal/include)
+include_directories(${PROJECT_SOURCE_DIR}/libs/cereal/include)
 
 
 set(pll_dir ${PROJECT_SOURCE_DIR}/libs/pll-modules/libs/libpll/src)
