@@ -7,6 +7,8 @@
 #include "mpihead.hpp"
 #include "logging.hpp"
 #include "epa.hpp"
+#include "jplace_util.hpp"
+#include "epa_pll_util.hpp"
 
 using namespace std;
 
@@ -64,6 +66,12 @@ static void ensure_dir_has_slash(string& dir)
 int main(int argc, char** argv)
 {
   MPI_INIT(&argc, &argv);
+
+#ifdef __MPI
+  int world_rank, world_size;
+  MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+  MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+#endif
 
   string invocation("");
   string model_id("GTR");
@@ -170,7 +178,44 @@ int main(int argc, char** argv)
   
   MSA ref_msa;
   if (reference_file.size())
+  {
+#ifdef __MPI
+    std::vector<std::string> files;
+ 
+    // split filenames
+    std::istringstream ss(reference_file);
+    std::string item;
+    while (getline(ss, item, ',')) {
+       files.push_back(item);
+    }
+
+    // User output.
+    std::cout << "\nFound " << files.size() << " files:\n";
+    for( auto const& file : files ) {
+       std::cout << "    " << file << "\n";
+    }
+    std::cout << "\n";
+
+    // World size checks.
+    if( world_size > (int)files.size() ) {
+      std::cout << "Using " << world_size << " ranks, but only " << files.size() << " files.\n";
+      inv("Some ranks are without work - maybe you want to reduce the MPI size.\n\n");
+    }
+    if( world_size < (int)files.size() ) {
+       std::cout << "Using " << world_size << " ranks, but have " << files.size() << " files.\n"
+            << "WARNING: The last " << ( files.size() - world_size ) << " files will not be processed!\n\n";
+    }
+
+    // assign part file to mpi rank
+    ref_msa = build_MSA_from_file(files[world_rank]);
+#else    
     ref_msa = build_MSA_from_file(reference_file);
+#endif
+  }
+  else
+  {
+    throw std::runtime_error{"Must supply at least one MSA File!"};
+  }
 
   Model model(model_id);
 
@@ -188,24 +233,28 @@ int main(int argc, char** argv)
   }
 
   // build the query stream
-  MSA_Stream queries;
+  MSA queries;
   if (not options.dump_binary_mode)
   {
     if (query_file.size() != 0)
     {
-      queries = MSA_Stream(query_file);
-
+      // queries = MSA_Stream(query_file);
+#ifdef __MPI
+      inv("Calling with separate query files not supported in this branch");
+#endif
     }
     // attempt to split msa if it is intermingled with (supposed) query sequences
     else
     {
-      throw runtime_error{"Combined MSA files not currently supported, please split them and specify using -s and -q."};
-      // split_combined_msa(ref_msa, queries, tree);
+      // throw runtime_error{"Combined MSA files not currently supported, please split them and specify using -s and -q."};
+      split_combined_msa(ref_msa, queries, tree);
     }
-  }
-  // dump to binary if specified
-  if (options.dump_binary_mode)
+  } 
+  else 
   {
+#ifdef __MPI
+    inv("Calling with binary dump mode not supported in this branch");
+#endif
     lgr << "Writing to binary" << endl;
     string dump_file(work_dir + "epa_binary_file");
     dump_to_binary(tree, dump_file);
@@ -215,12 +264,23 @@ int main(int argc, char** argv)
 
   // start the placement process and write to file
   auto start = chrono::high_resolution_clock::now();
-  process(tree, queries, work_dir, options, invocation);
+  // process(tree, queries, work_dir, options, invocation);
+  auto sample = place(tree, queries);
   auto end = chrono::high_resolution_clock::now();
   auto runtime = chrono::duration_cast<chrono::seconds>(end - start).count();
 
   lgr << "\nTime spent placing: " << runtime << "s" << endl;
 
+  // output results
+  int part_num = 0;
+#ifdef __MPI
+  part_num = world_rank;
+#endif
+
+  std::ofstream outfile(work_dir + "epa_result." + std::to_string(part_num) + ".jplace");
+  outfile << full_jplace_string(sample, invocation, queries);
+  outfile.close();
+  MPI_BARRIER(MPI_COMM_WORLD);
   MPI_FINALIZE();
 	return EXIT_SUCCESS;
 }
