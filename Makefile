@@ -1,3 +1,5 @@
+PLLMOD=libs/pll-modules
+PLL=${PLLMOD}/libs/libpll
 
 all: build/CMakeCache.txt run_make
 .PHONY: all
@@ -24,11 +26,12 @@ test: update
 .PHONY: test
 
 pll:
-	@make -C libs/pll-modules/libs/libpll/src
-	@make -C libs/pll-modules/src/binary
-	@make -C libs/pll-modules/src/msa
-	@make -C libs/pll-modules/src/optimize
-	@make -C libs/pll-modules/src/tree
+	cd ${PLL} && ./autogen.sh ; ./autogen.sh && ./configure && make
+	cd ${PLLMOD} && \
+	make -C src/binary && \
+	make -C src/msa && \
+	make -C src/optimize FASTBLO=-DNOCHECK_PERBRANCH_IMPR && \
+	make -C src/tree 
 .PHONY: pll
 		
 clean:
