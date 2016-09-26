@@ -26,7 +26,7 @@ test: update
 .PHONY: test
 
 pll:
-	cd ${PLL} && ./autogen.sh ; ./autogen.sh && ./configure && make
+	cd ${PLL} && ./autogen.sh ; ./autogen.sh && ./configure && make clean && make
 	cd ${PLLMOD} && \
 	make -C src/binary && \
 	make -C src/msa && \
