@@ -190,19 +190,19 @@ int main(int argc, char** argv)
     }
 
     // User output.
-    std::cout << "\nFound " << files.size() << " files:\n";
+    lgr << "\nFound " << files.size() << " files:\n";
     for( auto const& file : files ) {
-       std::cout << "    " << file << "\n";
+       lgr << "    " << file << "\n";
     }
-    std::cout << "\n";
+    lgr << "\n";
 
     // World size checks.
     if( world_size > (int)files.size() ) {
-      std::cout << "Using " << world_size << " ranks, but only " << files.size() << " files.\n";
+      lgr << "Using " << world_size << " ranks, but only " << files.size() << " files.\n";
       inv("Some ranks are without work - maybe you want to reduce the MPI size.\n\n");
     }
     if( world_size < (int)files.size() ) {
-       std::cout << "Using " << world_size << " ranks, but have " << files.size() << " files.\n"
+       lgr << "Using " << world_size << " ranks, but have " << files.size() << " files.\n"
             << "WARNING: The last " << ( files.size() - world_size ) << " files will not be processed!\n\n";
     }
 

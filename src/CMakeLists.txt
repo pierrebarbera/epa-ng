@@ -9,7 +9,7 @@ add_executable        (epa_module ${epa_sources})
 add_dependencies(epa_module pll pll_binary pll_optimize pll_msa)
 
 target_link_libraries (epa_module m)
-target_link_libraries (epa_module ${pll_dir}/libpll.so)
+target_link_libraries (epa_module ${pll_dir}/.libs/libpll.so)
 target_link_libraries (epa_module ${pll_binary_dir}/libpll_binary.so)
 target_link_libraries (epa_module ${pll_optimize_dir}/libpll_optimize.so)
 target_link_libraries (epa_module ${pll_msa_dir}/libpll_msa.so)
