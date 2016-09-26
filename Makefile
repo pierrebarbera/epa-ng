@@ -26,6 +26,7 @@ test: update
 .PHONY: test
 
 pll:
+	mkdir -p bin
 	cd ${PLL} && ./autogen.sh ; ./autogen.sh && ./configure && make clean && make
 	cd ${PLLMOD} && \
 	make -C src/binary && \
