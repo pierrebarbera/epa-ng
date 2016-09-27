@@ -21,8 +21,8 @@ WARNINGS= -Wall -Wextra
 DBG=-g
 
 INCLUDES=-I$(CEREAL) -I$(PLL) -I$(PLL_BINARY) -I$(PLL_OPTIMIZE) -I$(PLL_MSA)
-RPATHS= -Wl,-rpath,$(PLL),-rpath,$(PLL_BINARY),-rpath,$(PLL_OPTIMIZE),-rpath,$(PLL_MSA)
-LIB_PATHS=  -L$(PLL) -L$(PLL_BINARY) -L$(PLL_OPTIMIZE) -L$(PLL_MSA)
+RPATHS= -Wl,-rpath,$(PLL).libs/,-rpath,$(PLL_BINARY),-rpath,$(PLL_OPTIMIZE),-rpath,$(PLL_MSA)
+LIB_PATHS=  -L$(PLL).libs/ -L$(PLL_BINARY) -L$(PLL_OPTIMIZE) -L$(PLL_MSA)
 LIBS=-lm -lpll -lpll_optimize -lpll_msa -lpll_binary
 
 CFLAGS= $(WARNINGS) -std=c++11 $(DBG) $(INCLUDES) $(CF)
