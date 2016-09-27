@@ -167,11 +167,13 @@ TEST(pll_util, shift_partition_focus_shifty)
     // pll_map_nt,
     PLL_ATTRIB_PATTERN_TIP | PLL_ATTRIB_ARCH_CPU);
 
+
   // tests
 
   int clv_size = part->states * part->rate_cats;
   int begin = 2;
   int span = 4;
+  
   for (size_t i = 0; i < part->sites * clv_size; i++) {
     if ((int)i < begin * clv_size or (int)i >= (begin + span) * clv_size)
       part->clv[3][i] = 2.0;
@@ -179,13 +181,25 @@ TEST(pll_util, shift_partition_focus_shifty)
       part->clv[3][i] = 1.0;
   }
 
-  for (size_t i = 0; i < part->sites; i++) {
+  auto seq = new char[part->sites];
+
+  for (size_t i = 0; i < part->sites; i++) 
+  {
     if ((int)i < begin or (int)i >= (begin + span))
-      part->tipchars[0][i] = 'O';
+    {
+      seq[i] = 'A';
+    }
     else
-      part->tipchars[0][i] = 'I';
+    {
+      seq[i] = 'G';
+    }
   }
 
+  // printf("Sequence: %s\n", seq);
+
+  pll_set_tip_states(part, 0, pll_map_nt, seq);
+  ASSERT_NE(part->tipchars, nullptr);
+  ASSERT_NE(part->tipchars[0], nullptr);
 
   shift_partition_focus(part, begin, span);
 
@@ -198,10 +212,10 @@ TEST(pll_util, shift_partition_focus_shifty)
 
   // tipchars test
   for (size_t i = 0; i < part->sites; i++) {
-    EXPECT_EQ(part->tipchars[0][i], 'I');
+    EXPECT_EQ(part->tipchars[0][i], '\x4');
   }
-  EXPECT_EQ(part->tipchars[0][-1], 'O');
-  EXPECT_EQ(part->tipchars[0][part->sites], 'O');
+  EXPECT_EQ(part->tipchars[0][-1], '\x1');
+  EXPECT_EQ(part->tipchars[0][part->sites], '\x1');
 
 
   // teardown
