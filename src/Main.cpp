@@ -89,7 +89,7 @@ int main(int argc, char** argv)
   string binary_file("");
 
   int c;
-  while((c =  getopt(argc, argv, "hOBb:t:s:q:l:L:w:g::G::r")) != EOF)
+  while((c =  getopt(argc, argv, "hOBb:t:s:q:l:L:w:g:G:r")) != EOF)
   {
     switch (c)
     {
