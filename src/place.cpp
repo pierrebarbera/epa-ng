@@ -39,6 +39,8 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
   int stage_2_aggregate_size = 0;
   int local_stage;
 
+  unsigned int rebalance = 10;
+
 
   for (int i = 0; i < world_size; i++)
   {
@@ -277,13 +279,19 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
 #ifdef __MPI
     } // endif aggregate cleanup
     timer.stop(); // stop timer of any stage
+
+
 #endif // __MPI
     sample.clear();
     msa_stream.clear();
     chunk_num++;
   }
+
   MPI_BARRIER(MPI_COMM_WORLD);
 
+  //==============================================================
+  // POST COMPUTATION
+  //==============================================================
   // finally, paste all part files together
 #ifdef __MPI
   if (world_rank != EPA_MPI_DEDICATED_WRITE_RANK)
