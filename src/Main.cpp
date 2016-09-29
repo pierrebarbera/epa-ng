@@ -149,7 +149,7 @@ int main(int argc, char** argv)
         options.prescoring_by_percentage = true;
         break;
       case 'O':
-        options.opt_branches = true;
+        options.opt_branches = false;
         options.opt_model = true;
         break;
       case 'r':
