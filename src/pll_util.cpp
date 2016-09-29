@@ -267,7 +267,7 @@ string get_numbered_newick_string(pll_utree_t * root)
 void reset_triplet_lengths(pll_utree_t * toward_pendant, pll_partition_t * partition, const double old_length)
 {
   double half_original = old_length / 2.0;
-  half_original = (half_original < PLLMOD_OPT_MIN_BRANCH_LEN) ? PLLMOD_OPT_MIN_BRANCH_LEN : half_original;  
+  
 
   if (toward_pendant)
   {
