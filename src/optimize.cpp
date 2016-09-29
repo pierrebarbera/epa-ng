@@ -63,26 +63,12 @@ double optimize_branch_triplet(pll_partition_t * partition, pll_utree_t * tree)
   traverse_update_partials(tree, partition, &travbuffer[0], &branch_lengths[0],
     &matrix_indices[0], &operations[0]);
 
-  pll_errno = 0; // hotfix
-
   unsigned int param_indices[RATE_CATS] = {0};
-  auto logl = pll_compute_edge_loglikelihood (partition, tree->clv_index,
-                                                tree->scaler_index,
-                                                tree->back->clv_index,
-                                                tree->back->scaler_index,
-                                                tree->pmatrix_index,
-                                                param_indices,
-                                                nullptr);
+
   auto cur_logl = -numeric_limits<double>::infinity();
-  int smoothings = 8;
+  int smoothings = 32;
 
-  while (fabs (cur_logl - logl) > OPT_EPSILON)
-  {
-    traverse_update_partials(tree, partition, &travbuffer[0], &branch_lengths[0],
-      &matrix_indices[0], &operations[0]);
-
-    logl = cur_logl;
-    cur_logl = -pllmod_opt_optimize_branch_lengths_local (
+  cur_logl = -pllmod_opt_optimize_branch_lengths_local (
                                                   partition,
                                                   tree,
                                                   param_indices,
@@ -92,19 +78,7 @@ double optimize_branch_triplet(pll_partition_t * partition, pll_utree_t * tree)
                                                   smoothings,
                                                   1, // radius
                                                   1); // keep update
-  }
-// TODO tiny tree specific func
-  traverse_update_partials(tree, partition, &travbuffer[0], &branch_lengths[0],
-    &matrix_indices[0], &operations[0]);
-
-  pll_errno = 0; // hotfix
-
-  cur_logl = pll_compute_edge_loglikelihood (partition, tree->clv_index,
-                                                tree->scaler_index,
-                                                tree->back->clv_index,
-                                                tree->back->scaler_index,
-                                                tree->pmatrix_index, param_indices, nullptr);
-
+ 
   return cur_logl;
 }
 
