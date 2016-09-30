@@ -10,9 +10,9 @@ PLL_MSA=../libs/pll-modules/src/msa/
 
 F+=
 CF+=
-BINARY_WRITE= -t $(TEST)/ref.tre -s $(TEST)/aln.fasta -q $(TEST)/query.fasta -g -B -w $(OUTDIR) $(F)
+BINARY_WRITE= -t $(TEST)/ref.tre -s $(TEST)/aln.fasta -q $(TEST)/query.fasta -B -w $(OUTDIR) $(F)
 BINARY_READ=-b $(OUTDIR)/epa_binary_file -q $(TEST)/query.fasta -w $(OUTDIR)
-NORM_TEST=-t $(TEST)/ref.tre -s $(TEST)/aln.fasta -q $(TEST)/query.fasta -g -w $(OUTDIR) $(F)
+NORM_TEST=-t $(TEST)/ref.tre -s $(TEST)/aln.fasta -q $(TEST)/query.fasta -w $(OUTDIR) $(F)
 
 #CC=clang++
 CC=g++
