@@ -147,8 +147,12 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
 
 #ifdef __MPI
     // MPI: split the result and send the part to correct aggregate node
-    // TODO split!
-    epa_mpi_send(sample, global_rank[EPA_MPI_STAGE_1_AGGREGATE][0], MPI_COMM_WORLD);
+    std::vector<Sample> parts;
+    split(sample, parts, global_rank[EPA_MPI_STAGE_1_AGGREGATE].size());
+    for (int i = 0; i < parts.size(); ++i)
+    {
+      epa_mpi_send(parts[i], global_rank[EPA_MPI_STAGE_1_AGGREGATE][i], MPI_COMM_WORLD);
+    }
 
     // MPI Barrier first compute stage TODO for now implicit barrier by synchronous comm
 
@@ -233,8 +237,12 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
 #ifdef __MPI
     if(options.prescoring)
     {
-      // TODO split!
-      epa_mpi_send(sample, global_rank[EPA_MPI_STAGE_2_AGGREGATE][0], MPI_COMM_WORLD);
+      std::vector<Sample> parts;
+      split(sample, parts, global_rank[EPA_MPI_STAGE_2_AGGREGATE].size());
+      for (int i = 0; i < parts.size(); ++i)
+      {
+        epa_mpi_send(parts[i], global_rank[EPA_MPI_STAGE_2_AGGREGATE][i], MPI_COMM_WORLD);
+      }
     }
     } // endif (local_stage == EPA_MPI_STAGE_2_COMPUTE)
     //==============================================================
