@@ -12,9 +12,9 @@ TEST(schedule, solve)
   unsigned int stages, nodes;
 
   stages = 4;
-  nodes = 8;
+  nodes = 32;
 
-  vector<double> diff{1.0, 2.0, 1.0, 1.0};
+  vector<double> diff{1000.0, 1.0, 1000.0, 1.0};
 
   auto nps = solve(stages, nodes, diff);
 

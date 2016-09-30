@@ -19,25 +19,21 @@ std::vector<unsigned int> solve(unsigned int stages, unsigned int nodes, std::ve
 
   for (unsigned int i = 0; i < stages; ++i)
   {
-    nodes_per_stage[i] = std::round(difficulty_per_stage[i] * x1);
+    nodes_per_stage[i] = ceil(difficulty_per_stage[i] * x1);
   }
 
-  int off_by = std::accumulate(nodes_per_stage.begin(), nodes_per_stage.end(), 0) - nodes;
+  int off_by;
 
-  if (off_by != 0)
+  while ( (off_by = std::accumulate(nodes_per_stage.begin(), nodes_per_stage.end(), 0) - nodes) ) 
   {
     auto max_stage = std::max_element(nodes_per_stage.begin(), nodes_per_stage.end());
-    if (off_by == -1)
+    if (off_by < 0)
     {
       *max_stage += 1;
     }
-    else if (off_by == 1)
+    else 
     {
       *max_stage -= 1;
-    }
-    else
-    {
-      throw std::runtime_error{"Schedule solver off by more than 1!"};
     }
   }
 
