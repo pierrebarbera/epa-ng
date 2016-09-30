@@ -43,6 +43,8 @@ omp: CFLAGS+=-fopenmp
 ranged_test: BINARY_WRITE= -t $(TEST)/ref.tre -s $(TEST)/range_combined.fasta -r -w $(OUTDIR) $(F)
 mpi: CC=mpic++
 mpi: CFLAGS+=-D__MPI
+mpi: LIBS+=-lgomp
+mpi: CFLAGS+=-fopenmp
 
 all:  $(TARGET)
 
