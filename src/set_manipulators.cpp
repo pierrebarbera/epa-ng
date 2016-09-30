@@ -44,6 +44,35 @@ void split(Sample& source, vector<Sample>& parts, const vector<vector<unsigned i
 }
 
 /**
+ * Splits a Sample <source> into <num_parts> number of equally sized <parts>.
+ * Sample is consumed and parts is expected to be empty.
+ * 
+ * @param source    Sample to split
+ * @param parts     resulting parts vector
+ * @param num_parts number of parts
+ */
+void split(Sample& source, vector<Sample>& parts, unsigned int num_parts)
+{
+  parts.clear();
+  unsigned int chunk_size = ceil(source.size() / (double)num_parts);
+  printf("Chunk Size %d\n", chunk_size);
+  auto move_iter = source.begin();
+  // copy the first num - 1 chunks
+  for (int i = 0; i < num_parts - 1; ++i)
+  {
+    parts.push_back(Sample(chunk_size));
+    copy_n(move_iter, chunk_size, parts.back().begin());
+    advance(move_iter, chunk_size);
+  }
+  // copy the last chunk which may exceed chunk size
+  auto remaining_size = distance(move_iter, source.end());
+  parts.push_back(Sample(remaining_size));
+  copy(move_iter, source.end(), parts.back().begin());
+
+  source.clear();
+}
+
+/**
   Merges a Sample <src> into a Sample <dest>. Leaves <src> intact.
 */
 void merge(Sample& dest, const Sample& src)

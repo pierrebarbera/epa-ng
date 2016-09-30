@@ -13,6 +13,7 @@ public:
   typedef typename std::vector<value_type>::const_iterator  const_iterator;
 
   Sample() = default;
+  Sample(unsigned int size) : pquerys_(size) {};
   Sample(const std::string newick) : newick_(newick) {};
   ~Sample() = default;
 

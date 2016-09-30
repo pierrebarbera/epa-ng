@@ -48,6 +48,39 @@ TEST(set_manipulators, split_sample)
 
 }
 
+TEST(set_manipulators, split_sample_equal)
+{
+  Sample sample_1;
+  unsigned int s_a = 0, s_b = 1, s_c = 2;
+  sample_1.emplace_back(s_a, 0);
+  sample_1.back().emplace_back(1,-10,0.9,0.9);
+  sample_1.emplace_back(s_b, 0);
+  sample_1.back().emplace_back(2,-10,0.9,0.9);
+  sample_1.emplace_back(s_c, 0);
+  sample_1.back().emplace_back(3,-10,0.9,0.9);
+
+  vector<Sample> parts;
+
+  split(sample_1, parts, 2);
+
+  EXPECT_EQ(parts.size(), 2);
+  EXPECT_EQ(sample_1.size(), 0);
+
+  assert(parts.size() == 2);
+
+  EXPECT_EQ(parts[0].size(), 2);
+  EXPECT_EQ(parts[1].size(), 1);
+
+  assert(parts[0].size() == 2);
+  assert(parts[1].size() == 1);
+
+  EXPECT_EQ(parts[0][0][0].branch_id(), 1);
+  EXPECT_EQ(parts[0][1][0].branch_id(), 2);
+  EXPECT_EQ(parts[1][0][0].branch_id(), 3);
+
+
+}
+
 TEST(set_manipulators, merge_sample)
 {
   // setup

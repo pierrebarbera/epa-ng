@@ -7,6 +7,7 @@
 #include "MSA.hpp"
 
 void split(Sample& source, std::vector<Sample>& parts, const std::vector<std::vector<unsigned int>>& split_map);
+void split(Sample& source, std::vector<Sample>& parts, unsigned int num_parts);
 void merge(Sample& dest, const Sample &src);
 void compute_and_set_lwr(Sample& sample);
 void discard_bottom_x_percent(Sample& sample, const double x);
