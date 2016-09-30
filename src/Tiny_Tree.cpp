@@ -18,7 +18,7 @@ Tiny_Tree::Tiny_Tree(pll_utree_t *edge_node, unsigned int branch_id, Tree& refer
     , reference_tip_range_(reference_tip_range), ranged_computation_(ranged), branch_id_(branch_id)
 {
   original_branch_length_ = (edge_node->length < 2*PLLMOD_OPT_MIN_BRANCH_LEN) ?
-    PLLMOD_OPT_MIN_BRANCH_LEN : edge_node->length;
+    2*PLLMOD_OPT_MIN_BRANCH_LEN : edge_node->length;
   assert(edge_node);
 
   const pll_utree_t *old_proximal = edge_node->back;
