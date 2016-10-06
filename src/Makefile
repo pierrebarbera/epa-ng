@@ -20,7 +20,7 @@ DBG=-g
 
 INCLUDES=-I$(CEREAL) -I$(PLL_INC)
 LIB_PATHS=  -L$(PLL_LIB)
-LIBS=-lpll_optimize -lpll_msa -lpll_binary -lpll -lm
+LIBS=$(PLL_LIB)libpll_optimize.a $(PLL_LIB)libpll_msa.a $(PLL_LIB)libpll_binary.a $(PLL_LIB)libpll.a -lm
 
 CFLAGS= $(WARNINGS) -std=c++11 $(DBG) $(INCLUDES) $(CF)
 LINKFLAGS=$(DBG) $(RPATHS) $(LIB_PATHS)
@@ -38,7 +38,7 @@ omp: DBG=
 omp: LIBS+=-lgomp
 omp: CFLAGS+=-fopenmp
 ranged_test: BINARY_WRITE= -t $(TEST)/ref.tre -s $(TEST)/range_combined.fasta -r -w $(OUTDIR) $(F)
-mpi: CC=mpic++
+mpi: CC=mpicxx
 mpi: CFLAGS+=-D__MPI
 
 all:  $(TARGET)
@@ -90,7 +90,7 @@ gdb: $(TARGET)
 	gdb --args $(TARGET) $(NORM_TEST)
 
 $(TARGET): $(OUT_OBJS)
-	$(CC) $(LINKFLAGS) -o $@ $+ -static $(LIBS)
+	$(CC) $(LINKFLAGS) -o $@ $+ $(LIBS)
 
 $(OUT_OBJS): $(BIN)/%.o: %.cpp $(DEPS)
 	$(CC) $(CFLAGS) -c -o $@ $<
