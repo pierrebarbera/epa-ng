@@ -174,7 +174,12 @@ int main(int argc, char** argv)
 
   ensure_dir_has_slash(work_dir);
 
-  lgr = Log(work_dir + "epa_info.log");
+  int part_num = 0;
+#ifdef __MPI
+  part_num = world_rank;
+#endif
+
+  lgr = Log(work_dir + "epa_info." + std::to_string(part_num) + ".log");
   
   MSA ref_msa;
   if (reference_file.size())
@@ -272,14 +277,11 @@ int main(int argc, char** argv)
   lgr << "\nTime spent placing: " << runtime << "s" << endl;
 
   // output results
-  int part_num = 0;
-#ifdef __MPI
-  part_num = world_rank;
-#endif
-
+  lgr << "Creating output file..." << std::endl;
   std::ofstream outfile(work_dir + "epa_result." + std::to_string(part_num) + ".jplace");
   outfile << full_jplace_string(sample, invocation, queries);
   outfile.close();
+  lgr << "done!" << std::endl;
   MPI_BARRIER(MPI_COMM_WORLD);
   MPI_FINALIZE();
 	return EXIT_SUCCESS;

@@ -334,11 +334,14 @@ Sample place(Tree& reference_tree, MSA& query_msa_)
     std::to_string(num_branches) << " branches." << std::endl;
 
   // build all tiny trees with corresponding edges
+  lgr << "Creating Tiny Trees..." << std::endl;
   std::vector<Tiny_Tree> insertion_trees;
   for (unsigned int branch_id = 0; branch_id < num_branches; ++branch_id)
     insertion_trees.emplace_back(branches[branch_id], branch_id, reference_tree, !options.prescoring);
     /* clarification: last arg here is a flag specifying whether to optimize the branches.
       we don't want that if the mode is prescoring */
+  lgr << "done!" << std::endl;
+
 
   // output class
   Sample sample(get_numbered_newick_string(reference_tree.tree()));
@@ -350,14 +353,21 @@ Sample place(Tree& reference_tree, MSA& query_msa_)
   #pragma omp parallel for schedule(dynamic)
   for (unsigned int branch_id = 0; branch_id < num_branches; ++branch_id)
   {
+    lgr << "Placing sequences on branch " << std::to_string(branch_id) << "..." << std::endl;
     for (unsigned int sequence_id = 0; sequence_id < num_queries; ++sequence_id)
     {
       sample[sequence_id][branch_id] = insertion_trees[branch_id].place(query_msa_[sequence_id]);
       // printf("sequence %d branch %d:%f\n",sequence_id, branch_id, sample[sequence_id][branch_id].likelihood());
     }
+    lgr << "branch " << std::to_string(branch_id) << " done!" << std::endl;
   }
+
+  lgr << "First Stage of Placement done!" << std::endl;
+
   // now that everything has been placed, we can compute the likelihood weight ratio
+  lgr << "Computing lwr..." << std::endl;
   compute_and_set_lwr(sample);
+  lgr << "done!" << std::endl;
 
   /* prescoring was chosen: perform a second round, but only on candidate edges identified
     during the first run */
@@ -393,10 +403,12 @@ Sample place(Tree& reference_tree, MSA& query_msa_)
   }
 
   // finally, trim the output
+  lgr << "Trimming output..." << std::endl;
   if (options.acc_threshold)
     discard_by_accumulated_threshold(sample, options.support_threshold);
   else
     discard_by_support_threshold(sample, options.support_threshold);
+  lgr << "done!" << std::endl;
 
   return sample;
 }

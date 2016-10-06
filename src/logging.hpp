@@ -33,9 +33,9 @@ public:
     {
     if (to_cout_)
       std::cout << msg;
+    }
     if(log_file_)
       (*log_file_) << msg;
-    }
     return *this;
   }
 
@@ -49,9 +49,9 @@ public:
     {
     if (to_cout_)
       std::cout << f;
+    }
     if(log_file_)
       (*log_file_) << f;
-    }
     return *this;
   }
 
