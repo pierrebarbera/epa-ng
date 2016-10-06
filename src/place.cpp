@@ -288,6 +288,16 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     } // endif aggregate cleanup
     timer.stop(); // stop timer of any stage
 
+    if ( !(chunk_num % rebalance) ) // time to rebalance
+    {
+      // Step 1: aggregate the runtime statistics, first at the lowest rank per stage
+      // Step 2: calculate average time needed per chunk for the stage
+      // Step 3: make known to all other stage representatives (mpi_allgather)
+      // Step 4: stage representatives forward results to all stage members
+      // Step 5: calculate schedule on every rank, deterministically!
+      // Step 6: re-engage pipeline with new assignments
+      // compute stages should try to keep their edge assignment! affinity!
+    }
 
 #endif // __MPI
     sample.clear();
