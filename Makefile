@@ -26,13 +26,9 @@ test: update
 .PHONY: test
 
 pll:
+	@echo "Don't forget to set the fastblo flag!"
 	mkdir -p bin
-	cd ${PLL} && ./autogen.sh ; ./autogen.sh && ./configure && make clean && make
-	cd ${PLLMOD} && \
-	make -C src/binary && \
-	make -C src/msa && \
-	make -C src/optimize FASTBLO=-DNOCHECK_PERBRANCH_IMPR && \
-	make -C src/tree 
+	cd ${PLLMOD} && ./install-with-libpll.sh .. 
 .PHONY: pll
 		
 clean:

@@ -11,7 +11,7 @@ message (STATUS "Building tests")
 file (GLOB_RECURSE epa_test_sources ${PROJECT_SOURCE_DIR}/test/src/*.cpp ${PROJECT_SOURCE_DIR}/src/*.cpp)
 
 # sources list now has 2 Main.cpp, old has to be removed
-list(REMOVE_ITEM epa_test_sources "${PROJECT_SOURCE_DIR}/src/Main.cpp")
+list(REMOVE_ITEM epa_test_sources "${PROJECT_SOURCE_DIR}/src/main.cpp")
 
 include_directories (${PROJECT_SOURCE_DIR} ${pll_dir} ${pll_binary_dir} ${pll_optimize_dir} ${pll_msa_dir})
 
