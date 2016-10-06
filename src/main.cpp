@@ -180,6 +180,8 @@ int main(int argc, char** argv)
 #endif
 
   lgr = Log(work_dir + "epa_info." + std::to_string(part_num) + ".log");
+
+  lgr << "Process ID: " << ::getpid() << std::endl;
   
   MSA ref_msa;
   if (reference_file.size())
