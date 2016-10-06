@@ -24,10 +24,10 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
 {
   auto model = reference_tree.model();
 
-  int world_rank = 0;
+  int local_rank = 0;
 #ifdef __MPI
   int world_size;
-  MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+  MPI_Comm_rank(MPI_COMM_WORLD, &local_rank);
   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
   // shuffle available nodes to the different stages
@@ -38,6 +38,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
   int stage_2_compute_size = 0;
   int stage_2_aggregate_size = 0;
   int local_stage;
+  const unsigned int num_stages = options.options.prescoring ? 4 : 2;
 
   unsigned int rebalance = 10;
 
@@ -47,25 +48,25 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     if (i == EPA_MPI_STAGE_1_AGGREGATE)
     {
       global_rank[EPA_MPI_STAGE_1_AGGREGATE][stage_1_aggregate_size++] = i;
-      if (world_rank == i)
+      if (local_rank == i)
         local_stage = EPA_MPI_STAGE_1_AGGREGATE;
     }
     else if (i == EPA_MPI_STAGE_1_COMPUTE)
     {
       global_rank[EPA_MPI_STAGE_1_COMPUTE][stage_1_compute_size++] = i;
-      if (world_rank == i)
+      if (local_rank == i)
         local_stage = EPA_MPI_STAGE_1_COMPUTE;
     }
     else if (i == EPA_MPI_STAGE_2_AGGREGATE)
     {
       global_rank[EPA_MPI_STAGE_2_AGGREGATE][stage_2_aggregate_size++] = i;
-      if (world_rank == i)
+      if (local_rank == i)
         local_stage = EPA_MPI_STAGE_2_AGGREGATE;
     }
     else if (i == EPA_MPI_STAGE_2_COMPUTE)
     {
       global_rank[EPA_MPI_STAGE_2_COMPUTE][stage_2_compute_size++] = i;
-      if (world_rank == i)
+      if (local_rank == i)
         local_stage = EPA_MPI_STAGE_2_COMPUTE;
     }
   }
@@ -80,14 +81,14 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     = options.prescoring ? EPA_MPI_STAGE_2_AGGREGATE : EPA_MPI_STAGE_1_AGGREGATE;
   const auto EPA_MPI_DEDICATED_WRITE_RANK = 0; // TODO should really be one of the last rank aggr
 
-  if (world_rank == 0)
+  if (local_rank == 0)
   {
 #endif // __MPI
   lgr << "EPA - Evolutionary Placement Algorithm\n";
   lgr << "\nInvocation: \n" << invocation << "\n";
 #ifdef __MPI
   } else {
-    std::cout << "Rank " << world_rank << " checking in." << std::endl;
+    std::cout << "Rank " << local_rank << " checking in." << std::endl;
   }
 #endif // __MPI
 
@@ -277,7 +278,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
       discard_by_support_threshold(sample, options.support_threshold);
 
     // write results of current last stage aggregator node to a part file
-    std::string part_file_name(outdir + "epa." + std::to_string(world_rank) 
+    std::string part_file_name(outdir + "epa." + std::to_string(local_rank) 
       + "." + std::to_string(chunk_num) + ".part");
     std::ofstream part_file(part_file_name);
     part_file << sample_to_jplace_string(sample, msa_stream);
@@ -290,11 +291,33 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
 
     if ( !(chunk_num % rebalance) ) // time to rebalance
     {
+      int foreman = global_rank[local_stage][0];
       // Step 1: aggregate the runtime statistics, first at the lowest rank per stage
+      epa_mpi_gather(timer, foreman, global_rank[local_stage], local_rank);
+      
       // Step 2: calculate average time needed per chunk for the stage
-      // Step 3: make known to all other stage representatives (mpi_allgather)
+      int color = MPI_UNDEFINED;
+      std::vector<double> perstage_avg(num_stages);
+
+      if (local_rank == foreman)
+      {
+        color = 1;
+        double avg = timer.average();
+        // Step 3: make known to all other stage representatives (mpi_allgather)
+        MPI_Comm foreman_comm;
+        MPI_Comm_split(MPI_COMM_WORLD, color, local_rank, &foreman_comm);
+        MPI_Allgather(&avg, 1, MPI_DOUBLE, &perstage_avg[0], 1, MPI_DOUBLE, foreman_comm);
+        MPI_Comm_free(&foreman_comm);
+      }
       // Step 4: stage representatives forward results to all stage members
+      // epa_mpi_bcast(perstage_avg, foreman, global_rank[local_stage], local_rank);
+      MPI_Comm stage_comm;
+      MPI_Comm_split(MPI_COMM_WORLD, local_stage, local_rank, &stage_comm);
+      MPI_Bcast(&perstage_avg[0], num_stages, MPI_DOUBLE, foreman, stage_comm);
+      MPI_Comm_free(&stage_comm);
+
       // Step 5: calculate schedule on every rank, deterministically!
+      auto sched = solve(num_stages, world_size, to_difficulty(perstage_avg));
       // Step 6: re-engage pipeline with new assignments
       // compute stages should try to keep their edge assignment! affinity!
     }
@@ -305,14 +328,15 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     chunk_num++;
   }
 
-  MPI_BARRIER(MPI_COMM_WORLD);
 
   //==============================================================
   // POST COMPUTATION
   //==============================================================
   // finally, paste all part files together
 #ifdef __MPI
-  if (world_rank != EPA_MPI_DEDICATED_WRITE_RANK)
+  MPI_BARRIER(MPI_COMM_WORLD);
+
+  if (local_rank != EPA_MPI_DEDICATED_WRITE_RANK)
   {
     if (local_stage == EPA_MPI_STAGE_LAST_AGGREGATE)
     {

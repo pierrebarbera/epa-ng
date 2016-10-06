@@ -93,6 +93,11 @@ void merge(Sample& dest, const Sample& src)
   }
 }
 
+void merge(Timer& dest, const Timer& src)
+{
+  dest.insert(dest.end(), src.begin(), src.end());
+}
+
 void compute_and_set_lwr(Sample& sample)
 {
   for(auto &pq : sample)
