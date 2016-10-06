@@ -12,4 +12,4 @@
 void process(Tree& tree, MSA_Stream& msa_stream, const std::string& outdir, const Options& options,
   const std::string& invocation);
 
-Sample place(Tree& epa_tree, MSA& query_msa_);
+void place(Tree& epa_tree, MSA& query_msa_, Sample& sample);

@@ -272,7 +272,9 @@ int main(int argc, char** argv)
   // start the placement process and write to file
   auto start = chrono::high_resolution_clock::now();
   // process(tree, queries, work_dir, options, invocation);
-  auto sample = place(tree, queries);
+  Sample sample(get_numbered_newick_string(tree.tree()));
+  place(tree, queries, sample);
+
   auto end = chrono::high_resolution_clock::now();
   auto runtime = chrono::duration_cast<chrono::seconds>(end - start).count();
 

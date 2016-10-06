@@ -319,7 +319,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
 // ================== LEGACY CODE ==========================================
 
 
-Sample place(Tree& reference_tree, MSA& query_msa_)
+void place(Tree& reference_tree, MSA& query_msa_, Sample& sample)
 {
   auto options = reference_tree.options();
 
@@ -344,7 +344,7 @@ Sample place(Tree& reference_tree, MSA& query_msa_)
 
 
   // output class
-  Sample sample(get_numbered_newick_string(reference_tree.tree()));
+  // Sample sample(get_numbered_newick_string(reference_tree.tree()));
   for (unsigned int sequence_id = 0; sequence_id < num_queries; sequence_id++)
     sample.emplace_back(sequence_id, num_branches);
 
@@ -410,5 +410,5 @@ Sample place(Tree& reference_tree, MSA& query_msa_)
     discard_by_support_threshold(sample, options.support_threshold);
   lgr << "done!" << std::endl;
 
-  return sample;
+  // return sample;
 }
