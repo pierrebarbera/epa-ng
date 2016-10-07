@@ -7,10 +7,12 @@
 #include <numeric>
 #include <algorithm>
 
-void to_difficulty(std::vector<double> perstage_avg)
+void to_difficulty(std::vector<double>& perstage_avg)
 {
-  auto min = std::min_element(perstage_avg.begin(), perstage_avg.end());
-  for_each(perstage_avg.begin(), perstage_avg.end(), [min](double& x){x /= min};);
+  auto min = *std::min_element(perstage_avg.begin(), perstage_avg.end());
+  for_each(perstage_avg.begin(), perstage_avg.end(), 
+    [min](double& x){x /= min;}
+    );
 }
 
 std::vector<unsigned int> solve(unsigned int stages, unsigned int nodes, std::vector<double> difficulty_per_stage)
