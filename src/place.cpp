@@ -14,6 +14,7 @@
 #include "pll_util.hpp"
 #include "epa_pll_util.hpp"
 #include "Timer.hpp"
+#include "schedule.hpp"
 
 #ifdef __MPI
 #include "epa_mpi_util.hpp"
@@ -38,7 +39,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
   int stage_2_compute_size = 0;
   int stage_2_aggregate_size = 0;
   int local_stage;
-  const unsigned int num_stages = options.options.prescoring ? 4 : 2;
+  const unsigned int num_stages = options.prescoring ? 4 : 2;
 
   unsigned int rebalance = 10;
 
@@ -150,7 +151,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     // MPI: split the result and send the part to correct aggregate node
     std::vector<Sample> parts;
     split(sample, parts, global_rank[EPA_MPI_STAGE_1_AGGREGATE].size());
-    for (int i = 0; i < parts.size(); ++i)
+    for (unsigned int i = 0; i < parts.size(); ++i)
     {
       epa_mpi_send(parts[i], global_rank[EPA_MPI_STAGE_1_AGGREGATE][i], MPI_COMM_WORLD);
     }
@@ -240,7 +241,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     {
       std::vector<Sample> parts;
       split(sample, parts, global_rank[EPA_MPI_STAGE_2_AGGREGATE].size());
-      for (int i = 0; i < parts.size(); ++i)
+      for (unsigned int i = 0; i < parts.size(); ++i)
       {
         epa_mpi_send(parts[i], global_rank[EPA_MPI_STAGE_2_AGGREGATE][i], MPI_COMM_WORLD);
       }
@@ -313,11 +314,12 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
       // epa_mpi_bcast(perstage_avg, foreman, global_rank[local_stage], local_rank);
       MPI_Comm stage_comm;
       MPI_Comm_split(MPI_COMM_WORLD, local_stage, local_rank, &stage_comm);
-      MPI_Bcast(&perstage_avg[0], num_stages, MPI_DOUBLE, foreman, stage_comm);
+      MPI_Bcast(&perstage_avg[0], num_stages, MPI_DOUBLE, 0, stage_comm);
       MPI_Comm_free(&stage_comm);
 
       // Step 5: calculate schedule on every rank, deterministically!
-      auto sched = solve(num_stages, world_size, to_difficulty(perstage_avg));
+      to_difficulty(perstage_avg);
+      auto sched = solve(num_stages, world_size, perstage_avg);
       // Step 6: re-engage pipeline with new assignments
       // compute stages should try to keep their edge assignment! affinity!
     }

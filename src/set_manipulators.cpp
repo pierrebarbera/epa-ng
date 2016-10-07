@@ -58,7 +58,7 @@ void split(Sample& source, vector<Sample>& parts, unsigned int num_parts)
   printf("Chunk Size %d\n", chunk_size);
   auto move_iter = source.begin();
   // copy the first num - 1 chunks
-  for (int i = 0; i < num_parts - 1; ++i)
+  for (unsigned int i = 0; i < num_parts - 1; ++i)
   {
     parts.push_back(Sample(chunk_size));
     copy_n(move_iter, chunk_size, parts.back().begin());
