@@ -48,11 +48,30 @@ std::vector<unsigned int> solve(unsigned int stages, unsigned int nodes, std::ve
   return nodes_per_stage;
 }
 
-void assign(std::vector<unsigned int>& nodes_per_stage, 
+void assign(const int local_rank,
+            std::vector<unsigned int>& nodes_per_stage, 
             std::unordered_map<int, std::unordered_map<int, int>>& rank_assignm,
             int* local_stage)
 {
   int rank = 0;
+  for (unsigned int stage = 0; stage < nodes_per_stage.size(); ++stage)
+  {
+    auto nodes = nodes_per_stage[stage];
+    for (unsigned int j = 0; j < nodes; ++j)
+    {
+      rank_assignm[stage][j] = rank;
+      if (local_rank == rank)
+        *local_stage = stage;
+      rank++;
+    }
+  }
+}
+
+void reassign(const int local_rank,
+              std::vector<unsigned int>& nodes_per_stage, 
+              std::unordered_map<int, std::unordered_map<int, int>>& rank_assignm,
+              int* local_stage)
+{
   for (unsigned int stage = 0; stage < nodes_per_stage.size(); ++stage)
   {
     auto nodes = nodes_per_stage[stage];
