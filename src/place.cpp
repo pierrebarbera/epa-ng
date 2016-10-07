@@ -43,6 +43,9 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
 
   unsigned int rebalance = 10;
 
+  std::vector<unsigned int> init_diff = options.prescoring ? {100.0, 1.0, 100.0, 1.0} : {100.0, 1.0};
+  auto init_nps = solve(num_stages, world_size, init_diff);
+  assign(init_nps, global_rank, &local_stage);
 
   for (int i = 0; i < world_size; i++)
   {
@@ -71,10 +74,10 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
         local_stage = EPA_MPI_STAGE_2_COMPUTE;
     }
   }
-  stage_size[EPA_MPI_STAGE_1_COMPUTE] = stage_1_compute_size;
-  stage_size[EPA_MPI_STAGE_1_AGGREGATE] = stage_1_aggregate_size;
-  stage_size[EPA_MPI_STAGE_2_COMPUTE] = stage_2_compute_size;
-  stage_size[EPA_MPI_STAGE_2_AGGREGATE] = stage_2_aggregate_size;
+  // stage_size[EPA_MPI_STAGE_1_COMPUTE] = stage_1_compute_size;
+  // stage_size[EPA_MPI_STAGE_1_AGGREGATE] = stage_1_aggregate_size;
+  // stage_size[EPA_MPI_STAGE_2_COMPUTE] = stage_2_compute_size;
+  // stage_size[EPA_MPI_STAGE_2_AGGREGATE] = stage_2_aggregate_size;
 
   Timer timer;
 

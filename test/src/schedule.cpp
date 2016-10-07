@@ -31,9 +31,32 @@ TEST(schedule, to_difficulty)
 
   to_difficulty(perstage_avg);
 
-  for (int i = 0; i < perstage_avg.size(); ++i)
+  for (unsigned int i = 0; i < perstage_avg.size(); ++i)
   {
     EXPECT_DOUBLE_EQ(perstage_avg[i], expected[i]);
   }   
   
+}
+
+TEST(schedule, assign)
+{ 
+  int local_stage;
+
+  std::vector<unsigned int> nps = {15, 1, 15, 1};
+  std::unordered_map<int, std::unordered_map<int, int>> rank_assignm;
+  assign(nps, rank_assignm, &local_stage);
+
+  int stage = 0;
+  for (auto& pair : rank_assignm)
+  {
+    std::unordered_map<int, int> stage_assign = pair.second;
+    printf("Stage: %d\nRanks:", stage++);
+    for (auto& opair : stage_assign)
+    {
+      auto rank = opair.second;
+      printf(" %d", rank);
+    }
+    printf("\n");
+  }
+
 }
