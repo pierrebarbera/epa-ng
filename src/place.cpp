@@ -34,50 +34,24 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
   // shuffle available nodes to the different stages
   std::unordered_map<int, std::unordered_map<int, int>> global_rank;
   std::unordered_map<int, int> stage_size;
-  int stage_1_compute_size = 0;
-  int stage_1_aggregate_size = 0;
-  int stage_2_compute_size = 0;
-  int stage_2_aggregate_size = 0;
   int local_stage;
   const unsigned int num_stages = options.prescoring ? 4 : 2;
 
   unsigned int rebalance = 10;
 
-  std::vector<unsigned int> init_diff = options.prescoring ? {100.0, 1.0, 100.0, 1.0} : {100.0, 1.0};
-  auto init_nps = solve(num_stages, world_size, init_diff);
-  assign(init_nps, global_rank, &local_stage);
+  std::vector<double> init_diff = options.prescoring 
+    ? std::vector<double>{100.0, 1.0, 100.0, 1.0} : std::vector<double>{100.0, 1.0};
 
-  for (int i = 0; i < world_size; i++)
+  // get initial schedule
+  auto init_nps = solve(num_stages, world_size, init_diff);
+  assign(local_rank, init_nps, global_rank, &local_stage);
+
+  lgr << "Schedule: ";
+  for (int i = 0; i < global_rank.size(); ++i)
   {
-    if (i == EPA_MPI_STAGE_1_AGGREGATE)
-    {
-      global_rank[EPA_MPI_STAGE_1_AGGREGATE][stage_1_aggregate_size++] = i;
-      if (local_rank == i)
-        local_stage = EPA_MPI_STAGE_1_AGGREGATE;
-    }
-    else if (i == EPA_MPI_STAGE_1_COMPUTE)
-    {
-      global_rank[EPA_MPI_STAGE_1_COMPUTE][stage_1_compute_size++] = i;
-      if (local_rank == i)
-        local_stage = EPA_MPI_STAGE_1_COMPUTE;
-    }
-    else if (i == EPA_MPI_STAGE_2_AGGREGATE)
-    {
-      global_rank[EPA_MPI_STAGE_2_AGGREGATE][stage_2_aggregate_size++] = i;
-      if (local_rank == i)
-        local_stage = EPA_MPI_STAGE_2_AGGREGATE;
-    }
-    else if (i == EPA_MPI_STAGE_2_COMPUTE)
-    {
-      global_rank[EPA_MPI_STAGE_2_COMPUTE][stage_2_compute_size++] = i;
-      if (local_rank == i)
-        local_stage = EPA_MPI_STAGE_2_COMPUTE;
-    }
+    lgr << global_rank[i].size() << " ";
   }
-  // stage_size[EPA_MPI_STAGE_1_COMPUTE] = stage_1_compute_size;
-  // stage_size[EPA_MPI_STAGE_1_AGGREGATE] = stage_1_aggregate_size;
-  // stage_size[EPA_MPI_STAGE_2_COMPUTE] = stage_2_compute_size;
-  // stage_size[EPA_MPI_STAGE_2_AGGREGATE] = stage_2_aggregate_size;
+  lgr << std::endl;
 
   Timer timer;
 

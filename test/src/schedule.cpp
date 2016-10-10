@@ -18,10 +18,11 @@ TEST(schedule, solve)
 
   auto nps = solve(stages, nodes, diff);
 
-  for(const auto& n : nps)
-    printf("%d, ", n);
+  // for(const auto& n : nps)
+  //   printf("%d, ", n);
     
-  printf("\nTotal: %d\n", accumulate(nps.begin(), nps.end(), 0));
+  // printf("\nTotal: %d\n", accumulate(nps.begin(), nps.end(), 0));
+  EXPECT_EQ(accumulate(nps.begin(), nps.end(), 0), nodes);
 }
 
 TEST(schedule, to_difficulty)
@@ -41,22 +42,30 @@ TEST(schedule, to_difficulty)
 TEST(schedule, assign)
 { 
   int local_stage;
+  int local_rank = 0;
 
-  std::vector<unsigned int> nps = {15, 1, 15, 1};
+  std::vector<std::vector<unsigned int>> nps = { {15, 1, 15, 1}, {1, 1, 1, 1}, {2, 0, 1, 1} };
   std::unordered_map<int, std::unordered_map<int, int>> rank_assignm;
-  assign(nps, rank_assignm, &local_stage);
 
-  int stage = 0;
-  for (auto& pair : rank_assignm)
+  for (auto& snps : nps)
   {
-    std::unordered_map<int, int> stage_assign = pair.second;
-    printf("Stage: %d\nRanks:", stage++);
-    for (auto& opair : stage_assign)
+    assign(local_rank, snps, rank_assignm, &local_stage);
+    for (unsigned int i = 0; i < rank_assignm.size(); ++i)
     {
-      auto rank = opair.second;
-      printf(" %d", rank);
+      auto stage_assign = rank_assignm[i];
+      EXPECT_EQ(stage_assign.size(), snps[i]);
+      // for (auto& opair : stage_assign)
+      // {
+      //   auto rank = opair.second;
+      //   printf(" %d", rank);
+      // }
+      // printf("\n");
     }
-    printf("\n");
-  }
 
+    rank_assignm[0].clear();
+    rank_assignm[1].clear();
+    rank_assignm[2].clear();
+    rank_assignm[3].clear();
+  }
+  
 }

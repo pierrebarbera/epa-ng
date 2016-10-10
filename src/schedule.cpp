@@ -72,13 +72,5 @@ void reassign(const int local_rank,
               std::unordered_map<int, std::unordered_map<int, int>>& rank_assignm,
               int* local_stage)
 {
-  for (unsigned int stage = 0; stage < nodes_per_stage.size(); ++stage)
-  {
-    auto nodes = nodes_per_stage[stage];
-    for (unsigned int j = 0; j < nodes; ++j)
-    {
-      rank_assignm[stage][j] = rank;
-      rank++;
-    }
-  }
+  
 }

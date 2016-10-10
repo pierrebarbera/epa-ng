@@ -9,7 +9,7 @@ PLL_LIB=../libs/lib/
 F+=
 CF+=
 BINARY_WRITE= -t $(TEST)/ref.tre -s $(TEST)/aln.fasta -q $(TEST)/query.fasta -B -w $(OUTDIR) $(F)
-BINARY_READ=-b $(OUTDIR)/epa_binary_file -q $(TEST)/query.fasta -w $(OUTDIR)
+BINARY_READ=-b $(OUTDIR)/epa_binary_file -q $(TEST)/query.fasta -g 0.99 -w $(OUTDIR)
 NORM_TEST=-t $(TEST)/ref.tre -s $(TEST)/aln.fasta -q $(TEST)/query.fasta -w $(OUTDIR) $(F)
 
 #CC=clang++

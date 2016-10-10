@@ -55,7 +55,6 @@ void split(Sample& source, vector<Sample>& parts, unsigned int num_parts)
 {
   parts.clear();
   unsigned int chunk_size = ceil(source.size() / (double)num_parts);
-  printf("Chunk Size %d\n", chunk_size);
   auto move_iter = source.begin();
   // copy the first num - 1 chunks
   for (unsigned int i = 0; i < num_parts - 1; ++i)
