@@ -5,7 +5,7 @@
 #include <chrono>
 
 #include "mpihead.hpp"
-#include "logging.hpp"
+#include "Log.hpp"
 #include "epa.hpp"
 
 using namespace std;

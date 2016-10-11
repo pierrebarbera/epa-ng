@@ -4,7 +4,7 @@
 
 #include "Epatest.hpp"
 #include "src/mpihead.hpp"
-#include "src/logging.hpp"
+#include "src/Log.hpp"
 
 Epatest* env;
 Log lgr(false);

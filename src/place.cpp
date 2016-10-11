@@ -8,7 +8,7 @@
 #include "jplace_util.hpp"
 #include "stringify.hpp"
 #include "set_manipulators.hpp"
-#include "logging.hpp"
+#include "Log.hpp"
 #include "Tiny_Tree.hpp"
 #include "mpihead.hpp"
 #include "pll_util.hpp"
@@ -48,8 +48,9 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
   lgr.dbg() << "Schedule: ";
   for (unsigned int i = 0; i < schedule.size(); ++i)
   {
-    lgr.dbg() << schedule[i].size();
+    lgr.dbg() << schedule[i].size() << " ";
   }
+  lgr.dbg() << std::endl;
 
   Timer timer;
 
@@ -119,12 +120,12 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     // MPI: split the result and send the part to correct aggregate node
     std::vector<Sample> parts;
     split(sample, parts, schedule[EPA_MPI_STAGE_1_AGGREGATE].size());
-    lgr.dbg() << "Sending Stage 1 Results...";
+    lgr.dbg() << "Sending Stage 1 Results..." << std::endl;
     for (unsigned int i = 0; i < parts.size(); ++i)
     {
       epa_mpi_send(parts[i], schedule[EPA_MPI_STAGE_1_AGGREGATE][i], MPI_COMM_WORLD);
     }
-    lgr.dbg() << "Stage 1 Send done!";
+    lgr.dbg() << "Stage 1 Send done!" << std::endl;
 
     } // endif (local_stage == EPA_MPI_STAGE_1_COMPUTE)
     //==============================================================
@@ -137,7 +138,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     if (local_stage == EPA_MPI_STAGE_1_AGGREGATE)
     {
     // (MPI: recieve results, merge them)
-    lgr.dbg() << "Recieving Stage 1 Results...";
+    lgr.dbg() << "Recieving Stage 1 Results..." << std::endl;
     for (auto rank_pair : schedule[EPA_MPI_STAGE_1_COMPUTE])
     {
       int rank = rank_pair.second;
@@ -145,12 +146,12 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
       epa_mpi_recieve(remote_sample, rank, MPI_COMM_WORLD);
       merge(sample, remote_sample);
     }
-    lgr.dbg() << "Stage 1 Recieve done!";
+    lgr.dbg() << "Stage 1 Recieve done!" << std::endl;
 #endif // __MPI
     // build lwrs
-    lgr.dbg() << "Build LWR...";
+    lgr.dbg() << "Build LWR..." << std::endl;
     compute_and_set_lwr(sample);
-    lgr.dbg() << "LWR done!";
+    lgr.dbg() << "LWR done!" << std::endl;
     // if this was a prescring run, select the candidate edges
     if(options.prescoring)
     {
@@ -263,12 +264,12 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
 
     if ( !(chunk_num % rebalance) ) // time to rebalance
     {
-      lgr.dbg() << "Rebalancing...";
+      lgr.dbg() << "Rebalancing..." << std::endl;
       int foreman = schedule[local_stage][0];
       // Step 1: aggregate the runtime statistics, first at the lowest rank per stage
-      lgr.dbg() << "aggregate the runtime statistics...";
+      lgr.dbg() << "aggregate the runtime statistics..." << std::endl;
       epa_mpi_gather(timer, foreman, schedule[local_stage], local_rank);
-      lgr.dbg() << "Runtime aggregate done!";
+      lgr.dbg() << "Runtime aggregate done!" << std::endl;
       
       // Step 2: calculate average time needed per chunk for the stage
       std::vector<double> perstage_avg(num_stages);
@@ -281,27 +282,27 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
       {
         double avg = timer.average();
         // Step 3: make known to all other stage representatives (mpi_allgather)
-        lgr.dbg() << "Foremen allgather...";
+        lgr.dbg() << "Foremen allgather..." << std::endl;
         MPI_Allgather(&avg, 1, MPI_DOUBLE, &perstage_avg[0], 1, MPI_DOUBLE, foreman_comm);
-        lgr.dbg() << "Foremen allgather done!";
+        lgr.dbg() << "Foremen allgather done!" << std::endl;
         MPI_Comm_free(&foreman_comm);
       }
       MPI_BARRIER(MPI_COMM_WORLD);
       // Step 4: stage representatives forward results to all stage members
       // epa_mpi_bcast(perstage_avg, foreman, schedule[local_stage], local_rank);
-      lgr.dbg() << "Broadcasting...";
+      lgr.dbg() << "Broadcasting..." << std::endl;
       MPI_Comm stage_comm;
       MPI_Comm_split(MPI_COMM_WORLD, local_stage, local_rank, &stage_comm);
       MPI_Bcast(&perstage_avg[0], num_stages, MPI_DOUBLE, 0, stage_comm);
       MPI_Comm_free(&stage_comm);
-      lgr.dbg() << "Broadcasting done!";
+      lgr.dbg() << "Broadcasting done!" << std::endl;
 
       // Step 5: calculate schedule on every rank, deterministically!
       to_difficulty(perstage_avg);
       auto sched = solve(num_stages, world_size, perstage_avg);
       // Step 6: re-engage pipeline with new assignments
       // compute stages should try to keep their edge assignment! affinity!
-      lgr.dbg() << "Rebalancing done!";
+      lgr.dbg() << "Rebalancing done!" << std::endl;
     }
 
 #endif // __MPI
@@ -314,7 +315,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
   //==============================================================
   // POST COMPUTATION
   //==============================================================
-  lgr.dbg() << "Starting Post-Comp";
+  lgr.dbg() << "Starting Post-Comp" << std::endl;
   // finally, paste all part files together
 #ifdef __MPI
   MPI_BARRIER(MPI_COMM_WORLD);

@@ -9,7 +9,7 @@
 #include "Sequence.hpp"
 #include "optimize.hpp"
 #include "set_manipulators.hpp"
-#include "logging.hpp"
+#include "Log.hpp"
 #include "stringify.hpp"
 
 using namespace std;
@@ -38,12 +38,12 @@ Tree::Tree(const string &tree_file, const MSA &msa, Model &model, Options& optio
 
   lgr.dbg() << to_string(model_);
 
-  lgr << "Tree length: " << sum_branch_lengths(tree_.get()) << endl;
+  lgr.dbg() << "Tree length: " << sum_branch_lengths(tree_.get()) << endl;
 
   precompute_clvs(tree_.get(), partition_.get(), nums_);
 
-  lgr << "\nPost-optimization reference tree log-likelihood: ";
-  lgr << to_string(this->ref_tree_logl()) << endl;
+  lgr.dbg() << "\nPost-optimization reference tree log-likelihood: ";
+  lgr.dbg() << to_string(this->ref_tree_logl()) << endl;
 }
 
 /**

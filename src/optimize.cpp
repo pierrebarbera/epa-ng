@@ -10,7 +10,7 @@
 
 #include "pll_util.hpp"
 #include "constants.hpp"
-#include "logging.hpp"
+#include "Log.hpp"
 
 using namespace std;
 
