@@ -169,7 +169,8 @@ int main(int argc, char** argv)
   #ifdef __MPI
   int local_rank = 0;
   MPI_Comm_rank(MPI_COMM_WORLD, &local_rank);
-  lgr = Log(work_dir + std::to_string(local_rank) + ".epa_info.log");
+  bool to_cout = (local_rank == 0);
+  lgr = Log(work_dir + std::to_string(local_rank) + ".epa_info.log", to_cout);
   #else
   lgr = Log(work_dir + "epa_info.log");
   #endif

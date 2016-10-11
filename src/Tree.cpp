@@ -31,12 +31,12 @@ Tree::Tree(const string &tree_file, const MSA &msa, Model &model, Options& optio
 
   // find_collapse_equal_sequences(query_msa_);
 
-  // compute_and_set_empirical_frequencies(partition_.get(), model_);
+  compute_and_set_empirical_frequencies(partition_.get(), model_);
 
   // perform branch length and model optimization on the reference tree
   optimize(model_, tree_.get(), partition_.get(), nums_, options_.opt_branches, options_.opt_model);
 
-  lgr << to_string(model_);
+  lgr.dbg() << to_string(model_);
 
   lgr << "Tree length: " << sum_branch_lengths(tree_.get()) << endl;
 
