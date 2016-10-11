@@ -45,7 +45,7 @@ TEST(schedule, assign)
   int local_rank = 0;
 
   std::vector<std::vector<unsigned int>> nps = { {15, 1, 15, 1}, {1, 1, 1, 1}, {2, 0, 1, 1} };
-  std::unordered_map<int, std::unordered_map<int, int>> rank_assignm;
+  std::vector<std::vector<int>> rank_assignm;
 
   for (auto& snps : nps)
   {
@@ -54,12 +54,6 @@ TEST(schedule, assign)
     {
       auto stage_assign = rank_assignm[i];
       EXPECT_EQ(stage_assign.size(), snps[i]);
-      // for (auto& opair : stage_assign)
-      // {
-      //   auto rank = opair.second;
-      //   printf(" %d", rank);
-      // }
-      // printf("\n");
     }
 
     rank_assignm[0].clear();
@@ -68,4 +62,25 @@ TEST(schedule, assign)
     rank_assignm[3].clear();
   }
   
+}
+
+TEST(schedule, reassign)
+{ 
+  int local_stage;
+  int local_rank = 0;
+
+  std::vector<unsigned int> init_nps = {8,8,8,8};
+  std::vector<std::vector<unsigned int>> nps = { {15, 1, 15, 1}, {2, 14, 1, 15}, {30, 0, 1, 1} };
+  std::vector<std::vector<int>> rank_assignm;
+  assign(local_rank, init_nps, rank_assignm, &local_stage);
+
+  for (auto& snps : nps)
+  {
+    reassign(local_rank, snps, rank_assignm, &local_stage);
+    for (unsigned int i = 0; i < rank_assignm.size(); ++i)
+    {
+      auto stage_assign = rank_assignm[i];
+      EXPECT_EQ(stage_assign.size(), snps[i]);
+    }
+  }  
 }

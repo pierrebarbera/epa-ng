@@ -5,6 +5,8 @@
 #include <cmath>
 #include <numeric>
 #include <algorithm>
+#include <iterator>
+#include <vector>
 
 void to_difficulty(std::vector<double>& perstage_avg)
 {
@@ -50,16 +52,18 @@ std::vector<unsigned int> solve(unsigned int stages, unsigned int nodes, std::ve
 
 void assign(const int local_rank,
             std::vector<unsigned int>& nodes_per_stage, 
-            std::unordered_map<int, std::unordered_map<int, int>>& rank_assignm,
+            std::vector<std::vector<int>>& rank_assignm,
             int* local_stage)
 {
+  rank_assignm.clear();
   int rank = 0;
   for (unsigned int stage = 0; stage < nodes_per_stage.size(); ++stage)
   {
     auto nodes = nodes_per_stage[stage];
+    rank_assignm.push_back(std::vector<int>(nodes));
     for (unsigned int j = 0; j < nodes; ++j)
     {
-      rank_assignm[stage][j] = rank;
+      rank_assignm.back()[j] = rank;
       if (local_rank == rank)
         *local_stage = stage;
       rank++;
@@ -69,8 +73,42 @@ void assign(const int local_rank,
 
 void reassign(const int local_rank,
               std::vector<unsigned int>& nodes_per_stage, 
-              std::unordered_map<int, std::unordered_map<int, int>>& rank_assignm,
+              std::vector<std::vector<int>>& rank_assignm,
               int* local_stage)
 {
-  
+  assert(nodes_per_stage.size() == rank_assignm.size());
+  // extract ranks from stages that have too many
+  std::vector<int> cut_ranks;
+  for (size_t i = 0; i < nodes_per_stage.size(); ++i)
+  {
+    auto& cur_stage = rank_assignm[i];
+    int to_rm = (int)cur_stage.size() - nodes_per_stage[i] ;
+    auto rm_iter = cur_stage.end();
+    for (; to_rm > 0; --to_rm)
+    {
+      --rm_iter;
+      cut_ranks.push_back(*rm_iter);
+    }
+    cur_stage.erase(rm_iter, cur_stage.end());
+  }
+
+  // reassign them where they are needed
+  auto copy_iter = cut_ranks.begin();
+  for (size_t i = 0; i < nodes_per_stage.size(); ++i)
+  {
+    auto& cur_stage = rank_assignm[i];
+    int to_add = (int)nodes_per_stage[i] - cur_stage.size();
+    if (to_add > 0)
+    {
+      auto old_copy_iter = copy_iter;
+      std::advance(copy_iter, to_add);
+      for (; old_copy_iter != copy_iter; ++old_copy_iter)
+      {
+        int rank = *old_copy_iter;
+        if (rank == local_rank)
+          *local_stage = i;
+        cur_stage.push_back(rank);
+      }
+    }
+  }
 }

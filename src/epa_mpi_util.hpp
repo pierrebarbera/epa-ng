@@ -58,19 +58,19 @@ void epa_mpi_send(T& obj, int dest_rank, MPI_Comm comm)
 }
 
 template <typename T>
-void epa_mpi_recieve(T& obj, int source_rank, MPI_Comm comm)
+void epa_mpi_recieve(T& obj, int src_rank, MPI_Comm comm)
 {
   // probe to find out the message size
   MPI_Status status;
   int size;
-  err_check(MPI_Probe(source_rank, 0, comm, &status));
+  err_check(MPI_Probe(src_rank, 0, comm, &status));
   MPI_Get_count(&status, MPI_CHAR, &size);
 
   // prepare buffer
   auto buffer = new char[size];
 
   //  get the actual payload
-  err_check(MPI_Recv(buffer, size, MPI_CHAR, source_rank, 0, comm, &status));
+  err_check(MPI_Recv(buffer, size, MPI_CHAR, src_rank, 0, comm, &status));
 
   // deserialization
   std::stringstream ss;
@@ -84,7 +84,19 @@ void epa_mpi_recieve(T& obj, int source_rank, MPI_Comm comm)
 }
 
 template <typename T>
-void epa_mpi_gather(T& obj, int dest_rank, std::unordered_map<int, int>& src_ranks, int local_rank)
+void epa_mpi_recieve_merge(T& obj, std::vector<int>& src_ranks, MPI_Comm comm)
+{
+  for (auto rank : src_ranks)
+  {
+    T remote_obj;
+    epa_mpi_recieve(remote_obj, rank, comm);
+    merge(obj, remote_obj);
+  }
+}
+
+
+template <typename T>
+void epa_mpi_gather(T& obj, int dest_rank, std::vector<int>& src_ranks, int local_rank)
 {
   if (dest_rank != local_rank)
   {
@@ -92,13 +104,10 @@ void epa_mpi_gather(T& obj, int dest_rank, std::unordered_map<int, int>& src_ran
   }
   else
   {
-    for (auto rank_pair : src_ranks)
+    for (auto src_rank : src_ranks)
     {
-      int src_rank = rank_pair.second;
-      
       if (local_rank == src_rank)
         continue;
-      
       T remote_obj;
       epa_mpi_recieve(remote_obj, src_rank, MPI_COMM_WORLD);
       merge(obj, remote_obj);
@@ -107,13 +116,12 @@ void epa_mpi_gather(T& obj, int dest_rank, std::unordered_map<int, int>& src_ran
 }
 
 template <typename T>
-void epa_mpi_bcast(T& obj, int src_rank, std::unordered_map<int, int>& dest_ranks, int local_rank)
+void epa_mpi_bcast(T& obj, int src_rank, std::vector<int>& dest_ranks, int local_rank)
 {
   if (src_rank == local_rank)
   {
-    for (auto rank_pair : dest_ranks)
+    for (auto dest_rank : dest_ranks)
     {
-      int dest_rank = rank_pair.second();
       if (local_rank == dest_rank)
         continue;
       epa_mpi_send(obj, dest_rank, MPI_COMM_WORLD);

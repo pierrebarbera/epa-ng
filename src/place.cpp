@@ -31,8 +31,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
   // shuffle available nodes to the different stages
-  std::unordered_map<int, std::unordered_map<int, int>> schedule;
-  std::unordered_map<int, int> stage_size;
+  std::vector<std::vector<int>> schedule;
   int local_stage;
   const unsigned int num_stages = options.prescoring ? 4 : 2;
 
@@ -61,9 +60,6 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
 #endif // __MPI
   lgr << "EPA - Evolutionary Placement Algorithm\n";
   lgr << "\nInvocation: \n" << invocation << "\n";
-
-  // prepare all structures
-  // TODO build edge set / OOC tree
 
   unsigned int chunk_size = 100;
   unsigned int num_sequences;
@@ -139,13 +135,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     {
     // (MPI: recieve results, merge them)
     lgr.dbg() << "Recieving Stage 1 Results..." << std::endl;
-    for (auto rank_pair : schedule[EPA_MPI_STAGE_1_COMPUTE])
-    {
-      int rank = rank_pair.second;
-      Sample remote_sample;
-      epa_mpi_recieve(remote_sample, rank, MPI_COMM_WORLD);
-      merge(sample, remote_sample);
-    }
+    epa_mpi_recieve_merge(sample, schedule[EPA_MPI_STAGE_1_COMPUTE], MPI_COMM_WORLD);
     lgr.dbg() << "Stage 1 Recieve done!" << std::endl;
 #endif // __MPI
     // build lwrs
@@ -177,14 +167,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     //==============================================================
     if (local_stage == EPA_MPI_STAGE_2_COMPUTE and options.prescoring)
     {
-    // (MPI: recieve results, merge them)
-    for (auto rank_pair : schedule[EPA_MPI_STAGE_1_AGGREGATE])
-    {
-      int rank = rank_pair.second;
-      Sample remote_sample; 
-      epa_mpi_recieve(remote_sample, rank, MPI_COMM_WORLD);
-      merge(sample, remote_sample);
-    }
+    epa_mpi_recieve_merge(sample, schedule[EPA_MPI_STAGE_1_AGGREGATE], MPI_COMM_WORLD);
 #endif // __MPI
     if (options.prescoring)
     {
@@ -198,7 +181,6 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
       for (unsigned int branch_id = 0; branch_id < num_branches; branch_id++)
       {
         Placement * placement;
-        // Sequence * sequence;
         auto& branch = insertion_trees[branch_id];
         branch.opt_branches(true); // TODO only needs to be done once
         for (auto recomp_tuple : recompute_list[branch_id])
@@ -231,14 +213,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
       // only if this is the 4th stage do we need to get from mpi
       if (local_stage == EPA_MPI_STAGE_2_AGGREGATE)
       {
-        // (MPI: recieve results, merge them)
-        for (auto rank_pair : schedule[EPA_MPI_STAGE_2_COMPUTE])
-        {
-          int rank = rank_pair.second;
-          Sample remote_sample;
-          epa_mpi_recieve(remote_sample, rank, MPI_COMM_WORLD);
-          merge(sample, remote_sample);
-        }
+        epa_mpi_recieve_merge(sample, schedule[EPA_MPI_STAGE_2_COMPUTE], MPI_COMM_WORLD);
       }
 #endif // __MPI
     // recompute the lwrs
@@ -299,7 +274,8 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
 
       // Step 5: calculate schedule on every rank, deterministically!
       to_difficulty(perstage_avg);
-      auto sched = solve(num_stages, world_size, perstage_avg);
+      auto nps = solve(num_stages, world_size, perstage_avg);
+      reassign(local_rank, nps, schedule, &local_stage);
       // Step 6: re-engage pipeline with new assignments
       // compute stages should try to keep their edge assignment! affinity!
       lgr.dbg() << "Rebalancing done!" << std::endl;
@@ -323,15 +299,12 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
   if (local_rank != EPA_MPI_DEDICATED_WRITE_RANK)
   {
     if (local_stage == EPA_MPI_STAGE_LAST_AGGREGATE)
-    {
       epa_mpi_send(part_names, EPA_MPI_DEDICATED_WRITE_RANK, MPI_COMM_WORLD);
-    }
   }
   else
   {
-    for (auto rank_pair : schedule[EPA_MPI_STAGE_LAST_AGGREGATE])
+    for (auto rank : schedule[EPA_MPI_STAGE_LAST_AGGREGATE])
     {
-      int rank = rank_pair.second;
       if (rank == local_rank)
         continue;
       std::vector<std::string> remote_obj;
