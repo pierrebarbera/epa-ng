@@ -136,6 +136,8 @@ void optimize(Model& model, pll_utree_t * tree, pll_partition_t * partition,
   if (opt_branches)
     set_branch_lengths(tree, DEFAULT_BRANCH_LENGTH);
 
+  compute_and_set_empirical_frequencies(partition, model);
+
   auto symmetries = (&(model.symmetries())[0]);
   unsigned int param_indices[RATE_CATS] = {0};
 
