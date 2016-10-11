@@ -23,8 +23,7 @@
 void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& outdir,
               const Options& options, const std::string& invocation)
 {
-  auto model = reference_tree.model();
-
+  /* ===== COMMON DEFINITIONS ===== */
   int local_rank = 0;
 #ifdef __MPI
   int world_size;
@@ -32,24 +31,24 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
   // shuffle available nodes to the different stages
-  std::unordered_map<int, std::unordered_map<int, int>> global_rank;
+  std::unordered_map<int, std::unordered_map<int, int>> schedule;
   std::unordered_map<int, int> stage_size;
   int local_stage;
   const unsigned int num_stages = options.prescoring ? 4 : 2;
 
-  unsigned int rebalance = 10;
+  unsigned int rebalance = 1;
 
   std::vector<double> init_diff = options.prescoring 
     ? std::vector<double>{100.0, 1.0, 100.0, 1.0} : std::vector<double>{100.0, 1.0};
 
   // get initial schedule
   auto init_nps = solve(num_stages, world_size, init_diff);
-  assign(local_rank, init_nps, global_rank, &local_stage);
+  assign(local_rank, init_nps, schedule, &local_stage);
 
   lgr << "Schedule: ";
-  for (int i = 0; i < global_rank.size(); ++i)
+  for (unsigned int i = 0; i < schedule.size(); ++i)
   {
-    lgr << global_rank[i].size() << " ";
+    lgr << schedule[i].size() << " ";
   }
   lgr << std::endl;
 
@@ -57,7 +56,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
 
   const auto EPA_MPI_STAGE_LAST_AGGREGATE 
     = options.prescoring ? EPA_MPI_STAGE_2_AGGREGATE : EPA_MPI_STAGE_1_AGGREGATE;
-  const auto EPA_MPI_DEDICATED_WRITE_RANK = 0; // TODO should really be one of the last rank aggr
+  const auto EPA_MPI_DEDICATED_WRITE_RANK = schedule[EPA_MPI_STAGE_LAST_AGGREGATE][0];
 
   if (local_rank == 0)
   {
@@ -94,7 +93,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
   // output class
   Sample sample;
 
-  auto chunk_num = 0;
+  auto chunk_num = 1;
   std::vector<std::string> part_names;
 
 
@@ -127,13 +126,13 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
 #ifdef __MPI
     // MPI: split the result and send the part to correct aggregate node
     std::vector<Sample> parts;
-    split(sample, parts, global_rank[EPA_MPI_STAGE_1_AGGREGATE].size());
+    split(sample, parts, schedule[EPA_MPI_STAGE_1_AGGREGATE].size());
+    lgr.dbg() << "Sending Stage 1 Results...";
     for (unsigned int i = 0; i < parts.size(); ++i)
     {
-      epa_mpi_send(parts[i], global_rank[EPA_MPI_STAGE_1_AGGREGATE][i], MPI_COMM_WORLD);
+      epa_mpi_send(parts[i], schedule[EPA_MPI_STAGE_1_AGGREGATE][i], MPI_COMM_WORLD);
     }
-
-    // MPI Barrier first compute stage TODO for now implicit barrier by synchronous comm
+    lgr.dbg() << "Stage 1 Send done!";
 
     } // endif (local_stage == EPA_MPI_STAGE_1_COMPUTE)
     //==============================================================
@@ -146,17 +145,20 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     if (local_stage == EPA_MPI_STAGE_1_AGGREGATE)
     {
     // (MPI: recieve results, merge them)
-    for (auto rank_pair : global_rank[EPA_MPI_STAGE_1_COMPUTE])
+    lgr.dbg() << "Recieving Stage 1 Results...";
+    for (auto rank_pair : schedule[EPA_MPI_STAGE_1_COMPUTE])
     {
       int rank = rank_pair.second;
       Sample remote_sample;
       epa_mpi_recieve(remote_sample, rank, MPI_COMM_WORLD);
       merge(sample, remote_sample);
     }
+    lgr.dbg() << "Stage 1 Recieve done!";
 #endif // __MPI
     // build lwrs
+    lgr.dbg() << "Build LWR...";
     compute_and_set_lwr(sample);
-
+    lgr.dbg() << "LWR done!";
     // if this was a prescring run, select the candidate edges
     if(options.prescoring)
     {
@@ -170,7 +172,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     if(options.prescoring)
     {
       // TODO split!
-      epa_mpi_send(sample, global_rank[EPA_MPI_STAGE_2_COMPUTE][0], MPI_COMM_WORLD);
+      epa_mpi_send(sample, schedule[EPA_MPI_STAGE_2_COMPUTE][0], MPI_COMM_WORLD);
     }
     } // endif (local_stage == EPA_MPI_STAGE_1_AGGREGATE)
     //==============================================================
@@ -183,7 +185,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     if (local_stage == EPA_MPI_STAGE_2_COMPUTE and options.prescoring)
     {
     // (MPI: recieve results, merge them)
-    for (auto rank_pair : global_rank[EPA_MPI_STAGE_1_AGGREGATE])
+    for (auto rank_pair : schedule[EPA_MPI_STAGE_1_AGGREGATE])
     {
       int rank = rank_pair.second;
       Sample remote_sample; 
@@ -217,10 +219,10 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     if(options.prescoring)
     {
       std::vector<Sample> parts;
-      split(sample, parts, global_rank[EPA_MPI_STAGE_2_AGGREGATE].size());
+      split(sample, parts, schedule[EPA_MPI_STAGE_2_AGGREGATE].size());
       for (unsigned int i = 0; i < parts.size(); ++i)
       {
-        epa_mpi_send(parts[i], global_rank[EPA_MPI_STAGE_2_AGGREGATE][i], MPI_COMM_WORLD);
+        epa_mpi_send(parts[i], schedule[EPA_MPI_STAGE_2_AGGREGATE][i], MPI_COMM_WORLD);
       }
     }
     } // endif (local_stage == EPA_MPI_STAGE_2_COMPUTE)
@@ -237,7 +239,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     if (local_stage == EPA_MPI_STAGE_2_AGGREGATE)
     {
     // (MPI: recieve results, merge them)
-    for (auto rank_pair : global_rank[EPA_MPI_STAGE_2_COMPUTE])
+    for (auto rank_pair : schedule[EPA_MPI_STAGE_2_COMPUTE])
     {
       int rank = rank_pair.second;
       Sample remote_sample;
@@ -269,36 +271,45 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
 
     if ( !(chunk_num % rebalance) ) // time to rebalance
     {
-      int foreman = global_rank[local_stage][0];
+      lgr.dbg() << "Rebalancing...";
+      int foreman = schedule[local_stage][0];
       // Step 1: aggregate the runtime statistics, first at the lowest rank per stage
-      epa_mpi_gather(timer, foreman, global_rank[local_stage], local_rank);
+      lgr.dbg() << "aggregate the runtime statistics...";
+      epa_mpi_gather(timer, foreman, schedule[local_stage], local_rank);
+      lgr.dbg() << "Runtime aggregate done!";
       
       // Step 2: calculate average time needed per chunk for the stage
-      int color = MPI_UNDEFINED;
       std::vector<double> perstage_avg(num_stages);
+
+      int color = (local_rank == foreman) ? 1 : MPI_UNDEFINED;
+      MPI_Comm foreman_comm;
+      MPI_Comm_split(MPI_COMM_WORLD, color, local_rank, &foreman_comm);
 
       if (local_rank == foreman)
       {
-        color = 1;
         double avg = timer.average();
         // Step 3: make known to all other stage representatives (mpi_allgather)
-        MPI_Comm foreman_comm;
-        MPI_Comm_split(MPI_COMM_WORLD, color, local_rank, &foreman_comm);
+        lgr.dbg() << "Foremen allgather...";
         MPI_Allgather(&avg, 1, MPI_DOUBLE, &perstage_avg[0], 1, MPI_DOUBLE, foreman_comm);
+        lgr.dbg() << "Foremen allgather done!";
         MPI_Comm_free(&foreman_comm);
       }
+      MPI_BARRIER(MPI_COMM_WORLD);
       // Step 4: stage representatives forward results to all stage members
-      // epa_mpi_bcast(perstage_avg, foreman, global_rank[local_stage], local_rank);
+      // epa_mpi_bcast(perstage_avg, foreman, schedule[local_stage], local_rank);
+      lgr.dbg() << "Broadcasting...";
       MPI_Comm stage_comm;
       MPI_Comm_split(MPI_COMM_WORLD, local_stage, local_rank, &stage_comm);
       MPI_Bcast(&perstage_avg[0], num_stages, MPI_DOUBLE, 0, stage_comm);
       MPI_Comm_free(&stage_comm);
+      lgr.dbg() << "Broadcasting done!" <<;
 
       // Step 5: calculate schedule on every rank, deterministically!
       to_difficulty(perstage_avg);
       auto sched = solve(num_stages, world_size, perstage_avg);
       // Step 6: re-engage pipeline with new assignments
       // compute stages should try to keep their edge assignment! affinity!
+      lgr.dbg() << "Rebalancing done!";
     }
 
 #endif // __MPI
@@ -311,6 +322,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
   //==============================================================
   // POST COMPUTATION
   //==============================================================
+  lgr.dbg() << "Starting Post-Comp";
   // finally, paste all part files together
 #ifdef __MPI
   MPI_BARRIER(MPI_COMM_WORLD);
@@ -324,14 +336,16 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
   }
   else
   {
-  for (auto rank_pair : global_rank[EPA_MPI_STAGE_LAST_AGGREGATE])
-  {
-    int rank = rank_pair.second;
-    std::vector<std::string> remote_obj;
-    epa_mpi_recieve(remote_obj, rank, MPI_COMM_WORLD);
-    // merge(part_names, remote_obj);
-    part_names.insert(part_names.end(), remote_obj.begin(), remote_obj.end());
-  }
+    for (auto rank_pair : schedule[EPA_MPI_STAGE_LAST_AGGREGATE])
+    {
+      int rank = rank_pair.second;
+      if (rank == local_rank)
+        continue;
+      std::vector<std::string> remote_obj;
+      epa_mpi_recieve(remote_obj, rank, MPI_COMM_WORLD);
+      // merge(part_names, remote_obj);
+      part_names.insert(part_names.end(), remote_obj.begin(), remote_obj.end());
+    }
 #endif
     // create output file
     std::ofstream outfile(outdir + "epa_result.jplace");

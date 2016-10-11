@@ -166,8 +166,14 @@ int main(int argc, char** argv)
 
   ensure_dir_has_slash(work_dir);
 
+  #ifdef __MPI
+  int local_rank = 0;
+  MPI_Comm_rank(MPI_COMM_WORLD, &local_rank);
+  lgr = Log(work_dir + std::to_string(local_rank) + ".epa_info.log");
+  #else
   lgr = Log(work_dir + "epa_info.log");
-  
+  #endif
+
   MSA ref_msa;
   if (reference_file.size())
     ref_msa = build_MSA_from_file(reference_file);

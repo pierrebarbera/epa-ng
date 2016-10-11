@@ -7,7 +7,7 @@
 
 using namespace std;
 
-TEST(schedule, solve)
+TEST(schedule, solve_func_test)
 {
   unsigned int stages, nodes;
 
