@@ -30,22 +30,15 @@ TEST(set_manipulators, split_sample)
 
   split(sample_1, parts, split_map);
 
-  EXPECT_EQ(parts.size(), 2);
-  EXPECT_EQ(sample_1.size(), 0);
+  ASSERT_EQ(2, parts.size());
+  ASSERT_EQ(0, sample_1.size());
 
-  assert(parts.size() == 2);
+  ASSERT_EQ(2, parts[0].size());
+  ASSERT_EQ(1, parts[1].size());
 
-  EXPECT_EQ(parts[0].size(), 2);
-  EXPECT_EQ(parts[1].size(), 1);
-
-  assert(parts[0].size() == 2);
-  assert(parts[1].size() == 1);
-
-  EXPECT_EQ(parts[0][0][0].branch_id(), 1);
-  EXPECT_EQ(parts[0][1][0].branch_id(), 2);
-  EXPECT_EQ(parts[1][0][0].branch_id(), 3);
-
-
+  EXPECT_EQ(1, parts[0][0][0].branch_id());
+  EXPECT_EQ(2, parts[0][1][0].branch_id());
+  EXPECT_EQ(3, parts[1][0][0].branch_id());
 }
 
 TEST(set_manipulators, split_sample_equal)
@@ -63,20 +56,90 @@ TEST(set_manipulators, split_sample_equal)
 
   split(sample_1, parts, 2);
 
-  EXPECT_EQ(parts.size(), 2);
-  EXPECT_EQ(sample_1.size(), 0);
+  ASSERT_EQ(2, parts.size());
+  ASSERT_EQ(0, sample_1.size());
 
-  assert(parts.size() == 2);
+  ASSERT_EQ(2, parts[0].size());
+  ASSERT_EQ(1, parts[1].size());
 
-  EXPECT_EQ(parts[0].size(), 2);
-  EXPECT_EQ(parts[1].size(), 1);
+  EXPECT_EQ(1, parts[0][0][0].branch_id());
+  EXPECT_EQ(2, parts[0][1][0].branch_id());
+  EXPECT_EQ(3, parts[1][0][0].branch_id());
+}
 
-  assert(parts[0].size() == 2);
-  assert(parts[1].size() == 1);
+TEST(set_manipulators, split_work_equal)
+{
+  Sample sample_1;
+  unsigned int s_a = 0, s_b = 1, s_c = 2;
+  sample_1.emplace_back(s_a);
+  sample_1.back().emplace_back(1,-10,0.9,0.9);
+  sample_1.back().emplace_back(2,-10,0.9,0.9);
+  sample_1.back().emplace_back(3,-10,0.9,0.9);
+  sample_1.emplace_back(s_b);
+  sample_1.back().emplace_back(2,-10,0.9,0.9);
+  sample_1.emplace_back(s_c);
+  sample_1.back().emplace_back(1,-10,0.9,0.9);
+  sample_1.back().emplace_back(2,-10,0.9,0.9);
+  sample_1.back().emplace_back(3,-10,0.9,0.9);
 
-  EXPECT_EQ(parts[0][0][0].branch_id(), 1);
-  EXPECT_EQ(parts[0][1][0].branch_id(), 2);
-  EXPECT_EQ(parts[1][0][0].branch_id(), 3);
+  // for (auto& pq : sample_1)
+  // {
+  //   printf("Sequence %d: ", pq.sequence_id());
+  //   for (auto& p : pq)
+  //     printf(" %d ", p.branch_id());
+  //   printf("\n");
+  // }
+
+  // printf("\nWork");
+
+  vector<Work> parts;
+  Work work(sample_1);
+
+  // for (auto i = work.begin(); i != work.end(); ++i)
+  // {
+  //   printf("\nbranch %d: ", i->first);
+  //   for (auto& seq_id : i->second)
+  //   {
+  //     printf(" %d ", seq_id);
+  //   }
+  // }
+  // printf("\n");
+
+  split(work, parts, 2);
+  
+  auto total_placements = 0;
+  for (auto& pq : sample_1)
+    total_placements+=pq.size();
+
+  auto total_work = 0;
+  for (auto& w : parts)
+    total_work+=w.size();
+
+  EXPECT_EQ(total_placements, total_work);
+
+  ASSERT_EQ(2, parts.size());
+  ASSERT_EQ(0, work.size());
+
+  // for (auto& p : parts)
+  // {
+  //   printf("part:");
+  //   for (auto i = p.begin(); i != p.end(); ++i)
+  //   {
+  //     printf("\nbranch %d: ", i->first);
+  //     for (auto& seq_id : i->second)
+  //     {
+  //       printf(" %d ", seq_id);
+  //     }
+  //   }
+  //   printf("\n");
+  // }
+
+  ASSERT_EQ(4, parts[0].size());
+  ASSERT_EQ(3, parts[1].size());
+
+  // EXPECT_EQ(parts[0][0][0].branch_id(), 1);
+  // EXPECT_EQ(parts[0][1][0].branch_id(), 2);
+  // EXPECT_EQ(parts[1][0][0].branch_id(), 3);
 
 
 }
@@ -113,12 +176,12 @@ TEST(set_manipulators, merge_sample)
 
   merge(sample_1, sample_2);
 
-  EXPECT_EQ(sample_1.size(), 4);
+  ASSERT_EQ(4, sample_1.size());
 
-  EXPECT_EQ(sample_1[0].size(), 1);
-  EXPECT_EQ(sample_1[1].size(), 2);
-  EXPECT_EQ(sample_1[2].size(), 2);
-  EXPECT_EQ(sample_1[3].size(), 1);
+  EXPECT_EQ(1, sample_1[0].size());
+  EXPECT_EQ(2, sample_1[1].size());
+  EXPECT_EQ(2, sample_1[2].size());
+  EXPECT_EQ(1, sample_1[3].size());
 
 }
 
@@ -139,17 +202,12 @@ TEST(set_manipulators, find_collapse_equal_sequences)
 
   // test
   find_collapse_equal_sequences(msa);
-  EXPECT_EQ(msa.size(), 4);
+  EXPECT_EQ(4, msa.size());
 
-  EXPECT_EQ(msa[0].header_list().size(), 3);
-  EXPECT_EQ(msa[1].header_list().size(), 3);
-  EXPECT_EQ(msa[2].header_list().size(), 2);
-  EXPECT_EQ(msa[3].header_list().size(), 2);
-
-  // for (auto &s : msa)
-  //   for (auto &head : s.header_list())
-  //     cout << head << endl;
-
+  EXPECT_EQ(3, msa[0].header_list().size());
+  EXPECT_EQ(3, msa[1].header_list().size());
+  EXPECT_EQ(2, msa[2].header_list().size());
+  EXPECT_EQ(2, msa[3].header_list().size());
 }
 
 TEST(set_manipulators, get_valid_range)
@@ -160,16 +218,16 @@ TEST(set_manipulators, get_valid_range)
 
   Range r;
   r = get_valid_range(s1);
-  EXPECT_EQ(r.begin, 9);
-  EXPECT_EQ(r.span, 10);
+  EXPECT_EQ(9, r.begin);
+  EXPECT_EQ(10, r.span);
 
   r = get_valid_range(s2);
-  EXPECT_EQ(r.begin, 0);
-  EXPECT_EQ(r.span, 10);
+  EXPECT_EQ(0, r.begin);
+  EXPECT_EQ(10, r.span);
 
   r = get_valid_range(s3);
-  EXPECT_EQ(r.begin, 1);
-  EXPECT_EQ(r.span, 14);
+  EXPECT_EQ(1, r.begin);
+  EXPECT_EQ(14, r.span);
 }
 
 TEST(set_manipulators, discard_bottom_x_percent)
@@ -204,9 +262,8 @@ TEST(set_manipulators, discard_bottom_x_percent)
       (void)p;
       num++;
     }
-    EXPECT_EQ(num, num_expected[i++]);
+    EXPECT_EQ(num_expected[i++], num);
   }
-
 }
 
 TEST(set_manipulators, discard_by_accumulated_threshold)
@@ -241,12 +298,8 @@ TEST(set_manipulators, discard_by_accumulated_threshold)
       (void)p;
       num++;
     }
-    EXPECT_EQ(num, num_expected[i++]);
+    EXPECT_EQ(num_expected[i++], num);
   }
-
-  // string inv("blorp");
-  // cout << sample_to_jplace_string(sample, inv);
-
 }
 
 TEST(set_manipulators, discard_by_support_threshold)
@@ -281,7 +334,6 @@ TEST(set_manipulators, discard_by_support_threshold)
       (void)p;
       num++;
     }
-    EXPECT_EQ(num, num_expected[i++]);
+    EXPECT_EQ( num_expected[i++], num);
   }
-
 }

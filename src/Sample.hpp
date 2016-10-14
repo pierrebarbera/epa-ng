@@ -29,6 +29,8 @@ public:
   // needs to be in the header
   template<typename ...Args>
   void emplace_back(Args && ...args) { pquerys_.emplace_back(std::forward<Args>(args)...); }
+  template< class InputIt >
+  void insert(InputIt first, InputIt last) {pquerys_.insert(pquerys_.end(), first, last);}
 
   // Iterator Compatibility
   iterator begin() { return pquerys_.begin(); }

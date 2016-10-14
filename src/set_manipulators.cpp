@@ -14,20 +14,20 @@ using namespace std;
   assumes <parts> to be empty / that its content won't be missed
 
 */
-void split(Sample& source, vector<Sample>& parts, const vector<vector<unsigned int>>& split_map)
+void split(Sample& src, vector<Sample>& parts, const vector<vector<unsigned int>>& split_map)
 {
   parts.clear();
   for (const auto& part_move_list : split_map)
   {
     parts.push_back(Sample());
-    // move all instances of pquery specified in split_map for the current part from source to parts[part_id]
+    // move all instances of pquery specified in split_map for the current part from src to parts[part_id]
     for (auto sequence_to_move : part_move_list)
     {
       // using already implemented == behaviour of PQuery to find the correct pquery to move
       PQuery query(sequence_to_move);
-      auto to_move = find(source.begin(), source.end(), query);
+      auto to_move = find(src.begin(), src.end(), query);
 
-      if (to_move != source.end())
+      if (to_move != src.end())
       {
         // auto move_to = parts.back().end();
         // move(to_move, to_move + 1, move_to);
@@ -35,7 +35,7 @@ void split(Sample& source, vector<Sample>& parts, const vector<vector<unsigned i
         parts.back().push_back(move(*to_move));
 
         // remove the original entry
-        source.erase(to_move, to_move + 1);
+        src.erase(to_move, to_move + 1);
       }
       // TODO fail if sequence not found?
     }
@@ -43,32 +43,44 @@ void split(Sample& source, vector<Sample>& parts, const vector<vector<unsigned i
   assert(parts.size() == split_map.size());
 }
 
-/**
- * Splits a Sample <source> into <num_parts> number of equally sized <parts>.
- * Sample is consumed and parts is expected to be empty.
- * 
- * @param source    Sample to split
- * @param parts     resulting parts vector
- * @param num_parts number of parts
- */
-void split(Sample& source, vector<Sample>& parts, unsigned int num_parts)
+void split(Work& src, std::vector<Work>& parts, unsigned int num_parts)
 {
   parts.clear();
-  unsigned int chunk_size = ceil(source.size() / (double)num_parts);
-  auto move_iter = source.begin();
-  // copy the first num - 1 chunks
-  for (unsigned int i = 0; i < num_parts - 1; ++i)
-  {
-    parts.push_back(Sample(chunk_size));
-    copy_n(move_iter, chunk_size, parts.back().begin());
-    advance(move_iter, chunk_size);
-  }
-  // copy the last chunk which may exceed chunk size
-  auto remaining_size = distance(move_iter, source.end());
-  parts.push_back(Sample(remaining_size));
-  copy(move_iter, source.end(), parts.back().begin());
+  parts.resize(num_parts);
+  unsigned int chunk_size = ceil(src.size() / (double)num_parts);
 
-  source.clear();
+  auto branch_iter = src.begin();
+  auto seq_iter = branch_iter->second.begin();
+
+  bool done = false;
+
+  for (size_t i = 0; (i < num_parts) && !done; ++i)
+  {
+    auto to_move = chunk_size;
+    for (; to_move > 0; --to_move)
+    {
+      auto branch_id = branch_iter->first;
+      auto seq_id = *seq_iter;
+
+      parts[i][branch_id].push_back(seq_id);
+
+      ++seq_iter;
+
+      if (seq_iter == branch_iter->second.end())
+      {
+        ++branch_iter;
+        if (branch_iter == src.end())
+        {
+          done = true;
+          break;
+        }
+        seq_iter = branch_iter->second.begin();
+      }
+      
+    }
+  }
+  
+  src.clear();
 }
 
 /**
