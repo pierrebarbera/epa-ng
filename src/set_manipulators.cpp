@@ -79,8 +79,6 @@ void split(Work& src, std::vector<Work>& parts, unsigned int num_parts)
       
     }
   }
-  
-  src.clear();
 }
 
 /**
@@ -101,6 +99,16 @@ void merge(Sample& dest, const Sample& src)
     }
     // then concat their vectors
     input_iter->insert(input_iter->end(), pquery.begin(), pquery.end());
+  }
+}
+
+void merge(Work& dest, const Work& src)
+{
+  for(auto& i : src) 
+  {
+    auto branch_id = i.first;
+    auto& seq_vec = i.second;
+    dest[branch_id].insert(dest[branch_id].end(), seq_vec.begin(), seq_vec.end());  
   }
 }
 

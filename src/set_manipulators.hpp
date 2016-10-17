@@ -11,6 +11,7 @@
 void split(Sample& source, std::vector<Sample>& parts, const std::vector<std::vector<unsigned int>>& split_map);
 void split(Work& source, std::vector<Work>& parts, unsigned int num_parts);
 void merge(Sample& dest, const Sample &src);
+void merge(Work& dest, const Work &src);
 void merge(Timer& dest, const Timer& src);
 void compute_and_set_lwr(Sample& sample);
 void discard_bottom_x_percent(Sample& sample, const double x);
@@ -21,10 +22,10 @@ Range get_valid_range(std::string sequence);
 void find_collapse_equal_sequences(MSA& msa);
 
 /**
- * Splits a Container <src> into <num_parts> number of equally sized <parts>.
- * Container is consumed and parts is expected to be empty.
+ * Splits a <src> into <num_parts> number of equally sized <parts>.
+ * <parts> is expected to be empty.
  *
- * REQUIRES CONTAINER TO BE:
+ * REQUIRES T TO BE:
  *   Iterable
  *   has size()
  *   has insert()
@@ -47,6 +48,4 @@ void split(T& src, std::vector<T>& parts, unsigned int num_parts)
     parts.back().insert(move_begin, move_end);
     move_begin = move_end;
   }
-
-  src.clear();
 }

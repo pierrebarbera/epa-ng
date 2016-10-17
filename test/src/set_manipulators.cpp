@@ -57,7 +57,7 @@ TEST(set_manipulators, split_sample_equal)
   split(sample_1, parts, 2);
 
   ASSERT_EQ(2, parts.size());
-  ASSERT_EQ(0, sample_1.size());
+  ASSERT_NE(0, sample_1.size());
 
   ASSERT_EQ(2, parts[0].size());
   ASSERT_EQ(1, parts[1].size());
@@ -118,7 +118,7 @@ TEST(set_manipulators, split_work_equal)
   EXPECT_EQ(total_placements, total_work);
 
   ASSERT_EQ(2, parts.size());
-  ASSERT_EQ(0, work.size());
+  ASSERT_EQ(total_placements, work.size());
 
   // for (auto& p : parts)
   // {
@@ -136,10 +136,71 @@ TEST(set_manipulators, split_work_equal)
 
   ASSERT_EQ(4, parts[0].size());
   ASSERT_EQ(3, parts[1].size());
+}
 
-  // EXPECT_EQ(parts[0][0][0].branch_id(), 1);
-  // EXPECT_EQ(parts[0][1][0].branch_id(), 2);
-  // EXPECT_EQ(parts[1][0][0].branch_id(), 3);
+TEST(set_manipulators, merge_work)
+{
+  Sample sample;
+  unsigned int s_a = 0, s_b = 1, s_c = 2;
+  sample.emplace_back(s_a);
+  sample.back().emplace_back(1,-10,0.9,0.9);
+  sample.back().emplace_back(2,-10,0.9,0.9);
+  sample.back().emplace_back(3,-10,0.9,0.9);
+  sample.emplace_back(s_b);
+  sample.back().emplace_back(2,-10,0.9,0.9);
+  sample.emplace_back(s_c);
+  sample.back().emplace_back(1,-10,0.9,0.9);
+  sample.back().emplace_back(2,-10,0.9,0.9);
+  sample.back().emplace_back(3,-10,0.9,0.9);
+
+  // printf("\nSample");
+
+  // for (auto& pq : sample)
+  // {
+  //   printf("Sequence %d: ", pq.sequence_id());
+  //   for (auto& p : pq)
+  //     printf(" %d ", p.branch_id());
+  //   printf("\n");
+  // }
+
+  vector<Work> parts;
+  Work work(sample);
+  split(work, parts, 2);
+
+  // printf("\nWork");
+  // for (auto i = work.begin(); i != work.end(); ++i)
+  // {
+  //   printf("\nbranch %d: ", i->first);
+  //   for (auto& seq_id : i->second)
+  //   {
+  //     printf(" %d ", seq_id);
+  //   }
+  // }
+  // printf("\n");
+
+
+  Work dest;
+
+  for(auto& w : parts) 
+    merge(dest, w);
+
+  // printf("\nDest");
+  // for (auto i = dest.begin(); i != dest.end(); ++i)
+  // {
+  //   printf("\nbranch %d: ", i->first);
+  //   for (auto& seq_id : i->second)
+  //   {
+  //     printf(" %d ", seq_id);
+  //   }
+  // }
+  // printf("\n");
+
+  EXPECT_EQ(work.size(), dest.size());
+
+  for(auto& i : work) 
+  {
+    EXPECT_EQ(i.second.size(), dest[i.first].size());
+  }
 
 
 }
