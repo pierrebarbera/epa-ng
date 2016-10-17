@@ -36,7 +36,7 @@ profile: CFLAGS= $(WARNINGS) -std=c++11 -O2
 omp: CC=g++
 omp: DBG=
 omp: LIBS+=-lgomp
-omp: CFLAGS+=-fopenmp
+omp: CFLAGS+=-fopenmp -D__OMP
 ranged_test: BINARY_WRITE= -t $(TEST)/ref.tre -s $(TEST)/range_combined.fasta -r -w $(OUTDIR) $(F)
 mpi: CC=mpicxx
 mpi: CFLAGS+=-D__MPI
@@ -70,7 +70,7 @@ mpi_test: $(mpi)
 	mkdir -p $(OUTDIR)
 	-rm $(OUTDIR)/*
 	$(TARGET) $(BINARY_WRITE)
-	mpirun -np 4 $(TARGET) $(BINARY_READ)
+	mpiexec -n 4 $(TARGET) $(BINARY_READ)
 
 
 valgrind: $(TARGET)

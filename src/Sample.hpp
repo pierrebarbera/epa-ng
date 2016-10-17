@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <algorithm>
 #include <cereal/types/vector.hpp>
 
 #include "PQuery.hpp"
@@ -27,10 +28,27 @@ public:
   void erase(iterator begin, iterator end) { pquerys_.erase(begin, end); }
 
   // needs to be in the header
-  template<typename ...Args>
+  template <typename ...Args>
   void emplace_back(Args && ...args) { pquerys_.emplace_back(std::forward<Args>(args)...); }
-  template< class InputIt >
+  template <class InputIt>
   void insert(InputIt first, InputIt last) {pquerys_.insert(pquerys_.end(), first, last);}
+
+  template <typename ...Args>
+  void add_placement(unsigned int seq_id, Args&& ...args)
+  {
+    // if seq_id in pquerys_
+    auto iter = std::end(pquerys_);
+    if ((iter = std::find(std::begin(pquerys_), std::end(pquerys_), PQuery(seq_id))) 
+      != std::end(pquerys_))
+    {
+      iter->emplace_back(std::forward<Args>(args)...);
+    }
+    else
+    {
+      pquerys_.push_back(seq_id);
+      pquerys_.back().emplace_back(std::forward<Args>(args)...);
+    }
+  }
 
   // Iterator Compatibility
   iterator begin() { return pquerys_.begin(); }

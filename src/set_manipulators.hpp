@@ -49,3 +49,10 @@ void split(T& src, std::vector<T>& parts, unsigned int num_parts)
     move_begin = move_end;
   }
 }
+
+template <class T>
+void merge(T& dest, std::vector<T>& parts)
+{
+  for(const auto& p : parts)
+    merge(dest, p);
+}

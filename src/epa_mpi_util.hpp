@@ -84,6 +84,15 @@ void epa_mpi_recieve(T& obj, int src_rank, MPI_Comm comm)
 }
 
 template <typename T>
+void epa_mpi_split_send(T& obj, std::vector<int>& dest_ranks, MPI_Comm comm)
+{
+  std::vector<T> parts;
+  split(obj, parts, dest_ranks.size());
+  for(size_t i = 0; i < parts.size(); ++i) 
+    epa_mpi_send(parts[i], dest_ranks[i], comm);
+}
+
+template <typename T>
 void epa_mpi_recieve_merge(T& obj, std::vector<int>& src_ranks, MPI_Comm comm)
 {
   for (auto rank : src_ranks)
