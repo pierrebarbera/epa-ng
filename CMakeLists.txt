@@ -5,7 +5,7 @@ set (CMAKE_DISABLE_SOURCE_CHANGES  ON)
 
 
 # set( ENV{OMPI_CXX}            "clang++" PARENT_SCOPE )
-# set( CMAKE_CXX_COMPILER       "mpic++")
+# set( CMAKE_CXX_COMPILER       "mpicxx")
 
 project (epa C CXX)
 
@@ -25,7 +25,20 @@ set (WARN_FLAGS               "-Wall -Wextra")
 set (CMAKE_CXX_FLAGS          "-std=c++11 ${WARN_FLAGS}")
 
 set (CMAKE_CXX_FLAGS_DEBUG    "-g")
-set (CMAKE_CXX_FLAGS_RELEASE  "-O3")
+set (CMAKE_CXX_FLAGS_RELEASE  "-O3 -DNDEBUG")
+
+message(STATUS "Checking for OpenMP")
+FIND_PACKAGE( OpenMP QUIET )
+if(OPENMP_FOUND)
+message(STATUS "Checking for OpenMP -- found")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS} -D__OMP")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+else()
+message(STATUS "Checking for OpenMP -- NOT FOUND")
+endif()
+
+message("${CMAKE_CXX_FLAGS}")
+
 #set (MPI_COMPILE_FLAGS        "-D__MPI")
 
 include_directories(${PROJECT_SOURCE_DIR}/libs/cereal/include)

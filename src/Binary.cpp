@@ -121,35 +121,35 @@ void Binary::load_scaler(pll_partition_t * partition, const unsigned int scaler_
   partition->scale_buffer[scaler_index] = (unsigned int*)ptr;
 }
 
-static pll_partition_t* skeleton_partition()
-{
-  auto attributes = PLL_ATTRIB_ARCH_SSE;
-#ifdef __AVX
-  attributes = PLL_ATTRIB_ARCH_AVX;
-#endif
+// static pll_partition_t* skeleton_partition()
+// {
+//   auto attributes = PLL_ATTRIB_ARCH_SSE;
+// #ifdef __AVX
+//   attributes = PLL_ATTRIB_ARCH_AVX;
+// #endif
 
-  attributes |= PLL_ATTRIB_PATTERN_TIP;
+//   attributes |= PLL_ATTRIB_PATTERN_TIP;
 
-  auto partition = pll_partition_create(
-    3, // number of tip nodes
-    1, // number of extra clv buffers
-    STATES,
-    1, // number of sites
-    1, // number of concurrent subs. models
-    1, // number of probabillity matrices
-    RATE_CATS,
-    1, // number of scale buffers
-    //pll_map_nt,
-    attributes);
+//   auto partition = pll_partition_create(
+//     3, // number of tip nodes
+//     1, // number of extra clv buffers
+//     STATES,
+//     1, // number of sites
+//     1, // number of concurrent subs. models
+//     1, // number of probabillity matrices
+//     RATE_CATS,
+//     1, // number of scale buffers
+//     //pll_map_nt,
+//     attributes);
 
-  if (!partition)
-    throw runtime_error{string("Creating skeleton partition: ") + pll_errmsg};
+//   if (!partition)
+//     throw runtime_error{string("Creating skeleton partition: ") + pll_errmsg};
 
-  // ensure clv, tipchar and scaler fields are only shallowly allocated
-  // TODO
+//   // ensure clv, tipchar and scaler fields are only shallowly allocated
+//   // TODO
 
-  return partition;
-}
+//   return partition;
+// }
 
 static void dealloc_buffers(pll_partition_t* part)
 {

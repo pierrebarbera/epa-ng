@@ -10,6 +10,8 @@ test/data/bacvag/
 test/compare_jplace_files
 test/README.txt
 include/
+libs/lib/
+libs/share/
 
 # output files
 *.jplace
