@@ -145,6 +145,7 @@ TEST(pll_util, sum_branch_lengths)
 
   tree = build_tree_from_file(env->tree_file, nums);
   part = build_partition_from_file( env->model, nums, msa.num_sites());
+  (void) part;
   set_branch_lengths(tree, 1.0);
   auto total_length = sum_branch_lengths(tree);
 

@@ -15,8 +15,8 @@
 using namespace std;
 
 Tree::Tree(const string &tree_file, const MSA &msa, Model &model, Options& options)
-    : partition_(nullptr, pll_partition_destroy), tree_(nullptr, utree_destroy)
-    , ref_msa_(msa), model_(model), options_(options)
+  : partition_(nullptr, pll_partition_destroy), tree_(nullptr, utree_destroy)
+  , ref_msa_(msa), model_(model), options_(options)
 {
   tree_ = unique_ptr<pll_utree_t, utree_deleter>(
                       build_tree_from_file(tree_file, nums_),
