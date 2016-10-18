@@ -15,4 +15,4 @@ std::string full_jplace_string(const Sample& sample, const std::string& invocati
 std::string init_jplace_string(const std::string& numbered_newick);
 std::string finalize_jplace_string(const std::string& invocation);
 std::string sample_to_jplace_string(const Sample& sample, const MSA_Stream& msa);
-void merge_into(std::ofstream& dest, std::vector<std::string>& sources);
+void merge_into(std::ofstream& dest, const std::vector<std::string>& sources);

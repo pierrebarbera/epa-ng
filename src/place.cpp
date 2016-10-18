@@ -26,6 +26,11 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
 {
   /* ===== COMMON DEFINITIONS ===== */
   int local_rank = 0;
+#ifdef __OMP
+      unsigned int num_threads = omp_get_max_threads();
+#else
+      unsigned int num_threads = 1;
+#endif
 #ifdef __MPI
   int world_size;
   MPI_Comm_rank(MPI_COMM_WORLD, &local_rank);
@@ -202,26 +207,21 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
 #endif // __MPI
     if (options.prescoring)
     {
-#ifdef __OMP
-      unsigned int num_threads = omp_get_max_threads();
-#else
-      unsigned int num_threads = 1;
-#endif
       std::vector<Sample> sample_parts(num_threads);
       std::vector<Work> work_parts;
       split(work, work_parts, num_threads);
 
       // work seperately
-#ifdef __OMP      
+#ifdef __OMP
       #pragma omp parallel for schedule(dynamic)
 #endif
       for (size_t i = 0; i < work_parts.size(); ++i)
       {
-        for(auto& pair : work_parts[i])
+        for(const auto& pair : work_parts[i])
         {
           auto branch_id = pair.first;
           auto branch = Tiny_Tree(branches[branch_id], branch_id, reference_tree, true);
-          for(auto& seq_id : pair.second) 
+          for(const auto& seq_id : pair.second) 
           {
             sample_parts[i].add_placement(seq_id, branch.place(msa_stream[seq_id]));
           }

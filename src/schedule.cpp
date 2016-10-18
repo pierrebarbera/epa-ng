@@ -25,12 +25,10 @@ std::vector<unsigned int> solve(unsigned int stages, unsigned int nodes, std::ve
   std::vector<unsigned int> nodes_per_stage(stages);
   
   auto x1 = std::accumulate(difficulty_per_stage.begin(), difficulty_per_stage.end(), 0.0);
-  x1 = nodes / x1;
+  x1 = static_cast<double>(nodes) / x1;
 
   for (unsigned int i = 0; i < stages; ++i)
-  {
     nodes_per_stage[i] = ceil(difficulty_per_stage[i] * x1);
-  }
 
   int off_by;
 
@@ -38,13 +36,9 @@ std::vector<unsigned int> solve(unsigned int stages, unsigned int nodes, std::ve
   {
     auto max_stage = std::max_element(nodes_per_stage.begin(), nodes_per_stage.end());
     if (off_by < 0)
-    {
       *max_stage += 1;
-    }
     else 
-    {
       *max_stage -= 1;
-    }
   }
 
   return nodes_per_stage;

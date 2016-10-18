@@ -4,9 +4,9 @@
 
 using namespace std;
 
-void merge_into(ofstream& dest, vector<string>& sources)
+void merge_into(ofstream& dest, const vector<string>& sources)
 {
-  for(auto& file_n : sources)
+  for(const auto& file_n : sources)
   {
     ifstream file(file_n);
     dest << file.rdbuf();
@@ -38,11 +38,11 @@ string pquery_to_jplace_string(const PQuery& pquery, const MSA_Stream& msa)
   output << "    {\"p\":" << NEWL; // p for pquery
   output << "      [" << NEWL; // opening bracket for pquery array
 
-  for (auto place : pquery)
+  for (const auto& place : pquery)
   {
     // individual pquery
     output << "      " << placement_to_jplace_string(place) << "," << NEWL;
-  }
+  } 
 
   // undo last comma and newline
   rwnd(output, 2);
@@ -100,7 +100,7 @@ string sample_to_jplace_string(const Sample& sample, const MSA_Stream& msa)
 {
   ostringstream output;
 
-  for (auto p : sample)
+  for (const auto& p : sample)
     output << pquery_to_jplace_string(p, msa) << "," << NEWL;
 
   // undo the last comma
