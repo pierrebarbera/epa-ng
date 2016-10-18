@@ -4,8 +4,6 @@ set (EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 
 add_executable        (epa_module ${epa_sources})
 
-add_dependencies(epa_module pll pll_binary pll_optimize pll_msa)
-
 target_link_libraries (epa_module ${PROJECT_SOURCE_DIR}/libs/lib/libpll_binary.a)
 target_link_libraries (epa_module ${PROJECT_SOURCE_DIR}/libs/lib/libpll_optimize.a)
 target_link_libraries (epa_module ${PROJECT_SOURCE_DIR}/libs/lib/libpll_msa.a)
