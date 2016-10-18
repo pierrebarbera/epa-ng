@@ -11,6 +11,7 @@
 #include "Options.hpp"
 #include "Range.hpp"
 #include "Binary.hpp"
+#include "Named_Lock.hpp"
 #include "pll_util.hpp"
 
 /* Encapsulates the pll data structures for ML computation */
@@ -55,5 +56,8 @@ private:
 
   // useful internal strucutres
   std::vector<Range> valid_map_;
+
+  // thread safety
+  Named_Lock locks_;
 
 };
