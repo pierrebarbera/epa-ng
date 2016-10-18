@@ -1,16 +1,11 @@
 cmake_minimum_required (VERSION 2.8 FATAL_ERROR)
 
-set (CMAKE_DISABLE_IN_SOURCE_BUILD ON)
-set (CMAKE_DISABLE_SOURCE_CHANGES  ON)
+set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
+set(CMAKE_DISABLE_SOURCE_CHANGES  ON)
 
-
-# set( ENV{OMPI_CXX}            "clang++" PARENT_SCOPE )
-# set( CMAKE_CXX_COMPILER       "mpicxx")
+set(ENABLE_MPI OFF)
 
 project (epa CXX)
-
-#find_package(MPI)
-#include_directories(${MPI_INCLUDE_PATH})
 
 # set (epa_VERSION_MAJOR 0)
 # set (epa_VERSION_MINOR 1)
@@ -46,9 +41,18 @@ elseif(HAS_SSE3)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse3 -D__SSE3")
 endif()
 
-message("${CMAKE_CXX_FLAGS}")
+if(ENABLE_MPI)
+find_package(MPI)
+if(MPI_CXX_FOUND)
+# set( ENV{OMPI_CXX}            "clang++" PARENT_SCOPE )
+# set( CMAKE_CXX_COMPILER       "mpicxx")
+include_directories(${MPI_CXX_INCLUDE_PATH})
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MPI_CXX_COMPILER_FLAGS} -D__MPI")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${MPI_CXX_LINK_FLAGS}")
+endif()
+endif()
 
-#set (MPI_COMPILE_FLAGS        "-D__MPI")
+message(STATUS "Using flags: ${CMAKE_CXX_FLAGS}")
 
 include_directories(${PROJECT_SOURCE_DIR}/libs/cereal/include)
 
