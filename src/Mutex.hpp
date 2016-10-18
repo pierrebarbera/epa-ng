@@ -25,12 +25,34 @@ public:
 };
 #endif
 
-class Named_Lock
+class Scoped_Mutex
 {
 public:
-  Named_Lock(const size_t num_locks) : locks_(num_locks) { }
-  Named_Lock() = default;
-  ~Named_Lock() = default;
+  explicit Scoped_Mutex(Mutex& m) 
+    : mutex_(m)
+  { 
+    mutex_.lock(); 
+  }
+
+  ~Scoped_Mutex() 
+  { 
+    mutex_.unlock(); 
+  }
+
+private:
+ Mutex& mutex_;
+ bool locked_;
+
+ void operator=(const Scoped_Mutex&);
+ Scoped_Mutex(const Scoped_Mutex&);
+};
+
+class Mutex_List
+{
+public:
+  Mutex_List(const size_t num_locks) : locks_(num_locks) { }
+  Mutex_List() = default;
+  ~Mutex_List() = default;
 
   Mutex& operator[] (const size_t index) { return locks_[index]; }
 private:

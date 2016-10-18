@@ -25,7 +25,7 @@ Tree::Tree(const string &tree_file, const MSA &msa, Model &model, Options& optio
                             build_partition_from_file(model_, nums_, ref_msa_.num_sites()),
                             pll_partition_destroy);
 
-  locks_ = Named_Lock(partition_->tips + partition_->clv_buffers);
+  locks_ = Mutex_List(partition_->tips + partition_->clv_buffers);
 
   valid_map_ = vector<Range>(nums_.tip_nodes);
   link_tree_msa(tree_.get(), partition_.get(), ref_msa_, nums_.tip_nodes, valid_map_);
@@ -59,7 +59,7 @@ Tree::Tree(const string& bin_file, Options& options)
                             binary_.load_partition(),
                             pll_partition_destroy);
 
-  locks_ = Named_Lock(partition_->tips + partition_->clv_buffers);
+  locks_ = Mutex_List(partition_->tips + partition_->clv_buffers);
 
   // mirror the model from the partition to the model_ object
   model_ = get_model(partition_.get());
@@ -77,7 +77,7 @@ void * Tree::get_clv(const pll_utree_t* node)
   auto i = node->clv_index;
 
   // prevent race condition from concurrent access to this function
-  locks_[i].lock();
+  Scoped_Mutex lock_by_clv_id(locks_[i]);
   
   auto scaler = node->scaler_index;
   bool use_tipchars = partition_->attributes & PLL_ATTRIB_PATTERN_TIP;
@@ -113,8 +113,6 @@ void * Tree::get_clv(const pll_utree_t* node)
 
   assert(clv_ptr);
   
-  locks_[i].unlock();
-
   return clv_ptr;
 }
 
