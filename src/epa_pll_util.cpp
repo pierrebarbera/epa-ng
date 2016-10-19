@@ -21,7 +21,7 @@ void link_tree_msa(pll_utree_t * tree, pll_partition_t * partition,
   unordered_map<string, unsigned int> map; // mapping labels to tip clv indices
 
   /* populate the hash table with tree tip labels */
-  for (unsigned int i = 0; i < num_tip_nodes; ++i)
+  for (size_t i = 0; i < num_tip_nodes; ++i)
     map[tip_nodes[i]->label] = i;
 
   /* find sequences in hash table and link them with the corresponding taxa */
@@ -68,7 +68,7 @@ void precompute_clvs(pll_utree_t * tree, pll_partition_t * partition, const Tree
     /* perform a partial postorder traversal of the unrooted tree  starting at the current tip
       and returning every node whose clv in the direction of the tip hasn't been calculated yet*/
     unsigned int traversal_size;
-    if(pll_utree_traverse(node->back, cb_partial_traversal, &travbuffer[0], &traversal_size)
+    if (pll_utree_traverse(node->back, cb_partial_traversal, &travbuffer[0], &traversal_size)
                 != PLL_SUCCESS)
       throw runtime_error{"Function pll_utree_traverse() requires inner nodes as parameters"};
 

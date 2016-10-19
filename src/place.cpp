@@ -41,14 +41,12 @@ static void place(const Work& to_place, MSA_Stream& msa, Tree& reference_tree,
 #endif
   for (size_t i = 0; i < work_parts.size(); ++i)
   {
-    for(const auto& pair : work_parts[i])
+    for (const auto& pair : work_parts[i])
     {
       auto branch_id = pair.first;
       auto branch = Tiny_Tree(branches[branch_id], branch_id, reference_tree, thorough);
-      for(const auto& seq_id : pair.second) 
-      {
+      for (const auto& seq_id : pair.second) 
         sample_parts[i].add_placement(seq_id, branch.place(msa[seq_id]));
-      }
     }
   }
   // merge samples back
@@ -85,7 +83,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
   assign(local_rank, init_nps, schedule, &local_stage);
 
   lgr.dbg() << "Schedule: ";
-  for (unsigned int i = 0; i < schedule.size(); ++i)
+  for (size_t i = 0; i < schedule.size(); ++i)
   {
     lgr.dbg() << schedule[i].size() << " ";
   }
@@ -111,30 +109,8 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
   auto num_traversed_branches = utree_query_branches(reference_tree.tree(), &branches[0]);
   assert(num_traversed_branches == num_branches);
 
-#ifdef __MPI
-  if (local_stage == EPA_MPI_STAGE_1_COMPUTE)
-  {
-    const auto& stage = schedule[EPA_MPI_STAGE_1_COMPUTE];
-    // find the stage-relative rank
-    auto it = std::find(stage.begin(), stage.end(), local_rank);
-    size_t stage_rank = std::distance(stage.begin(), it);
-
-    double bpr = num_branches / (double)stage.size();
-    if (bpr < 1)
-      throw std::runtime_error{"Fewer reference branches than Compute-Stage ranks not supported!"};
-
-    unsigned int branches_per_rank = ceil(bpr);
-
-    size_t branch_id = stage_rank * branches_per_rank;
-    const size_t branch_id_end = fmin(branch_id + branches_per_rank, num_branches);
-#else
   size_t branch_id = 0;
-  const size_t branch_id_end = num_branches;
-#endif
-
-#ifdef __MPI
-  }
-#endif
+  size_t branch_id_end = num_branches;
 
   auto chunk_num = 1;
   Sample sample;
@@ -147,6 +123,26 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
   while ((num_sequences = msa_stream.read_next(chunk_size)) > 0)
   {
 #ifdef __MPI
+
+    // if previous chunk was a rebalance chunk or this is the first chunk (0 mod anything = 0)
+    // ...then we need to correctly assign/reassign the workload of the first compute stage
+    if ( !((chunk_num - 1) % rebalance)  && (local_stage == EPA_MPI_STAGE_1_COMPUTE) )
+    {
+      const auto& stage = schedule[EPA_MPI_STAGE_1_COMPUTE];
+      // find the stage-relative rank
+      auto it = std::find(stage.begin(), stage.end(), local_rank);
+      size_t stage_rank = std::distance(stage.begin(), it);
+
+      double bpr = num_branches / (double)stage.size();
+      if (bpr < 1)
+        throw std::runtime_error{"Fewer reference branches than Compute-Stage ranks not supported!"};
+
+      unsigned int branches_per_rank = ceil(bpr);
+
+      size_t branch_id = stage_rank * branches_per_rank;
+      size_t branch_id_end = fmin(branch_id + branches_per_rank, num_branches);
+    }
+
     timer.start(); // start timer of any stage
     //==============================================================
     // EPA_MPI_STAGE_1_COMPUTE === BEGIN
@@ -185,7 +181,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     compute_and_set_lwr(sample);
 
     // if this was a prescring run, select the candidate edges
-    if(options.prescoring)
+    if (options.prescoring)
     {
       if (options.prescoring_by_percentage)
         discard_bottom_x_percent(sample, (1.0 - options.prescoring_threshold));
@@ -197,7 +193,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
       second_placement_work = Work(sample);
 #ifdef __MPI
     // if prescoring was selected, we need to send the intermediate results off to thorough placement
-    if(options.prescoring)
+    if (options.prescoring)
       epa_mpi_split_send(second_placement_work, schedule[EPA_MPI_STAGE_2_COMPUTE], MPI_COMM_WORLD);
     } // endif (local_stage == EPA_MPI_STAGE_1_AGGREGATE)
     //==============================================================
@@ -366,14 +362,14 @@ Sample place(Tree& reference_tree, MSA& query_msa_)
 
   // build all tiny trees with corresponding edges
   std::vector<Tiny_Tree> insertion_trees;
-  for (unsigned int branch_id = 0; branch_id < num_branches; ++branch_id)
+  for (size_t branch_id = 0; branch_id < num_branches; ++branch_id)
     insertion_trees.emplace_back(branches[branch_id], branch_id, reference_tree, !options.prescoring);
     /* clarification: last arg here is a flag specifying whether to optimize the branches.
       we don't want that if the mode is prescoring */
 
   // output class
   Sample sample(get_numbered_newick_string(reference_tree.tree()));
-  for (unsigned int sequence_id = 0; sequence_id < num_queries; sequence_id++)
+  for (size_t sequence_id = 0; sequence_id < num_queries; sequence_id++)
     sample.emplace_back(sequence_id, num_branches);
 
 
@@ -381,9 +377,9 @@ Sample place(Tree& reference_tree, MSA& query_msa_)
 #ifdef __OMP
   #pragma omp parallel for schedule(dynamic)
 #endif 
-  for (unsigned int branch_id = 0; branch_id < num_branches; ++branch_id)
+  for (size_t branch_id = 0; branch_id < num_branches; ++branch_id)
   {
-    for (unsigned int sequence_id = 0; sequence_id < num_queries; ++sequence_id)
+    for (size_t sequence_id = 0; sequence_id < num_queries; ++sequence_id)
     {
       sample[sequence_id][branch_id] = insertion_trees[branch_id].place(query_msa_[sequence_id]);
       // printf("sequence %d branch %d:%f\n",sequence_id, branch_id, sample[sequence_id][branch_id].likelihood());
@@ -411,7 +407,7 @@ Sample place(Tree& reference_tree, MSA& query_msa_)
 #ifdef __OMP
     #pragma omp parallel for schedule(dynamic)
 #endif 
-    for (unsigned int branch_id = 0; branch_id < num_branches; branch_id++)
+    for (size_t branch_id = 0; branch_id < num_branches; branch_id++)
     {
       Placement * placement;
       // Sequence * sequence;
@@ -421,7 +417,6 @@ Sample place(Tree& reference_tree, MSA& query_msa_)
       {
         placement = std::get<0>(recomp_tuple);
         *placement = branch.place(query_msa_[std::get<1>(recomp_tuple)]);
-
       }
     }
     compute_and_set_lwr(sample);

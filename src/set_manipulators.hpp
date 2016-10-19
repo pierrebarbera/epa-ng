@@ -53,6 +53,6 @@ void split(const T& src, std::vector<T>& parts, const unsigned int num_parts)
 template <class T>
 void merge(T& dest, std::vector<T>& parts)
 {
-  for(const auto& p : parts)
+  for (const auto& p : parts)
     merge(dest, p);
 }

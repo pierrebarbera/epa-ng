@@ -88,7 +88,7 @@ void epa_mpi_split_send(T& obj, std::vector<int>& dest_ranks, MPI_Comm comm)
 {
   std::vector<T> parts;
   split(obj, parts, dest_ranks.size());
-  for(size_t i = 0; i < parts.size(); ++i) 
+  for (size_t i = 0; i < parts.size(); ++i) 
     epa_mpi_send(parts[i], dest_ranks[i], comm);
 }
 

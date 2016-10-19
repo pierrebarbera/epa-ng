@@ -27,7 +27,7 @@ std::vector<unsigned int> solve(unsigned int stages, unsigned int nodes, std::ve
   auto x1 = std::accumulate(difficulty_per_stage.begin(), difficulty_per_stage.end(), 0.0);
   x1 = static_cast<double>(nodes) / x1;
 
-  for (unsigned int i = 0; i < stages; ++i)
+  for (size_t i = 0; i < stages; ++i)
     nodes_per_stage[i] = ceil(difficulty_per_stage[i] * x1);
 
   int off_by;
@@ -51,11 +51,11 @@ void assign(const int local_rank,
 {
   rank_assignm.clear();
   int rank = 0;
-  for (unsigned int stage = 0; stage < nodes_per_stage.size(); ++stage)
+  for (size_t stage = 0; stage < nodes_per_stage.size(); ++stage)
   {
     auto nodes = nodes_per_stage[stage];
     rank_assignm.push_back(std::vector<int>(nodes));
-    for (unsigned int j = 0; j < nodes; ++j)
+    for (size_t j = 0; j < nodes; ++j)
     {
       rank_assignm.back()[j] = rank;
       if (local_rank == rank)

@@ -26,7 +26,7 @@ void Model::base_frequencies(double *source, unsigned int length)
   if (base_frequencies_.size() != length)
     throw runtime_error{"Inappropriate number of base frequencies"};
 
-  for (unsigned int i = 0; i < length; ++i)
+  for (size_t i = 0; i < length; ++i)
     base_frequencies_[i] = source[i];
 
 }
@@ -36,7 +36,7 @@ void Model::substitution_rates(double *source, unsigned int length)
   if (substitution_rates_.size() != length)
     throw runtime_error{"Inappropriate number of substitution rates"};
 
-  for (unsigned int i = 0; i < length; ++i)
+  for (size_t i = 0; i < length; ++i)
     substitution_rates_[i] = source[i];
 
 }
@@ -46,7 +46,7 @@ void Model::symmetries(int* source, unsigned int length)
   if (subs_symmetries_.size() != length)
     throw runtime_error{"Inappropriate number of substitution symmetries"};
 
-  for (unsigned int i = 0; i < length; ++i)
+  for (size_t i = 0; i < length; ++i)
     subs_symmetries_[i] = source[i];
 
 }

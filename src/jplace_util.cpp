@@ -6,7 +6,7 @@ using namespace std;
 
 void merge_into(ofstream& dest, const vector<string>& sources)
 {
-  for(const auto& file_n : sources)
+  for (const auto& file_n : sources)
   {
     ifstream file(file_n);
     dest << file.rdbuf();

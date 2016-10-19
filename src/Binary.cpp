@@ -35,9 +35,7 @@ Binary::Binary(const string& binary_file_path) : bin_fptr_(nullptr, safe_fclose)
   assert(n_blocks);
 
   for (size_t i = 0; i < n_blocks; i++)
-  {
     map_.push_back(block_map[i]);
-  }
 
   free(block_map);
 }
@@ -243,7 +241,7 @@ void dump_to_binary(Tree& tree, const string& file)
     throw runtime_error{string("Dumping partition to binary: ") + pll_errmsg};
 
   // dump the tipchars, but only if partition uses them
-  unsigned int tip_index = 0;
+  size_t tip_index = 0;
   if (use_tipchars)
   {
     for (tip_index = 0; tip_index < num_tips; tip_index++)
@@ -255,14 +253,14 @@ void dump_to_binary(Tree& tree, const string& file)
   }
 
   // dump the clvs
-  for (unsigned int clv_index = tip_index; clv_index < max_clv_index; clv_index++)
+  for (size_t clv_index = tip_index; clv_index < max_clv_index; clv_index++)
   {
     if(!pllmod_binary_clv_dump(fptr, block_id++, tree.partition(), clv_index, attributes))
       throw runtime_error{string("Dumping clvs to binary: ") + pll_errmsg};
   }
 
   // dump the scalers
-  for (unsigned int scaler_index = 0; scaler_index < num_scalers; scaler_index++)
+  for (size_t scaler_index = 0; scaler_index < num_scalers; scaler_index++)
   {
     if(!pllmod_binary_custom_dump(fptr, block_id++, tree.partition()->scale_buffer[scaler_index],
       tree.partition()->sites * sizeof(unsigned int), attributes))

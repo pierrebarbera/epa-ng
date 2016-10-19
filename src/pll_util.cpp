@@ -15,6 +15,7 @@ void utree_destroy(pll_utree_t * tree)
     pll_utree_destroy(tree);
   }
 }
+
 void fasta_close(pll_fasta_t* fptr) { if(fptr) pll_fasta_close(fptr); }
 
 static void set_missing_branch_lengths_recursive(pll_utree_t * tree, double length)
@@ -306,15 +307,15 @@ void shift_partition_focus(pll_partition_t * partition, const int offset, const 
 
   // shift the tip chars
   if (partition->attributes & PLL_ATTRIB_PATTERN_TIP)
-    for (unsigned int i = 0; i < num_tips; i++)
+    for (size_t i = 0; i < num_tips; i++)
       partition->tipchars[i] += offset;
 
   // shift the clvs
-  for (unsigned int i = 0; i < max_index; i++)
+  for (size_t i = 0; i < max_index; i++)
     partition->clv[i] += offset * (int)clv_size;
 
   // shift the scalers
-  for (unsigned int i = 0; i < partition->scale_buffers; i++)
+  for (size_t i = 0; i < partition->scale_buffers; i++)
     partition->scale_buffer[i] += offset;
 
   // shift the pattern weights

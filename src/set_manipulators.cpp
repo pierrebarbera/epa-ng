@@ -56,7 +56,7 @@ void split(const Work& src, std::vector<Work>& parts, const unsigned int num_par
 
   for (size_t i = 0; (i < num_parts) && !done; ++i)
   {
-    auto to_move = chunk_size;
+    size_t to_move = chunk_size;
     for (; to_move > 0; --to_move)
     {
       auto branch_id = branch_iter->first;
@@ -104,7 +104,7 @@ void merge(Sample& dest, const Sample& src)
 
 void merge(Work& dest, const Work& src)
 {
-  for(auto& i : src) 
+  for (auto& i : src) 
   {
     auto branch_id = i.first;
     auto& seq_vec = i.second;
@@ -119,7 +119,7 @@ void merge(Timer& dest, const Timer& src)
 
 void compute_and_set_lwr(Sample& sample)
 {
-  for(auto &pq : sample)
+  for (auto &pq : sample)
   {
     double total = 0.0;
     double max=-numeric_limits<double>::infinity();
