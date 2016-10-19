@@ -9,7 +9,7 @@
 #include "Work.hpp"
 
 void split(Sample& source, std::vector<Sample>& parts, const std::vector<std::vector<unsigned int>>& split_map);
-void split(Work& source, std::vector<Work>& parts, unsigned int num_parts);
+void split(const Work& source, std::vector<Work>& parts, const unsigned int num_parts);
 void merge(Sample& dest, const Sample &src);
 void merge(Work& dest, const Work &src);
 void merge(Timer& dest, const Timer& src);
@@ -35,7 +35,7 @@ void find_collapse_equal_sequences(MSA& msa);
  * @param num_parts number of parts
  */
 template <class T>
-void split(T& src, std::vector<T>& parts, unsigned int num_parts)
+void split(const T& src, std::vector<T>& parts, const unsigned int num_parts)
 {
   parts.clear();
   unsigned int chunk_size = ceil(src.size() / (double)num_parts);

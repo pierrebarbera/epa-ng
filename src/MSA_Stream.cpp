@@ -16,7 +16,7 @@ const Sequence& MSA_Stream::operator[](const unsigned int idx) const
 {
   assert(fptr_);
   if((size_t) idx >= sequence_list_.size())
-    throw runtime_error{string("Trying to access MSA entry out of bounds. i = ") + to_string(idx) };
+    throw runtime_error{string("Trying to access MSA_Stream entry out of bounds. i = ") + to_string(idx) };
 
   return sequence_list_[idx];
 }

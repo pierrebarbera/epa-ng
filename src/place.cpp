@@ -21,16 +21,46 @@
 #include "epa_mpi_util.hpp"
 #endif
 
+static void place(const Work& to_place, MSA_Stream& msa, Tree& reference_tree, 
+  const std::vector<pll_utree_t *>& branches, Sample& sample, bool thorough)
+{
+
+#ifdef __OMP
+  unsigned int num_threads = omp_get_max_threads();
+#else
+  unsigned int num_threads = 1;
+#endif
+  // split the sample structure such that the parts are thread-local
+  std::vector<Sample> sample_parts(num_threads);
+  std::vector<Work> work_parts;
+  split(to_place, work_parts, num_threads);
+
+  // work seperately
+#ifdef __OMP
+  #pragma omp parallel for schedule(dynamic)
+#endif
+  for (size_t i = 0; i < work_parts.size(); ++i)
+  {
+    for(const auto& pair : work_parts[i])
+    {
+      auto branch_id = pair.first;
+      auto branch = Tiny_Tree(branches[branch_id], branch_id, reference_tree, thorough);
+      for(const auto& seq_id : pair.second) 
+      {
+        sample_parts[i].add_placement(seq_id, branch.place(msa[seq_id]));
+      }
+    }
+  }
+  // merge samples back
+  merge(sample, sample_parts);
+}
+
 void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& outdir,
               const Options& options, const std::string& invocation)
 {
   /* ===== COMMON DEFINITIONS ===== */
   int local_rank = 0;
-#ifdef __OMP
-      unsigned int num_threads = omp_get_max_threads();
-#else
-      unsigned int num_threads = 1;
-#endif
+
 #ifdef __MPI
   int world_size;
   MPI_Comm_rank(MPI_COMM_WORLD, &local_rank);
@@ -75,16 +105,12 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
   unsigned int num_sequences;
 
   const auto num_branches = reference_tree.nums().branches;
-  // const auto num_tips = reference_tree.nums().tip_nodes;
 
   // get all edges
   std::vector<pll_utree_t *> branches(num_branches);
   auto num_traversed_branches = utree_query_branches(reference_tree.tree(), &branches[0]);
   assert(num_traversed_branches == num_branches);
 
-
-  // build all tiny trees with corresponding edges
-  std::vector<Tiny_Tree> insertion_trees;
 #ifdef __MPI
   if (local_stage == EPA_MPI_STAGE_1_COMPUTE)
   {
@@ -105,10 +131,6 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
   size_t branch_id = 0;
   const size_t branch_id_end = num_branches;
 #endif
-  for (; branch_id < branch_id_end; branch_id++)
-  {
-    insertion_trees.emplace_back(branches[branch_id], branch_id, reference_tree, !options.prescoring);
-  }
 
 #ifdef __MPI
   }
@@ -116,8 +138,9 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
 
   auto chunk_num = 1;
   Sample sample;
-  Work work;
-  std::vector<std::string> part_names;
+
+  Work second_placement_work; // dummy structure to be filled during operation
+  std::vector<std::string> part_names; // filenames of partial results
 
   // while data
   // TODO this could be a stream read, such that cat msa.fasta | epa ... would work
@@ -131,32 +154,16 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     if (local_stage == EPA_MPI_STAGE_1_COMPUTE)
     {
 #endif // __MPI
-    // prepare placement structure
-    for (size_t cur_seq_id = 0; cur_seq_id < num_sequences; cur_seq_id++)
-      sample.emplace_back(cur_seq_id, insertion_trees.size());
-
-    // place sequences
-#ifdef __OMP
-    #pragma omp parallel for schedule(dynamic)
-#endif    
-    for (size_t local_branch_id = 0; local_branch_id < insertion_trees.size(); ++local_branch_id)
-    {
-      for (size_t cur_seq_id = 0; cur_seq_id < num_sequences; cur_seq_id++)
-      {
-        sample[cur_seq_id][local_branch_id] = 
-          insertion_trees[local_branch_id].place(msa_stream[cur_seq_id]);
-      }
-    }
+    // work structure covering all branches/sequences to be computed in the first stage,
+    // adjusted for mpi-rank specific work
+    Work first_placement_work(std::make_pair(branch_id, branch_id_end), std::make_pair(0, num_sequences));
+    
+    place(first_placement_work, msa_stream, reference_tree, branches, sample, !options.prescoring);
 
 #ifdef __MPI
     // MPI: split the result and send the part to correct aggregate node
-    std::vector<Sample> parts;
-    split(sample, parts, schedule[EPA_MPI_STAGE_1_AGGREGATE].size());
     lgr.dbg() << "Sending Stage 1 Results..." << std::endl;
-    for (size_t i = 0; i < parts.size(); ++i)
-    {
-      epa_mpi_send(parts[i], schedule[EPA_MPI_STAGE_1_AGGREGATE][i], MPI_COMM_WORLD);
-    }
+    epa_mpi_split_send(sample, schedule[EPA_MPI_STAGE_1_AGGREGATE], MPI_COMM_WORLD);
     lgr.dbg() << "Stage 1 Send done!" << std::endl;
 
     } // endif (local_stage == EPA_MPI_STAGE_1_COMPUTE)
@@ -171,7 +178,6 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     {
     // (MPI: recieve results, merge them)
     lgr.dbg() << "Recieving Stage 1 Results..." << std::endl;
-    // TODO parallelize this? is mpi comm thread safe? beneficial?
     epa_mpi_recieve_merge(sample, schedule[EPA_MPI_STAGE_1_COMPUTE], MPI_COMM_WORLD);
     lgr.dbg() << "Stage 1 Recieve done!" << std::endl;
 #endif // __MPI
@@ -188,11 +194,11 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     }
     
     if(options.prescoring)
-      work = Work(sample);
+      second_placement_work = Work(sample);
 #ifdef __MPI
     // if prescoring was selected, we need to send the intermediate results off to thorough placement
     if(options.prescoring)
-      epa_mpi_split_send(work, schedule[EPA_MPI_STAGE_2_COMPUTE], MPI_COMM_WORLD);
+      epa_mpi_split_send(second_placement_work, schedule[EPA_MPI_STAGE_2_COMPUTE], MPI_COMM_WORLD);
     } // endif (local_stage == EPA_MPI_STAGE_1_AGGREGATE)
     //==============================================================
     // EPA_MPI_STAGE_1_AGGREGATE === END
@@ -203,33 +209,11 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     //==============================================================
     if (local_stage == EPA_MPI_STAGE_2_COMPUTE and options.prescoring)
     {
-    epa_mpi_recieve_merge(work, schedule[EPA_MPI_STAGE_1_AGGREGATE], MPI_COMM_WORLD);
+    epa_mpi_recieve_merge(second_placement_work, schedule[EPA_MPI_STAGE_1_AGGREGATE], MPI_COMM_WORLD);
 #endif // __MPI
     if (options.prescoring)
     {
-      std::vector<Sample> sample_parts(num_threads);
-      std::vector<Work> work_parts;
-      split(work, work_parts, num_threads);
-
-      // work seperately
-#ifdef __OMP
-      #pragma omp parallel for schedule(dynamic)
-#endif
-      for (size_t i = 0; i < work_parts.size(); ++i)
-      {
-        for(const auto& pair : work_parts[i])
-        {
-          auto branch_id = pair.first;
-          auto branch = Tiny_Tree(branches[branch_id], branch_id, reference_tree, true);
-          for(const auto& seq_id : pair.second) 
-          {
-            sample_parts[i].add_placement(seq_id, branch.place(msa_stream[seq_id]));
-          }
-        }
-      }
-
-      // merge samples back
-      merge(sample, sample_parts);
+      place(second_placement_work, msa_stream, reference_tree, branches, sample, true);
     }
 #ifdef __MPI
     if(options.prescoring)

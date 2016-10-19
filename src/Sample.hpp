@@ -20,7 +20,7 @@ public:
 
   // member access
   PQuery& back() { return pquerys_.back(); }
-  unsigned int size() { return pquerys_.size(); }
+  unsigned int size() const { return pquerys_.size(); }
   const std::string& newick() const { return newick_; }
   void clear() { pquerys_.clear(); }
   void push_back(PQuery&& pq) { pquerys_.push_back(pq); }

@@ -43,7 +43,7 @@ void split(Sample& src, vector<Sample>& parts, const vector<vector<unsigned int>
   assert(parts.size() == split_map.size());
 }
 
-void split(Work& src, std::vector<Work>& parts, unsigned int num_parts)
+void split(const Work& src, std::vector<Work>& parts, const unsigned int num_parts)
 {
   parts.clear();
   parts.resize(num_parts);
