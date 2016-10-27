@@ -139,8 +139,8 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
 
       unsigned int branches_per_rank = ceil(bpr);
 
-      size_t branch_id = stage_rank * branches_per_rank;
-      size_t branch_id_end = fmin(branch_id + branches_per_rank, num_branches);
+      branch_id = stage_rank * branches_per_rank;
+      branch_id_end = fmin(branch_id + branches_per_rank, num_branches);
     }
 
     timer.start(); // start timer of any stage
