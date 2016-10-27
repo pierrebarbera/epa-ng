@@ -109,9 +109,6 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
   auto num_traversed_branches = utree_query_branches(reference_tree.tree(), &branches[0]);
   assert(num_traversed_branches == num_branches);
 
-  size_t branch_id = 0;
-  size_t branch_id_end = num_branches;
-
   auto chunk_num = 1;
   Sample sample;
 
@@ -123,26 +120,6 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
   while ((num_sequences = msa_stream.read_next(chunk_size)) > 0)
   {
 #ifdef __MPI
-
-    // if previous chunk was a rebalance chunk or this is the first chunk (0 mod anything = 0)
-    // ...then we need to correctly assign/reassign the workload of the first compute stage
-    if ( !((chunk_num - 1) % rebalance)  && (local_stage == EPA_MPI_STAGE_1_COMPUTE) )
-    {
-      const auto& stage = schedule[EPA_MPI_STAGE_1_COMPUTE];
-      // find the stage-relative rank
-      auto it = std::find(stage.begin(), stage.end(), local_rank);
-      size_t stage_rank = std::distance(stage.begin(), it);
-
-      double bpr = num_branches / (double)stage.size();
-      if (bpr < 1)
-        throw std::runtime_error{"Fewer reference branches than Compute-Stage ranks not supported!"};
-
-      unsigned int branches_per_rank = ceil(bpr);
-
-      branch_id = stage_rank * branches_per_rank;
-      branch_id_end = fmin(branch_id + branches_per_rank, num_branches);
-    }
-
     timer.start(); // start timer of any stage
     //==============================================================
     // EPA_MPI_STAGE_1_COMPUTE === BEGIN
@@ -152,7 +129,23 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
 #endif // __MPI
     // work structure covering all branches/sequences to be computed in the first stage,
     // adjusted for mpi-rank specific work
-    Work first_placement_work(std::make_pair(branch_id, branch_id_end), std::make_pair(0, num_sequences));
+    Work first_placement_work(std::make_pair(0, num_branches), std::make_pair(0, num_sequences));
+
+#ifdef __MPI
+
+    // if previous chunk was a rebalance chunk or this is the first chunk (0 mod anything = 0)
+    // ...then we need to correctly assign/reassign the workload of the first compute stage
+    if ( !((chunk_num - 1) % rebalance)  && (local_stage == EPA_MPI_STAGE_1_COMPUTE) )
+    { 
+      const auto& stage = schedule[EPA_MPI_STAGE_1_COMPUTE];
+      std::vector<Work> parts;
+      split(first_placement_work, parts, stage.size());
+      // find the stage-relative rank
+      auto it = std::find(stage.begin(), stage.end(), local_rank);
+      size_t stage_rank = std::distance(stage.begin(), it);
+      first_placement_work = parts[stage_rank];
+    }
+#endif //__MPI    
     
     place(first_placement_work, msa_stream, reference_tree, branches, sample, !options.prescoring);
 

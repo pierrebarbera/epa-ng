@@ -138,6 +138,59 @@ TEST(set_manipulators, split_work_equal)
   ASSERT_EQ(3, parts[1].size());
 }
 
+TEST(set_manipulators, split_work_equal_large)
+{
+  unsigned int num_branches = 1021;
+  unsigned int stage_size = 127;
+
+  Work work(std::make_pair(0,num_branches),std::make_pair(0,100));
+  std::vector<Work> parts;
+
+  split(work, parts, stage_size);
+
+  auto comp_keys = [](std::pair<unsigned int, std::vector<unsigned int>> a, std::pair<unsigned int, std::vector<unsigned int>> b)
+  {return a.first < b.first;};
+
+  for (size_t i = 0; i < stage_size; ++i)
+  {
+    auto it_b = parts[i].begin();
+    auto it_e = parts[i].end();
+    size_t branch_id = std::min_element(it_b, it_e, comp_keys)->first;
+    size_t branch_id_end = std::max_element(it_b, it_e, comp_keys)->first;
+    // printf("Rank %d, span: [%d, %d), size: %d\n", i, branch_id, branch_id_end, parts[i].size());
+    ASSERT_GE(branch_id_end, branch_id);
+    ASSERT_GT(parts[i].size(), 0);
+  }
+}
+
+TEST(set_manipulators, split_work_equal_less_branches)
+{
+  unsigned int num_branches = 20;
+  unsigned int stage_size = 127;
+
+  Work work(std::make_pair(0,num_branches),std::make_pair(0,100));
+  std::vector<Work> parts;
+
+  split(work, parts, stage_size);
+
+  auto comp_keys = [](std::pair<unsigned int, std::vector<unsigned int>> a, std::pair<unsigned int, std::vector<unsigned int>> b)
+  {return a.first < b.first;};
+
+  for (size_t i = 0; i < stage_size; ++i)
+  {
+    ASSERT_GT(parts[i].size(), 0);
+    auto it_b = parts[i].begin();
+    auto it_e = parts[i].end();
+    size_t branch_id = std::min_element(it_b, it_e, comp_keys)->first;
+    size_t branch_id_end = std::max_element(it_b, it_e, comp_keys)->first;
+    // printf("Rank %d, span: [%d, %d), size: %d\n", i, branch_id, branch_id_end, parts[i].size());
+    ASSERT_GE(branch_id_end, branch_id);
+    ASSERT_GT(parts[i].size(), 0);
+  }
+}
+
+
+
 TEST(set_manipulators, merge_work)
 {
   Sample sample;
