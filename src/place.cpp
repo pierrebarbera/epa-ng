@@ -73,10 +73,10 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
 
   lgr.dbg() << "Stages: " << num_stages << std::endl;
 
-  unsigned int rebalance = 1;
+  unsigned int rebalance = 10;
 
   std::vector<double> init_diff = options.prescoring 
-    ? std::vector<double>{100.0, 1.0, 100.0, 1.0} : std::vector<double>{100.0, 1.0};
+    ? std::vector<double>{1000.0, 1.0, 1000.0, 1.0} : std::vector<double>{1000.0, 1.0};
 
   // get initial schedule
   auto init_nps = solve(num_stages, world_size, init_diff);
@@ -109,9 +109,11 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
   auto num_traversed_branches = utree_query_branches(reference_tree.tree(), &branches[0]);
   assert(num_traversed_branches == num_branches);
 
-  auto chunk_num = 1;
+  unsigned int chunk_num = 1;
   Sample sample;
 
+  Work all_work(std::make_pair(0, num_branches), std::make_pair(0, chunk_size));
+  Work first_placement_work;
   Work second_placement_work; // dummy structure to be filled during operation
   std::vector<std::string> part_names; // filenames of partial results
 
@@ -119,6 +121,9 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
   // TODO this could be a stream read, such that cat msa.fasta | epa ... would work
   while ((num_sequences = msa_stream.read_next(chunk_size)) > 0)
   {
+    if (num_sequences < chunk_size)
+      all_work = Work(std::make_pair(0, num_branches), std::make_pair(0, num_sequences));
+
 #ifdef __MPI
     timer.start(); // start timer of any stage
     //==============================================================
@@ -126,25 +131,22 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     //==============================================================
     if (local_stage == EPA_MPI_STAGE_1_COMPUTE)
     {
-#endif // __MPI
-    // work structure covering all branches/sequences to be computed in the first stage,
-    // adjusted for mpi-rank specific work
-    Work first_placement_work(std::make_pair(0, num_branches), std::make_pair(0, num_sequences));
-
-#ifdef __MPI
 
     // if previous chunk was a rebalance chunk or this is the first chunk (0 mod anything = 0)
     // ...then we need to correctly assign/reassign the workload of the first compute stage
-    if ( !((chunk_num - 1) % rebalance)  && (local_stage == EPA_MPI_STAGE_1_COMPUTE) )
+    if ( !((chunk_num - 1) % rebalance) )
     { 
+      lgr.dbg() << "Assigning first stage Work" << std::endl;
       const auto& stage = schedule[EPA_MPI_STAGE_1_COMPUTE];
       std::vector<Work> parts;
-      split(first_placement_work, parts, stage.size());
+      split(all_work, parts, stage.size());
       // find the stage-relative rank
       auto it = std::find(stage.begin(), stage.end(), local_rank);
       size_t stage_rank = std::distance(stage.begin(), it);
       first_placement_work = parts[stage_rank];
     }
+#else
+    first_placement_work = all_work;
 #endif //__MPI    
     
     place(first_placement_work, msa_stream, reference_tree, branches, sample, !options.prescoring);
@@ -295,6 +297,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
 #endif // __MPI
     sample.clear();
     msa_stream.clear();
+    lgr.dbg() << "Chunk " << chunk_num << " done!" << std::endl;
     chunk_num++;
   }
 
