@@ -10,7 +10,9 @@ target_link_libraries (epa_module ${PROJECT_SOURCE_DIR}/libs/lib/libpll_msa.a)
 target_link_libraries (epa_module ${PROJECT_SOURCE_DIR}/libs/lib/libpll.a)
 target_link_libraries (epa_module m)
 
+if(MPI_FOUND)
 target_link_libraries (epa_module ${MPI_CXX_LIBRARIES})
+endif()
 
 if(MPI_COMPILE_FLAGS)
   set_target_properties(epa_module PROPERTIES

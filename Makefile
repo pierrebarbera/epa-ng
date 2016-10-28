@@ -12,7 +12,7 @@ build/CMakeCache.txt: CMakeLists.txt
 
 run_make: build/CMakeCache.txt
 	@echo "Running make"
-	@make -C build
+	@make -C build #VERBOSE=1
 .PHONY: run_make
 
 update:
