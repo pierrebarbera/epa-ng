@@ -2,6 +2,7 @@
 
 #include <iomanip>
 #include <stdexcept>
+#include <vector>
 
 #include "constants.hpp"
 
@@ -293,8 +294,8 @@ void reset_triplet_lengths(pll_utree_t * toward_pendant, pll_partition_t * parti
   {
     double branch_lengths[3] = {half_original, half_original, DEFAULT_BRANCH_LENGTH};
     unsigned int matrix_indices[3] = {0, 1, 2};
-    unsigned int param_indices[RATE_CATS] = {0};
-    pll_update_prob_matrices(partition, param_indices, matrix_indices, branch_lengths, 3);
+    vector<unsigned int> param_indices(partition->rate_cats, 0);
+    pll_update_prob_matrices(partition, &param_indices[0], matrix_indices, branch_lengths, 3);
   }
 }
 

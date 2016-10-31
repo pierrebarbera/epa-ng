@@ -48,8 +48,8 @@ Tree::Tree(const string &tree_file, const MSA &msa, Model &model, Options& optio
 /**
   Constructs the structures from binary file.
 */
-Tree::Tree(const string& bin_file, Options& options)
-  : partition_(nullptr, pll_partition_destroy), tree_(nullptr, utree_destroy)
+Tree::Tree(const string& bin_file, Model &model, Options& options)
+  : partition_(nullptr, pll_partition_destroy), tree_(nullptr, utree_destroy), model_(model)
   , options_(options), binary_(bin_file)
 {
   tree_ = unique_ptr<pll_utree_t, utree_deleter>(
@@ -60,9 +60,6 @@ Tree::Tree(const string& bin_file, Options& options)
                             pll_partition_destroy);
 
   locks_ = Mutex_List(partition_->tips + partition_->clv_buffers);
-
-  // mirror the model from the partition to the model_ object
-  model_ = get_model(partition_.get());
 
   nums_.init(partition_->tips);
 }
@@ -118,12 +115,12 @@ void * Tree::get_clv(const pll_utree_t* node)
 
 double Tree::ref_tree_logl()
 {
-  unsigned int param_indices[RATE_CATS] = {0};
+  vector<unsigned int> param_indices(model_.rate_cats(), 0);
   // ensure clvs are there
   this->get_clv(tree_.get());
   this->get_clv(tree_.get()->back);
 
   return pll_compute_edge_loglikelihood(
       partition_.get(), tree_->clv_index, tree_->scaler_index, tree_->back->clv_index,
-      tree_->back->scaler_index, tree_->pmatrix_index, param_indices, nullptr);
+      tree_->back->scaler_index, tree_->pmatrix_index, &param_indices[0], nullptr);
 }

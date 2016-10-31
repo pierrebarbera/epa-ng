@@ -179,14 +179,14 @@ int main(int argc, char** argv)
   if (reference_file.size())
     ref_msa = build_MSA_from_file(reference_file);
 
-  Model model(model_id);
+  Model model("DNA", model_id, "");
 
   // build the Tree
   Tree tree;
   if (options.load_binary_mode)
   {
     lgr << "Loading from binary" << endl;
-    tree = Tree(binary_file, options);
+    tree = Tree(binary_file, model, options);
   }
   else
   {

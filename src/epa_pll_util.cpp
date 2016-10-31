@@ -48,9 +48,9 @@ void link_tree_msa(pll_utree_t * tree, pll_partition_t * partition,
 void precompute_clvs(pll_utree_t * tree, pll_partition_t * partition, const Tree_Numbers& nums)
 {
   unsigned int num_matrices, num_ops;
-  unsigned int param_indices[RATE_CATS] = {0};
 
   /* various buffers for creating a postorder traversal and operations structures */
+  vector<unsigned int> param_indices(partition->rate_cats, 0);
   vector<pll_utree_t*> travbuffer(nums.nodes);
   vector<double> branch_lengths(nums.branches);
   vector<unsigned int> matrix_indices(nums.branches);
@@ -84,7 +84,7 @@ void precompute_clvs(pll_utree_t * tree, pll_partition_t * partition, const Tree
                                 &num_ops);
 
     pll_update_prob_matrices(partition,
-                             param_indices,             // use model 0
+                             &param_indices[0],             // use model 0
                              &matrix_indices[0],// matrices to update
                              &branch_lengths[0],
                              num_matrices); // how many should be updated
@@ -123,7 +123,16 @@ bool operator==(const Sequence& s, const pll_utree_t * node)
 
 Model get_model(pll_partition_t* partition)
 {
-  Model model("GTR");
+  string seq_type;
+
+  if (partition->states == 4)
+    seq_type = "DNA";
+  else if (partition->states == 20)
+    seq_type = "AA";
+  else
+    throw runtime_error{"Couldn't determine sequence type from partition"};
+
+  Model model(seq_type, "GTR", "");
 
   model.base_frequencies(partition->frequencies[0], partition->states);
   model.substitution_rates(partition->subst_params[0], 6);

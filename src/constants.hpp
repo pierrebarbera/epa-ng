@@ -1,7 +1,7 @@
 #pragma once
 
-constexpr unsigned int STATES = 4;
-constexpr unsigned int RATE_CATS = 4;
+// constexpr unsigned int STATES = 4;
+// constexpr unsigned int RATE_CATS = 4;
 
 // constexpr unsigned int TINY_PROXIMAL_CLV_INDEX = 0;
 // constexpr unsigned int TINY_DISTAL_CLV_INDEX = 1;

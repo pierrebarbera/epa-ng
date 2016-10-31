@@ -62,8 +62,8 @@ Tiny_Tree::Tiny_Tree(pll_utree_t *edge_node, unsigned int branch_id, Tree& refer
   unsigned int matrix_indices[3] = {proximal->pmatrix_index, distal->pmatrix_index, tree_->pmatrix_index};
 
   // use branch lengths to compute the probability matrices
-  unsigned int param_indices[RATE_CATS] = {0};
-  pll_update_prob_matrices(partition_.get(), param_indices, matrix_indices, branch_lengths, 3);
+  vector<unsigned int> param_indices(model_.rate_cats(), 0);
+  pll_update_prob_matrices(partition_.get(), &param_indices[0], matrix_indices, branch_lengths, 3);
 
   if (!opt_branches_)
     pll_update_partials(partition_.get(), &op, 1);
@@ -79,12 +79,12 @@ Placement Tiny_Tree::place(const Sequence &s) {
                      s.sequence().c_str());
 
   if (err_check == PLL_FAILURE)
-    throw runtime_error{"set tip states shit the bed"};
+    throw runtime_error{"Set tip states during placement failed!"};
 
   auto distal_length = tree_->next->length;
   auto pendant_length = tree_->length;
   double logl = 0.0;
-  unsigned int param_indices[RATE_CATS] = {0};
+  vector<unsigned int> param_indices(model_.rate_cats(), 0);
 
   Range range(0, partition_->sites);
   // if (ranged_computation_)
@@ -134,7 +134,7 @@ Placement Tiny_Tree::place(const Sequence &s) {
                                           tree_->clv_index,
                                           tree_->scaler_index, // scaler_index
                                           tree_->pmatrix_index,
-                                          param_indices, nullptr); // freq index
+                                          &param_indices[0], nullptr); // freq index
 
   assert(distal_length <= original_branch_length_);
   assert(distal_length >= 0.0);

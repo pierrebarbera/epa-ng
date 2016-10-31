@@ -4,16 +4,89 @@
 #include <string>
 #include <algorithm>
 
+#include "pllhead.hpp"
+
 using namespace std;
 
-Model::Model(string model_id)
+// map for determining model symmetries
+static const unordered_map<string, vector<int>> MODEL_MAP(
+  {
+    {"JC69", {0,0,0,0,0,0}},
+    {"K80", {0,1,0,0,1,0}},
+    {"GTR", {0,1,2,3,4,5}}
+  }
+);
+
+// map for determining rates and frequencies symmetries
+static const unordered_map<string, pair<const double*, const double*>> AA_RATE_FREQ_MAP(
+  {
+    {"DAYHOFF", {pll_aa_rates_dayhoff, pll_aa_freqs_dayhoff}},
+    {"LG", {pll_aa_rates_lg, pll_aa_freqs_lg}},
+    {"DCMUT", {pll_aa_rates_dcmut, pll_aa_freqs_dcmut}},
+    {"JTT", {pll_aa_rates_jtt, pll_aa_freqs_jtt}},
+    {"MTREV", {pll_aa_rates_mtrev, pll_aa_freqs_mtrev}},
+    {"WAG", {pll_aa_rates_wag, pll_aa_freqs_wag}},
+    {"RTREV", {pll_aa_rates_rtrev, pll_aa_freqs_rtrev}},
+    {"CPREV", {pll_aa_rates_cprev, pll_aa_freqs_cprev}},
+    {"VT", {pll_aa_rates_vt, pll_aa_freqs_vt}},
+    {"BLOSUM62", {pll_aa_rates_blosum62, pll_aa_freqs_blosum62}},
+    {"MTMAM", {pll_aa_rates_mtmam, pll_aa_freqs_mtmam}},
+    {"MTART", {pll_aa_rates_mtart, pll_aa_freqs_mtart}},
+    {"MTZOA", {pll_aa_rates_mtzoa, pll_aa_freqs_mtzoa}},
+    {"PMB", {pll_aa_rates_pmb, pll_aa_freqs_pmb}},
+    {"HIVB", {pll_aa_rates_hivb, pll_aa_freqs_hivb}},
+    {"HIVW", {pll_aa_rates_hivw, pll_aa_freqs_hivw}},
+    {"JTTDCMUT", {pll_aa_rates_jttdcmut, pll_aa_freqs_jttdcmut}},
+    {"FLU", {pll_aa_rates_flu, pll_aa_freqs_flu}},
+    {"STMTREV", {pll_aa_rates_stmtrev, pll_aa_freqs_stmtrev}}
+  }
+);
+
+static const vector<string> VALID_SEQUENCE_TYPES = {"DNA", "AA"};
+
+Model::Model(string sequence_type, string model_id, string sub_matrix)
   : alpha_(1.0), base_frequencies_({0.25,0.25,0.25,0.25}),
-  substitution_rates_({0.5,0.5,0.5,0.5,0.5,1.0})
+    substitution_rates_({0.5,0.5,0.5,0.5,0.5,1.0})
 {
+  
   // tolerate case insensitivity
   transform(model_id.begin(), model_id.end(),model_id.begin(), ::toupper);
+  transform(sequence_type.begin(), sequence_type.end(),sequence_type.begin(), ::toupper);
+  transform(sub_matrix.begin(), sub_matrix.end(),sub_matrix.begin(), ::toupper);
+
+  if(sequence_type.compare(VALID_SEQUENCE_TYPES[0]) != 0 
+    and sequence_type.compare(VALID_SEQUENCE_TYPES[1]) != 0)
+    throw runtime_error{string("Sequence data type not recognized! Input: ") + sequence_type};
+
+
+  if (sequence_type.compare("DNA") == 0)
+  {
+    states_= 4;
+    rate_cats_ = 4;
+    char_map_ = pll_map_nt;
+  }
+  else if (sequence_type.compare("AA") == 0)
+  {
+    states_ = 20;
+    rate_cats_ = 4;
+    char_map_ = pll_map_aa;
+
+    auto find_iter = AA_RATE_FREQ_MAP.find(sub_matrix);
+    if (find_iter == AA_RATE_FREQ_MAP.end())
+      throw runtime_error{string("Sub. Matrix Identifier not found! String passed: ") + sub_matrix};
+
+    auto rates = find_iter->second.first;
+    auto freqs = find_iter->second.second;
+
+    base_frequencies_.clear();
+    for (size_t i = 0; i < 20; ++i)
+      base_frequencies_.push_back(freqs[i]);
+    for (size_t i = 0; i < 190; ++i)
+      substitution_rates_.push_back(rates[i]);
+
+  }
+  
   // set symmetries
-  // subs_symmetries_ = MODEL_MAP[model_id.c_str()];
   auto find_iter = MODEL_MAP.find(model_id);
   if (find_iter == MODEL_MAP.end())
     throw runtime_error{string("Model Identifier not found! String passed: ") + model_id};

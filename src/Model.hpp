@@ -4,21 +4,12 @@
 #include <unordered_map>
 #include "constants.hpp"
 
-// map for determining model symmetries
-const std::unordered_map<std::string, std::vector<int>> MODEL_MAP(
-  {
-    {"JC69", {0,0,0,0,0,0}},
-    {"K80", {0,1,0,0,1,0}},
-    {"GTR", {0,1,2,3,4,5}}
-  }
-);
-
 /* Encapsulates the evolutionary model parameters
   TODO possible basepoint of model class hierarchy */
 class Model {
 public:
-  Model() : Model("GTR") { }
-  Model(std::string model_id);
+  Model() : Model("DNA", "GTR", "EMPIRICAL") { }
+  Model(std::string sequence_type, std::string model_id, std::string sub_matrix);
   ~Model() = default;
 
   // getters
@@ -26,6 +17,9 @@ public:
   std::vector<int>& symmetries()  {return subs_symmetries_;};
   const std::vector<double>& substitution_rates() const {return substitution_rates_;};
   double alpha() const {return alpha_;};
+  unsigned int states() const {return states_;};
+  unsigned int rate_cats() const {return rate_cats_;};
+  unsigned int const * char_map() const {return char_map_;};
 
   // setters
   void base_frequencies(double* source, unsigned int length);
@@ -34,6 +28,9 @@ public:
   void alpha(double a) {alpha_ = a;};
 
 private:
+  unsigned int const * char_map_;
+  unsigned int states_;
+  unsigned int rate_cats_;
   double alpha_;
   std::vector<double> base_frequencies_;
   std::vector<double> substitution_rates_;
