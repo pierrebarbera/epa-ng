@@ -1,8 +1,9 @@
 #include <iostream>
-#include <unistd.h>
 #include <string>
 #include <algorithm>
 #include <chrono>
+
+#include <cxxopts.hpp>
 
 #include "mpihead.hpp"
 #include "Log.hpp"
@@ -11,49 +12,6 @@
 using namespace std;
 
 Log lgr;
-
-static void print_help()
-{
-  cout << "EPA - Evolutionary Placement Algorithm" << endl << endl;
-  cout << "USAGE: epa [options]" << endl << endl;
-  cout << "OPTIONS:" << endl;
-  cout << "  -h \tDisplay this page" << endl;
-  cout << "  -t \tPath to Tree file" << endl;
-  cout << "  -s \tPath to reference MSA file. May also include the query sequences." << endl;
-  cout << "  -q \tPath to separate query MSA file. If none is provided, epa will assume" << endl;
-  cout << "     \tquery reads are in the reference MSA file (-s)" << endl;
-  cout << "  -w \tPath to working directory" << endl;
-  cout << "  -r \tRanged heuristic: only consider portion of query sequence sites not flanked by gaps during insertion" << endl;
-  cout << "     \t  DEFAULT: OFF" << endl;
-  cout << "  -g \tTwo-phase heuristic, determination of candidate edges using accumulative threshold" << endl;
-  cout << "     \t" << endl;
-  cout << "  -G \tTwo-phase heuristic, determination of candidate edges by specified percentage of total edges" << endl;
-  cout << "     \t" << endl;
-  cout << "  -O \toptimize reference tree and model parameters" << endl;
-  cout << "  -l \tspecify minimum likelihood weight below which a placement is discarded" << endl;
-  cout << "     \t  DEFAULT: 0.01" << endl;
-  cout << "  -L \tspecify accumulated likelihood weight after which further placements are discarded" << endl;
-  cout << "     \t  DEFAULT: OFF" << endl;
-  cout << "  -m \tSpecify model of nucleotide substitution" <<  endl;
-  cout << "     \tGTR \tGeneralized time reversible (DEFAULT)" << endl;
-  cout << "     \tJC69\tJukes-Cantor Model" << endl;
-  cout << "     \tK80 \tKimura 80 Model" << endl;
-}
-
-static void inv(string msg)
-{
-  int mpi_rank = 0;
-  MPI_COMM_RANK(MPI_COMM_WORLD, &mpi_rank);
-  if (mpi_rank == 0)
-  {
-    if (msg.size())
-    lgr << msg << endl;
-    print_help();
-    lgr.flush();
-  }
-  MPI_FINALIZE();
-  exit(EXIT_FAILURE);
-}
 
 static void ensure_dir_has_slash(string& dir)
 {
@@ -80,84 +38,85 @@ int main(int argc, char** argv)
   string reference_file("");
   string binary_file("");
 
-  int c;
-  while((c =  getopt(argc, argv, "hOBb:t:s:q:l:L:w:g:G:r")) != EOF)
+  try
   {
-    switch (c)
-    {
-      case 't':
-        tree_file += optarg;
-        break;
-      case 's':
-        reference_file += optarg;
-        break;
-      case 'q':
-        query_file += optarg;
-        break;
-      case 'w':
-        work_dir += optarg;
-        break;
-      case 'l':
-        options.support_threshold = stod(optarg);
-        if (options.support_threshold < 0.0)
-          inv("Support threshold cutoff too small! Range: [0,1)");
-        if (options.support_threshold >= 1.0)
-          inv("Support threshold cutoff too large! Range: [0,1)");
-        break;
-      case 'L':
-        options.support_threshold = stod(optarg);
-        if (options.support_threshold <= 0.0)
-          inv("Accumulated support threshold cutoff too small! Range: (0,1]");
-        if (options.support_threshold > 1.0)
-          inv("Accumulated support threshold cutoff too large! Range: (0,1]");
-        options.acc_threshold = true;
-        break;
-      case 'h':
-        inv("");
-        break;
-      case 'g':
-        if (options.prescoring)
-          inv("-g cannot be used simultaneously with -G!");
-        if (optarg)
-          options.prescoring_threshold = stod(optarg);
-        if (options.prescoring_threshold < 0.0)
-          inv("Prescoring threshold cutoff too small! Range: [0,1]");
-        if (options.prescoring_threshold > 1.0)
-          inv("Prescoring threshold cutoff too large! Range: [0,1]");
-        options.prescoring = true;
-        break;
-      case 'G':
-        if (options.prescoring)
-          inv("-g cannot be used simultaneously with -G!");
-        if (optarg)
-          options.prescoring_threshold = stod(optarg);
-        else
-          options.prescoring_threshold = 0.1;
-        if (options.prescoring_threshold < 0.0)
-          inv("Prescoring threshold cutoff too small! Range: [0,1]");
-        if (options.prescoring_threshold > 1.0)
-          inv("Prescoring threshold cutoff too large! Range: [0,1]");
-        options.prescoring = true;
-        options.prescoring_by_percentage = true;
-        break;
-      case 'O':
-        options.opt_branches = true;
-        options.opt_model = true;
-        break;
-      case 'r':
-        options.ranged = true;
-        break;
-      case 'B':
-        options.dump_binary_mode = true;
-        break;
-      case 'b':
-        options.load_binary_mode = true;
-        binary_file += optarg;
-        break;
-      case ':':
-        inv("Invalid option.");
-        break;
-      }
+  cxxopts::Options cli(argv[0], "Massively-Parallel Evolutionary Placement Algorithm");
+
+  cli.add_options()
+    ("help", "display help")
+    ("version", "display version")
+    ;
+  cli.add_options("Input")
+    ("t,tree", "path to Reference Tree file", cxxopts::value<std::string>())
+    ("s,ref-msa", "path to Reference MSA file", cxxopts::value<std::string>())
+    ("q,query", "path to Query MSA file", cxxopts::value<std::string>())
+    ("b,binary", "path to Binary file", cxxopts::value<std::string>())
+    ;
+  cli.add_options("Output")
+    ("w,outdir", "path to output directory", 
+      cxxopts::value<std::string>()->default_value("./"))
+    ("B,dump-binary", 
+      "Binary Dump mode: write ref. tree in binary format then exit")
+    ("l,discard-min-lwr", 
+      "minimum likelihood weight below which a placement is discarded",
+      cxxopts::value<double>()->default_value("0.01")->implicit_value("0.01"))
+    ("L,discard-acc-lwr", 
+      "accumulated likelihood weight after which further placements are discarded",
+      cxxopts::value<double>()->implicit_value("0.01"))
+    ;
+  cli.add_options("Compute")
+    ("O,opt-ref-tree", "optimize reference tree and model parameters")
+    ("g,dyn-heur", 
+      "two-phase heuristic, determination of candidate edges using accumulative threshold",
+      cxxopts::value<double>()->implicit_value("0.99"))
+    ("G,fix-heur",
+      "two-phase heuristic, determination of candidate edges by specified percentage of total edges",
+      cxxopts::value<double>()->implicit_value("0.1"))
+    ;
+
+  cli.parse(argc, argv);
+
+  if (cli.count("help"))
+  {
+    lgr << cli.help({"", "Input", "Output", "Compute"}) << std::endl;
+    exit(EXIT_SUCCESS);
+  }
+  
+  if (cli.count("query")) query_file = cli["query"].as<std::string>();
+  if (cli.count("outdir")) work_dir = cli["outdir"].as<std::string>();
+  if (cli.count("tree")) tree_file = cli["tree"].as<std::string>();
+  if (cli.count("ref-msa")) reference_file = cli["ref-msa"].as<std::string>();
+  if (cli.count("binary")) 
+  {
+    binary_file = cli["binary"].as<std::string>();
+    options.load_binary_mode = true;
+  }
+  if (cli.count("discard-min-lwr")) options.support_threshold = cli["discard-min-lwr"].as<double>();
+  if (cli.count("discard-acc-lwr")) 
+  { 
+    options.support_threshold = cli["discard-acc-lwr"].as<double>(); 
+    options.acc_threshold = true; 
+  }
+  if (cli.count("fix-heur")) 
+  {
+    if (options.prescoring) throw std::runtime_error{"Cannot use -G and -g concurrently!"};
+    options.prescoring_threshold = cli["fix-heur"].as<double>(); 
+    options.prescoring = options.prescoring_by_percentage = true; 
+  }
+  if (cli.count("dyn-heur")) 
+  {
+    if (options.prescoring) throw std::runtime_error{"Cannot use -G and -g concurrently!"};
+    options.prescoring_threshold = cli["dyn-heur"].as<double>();
+    options.prescoring = true;
+    options.prescoring_by_percentage = false;
+  }
+  if (cli.count("opt-ref-tree")) options.opt_branches = options.opt_model = true;
+  if (cli.count("dump-binary")) options.dump_binary_mode =  true;
+
+  } catch (const cxxopts::OptionException& e)
+  {
+    std::cout << "error parsing options: " << e.what() << std::endl;
+    exit(EXIT_FAILURE);
   }
 
   //================================================================

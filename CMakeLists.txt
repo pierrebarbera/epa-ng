@@ -58,6 +58,7 @@ endif()
 message(STATUS "Using flags: ${CMAKE_CXX_FLAGS}")
 
 include_directories(${PROJECT_SOURCE_DIR}/libs/cereal/include)
+include_directories(${PROJECT_SOURCE_DIR}/libs/cxxopts/src)
 include_directories(${PROJECT_SOURCE_DIR}/libs/include/libpll)
 
 

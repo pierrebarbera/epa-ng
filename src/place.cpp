@@ -323,7 +323,6 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
         continue;
       std::vector<std::string> remote_obj;
       epa_mpi_recieve(remote_obj, rank, MPI_COMM_WORLD);
-      // merge(part_names, remote_obj);
       part_names.insert(part_names.end(), remote_obj.begin(), remote_obj.end());
     }
 #endif

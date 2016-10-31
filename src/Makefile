@@ -3,6 +3,7 @@ TEST=../test/data
 LOGDIR=../test/log
 OUTDIR=/tmp/epa
 CEREAL=../libs/cereal/include/
+CXXOPTS=../libs/cxxopts/src/
 PLL_INC=../libs/include/libpll/
 PLL_LIB=../libs/lib/
 
@@ -12,13 +13,13 @@ BINARY_WRITE= -t $(TEST)/ref.tre -s $(TEST)/aln.fasta -q $(TEST)/query.fasta -B 
 BINARY_READ=-b $(OUTDIR)/epa_binary_file -q $(TEST)/query.fasta -w $(OUTDIR) -l 0.0 $(F)
 NORM_TEST=-t $(TEST)/ref.tre -s $(TEST)/aln.fasta -q $(TEST)/query.fasta -w $(OUTDIR) $(F)
 
-CC=clang++
-#CC=g++
+#CC=clang++
+CC=g++
 DEFS=
 WARNINGS= -Wall -Wextra
 DBG=-g
 
-INCLUDES=-I$(CEREAL) -I$(PLL_INC)
+INCLUDES=-I$(CEREAL) -I$(CXXOPTS) -I$(PLL_INC)
 LIB_PATHS=  -L$(PLL_LIB)
 LIBS=$(PLL_LIB)libpll_optimize.a $(PLL_LIB)libpll_msa.a $(PLL_LIB)libpll_binary.a $(PLL_LIB)libpll.a -lm
 
