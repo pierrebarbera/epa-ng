@@ -268,7 +268,7 @@ void optimize(Model& model, pll_utree_t * tree, pll_partition_t * partition,
   {
     // update epa model object as well
     model.alpha(params.lk_params.alpha_value);
-    model.substitution_rates(partition->subst_params[0], 6);
+    model.substitution_rates(partition->subst_params[0], model.substitution_rates().size());
     model.base_frequencies(partition->frequencies[params.params_index], partition->states);
   }
 }
