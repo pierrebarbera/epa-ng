@@ -28,7 +28,7 @@ Tree::Tree(const string &tree_file, const MSA &msa, Model &model, Options& optio
   locks_ = Mutex_List(partition_->tips + partition_->clv_buffers);
 
   valid_map_ = vector<Range>(nums_.tip_nodes);
-  link_tree_msa(tree_.get(), partition_.get(), ref_msa_, nums_.tip_nodes, valid_map_);
+  link_tree_msa(tree_.get(), partition_.get(), model_, ref_msa_, nums_.tip_nodes, valid_map_);
 
   // find_collapse_equal_sequences(query_msa_);
 

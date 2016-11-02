@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "pllhead.hpp"
 #include "Tree_Numbers.hpp"
@@ -11,7 +12,7 @@
 #include "Model.hpp"
 #include "Tree.hpp"
 
-void link_tree_msa(pll_utree_t * tree, pll_partition_t * partition,
+void link_tree_msa(pll_utree_t * tree, pll_partition_t * partition, Model& model, 
               const MSA& msa, const unsigned int num_tip_nodes,
               std::vector<Range> &valid_map);
 void precompute_clvs(pll_utree_t * tree, pll_partition_t * partition, const Tree_Numbers& nums);

@@ -75,7 +75,7 @@ Placement Tiny_Tree::place(const Sequence &s) {
   assert(tree_);
 
   // init the new tip with s.sequence(), branch length
-  auto err_check = pll_set_tip_states(partition_.get(), tree_->back->clv_index, pll_map_nt,
+  auto err_check = pll_set_tip_states(partition_.get(), tree_->back->clv_index, model_.char_map(),
                      s.sequence().c_str());
 
   if (err_check == PLL_FAILURE)

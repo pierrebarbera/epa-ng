@@ -41,7 +41,6 @@ pll_partition_t * make_tiny_partition(Tree& reference_tree, const pll_utree_t * 
     3, // number of prob. matrices (one per possible unique branch length)
     old_partition->rate_cats,
     3, // number of scale buffers (one per possible inner node)
-    // pll_map_nt,
     old_partition->attributes);
 
   assert(tiny);
@@ -92,7 +91,7 @@ pll_partition_t * make_tiny_partition(Tree& reference_tree, const pll_utree_t * 
   if(tip_tip_case && use_tipchars)
   {
     std::string sequence(tiny->sites, 'A');
-    if(pll_set_tip_states(tiny, distal->clv_index, pll_map_nt, sequence.c_str()) == PLL_FAILURE)
+    if(pll_set_tip_states(tiny, distal->clv_index, reference_tree.model().char_map(), sequence.c_str()) == PLL_FAILURE)
       throw std::runtime_error{"Error setting tip state"};
     pll_aligned_free(tiny->tipchars[distal->clv_index]);
     tiny->tipchars[distal->clv_index] = (unsigned char*) reference_tree.get_clv(old_distal);

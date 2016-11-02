@@ -22,11 +22,12 @@ TEST(epa_pll_util, link_tree_msa)
   Tree_Numbers nums = Tree_Numbers();
   pll_partition_t * part;
   pll_utree_t * tree;
+  Model model;
 
   tree = build_tree_from_file(env->tree_file, nums);
   part = build_partition_from_file( env->model, nums, msa.num_sites());
   auto valid_map = vector<Range>(nums.tip_nodes);
-  link_tree_msa(tree, part, msa, nums.tip_nodes, valid_map);
+  link_tree_msa(tree, part, model, msa, nums.tip_nodes, valid_map);
 
   // tests
   vector<pll_utree_t *> tip_nodes(nums.tip_nodes);
@@ -57,11 +58,12 @@ TEST(epa_pll_util, precompute_clvs)
   Tree_Numbers nums = Tree_Numbers();
   pll_partition_t * part;
   pll_utree_t * tree;
+  Model model;
 
   tree = build_tree_from_file(env->tree_file, nums);
   part = build_partition_from_file( env->model, nums, msa.num_sites());
   auto valid_map = vector<Range>(nums.tip_nodes);
-  link_tree_msa(tree, part, msa, nums.tip_nodes, valid_map);
+  link_tree_msa(tree, part, model, msa, nums.tip_nodes, valid_map);
   precompute_clvs(tree, part, nums);
 
   // tests

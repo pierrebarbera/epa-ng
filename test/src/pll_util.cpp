@@ -111,11 +111,12 @@ TEST(pll_util, get_numbered_newick_string)
   Tree_Numbers nums = Tree_Numbers();
   pll_partition_t * part;
   pll_utree_t * tree;
+  Model model;
 
   tree = build_tree_from_file(env->tree_file, nums);
   part = build_partition_from_file( env->model, nums, msa.num_sites());
   auto valid_map = vector<Range>(nums.tip_nodes);
-  link_tree_msa(tree, part, msa, nums.tip_nodes, valid_map);
+  link_tree_msa(tree, part, model, msa, nums.tip_nodes, valid_map);
 
   // tests
   // valid output as returned by RAxML, with reset branch lengths, as we only want to test format

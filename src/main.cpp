@@ -175,6 +175,9 @@ int main(int argc, char** argv)
         model_id = parts[1];
       if (s >= 3)
         sub_matrix = parts[2];
+
+      lgr.dbg() << "Model descriptor: " << sequence_type << " "
+      << model_id << " " << sub_matrix << " " << std::endl;
     }
 
   }
@@ -204,7 +207,7 @@ int main(int argc, char** argv)
   if (reference_file.size())
     ref_msa = build_MSA_from_file(reference_file);
 
-  Model model("DNA", model_id, "");
+  Model model(sequence_type, model_id, sub_matrix);
 
   // build the Tree
   Tree tree;

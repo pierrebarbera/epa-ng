@@ -41,6 +41,9 @@ omp: CFLAGS+=-fopenmp -D__OMP
 ranged_test: BINARY_WRITE= -t $(TEST)/ref.tre -s $(TEST)/range_combined.fasta -r -w $(OUTDIR) $(F)
 mpi: CC=mpicxx
 mpi: CFLAGS+=-D__MPI
+aa_test: BINARY_WRITE= -t $(TEST)/ref.tre -s $(TEST)/AA_aln.fasta -B -w $(OUTDIR) -m AA-GTR-DAYHOFF $(F)
+aa_test: BINARY_READ=-b $(OUTDIR)/epa_binary_file -q $(TEST)/AA_query.fasta -w $(OUTDIR) -m AA-GTR-DAYHOFF -l 0.0 $(F)
+aa_test: NORM_TEST=-t $(TEST)/ref.tre -s $(TEST)/AA_aln.fasta -q $(TEST)/AA_query.fasta -w $(OUTDIR) -m AA-GTR-DAYHOFF $(F)
 
 all:  $(TARGET)
 
@@ -53,6 +56,14 @@ test: $(TARGET)
 	-rm -f $(OUTDIR)/*
 	$(TARGET) $(BINARY_WRITE)
 	$(TARGET) $(BINARY_READ)
+	$(TARGET) $(NORM_TEST)
+
+aa_test: $(TARGET)
+	mkdir -p $(OUTDIR)
+	-rm -f $(OUTDIR)/*
+	$(TARGET) $(BINARY_WRITE)
+	$(TARGET) $(BINARY_READ)
+	$(TARGET) $(NORM_TEST)
 
 ranged_test: $(TARGET)
 	mkdir -p $(OUTDIR)

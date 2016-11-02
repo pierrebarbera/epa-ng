@@ -137,7 +137,6 @@ void Binary::load_scaler(pll_partition_t * partition, const unsigned int scaler_
 //     1, // number of probabillity matrices
 //     RATE_CATS,
 //     1, // number of scale buffers
-//     //pll_map_nt,
 //     attributes);
 
 //   if (!partition)

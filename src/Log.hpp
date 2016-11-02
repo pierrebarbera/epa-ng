@@ -1,6 +1,5 @@
 #pragma once
 
-#include "mpihead.hpp"
 #include "streams.hpp"
 
 #include <fstream>

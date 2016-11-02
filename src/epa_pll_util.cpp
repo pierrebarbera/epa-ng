@@ -8,9 +8,8 @@
 
 using namespace std;
 
-void link_tree_msa(pll_utree_t * tree, pll_partition_t * partition,
-              const MSA& msa, const unsigned int num_tip_nodes,
-              vector<Range> &valid_map)
+void link_tree_msa(pll_utree_t * tree, pll_partition_t * partition, Model& model, const MSA& msa, 
+  const unsigned int num_tip_nodes, vector<Range> &valid_map)
 {
   // obtain pointers to all tip nodes
   vector<pll_utree_t*> tip_nodes(num_tip_nodes);
@@ -38,7 +37,7 @@ void link_tree_msa(pll_utree_t * tree, pll_partition_t * partition,
 
     auto clv_index = map_value->second;
     // associates the sequence with the tip by calculating the tips clv buffers
-    pll_set_tip_states(partition, clv_index, pll_map_nt, s.sequence().c_str());
+    pll_set_tip_states(partition, clv_index, model.char_map(), s.sequence().c_str());
 
     // remember the valid-range of the sequence, indexed by tip clv index
     valid_map[clv_index] = get_valid_range(s.sequence());
