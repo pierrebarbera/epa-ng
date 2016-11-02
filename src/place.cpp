@@ -96,7 +96,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
   const auto EPA_MPI_DEDICATED_WRITE_RANK = schedule[EPA_MPI_STAGE_LAST_AGGREGATE][0];
 
 #endif // __MPI
-  lgr << "EPA - Evolutionary Placement Algorithm\n";
+  lgr << "P-EPA - Massively-Parallel Evolutionary Placement Algorithm\n";
   lgr << "\nInvocation: \n" << invocation << "\n";
 
   const unsigned int chunk_size = 100;
