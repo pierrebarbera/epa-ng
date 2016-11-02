@@ -200,11 +200,10 @@ void optimize(Model& model, pll_utree_t * tree, pll_partition_t * partition,
 
   }
 
-  #define RATE_MIN     1e-4
-  #define RATE_MAX     1000000.
-  double min_rates[6] = {RATE_MIN,RATE_MIN,RATE_MIN,RATE_MIN,RATE_MIN,RATE_MIN};
-  double max_rates[6] = {RATE_MAX,RATE_MAX,RATE_MAX,RATE_MAX,RATE_MAX,RATE_MAX};
+  const size_t rates_size = model.substitution_rates().size();
 
+  std::vector<double> min_rates(rates_size, OPT_RATE_MIN);
+  std::vector<double> max_rates(rates_size, OPT_RATE_MAX);
 
   do
   {
@@ -217,7 +216,7 @@ void optimize(Model& model, pll_utree_t * tree, pll_partition_t * partition,
     {
 
       params.which_parameters = PLLMOD_OPT_PARAM_SUBST_RATES;
-      cur_logl = -pllmod_opt_optimize_multidim(&params, min_rates, max_rates);
+      cur_logl = -pllmod_opt_optimize_multidim(&params, &min_rates[0], &max_rates[0]);
 
       // lgr << "after rates: " << to_string(cur_logl) << "\n";
 
@@ -268,7 +267,7 @@ void optimize(Model& model, pll_utree_t * tree, pll_partition_t * partition,
   {
     // update epa model object as well
     model.alpha(params.lk_params.alpha_value);
-    model.substitution_rates(partition->subst_params[0], model.substitution_rates().size());
+    model.substitution_rates(partition->subst_params[0], rates_size);
     model.base_frequencies(partition->frequencies[params.params_index], partition->states);
   }
 }
