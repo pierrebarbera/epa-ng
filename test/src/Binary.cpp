@@ -71,7 +71,7 @@ TEST(Binary, read)
   dump_to_binary(original_tree, env->binary_file);
 
   // test
-  Tree read_tree(env->binary_file, options);
+  Tree read_tree(env->binary_file, model, options);
 
   // compare numbered jplace strings
   string original_nns(get_numbered_newick_string(original_tree.tree()));

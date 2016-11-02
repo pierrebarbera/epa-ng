@@ -72,6 +72,7 @@ TEST(Tree, place_prescore)
 
 TEST(Tree, process_from_binary)
 {
+  #ifndef __MPI
   // setup
   auto msa = build_MSA_from_file(env->reference_file);
   auto queries = MSA_Stream(env->query_file);
@@ -79,7 +80,7 @@ TEST(Tree, process_from_binary)
   Options options;
   Tree original_tree(env->tree_file, msa, model, options);
   dump_to_binary(original_tree, env->binary_file);
-  Tree read_tree(env->binary_file, options);
+  Tree read_tree(env->binary_file, model, options);
 
   EXPECT_DOUBLE_EQ(original_tree.ref_tree_logl(), read_tree.ref_tree_logl());
 
@@ -92,11 +93,12 @@ TEST(Tree, process_from_binary)
   process(read_tree, queries, env->out_dir, options, invocation);
 
   Tree mvstree;
-  mvstree = Tree(env->binary_file, options);
+  mvstree = Tree(env->binary_file, model, options);
 
   process(mvstree, queries, env->out_dir, options, invocation);
 
   // teardown
+  #endif
 }
 
 TEST(Tree, place_from_binary)
@@ -110,7 +112,7 @@ TEST(Tree, place_from_binary)
   options.acc_threshold = true;
   Tree original_tree(env->tree_file, msa, model, options);
   dump_to_binary(original_tree, env->binary_file);
-  Tree read_tree(env->binary_file, options);
+  Tree read_tree(env->binary_file, model, options);
 
 
   // test

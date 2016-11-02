@@ -80,7 +80,7 @@ TEST(Tiny_Tree, place_from_binary)
   Options options;
   Tree original_tree(env->tree_file, msa, model, options);
   dump_to_binary(original_tree, env->binary_file);
-  Tree read_tree(env->binary_file, options);
+  Tree read_tree(env->binary_file, model, options);
   string invocation("./this --is -a test");
 
   ASSERT_EQ(original_tree.nums().branches, read_tree.nums().branches);

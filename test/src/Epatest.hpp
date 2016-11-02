@@ -39,7 +39,7 @@ public:
   std::string combined_file;
   std::string query_file;
   std::string binary_file;
-  Model model = Model("GTR");
+  Model model = Model("DNA","GTR","");
   Options options;
 
 };

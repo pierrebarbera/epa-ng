@@ -265,7 +265,7 @@ TEST(pll_util, shift_partition_focus_logtest)
 
   double branch_lengths[3] = {0.123, 0.123, 0.123};
   unsigned int matrix_indices[3] = {0, 1, 2};
-  unsigned int param_indices[RATE_CATS] = {0};
+  unsigned int param_indices[4] = {0};
   pll_update_prob_matrices(part, param_indices, matrix_indices, branch_lengths, 3);
 
   pll_operation_t op;
@@ -316,9 +316,9 @@ TEST(pll_util, shift_partition_focus_logtest)
                                         param_indices, nullptr);
 
   EXPECT_TRUE(abs(full_logl - false_logl) > 1.0 );
-  printf("Full:\t %.40f\n", full_logl);
-  printf("Ranged:\t %.40f\n", ranged_logl);
-  printf("False:\t %.40f\n", false_logl);
+  // printf("Full:\t %.40f\n", full_logl);
+  // printf("Ranged:\t %.40f\n", ranged_logl);
+  // printf("False:\t %.40f\n", false_logl);
 
 
 // extra tests
@@ -333,7 +333,7 @@ TEST(pll_util, shift_partition_focus_logtest)
                                         0,
                                         0,
                                         param_indices, nullptr);
-  printf("False+missing:\t %.40f\n", false_logl);
+  // printf("False+missing:\t %.40f\n", false_logl);
 
   shift_partition_focus(part, 1, 4);
 
@@ -346,7 +346,7 @@ TEST(pll_util, shift_partition_focus_logtest)
                                         0,
                                         0,
                                         param_indices, nullptr);
-  printf("f+m+right:\t %.40f\n", false_logl);
+  // printf("f+m+right:\t %.40f\n", false_logl);
 
   shift_partition_focus(part, -6, 2);
 
@@ -359,7 +359,7 @@ TEST(pll_util, shift_partition_focus_logtest)
                                         0,
                                         0,
                                         param_indices, nullptr);
-  printf("fmr+left:\t %.40f\n", false_logl);
+  // printf("fmr+left:\t %.40f\n", false_logl);
 
   shift_partition_focus(part, 0, 10);
 
