@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.8 FATAL_ERROR)
+cmake_minimum_required (VERSION 2.8.10 FATAL_ERROR)
 
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 set(CMAKE_DISABLE_SOURCE_CHANGES  ON)
@@ -7,6 +7,19 @@ set (ENABLE_MPI ON)
 set (ENABLE_OMP OFF)
 
 project (epa CXX)
+
+#check for minimum compiler versions
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  set(EPA_COMPILER_TARGET_VERSION "4.9")
+  if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS EPA_COMPILER_TARGET_VERSION)
+    message (FATAL_ERROR "${CMAKE_CXX_COMPILER_ID} compiler too old! Minimum required: ${EPA_COMPILER_TARGET_VERSION}")
+  endif()
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  set(EPA_COMPILER_TARGET_VERSION "3.8")
+  if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS EPA_COMPILER_TARGET_VERSION)
+    message (FATAL_ERROR "${CMAKE_CXX_COMPILER_ID} compiler too old! Minimum required: ${EPA_COMPILER_TARGET_VERSION}")
+  endif()
+endif()
 
 # set (epa_VERSION_MAJOR 0)
 # set (epa_VERSION_MINOR 1)
