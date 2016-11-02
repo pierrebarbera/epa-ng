@@ -3,7 +3,7 @@ cmake_minimum_required (VERSION 2.8.10 FATAL_ERROR)
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 set(CMAKE_DISABLE_SOURCE_CHANGES  ON)
 
-set (ENABLE_MPI ON)
+set (ENABLE_MPI OFF)
 set (ENABLE_OMP OFF)
 
 project (epa CXX)
