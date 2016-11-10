@@ -169,9 +169,11 @@ Placement Tiny_Tree::place(const Sequence &s)
   vector<unsigned int> param_indices(model_.rate_cats(), 0);
 
   Range range(0, partition_->sites);
-  // if (ranged_computation_)
-  //   range = get_valid_range(s.sequence());
+  if (ranged_computation_)
+  {
+    range = get_valid_range(s.sequence());
     // range = superset(get_valid_range(s.sequence()), reference_tip_range_);
+  }
 
   if (opt_branches_)
   {
@@ -201,7 +203,14 @@ Placement Tiny_Tree::place(const Sequence &s)
 
     // optimize the branches using pnly the portion of the sites specified by range
     logl = call_focused(partition_.get(), range, optimize_branch_triplet, virtual_root);
-    // logl = optimize_branch_triplet(partition_.get(), virtual_root);
+
+    logl = pll_compute_edge_loglikelihood(partition_,
+                                  virtual_root->back->clv_index,
+                                  PLL_SCALE_BUFFER_NONE, 
+                                  virtual_root->clv_index,
+                                  virtual_root->scaler_index,
+                                  virtual_root->pmatrix_index,
+                                  &param_indices[0], nullptr);
 
     assert(tree_->length >= 0);
     assert(tree_->next->length >= 0);
