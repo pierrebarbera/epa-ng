@@ -34,7 +34,7 @@ class Tiny_Tree
 public:
   Tiny_Tree(pll_utree_t * edge_node, unsigned int branch_id, Tree& reference_tree,
     bool opt_branches) : Tiny_Tree(edge_node, branch_id, reference_tree,
-    opt_branches, Range(0, reference_tree.partition()->sites), false) {};
+    opt_branches, Range(0, reference_tree.partition()->sites), true) {};
   Tiny_Tree(pll_utree_t * edge_node , unsigned int branch_id, Tree& reference_tree,
     bool opt_branches, Range reference_tip_range, bool ranged);
 
