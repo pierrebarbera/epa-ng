@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <unordered_map>
 
 #include "pllhead.hpp"
 #include "Sequence.hpp"
@@ -61,5 +62,7 @@ private:
   bool tip_tip_case_ = false;
   bool ranged_computation_;
   unsigned int branch_id_;
+
+  std::unordered_map<char, std::vector<double>> lookup_;
 
 };

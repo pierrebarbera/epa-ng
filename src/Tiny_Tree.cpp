@@ -1,6 +1,7 @@
 #include "Tiny_Tree.hpp"
 
 #include <vector>
+#include <algorithm>
 
 #include "tiny_util.hpp"
 #include "pll_util.hpp"
@@ -10,6 +11,52 @@
 #include "set_manipulators.hpp"
 
 using namespace std;
+
+static void precompute_sites_static(char nt, vector<double>& result, 
+  pll_partition_t* partition, pll_utree_t* tree, Model& model)
+{
+  const size_t sites = partition->sites;
+  result.clear();
+  result.resize(sites);
+  string seq(sites, nt);
+
+  vector<unsigned int> param_indices(model.rate_cats(), 0);
+
+  auto err_check = pll_set_tip_states(partition, tree->back->clv_index, model.char_map(),
+                     seq.c_str());
+
+  if (err_check == PLL_FAILURE)
+    throw runtime_error{"Set tip states during sites precompution failed!"};
+
+  pll_compute_edge_loglikelihood(partition,
+                                  tree->back->clv_index,
+                                  PLL_SCALE_BUFFER_NONE, 
+                                  tree->clv_index,
+                                  tree->scaler_index,
+                                  tree->pmatrix_index,
+                                  &param_indices[0], &result[0]);
+}
+
+static double sum_precomputed_sitelk(unordered_map<char, vector<double>>& lookup, const Sequence& s)
+{
+  string seq = s.sequence();
+  assert(seq.length() == lookup['A'].size());
+  assert(lookup['G'].size() == lookup['A'].size());
+  assert(lookup['C'].size() == lookup['A'].size());
+  assert(lookup['T'].size() == lookup['A'].size());
+  assert(lookup['-'].size() == lookup['A'].size());
+
+  transform(seq.begin(), seq.end(),seq.begin(), ::toupper);
+  double sum = 0;
+  for (size_t i = 0; i < seq.length(); ++i)
+  {
+    auto search = lookup.find(seq[i]);
+    if (search == lookup.end())
+      throw runtime_error{"Invalid character during sum_sitelk"};
+    sum += search->second[i];
+  }
+  return sum;
+}
 
 Tiny_Tree::Tiny_Tree(pll_utree_t *edge_node, unsigned int branch_id, Tree& reference_tree,
                      bool opt_branches, Range reference_tip_range, bool ranged)
@@ -65,21 +112,18 @@ Tiny_Tree::Tiny_Tree(pll_utree_t *edge_node, unsigned int branch_id, Tree& refer
   vector<unsigned int> param_indices(model_.rate_cats(), 0);
   pll_update_prob_matrices(partition_.get(), &param_indices[0], matrix_indices, branch_lengths, 3);
 
-  if (!opt_branches_)
-    pll_update_partials(partition_.get(), &op, 1);
-    // use update_partials to compute the clv pointing toward the new tip
+  // use update_partials to compute the clv pointing toward the new tip
+  pll_update_partials(partition_.get(), &op, 1);
+
+  // precompute all possible site likelihoods
+  for (char nt : {'A', 'C', 'G', 'T', '-'})
+    precompute_sites_static(nt, lookup_[nt], partition_.get(), tree_.get(), model_);
 }
 
-Placement Tiny_Tree::place(const Sequence &s) {
+Placement Tiny_Tree::place(const Sequence &s) 
+{
   assert(partition_);
   assert(tree_);
-
-  // init the new tip with s.sequence(), branch length
-  auto err_check = pll_set_tip_states(partition_.get(), tree_->back->clv_index, model_.char_map(),
-                     s.sequence().c_str());
-
-  if (err_check == PLL_FAILURE)
-    throw runtime_error{"Set tip states during placement failed!"};
 
   auto distal_length = tree_->next->length;
   auto pendant_length = tree_->length;
@@ -110,6 +154,13 @@ Placement Tiny_Tree::place(const Sequence &s) {
       virtual_root = tree_->next->next;
     }
 
+    // init the new tip with s.sequence(), branch length
+    auto err_check = pll_set_tip_states(partition_.get(), tree_->back->clv_index, model_.char_map(),
+                       s.sequence().c_str());
+
+    if (err_check == PLL_FAILURE)
+      throw runtime_error{"Set tip states during placement failed!"};
+
     // optimize the branches using pnly the portion of the sites specified by range
     logl = call_focused(partition_.get(), range, optimize_branch_triplet, virtual_root);
     // logl = optimize_branch_triplet(partition_.get(), virtual_root);
@@ -126,15 +177,18 @@ Placement Tiny_Tree::place(const Sequence &s) {
     pendant_length = tree_->length;
 
     reset_triplet_lengths(tree_.get(), partition_.get(), original_branch_length_);
-    }
-    else
-    logl = call_focused(partition_.get(), range, pll_compute_edge_loglikelihood,
-                                          tree_->back->clv_index,
-                                          PLL_SCALE_BUFFER_NONE, // scaler_index
-                                          tree_->clv_index,
-                                          tree_->scaler_index, // scaler_index
-                                          tree_->pmatrix_index,
-                                          &param_indices[0], nullptr); // freq index
+  }
+  else
+  {
+    logl = sum_precomputed_sitelk(lookup_, s);
+  }
+  // logl = call_focused(partition_.get(), range, pll_compute_edge_loglikelihood,
+  //                                       tree_->back->clv_index,
+  //                                       PLL_SCALE_BUFFER_NONE, // scaler_index
+  //                                       tree_->clv_index,
+  //                                       tree_->scaler_index, // scaler_index
+  //                                       tree_->pmatrix_index,
+  //                                       &param_indices[0], nullptr); // freq index
 
   assert(distal_length <= original_branch_length_);
   assert(distal_length >= 0.0);

@@ -13,6 +13,7 @@
 #include "src/epa_pll_util.hpp"
 
 #include <tuple>
+#include <limits>
 
 using namespace std;
 
@@ -37,6 +38,8 @@ TEST(Tiny_Tree, place_heuristic)
   {
     auto place = tt.place(x);
     EXPECT_NE(place.likelihood(), 0.0);
+    // printf("lk: %f\n", place.likelihood());
+    ASSERT_NE (place.likelihood(), -numeric_limits<double>::infinity());
     EXPECT_NE(place.distal_length(), 0.0);
     EXPECT_NE(place.pendant_length(), 0.0);
   }
