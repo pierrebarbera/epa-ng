@@ -53,7 +53,7 @@ static double sum_precomputed_sitelk(vector<vector<double>>& lookup, const Seque
   assert(lookup[NT_T].size() == lookup[NT_A].size());
   assert(lookup[NT_GAP].size() == lookup[NT_A].size());
 
-  transform(seq.begin(), seq.end(), seq.begin(), ::toupper);
+  // transform(seq.begin(), seq.end(), seq.begin(), ::toupper);
   double sum = 0;
   for (size_t i = 0; i < seq.length(); ++i)
   {
@@ -61,15 +61,19 @@ static double sum_precomputed_sitelk(vector<vector<double>>& lookup, const Seque
     switch (seq[i])
     {
       case 'A':
+      case 'a':
         c = NT_A;
         break;
       case 'C':
+      case 'c':
         c = NT_C;
         break;
       case 'G':
+      case 'g':
         c = NT_G;
         break;
       case 'T':
+      case 't':
         c = NT_T;
         break;
       case '-':
@@ -137,16 +141,21 @@ Tiny_Tree::Tiny_Tree(pll_utree_t *edge_node, unsigned int branch_id, Tree& refer
   vector<unsigned int> param_indices(model_.rate_cats(), 0);
   pll_update_prob_matrices(partition_.get(), &param_indices[0], matrix_indices, branch_lengths, 3);
 
-  // use update_partials to compute the clv pointing toward the new tip
-  pll_update_partials(partition_.get(), &op, 1);
 
-  lookup_.clear();
-  lookup_.resize(5);
+  if (!opt_branches)
+  {
+    // use update_partials to compute the clv pointing toward the new tip
+    pll_update_partials(partition_.get(), &op, 1);
+   
+    lookup_.clear();
+    lookup_.resize(5);
 
-  // precompute all possible site likelihoods
-  size_t i = 0;
-  for (char nt : NT_MAP)
-    precompute_sites_static(nt, lookup_[i++], partition_.get(), tree_.get(), model_);
+    // precompute all possible site likelihoods
+    size_t i = 0;
+    for (char nt : NT_MAP)
+      precompute_sites_static(nt, lookup_[i++], partition_.get(), tree_.get(), model_); 
+  }
+  
 }
 
 Placement Tiny_Tree::place(const Sequence &s) 
