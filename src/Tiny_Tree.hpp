@@ -63,6 +63,6 @@ private:
   bool ranged_computation_;
   unsigned int branch_id_;
 
-  std::unordered_map<char, std::vector<double>> lookup_;
+  std::vector<std::vector<double>> lookup_;
 
 };

@@ -12,6 +12,13 @@
 
 using namespace std;
 
+static constexpr size_t NT_A = 0;
+static constexpr size_t NT_C = 1;
+static constexpr size_t NT_G = 2;
+static constexpr size_t NT_T = 3;
+static constexpr size_t NT_GAP = 4;
+static constexpr char NT_MAP[5] = {'A', 'C', 'G', 'T', '-'};
+
 static void precompute_sites_static(char nt, vector<double>& result, 
   pll_partition_t* partition, pll_utree_t* tree, Model& model)
 {
@@ -37,23 +44,41 @@ static void precompute_sites_static(char nt, vector<double>& result,
                                   &param_indices[0], &result[0]);
 }
 
-static double sum_precomputed_sitelk(unordered_map<char, vector<double>>& lookup, const Sequence& s)
+static double sum_precomputed_sitelk(vector<vector<double>>& lookup, const Sequence& s)
 {
   string seq = s.sequence();
-  assert(seq.length() == lookup['A'].size());
-  assert(lookup['G'].size() == lookup['A'].size());
-  assert(lookup['C'].size() == lookup['A'].size());
-  assert(lookup['T'].size() == lookup['A'].size());
-  assert(lookup['-'].size() == lookup['A'].size());
+  assert(seq.length() == lookup[NT_A].size());
+  assert(lookup[NT_G].size() == lookup[NT_A].size());
+  assert(lookup[NT_C].size() == lookup[NT_A].size());
+  assert(lookup[NT_T].size() == lookup[NT_A].size());
+  assert(lookup[NT_GAP].size() == lookup[NT_A].size());
 
-  transform(seq.begin(), seq.end(),seq.begin(), ::toupper);
+  transform(seq.begin(), seq.end(), seq.begin(), ::toupper);
   double sum = 0;
   for (size_t i = 0; i < seq.length(); ++i)
   {
-    auto search = lookup.find(seq[i]);
-    if (search == lookup.end())
-      throw runtime_error{"Invalid character during sum_sitelk"};
-    sum += search->second[i];
+    size_t c;
+    switch (seq[i])
+    {
+      case 'A':
+        c = NT_A;
+        break;
+      case 'C':
+        c = NT_C;
+        break;
+      case 'G':
+        c = NT_G;
+        break;
+      case 'T':
+        c = NT_T;
+        break;
+      case '-':
+        c = NT_GAP;
+        break;
+      default:
+        throw runtime_error{"derp"};
+    }
+    sum += lookup[c][i];
   }
   return sum;
 }
@@ -115,9 +140,13 @@ Tiny_Tree::Tiny_Tree(pll_utree_t *edge_node, unsigned int branch_id, Tree& refer
   // use update_partials to compute the clv pointing toward the new tip
   pll_update_partials(partition_.get(), &op, 1);
 
+  lookup_.clear();
+  lookup_.resize(5);
+
   // precompute all possible site likelihoods
-  for (char nt : {'A', 'C', 'G', 'T', '-'})
-    precompute_sites_static(nt, lookup_[nt], partition_.get(), tree_.get(), model_);
+  size_t i = 0;
+  for (char nt : NT_MAP)
+    precompute_sites_static(nt, lookup_[i++], partition_.get(), tree_.get(), model_);
 }
 
 Placement Tiny_Tree::place(const Sequence &s) 
