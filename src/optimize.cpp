@@ -50,6 +50,85 @@ static void traverse_update_partials(pll_utree_t * tree, pll_partition_t * parti
 
 }
 
+typedef struct
+{
+
+} epa_brent_params_t;
+
+static double epa_branch_target(void* parameters, double x)
+{
+  epa_brent_params_t* params = (epa_brent_params_t*)parameters;
+  double score = 0.0;
+
+  return score;
+}
+
+static double opt_branch_lengths_pplacer(pll_partition_t * partition, pll_utree_t * tree, unsigned int smoothings)
+{
+  double xmin,    /* min branch length */
+         xguess,  /* initial guess */
+         xmax,    /* max branch length */
+         xtol,    /* tolerance */
+         xres;    /* optimal found branch length */
+
+  
+  /* set parameters for N-R optimization */
+  pll_newton_tree_params_t params;
+  params.partition         = partition;
+  params.tree              = tree;
+  params.params_indices    = params_indices;
+  params.branch_length_min = PLLMOD_OPT_MIN_BRANCH_LEN;
+  params.branch_length_max = PLLMOD_OPT_MAX_BRANCH_LEN;
+  params.tolerance         = PLLMOD_OPT_TOL_BRANCH_LEN;
+  params.sumtable          = 0;
+
+  if (xguess < xmin || xguess > xmax)
+    xguess = PLLMOD_OPT_DEFAULT_BRANCH_LEN;
+
+  /* allocate the sumtable */
+  sites_alloc = partition->sites;
+  if (partition->attributes & PLL_ATTRIB_AB_FLAG)
+    sites_alloc += partition->states;
+
+  if ((params.sumtable = (double *) pll_aligned_alloc(
+       sites_alloc * partition->rate_cats * partition->states_padded *
+       sizeof(double), partition->alignment)) == NULL)
+  {
+    pllmod_set_error(PLL_ERROR_MEM_ALLOC,
+                     "Cannot allocate memory for bl opt variables");
+    return PLL_FAILURE;
+  }
+  while (smoothings)
+  {
+    /* set N-R parameters */
+    xmin = PLLMOD_OPT_MIN_BRANCH_LEN;
+    xmax = PLLMOD_OPT_MAX_BRANCH_LEN;
+    xtol = PLLMOD_OPT_TOL_BRANCH_LEN;
+    xguess = tree->length;
+
+    // minimize newton for pendant length
+    xres = pllmod_opt_minimize_newton(xmin, xguess, xmax, xtol,
+                                10, params,
+                                utree_derivative_func);
+
+    // minimize brent for proximal/distal
+    pllmod_opt_minimize_brent(double xmin,
+                               double xguess,
+                               double xmax,
+                               double xtol,
+                               double *fx,
+                               double *f2x,
+                               void * params,
+                               double (*target_funk)(
+                                   void *,
+                                   double))
+  }
+
+
+  /* deallocate sumtable */
+  pll_aligned_free(params.sumtable);
+}
+
 double optimize_branch_triplet(pll_partition_t * partition, pll_utree_t * tree)
 {
   if (!tree->next)

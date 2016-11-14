@@ -42,8 +42,6 @@ static const unordered_map<string, pair<const double*, const double*>> AA_RATE_F
   }
 );
 
-static const vector<string> VALID_SEQUENCE_TYPES = {"DNA", "AA"};
-
 Model::Model(string sequence_type, string model_id, string sub_matrix)
   : alpha_(1.0), base_frequencies_({0.25,0.25,0.25,0.25}),
     substitution_rates_({0.5,0.5,0.5,0.5,0.5,1.0})
@@ -54,8 +52,8 @@ Model::Model(string sequence_type, string model_id, string sub_matrix)
   transform(sequence_type.begin(), sequence_type.end(),sequence_type.begin(), ::toupper);
   transform(sub_matrix.begin(), sub_matrix.end(),sub_matrix.begin(), ::toupper);
 
-  if(sequence_type.compare(VALID_SEQUENCE_TYPES[0]) != 0 
-    and sequence_type.compare(VALID_SEQUENCE_TYPES[1]) != 0)
+  if(sequence_type.compare("DNA") != 0 
+    and sequence_type.compare("AA") != 0)
     throw runtime_error{string("Sequence data type not recognized! Input: ") + sequence_type};
 
 
@@ -101,7 +99,6 @@ void Model::base_frequencies(double *source, unsigned int length)
 
   for (size_t i = 0; i < length; ++i)
     base_frequencies_[i] = source[i];
-
 }
 
 void Model::substitution_rates(double *source, unsigned int length)
@@ -111,7 +108,6 @@ void Model::substitution_rates(double *source, unsigned int length)
 
   for (size_t i = 0; i < length; ++i)
     substitution_rates_[i] = source[i];
-
 }
 
 void Model::symmetries(int* source, unsigned int length)
@@ -121,5 +117,4 @@ void Model::symmetries(int* source, unsigned int length)
 
   for (size_t i = 0; i < length; ++i)
     subs_symmetries_[i] = source[i];
-
 }

@@ -204,6 +204,22 @@ Placement Tiny_Tree::place(const Sequence &s)
     // optimize the branches using pnly the portion of the sites specified by range
     logl = call_focused(partition_.get(), range, optimize_branch_triplet, virtual_root);
 
+    auto child1 = virtual_root->next;
+    auto child2 = virtual_root->next->next;
+
+    pll_operation_t op;
+    op.parent_clv_index = virtual_root->clv_index;
+    op.child1_clv_index = child1->clv_index;
+    op.child1_scaler_index = child1->scaler_index;
+    op.child2_clv_index = child2->clv_index;
+    op.child2_scaler_index = child2->scaler_index;
+    op.parent_scaler_index = virtual_root->scaler_index;
+    op.child1_matrix_index = child1->pmatrix_index;
+    op.child2_matrix_index = child2->pmatrix_index;
+
+    // use update_partials to compute the clv pointing toward the new tip
+    pll_update_partials(partition_.get(), &op, 1);
+
     logl = pll_compute_edge_loglikelihood(partition_.get(),
                                   virtual_root->back->clv_index,
                                   PLL_SCALE_BUFFER_NONE, 
