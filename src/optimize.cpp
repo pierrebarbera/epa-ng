@@ -52,52 +52,139 @@ static void traverse_update_partials(pll_utree_t * tree, pll_partition_t * parti
 
 typedef struct
 {
+  pll_partition_t * partition;
+
+  pll_utree_t* score_node;
+  pll_utree_t* blo_node;
+  pll_utree_t* blo_antinode;
+
+  double original_length;
+
+  pll_operation_t* partial_op;
 
 } epa_brent_params_t;
 
 static double epa_branch_target(void* parameters, double x)
 {
   epa_brent_params_t* params = (epa_brent_params_t*)parameters;
-  double score = 0.0;
 
-  return score;
+  // set length of proximal to x
+  params->blo_node->length = x;
+
+  // and length of distal to (original_length - x)
+  params->blo_antinode->length = params->original_length - x;
+
+  // recompute p matrices for distal and proximal
+  double branch_lengths[2] = {params->blo_node->length, params->blo_antinode->length};
+  unsigned int matrix_indices[2] = {params->blo_node->pmatrix_index, params->blo_antinode->pmatrix_index};
+  vector<unsigned int> param_indices(params->partition->rate_cats, 0);
+  
+  pll_update_prob_matrices(params->partition, &param_indices[0], matrix_indices, branch_lengths, 2);
+
+  // recompute partial toward pendant
+  pll_update_partials(params->partition, params->partial_op, 1);
+
+  // compute logl on branch toward pendant
+  return -pll_compute_edge_loglikelihood(params->partition,
+                                        params->score_node->clv_index,
+                                        params->score_node->scaler_index,
+                                        params->score_node->back->clv_index,
+                                        params->score_node->back->scaler_index,
+                                        params->score_node->pmatrix_index,
+                                        &param_indices[0],
+                                        NULL);
 }
 
+static void utree_derivative_func (void * parameters, double proposal,
+                                     double *df, double *ddf)
+{
+  pll_newton_tree_params_t * params = (pll_newton_tree_params_t *) parameters;
+  pll_compute_likelihood_derivatives (
+      params->partition,
+      params->tree->scaler_index,
+      params->tree->back->scaler_index,
+      proposal,
+      params->params_indices,
+      params->sumtable, df, ddf);
+}
+
+/**
+ * Branch length optimization akin to how pplacer does it: slide the pendant branch along
+ * insertion branch of the reference tree, optimize pendant length fully.
+ * 
+ * @param  partition  the partition
+ * @param  tree       the tree structure
+ * @param  smoothings maximum number of iterations
+ * @return            negative log likelihood after optimization
+ */
 static double opt_branch_lengths_pplacer(pll_partition_t * partition, pll_utree_t * tree, unsigned int smoothings)
 {
+  double loglikelihood = 0.0, new_loglikelihood;
   double xmin,    /* min branch length */
          xguess,  /* initial guess */
          xmax,    /* max branch length */
          xtol,    /* tolerance */
          xres;    /* optimal found branch length */
 
-  
-  /* set parameters for N-R optimization */
-  pll_newton_tree_params_t params;
-  params.partition         = partition;
-  params.tree              = tree;
-  params.params_indices    = params_indices;
-  params.branch_length_min = PLLMOD_OPT_MIN_BRANCH_LEN;
-  params.branch_length_max = PLLMOD_OPT_MAX_BRANCH_LEN;
-  params.tolerance         = PLLMOD_OPT_TOL_BRANCH_LEN;
-  params.sumtable          = 0;
+  const auto original_length = tree->next->length * 2;
+  vector<unsigned int> param_indices(partition->rate_cats, 0);
 
-  if (xguess < xmin || xguess > xmax)
-    xguess = PLLMOD_OPT_DEFAULT_BRANCH_LEN;
+  
+  /* get the initial likelihood score */
+  loglikelihood = pll_compute_edge_loglikelihood (partition,
+                                                  tree->back->clv_index,
+                                                  tree->back->scaler_index,
+                                                  tree->clv_index,
+                                                  tree->scaler_index,
+                                                  tree->pmatrix_index,
+                                                  &param_indices[0],
+                                                  NULL);
+
+  /* set parameters for N-R optimization */
+  pll_newton_tree_params_t nr_params;
+  nr_params.partition         = partition;
+  nr_params.tree              = tree;
+  nr_params.params_indices    = &param_indices[0];
+  nr_params.branch_length_min = PLLMOD_OPT_MIN_BRANCH_LEN;
+  nr_params.branch_length_max = PLLMOD_OPT_MAX_BRANCH_LEN;
+  nr_params.tolerance         = PLLMOD_OPT_TOL_BRANCH_LEN;
+  nr_params.sumtable          = nullptr;
+
+  unsigned int pendant_pmatrix[1] = {tree->pmatrix_index};
+
+  /* parameters for brent part of optimization */
+  pll_operation_t op;
+  op.parent_clv_index = tree->clv_index;
+  op.child1_clv_index = tree->next->clv_index;
+  op.child1_scaler_index = tree->next->scaler_index;
+  op.child2_clv_index = tree->next->next->clv_index;
+  op.child2_scaler_index = tree->next->next->scaler_index;
+  op.parent_scaler_index = tree->scaler_index;
+  op.child1_matrix_index = tree->next->pmatrix_index;
+  op.child2_matrix_index = tree->next->next->pmatrix_index;
+
+  epa_brent_params_t brent_params;
+  brent_params.partition = partition;
+  brent_params.original_length = original_length;
+  brent_params.score_node = tree;
+  brent_params.blo_node = tree->next;
+  brent_params.blo_antinode = tree->next->next;
+  brent_params.partial_op = &op;
 
   /* allocate the sumtable */
-  sites_alloc = partition->sites;
+  auto sites_alloc = partition->sites;
   if (partition->attributes & PLL_ATTRIB_AB_FLAG)
     sites_alloc += partition->states;
 
-  if ((params.sumtable = (double *) pll_aligned_alloc(
+  if ((nr_params.sumtable = (double *) pll_aligned_alloc(
        sites_alloc * partition->rate_cats * partition->states_padded *
        sizeof(double), partition->alignment)) == NULL)
   {
-    pllmod_set_error(PLL_ERROR_MEM_ALLOC,
-                     "Cannot allocate memory for bl opt variables");
-    return PLL_FAILURE;
+    throw runtime_error{"Cannot allocate memory for bl opt variables"};
   }
+
+  double score = 0.0, f2x = 0.0;
+
   while (smoothings)
   {
     /* set N-R parameters */
@@ -105,28 +192,83 @@ static double opt_branch_lengths_pplacer(pll_partition_t * partition, pll_utree_
     xmax = PLLMOD_OPT_MAX_BRANCH_LEN;
     xtol = PLLMOD_OPT_TOL_BRANCH_LEN;
     xguess = tree->length;
+    if (xguess < xmin || xguess > xmax)
+    xguess = PLLMOD_OPT_DEFAULT_BRANCH_LEN;
+
+    /* prepare sumtable for current branch */
+    pll_update_sumtable (partition,
+                         tree->clv_index,
+                         tree->back->clv_index,
+                         &param_indices[0],
+                         nr_params.sumtable);
 
     // minimize newton for pendant length
     xres = pllmod_opt_minimize_newton(xmin, xguess, xmax, xtol,
-                                10, params,
+                                10, &nr_params,
                                 utree_derivative_func);
+    assert(xres >= 0.0);
+    tree->length = xres;
+
+    // update pmatrix for pendant
+    double pendant_length[1] = {tree->length};
+    pll_update_prob_matrices(partition, &param_indices[0], pendant_pmatrix, pendant_length, 1);
+
+    /* set BRENT parameters */
+    xmin = PLLMOD_OPT_MIN_BRANCH_LEN;
+    xmax = original_length;
+    xtol = PLLMOD_OPT_TOL_BRANCH_LEN;
+    xguess = tree->next->length;
+    if (xguess < xmin || xguess > xmax)
+    xguess = PLLMOD_OPT_DEFAULT_BRANCH_LEN;
 
     // minimize brent for proximal/distal
-    pllmod_opt_minimize_brent(double xmin,
-                               double xguess,
-                               double xmax,
-                               double xtol,
-                               double *fx,
-                               double *f2x,
-                               void * params,
-                               double (*target_funk)(
-                                   void *,
-                                   double))
+    // returns best value for x and score, but PARTITION COULD BE IN INVALID STATE
+    xres = pllmod_opt_minimize_brent(xmin,
+                              xguess,
+                              xmax,
+                              xtol,
+                              &score,
+                              &f2x,
+                              &brent_params,
+                              epa_branch_target);
+
+    assert(xres >= 0.0);
+
+    // tree->next->length = xres;
+    // tree->next->next->length = original_length - xres;
+    // new_loglikelihood = -score;
+
+    new_loglikelihood = -epa_branch_target(&brent_params, xres);
+
+    // update distal/proximal pmatrices one last time
+    double branch_lengths[2] = {brent_params.blo_node->length, brent_params.blo_antinode->length};
+    unsigned int matrix_indices[2] = {brent_params.blo_node->pmatrix_index, brent_params.blo_antinode->pmatrix_index};
+    pll_update_prob_matrices(brent_params.partition, &param_indices[0], matrix_indices, branch_lengths, 2);
+
+    printf("logl: %lf\n", new_loglikelihood);
+
+    if(!(new_loglikelihood - loglikelihood > new_loglikelihood * 1e-14))
+    {
+      printf("new_logl: %lf logl: %lf\n", new_loglikelihood, loglikelihood);
+      throw runtime_error{"logl divergence too high during pplacer opt"};
+    }
+
+    --smoothings;
+
+    /* check convergence */
+    if (fabs (new_loglikelihood - loglikelihood) < PLLMOD_OPT_TOL_BRANCH_LEN) 
+      smoothings = 0;
+
+    loglikelihood = new_loglikelihood;
+
   }
 
+  
 
   /* deallocate sumtable */
-  pll_aligned_free(params.sumtable);
+  pll_aligned_free(nr_params.sumtable);
+
+  return loglikelihood;
 }
 
 double optimize_branch_triplet(pll_partition_t * partition, pll_utree_t * tree)
@@ -147,16 +289,18 @@ double optimize_branch_triplet(pll_partition_t * partition, pll_utree_t * tree)
   auto cur_logl = -numeric_limits<double>::infinity();
   int smoothings = 32;
 
-  cur_logl = -pllmod_opt_optimize_branch_lengths_local (
-                                                  partition,
-                                                  tree,
-                                                  &param_indices[0],
-                                                  PLLMOD_OPT_MIN_BRANCH_LEN,
-                                                  PLLMOD_OPT_MAX_BRANCH_LEN,
-                                                  OPT_BRANCH_EPSILON,
-                                                  smoothings,
-                                                  1, // radius
-                                                  1); // keep update
+  // cur_logl = -pllmod_opt_optimize_branch_lengths_local (
+  //                                                 partition,
+  //                                                 tree,
+  //                                                 &param_indices[0],
+  //                                                 PLLMOD_OPT_MIN_BRANCH_LEN,
+  //                                                 PLLMOD_OPT_MAX_BRANCH_LEN,
+  //                                                 OPT_BRANCH_EPSILON,
+  //                                                 smoothings,
+  //                                                 1, // radius
+  //                                                 1); // keep update
+
+  cur_logl = opt_branch_lengths_pplacer(partition, tree, smoothings);
  
   return cur_logl;
 }
