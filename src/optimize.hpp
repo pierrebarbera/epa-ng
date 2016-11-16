@@ -9,6 +9,8 @@ constexpr double OPT_EPSILON = 1.0;
 constexpr double OPT_PARAM_EPSILON = 1e-4;
 constexpr double OPT_BRANCH_EPSILON = 1e-1;
 constexpr double OPT_FACTR = 1e7;
+constexpr double OPT_RATE_MIN = 1e-4;
+constexpr double OPT_RATE_MAX = 1e6;
 
 // interface
 void optimize(Model& model, pll_utree_t * tree, pll_partition_t * partition,

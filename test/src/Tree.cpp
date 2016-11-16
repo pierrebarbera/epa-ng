@@ -7,6 +7,7 @@
 
 #include <string>
 #include <vector>
+#include <limits>
 
 using namespace std;
 
@@ -30,7 +31,8 @@ TEST(Tree, place)
     int count = 0;
     for (auto p : pquery)
     {
-      EXPECT_NE(p.likelihood(), 0.0);
+      ASSERT_NE(p.likelihood(), -numeric_limits<double>::infinity());
+      ASSERT_NE(p.likelihood(), 0.0);
       count++;
     }
     EXPECT_EQ(count, tree.nums().branches);
@@ -61,7 +63,8 @@ TEST(Tree, place_prescore)
     int count = 0;
     for (auto p : pquery)
     {
-      EXPECT_NE(p.likelihood(), 0.0);
+      ASSERT_NE(p.likelihood(), -numeric_limits<double>::infinity());
+      ASSERT_NE(p.likelihood(), 0.0);
       count++;
     }
     EXPECT_EQ(count, 1);
@@ -157,6 +160,8 @@ TEST(Tree, place_from_binary)
         {
           found_p = true;
           read_place = p;
+          ASSERT_NE(p.likelihood(), -numeric_limits<double>::infinity());
+          ASSERT_NE(p.likelihood(), 0.0);
         }
       }
       ASSERT_TRUE(found_p);
