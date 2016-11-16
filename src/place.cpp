@@ -113,7 +113,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
   Sample sample;
 
   Work all_work(std::make_pair(0, num_branches), std::make_pair(0, chunk_size));
-  Work first_placement_work;
+  Work& first_placement_work = all_work;
   Work second_placement_work; // dummy structure to be filled during operation
   std::vector<std::string> part_names; // filenames of partial results
 
@@ -295,6 +295,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     }
 
 #endif // __MPI
+    second_placement_work.clear();
     sample.clear();
     msa_stream.clear();
     lgr.dbg() << "Chunk " << chunk_num << " done!" << std::endl;
