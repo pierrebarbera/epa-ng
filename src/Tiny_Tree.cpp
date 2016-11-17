@@ -141,12 +141,11 @@ Tiny_Tree::Tiny_Tree(pll_utree_t *edge_node, unsigned int branch_id, Tree& refer
   vector<unsigned int> param_indices(model_.rate_cats(), 0);
   pll_update_prob_matrices(partition_.get(), &param_indices[0], matrix_indices, branch_lengths, 3);
 
+  // use update_partials to compute the clv pointing toward the new tip
+  pll_update_partials(partition_.get(), &op, 1);
 
   if (!opt_branches)
   {
-    // use update_partials to compute the clv pointing toward the new tip
-    pll_update_partials(partition_.get(), &op, 1);
-   
     lookup_.clear();
     lookup_.resize(5);
 
@@ -185,13 +184,13 @@ Placement Tiny_Tree::place(const Sequence &s)
       */
     auto virtual_root = tree_.get();
 
-    if (tip_tip_case_)
+    if (tip_tip_case_) // TODO cant be used with pplacer blo
     {
       /* (cont. from (*))... however in the tip-tip case we want that virtual root to be toward the non-tip
         node of the reference tree. Thus virtual_root needs to reflect that.
         optimize_branch_triplet then takes care of the single computation operation for us
         using that node.*/
-      virtual_root = tree_->next->next;
+      // virtual_root = tree_->next->next;
     }
 
     // init the new tip with s.sequence(), branch length
@@ -204,29 +203,18 @@ Placement Tiny_Tree::place(const Sequence &s)
     // optimize the branches using pnly the portion of the sites specified by range
     logl = call_focused(partition_.get(), range, optimize_branch_triplet, virtual_root);
 
-    auto child1 = virtual_root->next;
-    auto child2 = virtual_root->next->next;
+    auto child1 = virtual_root->next->back;
+    auto child2 = virtual_root->next->next->back;
 
     pll_operation_t op;
     op.parent_clv_index = virtual_root->clv_index;
+    op.parent_scaler_index = virtual_root->scaler_index;
     op.child1_clv_index = child1->clv_index;
     op.child1_scaler_index = child1->scaler_index;
     op.child2_clv_index = child2->clv_index;
     op.child2_scaler_index = child2->scaler_index;
-    op.parent_scaler_index = virtual_root->scaler_index;
     op.child1_matrix_index = child1->pmatrix_index;
     op.child2_matrix_index = child2->pmatrix_index;
-
-    // use update_partials to compute the clv pointing toward the new tip
-    pll_update_partials(partition_.get(), &op, 1);
-
-    logl = pll_compute_edge_loglikelihood(partition_.get(),
-                                  virtual_root->back->clv_index,
-                                  PLL_SCALE_BUFFER_NONE, 
-                                  virtual_root->clv_index,
-                                  virtual_root->scaler_index,
-                                  virtual_root->pmatrix_index,
-                                  &param_indices[0], nullptr);
 
     assert(tree_->length >= 0);
     assert(tree_->next->length >= 0);
@@ -240,18 +228,13 @@ Placement Tiny_Tree::place(const Sequence &s)
     pendant_length = tree_->length;
 
     reset_triplet_lengths(tree_.get(), partition_.get(), original_branch_length_);
+    // re-update the partial
+    pll_update_partials(partition_.get(), &op, 1);
   }
   else
   {
     logl = sum_precomputed_sitelk(lookup_, s);
   }
-  // logl = call_focused(partition_.get(), range, pll_compute_edge_loglikelihood,
-  //                                       tree_->back->clv_index,
-  //                                       PLL_SCALE_BUFFER_NONE, // scaler_index
-  //                                       tree_->clv_index,
-  //                                       tree_->scaler_index, // scaler_index
-  //                                       tree_->pmatrix_index,
-  //                                       &param_indices[0], nullptr); // freq index
 
   assert(distal_length <= original_branch_length_);
   assert(distal_length >= 0.0);
