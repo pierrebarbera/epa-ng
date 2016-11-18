@@ -22,7 +22,7 @@
 #endif
 
 static void place(const Work& to_place, MSA_Stream& msa, Tree& reference_tree, 
-  const std::vector<pll_utree_t *>& branches, Sample& sample, bool thorough)
+  const std::vector<pll_utree_t *>& branches, Sample& sample, bool do_blo, bool sliding_blo)
 {
 
 #ifdef __OMP
@@ -44,7 +44,7 @@ static void place(const Work& to_place, MSA_Stream& msa, Tree& reference_tree,
     for (const auto& pair : work_parts[i])
     {
       auto branch_id = pair.first;
-      auto branch = Tiny_Tree(branches[branch_id], branch_id, reference_tree, thorough);
+      auto branch = Tiny_Tree(branches[branch_id], branch_id, reference_tree, do_blo, sliding_blo);
       for (const auto& seq_id : pair.second) 
         sample_parts[i].add_placement(seq_id, branch.place(msa[seq_id]));
     }
@@ -149,7 +149,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     first_placement_work = all_work;
 #endif //__MPI    
     
-    place(first_placement_work, msa_stream, reference_tree, branches, sample, !options.prescoring);
+    place(first_placement_work, msa_stream, reference_tree, branches, sample, !options.prescoring, options.sliding_blo);
 
 #ifdef __MPI
     // MPI: split the result and send the part to correct aggregate node
@@ -204,7 +204,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
 #endif // __MPI
     if (options.prescoring)
     {
-      place(second_placement_work, msa_stream, reference_tree, branches, sample, true);
+      place(second_placement_work, msa_stream, reference_tree, branches, sample, true, options.sliding_blo);
     }
 #ifdef __MPI
     if(options.prescoring)
@@ -359,7 +359,7 @@ Sample place(Tree& reference_tree, MSA& query_msa_)
   // build all tiny trees with corresponding edges
   std::vector<Tiny_Tree> insertion_trees;
   for (size_t branch_id = 0; branch_id < num_branches; ++branch_id)
-    insertion_trees.emplace_back(branches[branch_id], branch_id, reference_tree, !options.prescoring);
+    insertion_trees.emplace_back(branches[branch_id], branch_id, reference_tree, !options.prescoring, options.sliding_blo);
     /* clarification: last arg here is a flag specifying whether to optimize the branches.
       we don't want that if the mode is prescoring */
 

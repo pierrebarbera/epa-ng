@@ -88,10 +88,10 @@ static double sum_precomputed_sitelk(vector<vector<double>>& lookup, const Seque
 }
 
 Tiny_Tree::Tiny_Tree(pll_utree_t *edge_node, unsigned int branch_id, Tree& reference_tree,
-                     bool opt_branches, Range reference_tip_range, bool ranged)
+                     bool opt_branches, Range reference_tip_range, bool ranged, bool sliding_blo)
     : partition_(nullptr, tiny_partition_destroy), tree_(nullptr, utree_destroy), opt_branches_(opt_branches)
-    , model_(reference_tree.model())
-    , reference_tip_range_(reference_tip_range), ranged_computation_(ranged), branch_id_(branch_id)
+    , model_(reference_tree.model()), reference_tip_range_(reference_tip_range), ranged_computation_(ranged)
+    , sliding_blo_(sliding_blo), branch_id_(branch_id)
 {
   original_branch_length_ = (edge_node->length < 2*PLLMOD_OPT_MIN_BRANCH_LEN) ?
     2*PLLMOD_OPT_MIN_BRANCH_LEN : edge_node->length;
@@ -201,20 +201,7 @@ Placement Tiny_Tree::place(const Sequence &s)
       throw runtime_error{"Set tip states during placement failed!"};
 
     // optimize the branches using pnly the portion of the sites specified by range
-    logl = call_focused(partition_.get(), range, optimize_branch_triplet, virtual_root);
-
-    auto child1 = virtual_root->next->back;
-    auto child2 = virtual_root->next->next->back;
-
-    pll_operation_t op;
-    op.parent_clv_index = virtual_root->clv_index;
-    op.parent_scaler_index = virtual_root->scaler_index;
-    op.child1_clv_index = child1->clv_index;
-    op.child1_scaler_index = child1->scaler_index;
-    op.child2_clv_index = child2->clv_index;
-    op.child2_scaler_index = child2->scaler_index;
-    op.child1_matrix_index = child1->pmatrix_index;
-    op.child2_matrix_index = child2->pmatrix_index;
+    logl = call_focused(partition_.get(), range, optimize_branch_triplet, virtual_root, sliding_blo_);
 
     assert(tree_->length >= 0);
     assert(tree_->next->length >= 0);
@@ -228,7 +215,21 @@ Placement Tiny_Tree::place(const Sequence &s)
     pendant_length = tree_->length;
 
     reset_triplet_lengths(tree_.get(), partition_.get(), original_branch_length_);
+    
     // re-update the partial
+    auto child1 = virtual_root->next->back;
+    auto child2 = virtual_root->next->next->back;
+
+    pll_operation_t op;
+    op.parent_clv_index = virtual_root->clv_index;
+    op.parent_scaler_index = virtual_root->scaler_index;
+    op.child1_clv_index = child1->clv_index;
+    op.child1_scaler_index = child1->scaler_index;
+    op.child1_matrix_index = child1->pmatrix_index;
+    op.child2_clv_index = child2->clv_index;
+    op.child2_scaler_index = child2->scaler_index;
+    op.child2_matrix_index = child2->pmatrix_index;
+
     pll_update_partials(partition_.get(), &op, 1);
   }
   else

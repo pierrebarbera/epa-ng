@@ -16,4 +16,4 @@ constexpr double OPT_RATE_MAX = 1e6;
 void optimize(Model& model, pll_utree_t * tree, pll_partition_t * partition,
   const Tree_Numbers& nums, const bool opt_branches, const bool opt_model);
 void compute_and_set_empirical_frequencies(pll_partition_t * partition, Model& model);
-double optimize_branch_triplet(pll_partition_t * partition, pll_utree_t * tree);
+double optimize_branch_triplet(pll_partition_t * partition, pll_utree_t * tree, bool sliding);
