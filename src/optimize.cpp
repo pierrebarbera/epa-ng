@@ -153,51 +153,37 @@ static double opt_branch_lengths_pplacer(pll_partition_t * partition, pll_utree_
                                                   score_node->scaler_index,
                                                   score_node->pmatrix_index,
                                                   &param_indices[0],
-                                                  NULL);
+                                                  nullptr);
 
   /* set parameters for N-R optimization */
   pll_newton_tree_params_t nr_params;
   nr_params.partition         = partition;
-  nr_params.tree              = score_node;
+  // nr_params.tree              = score_node;
   nr_params.params_indices    = &param_indices[0];
-  nr_params.branch_length_min = PLLMOD_OPT_MIN_BRANCH_LEN;
-  nr_params.branch_length_max = PLLMOD_OPT_MAX_BRANCH_LEN;
-  nr_params.tolerance         = tolerance;
+  // nr_params.branch_length_min = PLLMOD_OPT_MIN_BRANCH_LEN;
+  // nr_params.branch_length_max = PLLMOD_OPT_MAX_BRANCH_LEN;
+  // nr_params.tolerance         = tolerance;
   nr_params.sumtable          = nullptr;
 
-  unsigned int pendant_pmatrix[1] = {score_node->pmatrix_index};
+  pll_operation_t toward_score;
+  toward_score.parent_clv_index = score_node->clv_index;
+  toward_score.parent_scaler_index = score_node->scaler_index;
+  toward_score.child1_clv_index = blo_node->clv_index;
+  toward_score.child1_scaler_index = blo_node->scaler_index;
+  toward_score.child1_matrix_index = blo_node->pmatrix_index;
+  toward_score.child2_clv_index = blo_antinode->clv_index;
+  toward_score.child2_scaler_index = blo_antinode->scaler_index;
+  toward_score.child2_matrix_index = blo_antinode->pmatrix_index;
 
-  /* parameters for brent part of optimization */
-
-
-  pll_operation_t op;
-  op.parent_clv_index = score_node->clv_index;
-  op.parent_scaler_index = score_node->scaler_index;
-  op.child1_clv_index = blo_node->clv_index;
-  op.child1_scaler_index = blo_node->scaler_index;
-  op.child1_matrix_index = blo_node->pmatrix_index;
-  op.child2_clv_index = blo_antinode->clv_index;
-  op.child2_scaler_index = blo_antinode->scaler_index;
-  op.child2_matrix_index = blo_antinode->pmatrix_index;
-
-  pll_operation_t blo_node_op;
-  blo_node_op.parent_clv_index = blo_node->back->clv_index;
-  blo_node_op.parent_scaler_index = blo_node->back->scaler_index;
-  blo_node_op.child1_clv_index = score_node->back->clv_index;
-  blo_node_op.child1_scaler_index = score_node->back->scaler_index;
-  blo_node_op.child1_matrix_index = score_node->pmatrix_index;
-  blo_node_op.child2_clv_index = blo_antinode->clv_index;
-  blo_node_op.child2_scaler_index = blo_antinode->scaler_index;
-  blo_node_op.child2_matrix_index = blo_antinode->pmatrix_index;
-
-  epa_brent_params_t brent_params;
-  brent_params.partition = partition;
-  brent_params.original_length = original_length;
-  brent_params.score_node = score_node;
-  brent_params.blo_node = blo_node;
-  brent_params.blo_antinode = blo_antinode;
-  brent_params.partial_op = &op;
-  brent_params.param_indices = &param_indices[0];
+  pll_operation_t toward_blo_node;
+  toward_blo_node.parent_clv_index = blo_node->back->clv_index;
+  toward_blo_node.parent_scaler_index = blo_node->back->scaler_index;
+  toward_blo_node.child1_clv_index = score_node->back->clv_index;
+  toward_blo_node.child1_scaler_index = score_node->back->scaler_index;
+  toward_blo_node.child1_matrix_index = score_node->pmatrix_index;
+  toward_blo_node.child2_clv_index = blo_antinode->clv_index;
+  toward_blo_node.child2_scaler_index = blo_antinode->scaler_index;
+  toward_blo_node.child2_matrix_index = blo_antinode->pmatrix_index;
 
   /* allocate the sumtable */
   auto sites_alloc = partition->sites;
@@ -206,14 +192,10 @@ static double opt_branch_lengths_pplacer(pll_partition_t * partition, pll_utree_
 
   if ((nr_params.sumtable = (double *) pll_aligned_alloc(
        sites_alloc * partition->rate_cats * partition->states_padded *
-       sizeof(double), partition->alignment)) == NULL)
+       sizeof(double), partition->alignment)) == nullptr)
   {
     throw runtime_error{"Cannot allocate memory for bl opt variables"};
   }
-
-  double score = 0.0, f2x = 0.0;
-
-  // printf("Optimizing!\n");
 
   double lengths[3] = {blo_node->length, blo_antinode->length, score_node->length};
   uint p_indices[3] = {blo_node->pmatrix_index, blo_antinode->pmatrix_index, score_node->pmatrix_index};
@@ -223,50 +205,23 @@ static double opt_branch_lengths_pplacer(pll_partition_t * partition, pll_utree_
     auto old_blonode_length = blo_node->length;
     auto old_pendant_length = score_node->length;
 
-    // /* set BRENT parameters */
-    // xmin = PLLMOD_OPT_MIN_BRANCH_LEN;
-    // xmax = original_length;
-    // xtol = tolerance;
-    // xguess = blo_node->length;
-    // if (xguess < xmin || xguess > xmax)
-    //   xguess = PLLMOD_OPT_DEFAULT_BRANCH_LEN;
-
-    // // minimize brent for proximal/distal
-    // // returns best value for x and score, but PARTITION COULD BE IN INVALID STATE
-    // xres = pllmod_opt_minimize_brent(xmin,
-    //                           xguess,
-    //                           xmax,
-    //                           xtol,
-    //                           &score,
-    //                           &f2x,
-    //                           &brent_params,
-    //                           epa_branch_target);
-
-    // assert(xres >= 0.0);
-
-    // set_recomp_pmatrices_partial(&brent_params, xres);
-
     /*=============================================================
             NR for Pendant
      =============================================================*/
 
-    // calculate partial toward score branch (pendant) 
-    // pll_update_partials(partition, &op, 1);
-
-    /* set N-R parameters */
     xmin = PLLMOD_OPT_MIN_BRANCH_LEN;
     xmax = PLLMOD_OPT_MAX_BRANCH_LEN;
-    xtol = tolerance;
+    xtol = xmin/10.0;
     xguess = score_node->length;
     if (xguess < xmin || xguess > xmax)
       xguess = PLLMOD_OPT_DEFAULT_BRANCH_LEN;
 
     /* prepare sumtable for current branch */
-    pll_update_sumtable (partition,
-                         score_node->clv_index,
-                         score_node->back->clv_index,
-                         &param_indices[0],
-                         nr_params.sumtable);
+    pll_update_sumtable(partition,
+                        score_node->clv_index,
+                        score_node->back->clv_index,
+                        &param_indices[0],
+                        nr_params.sumtable);
 
     nr_params.tree              = score_node;
     nr_params.branch_length_min = xmin;
@@ -281,29 +236,29 @@ static double opt_branch_lengths_pplacer(pll_partition_t * partition, pll_utree_
 
     // update length and pmatrix for pendant
     lengths[2] = score_node->length = score_node->back->length = xres;
-    pll_update_prob_matrices(partition, &param_indices[0], p_indices + 2, lengths + 2, 1);
+    pll_update_prob_matrices(partition, &param_indices[0], &p_indices[2], &lengths[2], 1);
 
     /*=============================================================
-            NR for proximal
+            NR for Proximal
      =============================================================*/
 
     // calculate partial toward blo node (proximal)
-    pll_update_partials(partition, &blo_node_op, 1);
+    pll_update_partials(partition, &toward_blo_node, 1);
 
     /* set N-R parameters */
     xmin = PLLMOD_OPT_MIN_BRANCH_LEN;
     xmax = original_length;
-    xtol = tolerance;
+    xtol = xmin/10.0;
     xguess = blo_node->length;
     if (xguess < xmin || xguess > xmax)
       xguess = original_length / 2.0;
 
     /* prepare sumtable for current branch */
-    pll_update_sumtable (partition,
-                         blo_node->clv_index,
-                         blo_node->back->clv_index,
-                         &param_indices[0],
-                         nr_params.sumtable);
+    pll_update_sumtable(partition,
+                        blo_node->clv_index,
+                        blo_node->back->clv_index,
+                        &param_indices[0],
+                        nr_params.sumtable);
 
     nr_params.tree              = blo_node;
     nr_params.branch_length_min = xmin;
@@ -317,11 +272,15 @@ static double opt_branch_lengths_pplacer(pll_partition_t * partition, pll_utree_
     assert(xres >= 0.0);
 
     // update lengths and pmatrices for proximal/distal
-    lengths[0] = blo_node->length = blo_node->back->length = xres;
-    lengths[1] = blo_antinode->length = blo_antinode->back->length = original_length - xres;
+    lengths[0] = blo_node->length     = blo_node->back->length      = xres;
+    lengths[1] = blo_antinode->length = blo_antinode->back->length  = original_length - xres;
     pll_update_prob_matrices(partition, &param_indices[0], p_indices, lengths, 2);
 
-    pll_update_partials(partition, &op, 1);
+    /*=============================================================
+            Calculate the score
+     =============================================================*/
+
+    pll_update_partials(partition, &toward_score, 1);
 
     new_loglikelihood = -pll_compute_edge_loglikelihood(partition,
                                         score_node->back->clv_index,
@@ -330,14 +289,14 @@ static double opt_branch_lengths_pplacer(pll_partition_t * partition, pll_utree_
                                         score_node->scaler_index,
                                         score_node->pmatrix_index,
                                         &param_indices[0],
-                                        NULL);
+                                        nullptr);
 
     
-    if((new_loglikelihood - loglikelihood > new_loglikelihood * 1e-14))
+    if(new_loglikelihood - loglikelihood > new_loglikelihood * 1e-14)
     {
       // the NR procedure returned a worse logl than the previous iteration
       // thus we reset the branch lengths to the previous values and return
-      printf("opt returned worse logl! new_logl: %lf logl: %lf score: %lf\n", new_loglikelihood, loglikelihood, score);
+      printf("opt returned worse logl at %d. iter! new_logl: %lf logl: %lf\n", 32-smoothings+1, new_loglikelihood, loglikelihood);
 
       // reset lengths
       score_node->length = old_pendant_length;
@@ -346,21 +305,22 @@ static double opt_branch_lengths_pplacer(pll_partition_t * partition, pll_utree_
       blo_node->back->length = old_blonode_length;
       blo_antinode->length = original_length - old_blonode_length;
       blo_antinode->back->length = blo_antinode->length;
-      // *pendant_length = old_pendant_length; 
-      // pll_update_prob_matrices(partition, &param_indices[0], pendant_pmatrix, pendant_length, 1);
-      // loglikelihood = epa_branch_target(&brent_params, old_blonode_length);
+      printf("new pendant: %lf old pendant: %lf new proximal: %lf old proximal: %lf\n\n", lengths[2], old_pendant_length, lengths[0], old_blonode_length);
       break;
     }
 
-    loglikelihood = new_loglikelihood;
-
-    // printf("iter?\n");
-    /* check convergence */
-    if (fabs (new_loglikelihood - loglikelihood) < tolerance) 
-      break;
-
     --smoothings;
-    // printf("iter!\n");
+
+    /* check convergence */
+    if (fabs (new_loglikelihood - loglikelihood) < tolerance)
+    {
+      // printf("\nConverged with %d iterations left\n", smoothings);
+      // printf("new_logl: %lf logl: %lf\n", new_loglikelihood, loglikelihood);
+      // printf("new pendant: %lf old pendant: %lf new proximal: %lf old proximal: %lf\n", lengths[2], old_pendant_length, lengths[0], old_blonode_length);
+      smoothings = 0;
+    }
+
+    loglikelihood = new_loglikelihood;
 
   }
 
