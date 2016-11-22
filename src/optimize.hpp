@@ -9,6 +9,8 @@ constexpr double OPT_EPSILON = 1.0;
 constexpr double OPT_PARAM_EPSILON = 1e-4;
 constexpr double OPT_BRANCH_EPSILON = 1e-1;
 constexpr double OPT_FACTR = 1e7;
+constexpr double OPT_BRLEN_MIN = PLLMOD_OPT_MIN_BRANCH_LEN;
+constexpr double OPT_BRLEN_MAX = PLLMOD_OPT_MAX_BRANCH_LEN;
 constexpr double OPT_RATE_MIN = 1e-4;
 constexpr double OPT_RATE_MAX = 1e6;
 

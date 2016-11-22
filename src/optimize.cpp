@@ -72,7 +72,7 @@ static void utree_derivative_func (void * parameters, double proposal,
  * @param  smoothings maximum number of iterations
  * @return            negative log likelihood after optimization
  */
-static double opt_branch_lengths_pplacer(pll_partition_t * partition, pll_utree_t * tree, unsigned int smoothings, const unsigned int tolerance)
+static double opt_branch_lengths_pplacer(pll_partition_t * partition, pll_utree_t * tree, unsigned int smoothings, const double tolerance)
 {
   double loglikelihood = 0.0, new_loglikelihood;
   double xmin,    /* min branch length */
@@ -86,18 +86,16 @@ static double opt_branch_lengths_pplacer(pll_partition_t * partition, pll_utree_
   const auto blo_antinode = tree->next->next->back;
 
   const auto original_length = blo_node->length * 2;
-  vector<unsigned int> param_indices(partition->rate_cats, 0);
+  bool opt_proximal = (blo_node->length > PLLMOD_OPT_MIN_BRANCH_LEN);
 
-  
-  /* get the initial likelihood score */
-  loglikelihood = -pll_compute_edge_loglikelihood (partition,
-                                                  score_node->back->clv_index,
-                                                  score_node->back->scaler_index,
-                                                  score_node->clv_index,
-                                                  score_node->scaler_index,
-                                                  score_node->pmatrix_index,
-                                                  &param_indices[0],
-                                                  nullptr);
+  if(!opt_proximal && original_length > PLLMOD_OPT_MIN_BRANCH_LEN)
+  {
+    blo_node->length = PLLMOD_OPT_MIN_BRANCH_LEN;
+    blo_antinode->length = original_length - PLLMOD_OPT_MIN_BRANCH_LEN;
+    opt_proximal = true;
+  }
+
+  vector<unsigned int> param_indices(partition->rate_cats, 0);
 
   /* set parameters for N-R optimization */
   pll_newton_tree_params_t nr_params;
@@ -129,6 +127,22 @@ static double opt_branch_lengths_pplacer(pll_partition_t * partition, pll_utree_
   toward_blo_node.child2_scaler_index = blo_antinode->scaler_index;
   toward_blo_node.child2_matrix_index = blo_antinode->pmatrix_index;
 
+  double lengths[3] = {blo_node->length, blo_antinode->length, score_node->length};
+  unsigned int p_indices[3] = {blo_node->pmatrix_index, blo_antinode->pmatrix_index, score_node->pmatrix_index};
+  
+  /* get the initial likelihood score */
+  pll_update_prob_matrices(partition, &param_indices[0], p_indices, lengths, 1);
+  pll_update_partials(partition, &toward_score, 1);
+
+  loglikelihood = -pll_compute_edge_loglikelihood (partition,
+                                                  score_node->back->clv_index,
+                                                  score_node->back->scaler_index,
+                                                  score_node->clv_index,
+                                                  score_node->scaler_index,
+                                                  score_node->pmatrix_index,
+                                                  &param_indices[0],
+                                                  nullptr);
+
   /* allocate the sumtable */
   auto sites_alloc = partition->sites;
   if (partition->attributes & PLL_ATTRIB_AB_FLAG)
@@ -141,9 +155,6 @@ static double opt_branch_lengths_pplacer(pll_partition_t * partition, pll_utree_
     throw runtime_error{"Cannot allocate memory for bl opt variables"};
   }
 
-  double lengths[3] = {blo_node->length, blo_antinode->length, score_node->length};
-  uint p_indices[3] = {blo_node->pmatrix_index, blo_antinode->pmatrix_index, score_node->pmatrix_index};
-
   while (smoothings)
   {
     auto old_blonode_length = blo_node->length;
@@ -153,12 +164,12 @@ static double opt_branch_lengths_pplacer(pll_partition_t * partition, pll_utree_
             NR for Pendant
      =============================================================*/
 
-    xmin = PLLMOD_OPT_MIN_BRANCH_LEN;
+    xmin = OPT_BRLEN_MIN;
     xmax = PLLMOD_OPT_MAX_BRANCH_LEN;
     xtol = xmin/10.0;
     xguess = score_node->length;
-    if (xguess < xmin || xguess > xmax)
-      xguess = PLLMOD_OPT_DEFAULT_BRANCH_LEN;
+    // if (xguess < xmin || xguess > xmax)
+    //   xguess = PLLMOD_OPT_DEFAULT_BRANCH_LEN;
 
     /* prepare sumtable for current branch */
     pll_update_sumtable(partition,
@@ -185,15 +196,16 @@ static double opt_branch_lengths_pplacer(pll_partition_t * partition, pll_utree_
     /*=============================================================
             NR for Proximal
      =============================================================*/
-
+    if(opt_proximal)
+    {
     // calculate partial toward blo node (proximal)
     pll_update_partials(partition, &toward_blo_node, 1);
 
     /* set N-R parameters */
-    xmin = PLLMOD_OPT_MIN_BRANCH_LEN;
+    xguess = blo_node->length;
+    xmin = OPT_BRLEN_MIN;
     xmax = original_length;
     xtol = xmin/10.0;
-    xguess = blo_node->length;
     if (xguess < xmin || xguess > xmax)
       xguess = original_length / 2.0;
 
@@ -219,7 +231,9 @@ static double opt_branch_lengths_pplacer(pll_partition_t * partition, pll_utree_
     lengths[0] = blo_node->length     = blo_node->back->length      = xres;
     lengths[1] = blo_antinode->length = blo_antinode->back->length  = original_length - xres;
     pll_update_prob_matrices(partition, &param_indices[0], p_indices, lengths, 2);
-
+  
+    }
+    
     /*=============================================================
             Calculate the score
      =============================================================*/
@@ -238,6 +252,7 @@ static double opt_branch_lengths_pplacer(pll_partition_t * partition, pll_utree_
     
     if(new_loglikelihood - loglikelihood > new_loglikelihood * 1e-14)
     {
+      printf("Worse logl by %lf units! %d. iter\n", new_loglikelihood - loglikelihood, 32 - smoothings);
       // the NR procedure returned a worse logl than the previous iteration
       // thus we reset the branch lengths to the previous values and return
       // reset lengths

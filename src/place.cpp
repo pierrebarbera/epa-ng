@@ -109,6 +109,15 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
   auto num_traversed_branches = utree_query_branches(reference_tree.tree(), &branches[0]);
   assert(num_traversed_branches == num_branches);
 
+  double lowest = 1e15;
+  for (size_t i = 0; i < num_branches; ++i)
+  {
+    if(branches[i]->length < lowest)
+      lowest = branches[i]->length;
+  }
+
+  lgr.dbg() << "smallest BL: " << lowest << std::endl;
+
   unsigned int chunk_num = 1;
   Sample sample;
 
