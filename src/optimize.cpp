@@ -80,37 +80,11 @@ static double opt_branch_lengths_pplacer(pll_partition_t * partition, pll_utree_
          xmax,    /* max branch length */
          xtol,    /* tolerance */
          xres;    /* optimal found branch length */
+  vector<unsigned int> param_indices(partition->rate_cats, 0);
 
   const auto score_node = tree;
   const auto blo_node = tree->next->back;
   const auto blo_antinode = tree->next->next->back;
-
-  const auto original_length = blo_node->length * 2;
-  bool opt_proximal = (blo_node->length > PLLMOD_OPT_MIN_BRANCH_LEN);
-
-  double lengths[3] = {blo_node->length, blo_antinode->length, score_node->length};
-  unsigned int p_indices[3] = {blo_node->pmatrix_index, blo_antinode->pmatrix_index, score_node->pmatrix_index};
-
-  if(!opt_proximal && original_length > PLLMOD_OPT_MIN_BRANCH_LEN)
-  {
-    blo_node->length = PLLMOD_OPT_MIN_BRANCH_LEN;
-    blo_antinode->length = original_length - PLLMOD_OPT_MIN_BRANCH_LEN;
-    pll_update_prob_matrices(partition, &param_indices[0], p_indices, lengths, 1);
-    pll_update_partials(partition, &toward_score, 1);
-    opt_proximal = true;
-  }
-
-  vector<unsigned int> param_indices(partition->rate_cats, 0);
-
-  /* set parameters for N-R optimization */
-  pll_newton_tree_params_t nr_params;
-  nr_params.partition         = partition;
-  // nr_params.tree              = score_node;
-  nr_params.params_indices    = &param_indices[0];
-  // nr_params.branch_length_min = PLLMOD_OPT_MIN_BRANCH_LEN;
-  // nr_params.branch_length_max = PLLMOD_OPT_MAX_BRANCH_LEN;
-  // nr_params.tolerance         = tolerance;
-  nr_params.sumtable          = nullptr;
 
   pll_operation_t toward_score;
   toward_score.parent_clv_index = score_node->clv_index;
@@ -132,8 +106,32 @@ static double opt_branch_lengths_pplacer(pll_partition_t * partition, pll_utree_
   toward_blo_node.child2_scaler_index = blo_antinode->scaler_index;
   toward_blo_node.child2_matrix_index = blo_antinode->pmatrix_index;
 
-  /* get the initial likelihood score */
+  const auto original_length = blo_node->length * 2;
+  bool opt_proximal = (blo_node->length > PLLMOD_OPT_MIN_BRANCH_LEN);
 
+  double lengths[3] = {blo_node->length, blo_antinode->length, score_node->length};
+  unsigned int p_indices[3] = {blo_node->pmatrix_index, blo_antinode->pmatrix_index, score_node->pmatrix_index};
+
+  if(!opt_proximal && original_length > PLLMOD_OPT_MIN_BRANCH_LEN)
+  {
+    blo_node->length = PLLMOD_OPT_MIN_BRANCH_LEN;
+    blo_antinode->length = original_length - PLLMOD_OPT_MIN_BRANCH_LEN;
+    pll_update_prob_matrices(partition, &param_indices[0], p_indices, lengths, 1);
+    pll_update_partials(partition, &toward_score, 1);
+    opt_proximal = true;
+  }
+
+  /* set parameters for N-R optimization */
+  pll_newton_tree_params_t nr_params;
+  nr_params.partition         = partition;
+  // nr_params.tree              = score_node;
+  nr_params.params_indices    = &param_indices[0];
+  // nr_params.branch_length_min = PLLMOD_OPT_MIN_BRANCH_LEN;
+  // nr_params.branch_length_max = PLLMOD_OPT_MAX_BRANCH_LEN;
+  // nr_params.tolerance         = tolerance;
+  nr_params.sumtable          = nullptr;
+
+  /* get the initial likelihood score */
   loglikelihood = -pll_compute_edge_loglikelihood (partition,
                                                   score_node->back->clv_index,
                                                   score_node->back->scaler_index,

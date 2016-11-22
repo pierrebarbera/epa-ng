@@ -41,6 +41,8 @@ unsigned int MSA_Stream::read_next(const unsigned int number)
 
     if (!sites) sites = sequence_length;
 
+    for (long i = 0; i < sequence_length; ++i) sequence[i] = toupper(sequence[i]);
+    
     sequence_list_.emplace_back(header, sequence);
     free(sequence);
     free(header);
