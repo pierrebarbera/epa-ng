@@ -201,8 +201,8 @@ Placement Tiny_Tree::place(const Sequence &s)
       throw runtime_error{"Set tip states during placement failed!"};
 
     // optimize the branches using pnly the portion of the sites specified by range
-    // logl = call_focused(partition_.get(), range, optimize_branch_triplet, virtual_root, sliding_blo_);
-    logl = optimize_branch_triplet(partition_.get(), virtual_root, sliding_blo_);
+    logl = call_focused(partition_.get(), range, optimize_branch_triplet, virtual_root, sliding_blo_);
+    // logl = optimize_branch_triplet(partition_.get(), virtual_root, sliding_blo_);
 
     assert(tree_->length >= 0);
     assert(tree_->next->length >= 0);
