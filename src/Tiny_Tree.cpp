@@ -12,11 +12,6 @@
 
 using namespace std;
 
-static constexpr size_t NT_A = 0;
-static constexpr size_t NT_C = 1;
-static constexpr size_t NT_G = 2;
-static constexpr size_t NT_T = 3;
-static constexpr size_t NT_GAP = 4;
 static constexpr char NT_MAP[5] = {'A', 'C', 'G', 'T', '-'};
 
 static void precompute_sites_static(char nt, vector<double>& result, 
@@ -46,43 +41,23 @@ static void precompute_sites_static(char nt, vector<double>& result,
 
 static double sum_precomputed_sitelk(vector<vector<double>>& lookup, const Sequence& s)
 {
-  string seq = s.sequence();
-  assert(seq.length() == lookup[NT_A].size());
-  assert(lookup[NT_G].size() == lookup[NT_A].size());
-  assert(lookup[NT_C].size() == lookup[NT_A].size());
-  assert(lookup[NT_T].size() == lookup[NT_A].size());
-  assert(lookup[NT_GAP].size() == lookup[NT_A].size());
+  const string& seq = s.sequence();
 
-  // transform(seq.begin(), seq.end(), seq.begin(), ::toupper);
+  for(auto& lu : lookup)
+    assert(seq.length() == lu.size());
+    
   double sum = 0;
   for (size_t i = 0; i < seq.length(); ++i)
   {
     size_t c;
-    switch (seq[i])
+    auto find_iter = find(begin(NT_MAP), end(NT_MAP), seq[i]);
+    if(find_iter != end(NT_MAP))
     {
-      case 'A':
-      case 'a':
-        c = NT_A;
-        break;
-      case 'C':
-      case 'c':
-        c = NT_C;
-        break;
-      case 'G':
-      case 'g':
-        c = NT_G;
-        break;
-      case 'T':
-      case 't':
-        c = NT_T;
-        break;
-      case '-':
-        c = NT_GAP;
-        break;
-      default:
-        throw runtime_error{"derp"};
+      c = distance(begin(NT_MAP), find_iter);
+      sum += lookup[c][i];
     }
-    sum += lookup[c][i];
+    else
+      throw runtime_error{"Unrecognized character! during sum_precomputed_sitelk"};
   }
   return sum;
 }
