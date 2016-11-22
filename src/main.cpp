@@ -102,6 +102,9 @@ int main(int argc, char** argv)
     ;
   cli.add_options("Compute")
     ("O,opt-ref-tree", "Optimize reference tree and model parameters.")
+    ("raxml-blo", 
+      "Employ old style of branch length optimization during thorough insertion as opposed to sliding approach."
+      "WARNING: may significantly slow down computation.")
     ("g,dyn-heur", 
       "Two-phase heuristic, determination of candidate edges using accumulative threshold.",
       cxxopts::value<double>()->implicit_value("0.99"))
@@ -160,6 +163,7 @@ int main(int argc, char** argv)
     options.prescoring_by_percentage = false;
   }
   if (cli.count("opt-ref-tree")) options.opt_branches = options.opt_model = true;
+  if (cli.count("raxml-blo")) options.sliding_blo = false;
   if (cli.count("dump-binary")) options.dump_binary_mode =  true;
   if (cli.count("model"))
   {
