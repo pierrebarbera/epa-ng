@@ -12,7 +12,10 @@
 
 using namespace std;
 
-static constexpr char NT_MAP[5] = {'A', 'C', 'G', 'T', '-'};
+static constexpr size_t NT_MAP_SIZE = 16;
+static constexpr size_t AA_MAP_SIZE = 25;
+static constexpr char NT_MAP[16] = {'A', 'C', 'G', 'T', '-', 'Y', 'R', 'W', 'S', 'K', 'M', 'D', 'V', 'H', 'B', 'X'};
+static constexpr char AA_MAP[25] = {'A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y', '-', 'X', 'B', 'Z', 'J'};
 
 static void precompute_sites_static(char nt, vector<double>& result, 
   pll_partition_t* partition, pll_utree_t* tree, Model& model)
@@ -62,11 +65,11 @@ static double sum_precomputed_sitelk(vector<vector<double>>& lookup, const Seque
   return sum;
 }
 
-Tiny_Tree::Tiny_Tree(pll_utree_t *edge_node, unsigned int branch_id, Tree& reference_tree,
-                     bool opt_branches, Range reference_tip_range, bool ranged, bool sliding_blo)
+Tiny_Tree::Tiny_Tree(pll_utree_t * edge_node , const unsigned int branch_id, Tree& reference_tree, 
+    const bool opt_branches, const Options& options, std::vector<std::vector<double>>& lookup)
     : partition_(nullptr, tiny_partition_destroy), tree_(nullptr, utree_destroy), opt_branches_(opt_branches)
-    , model_(reference_tree.model()), reference_tip_range_(reference_tip_range), ranged_computation_(ranged)
-    , sliding_blo_(sliding_blo), branch_id_(branch_id)
+    , model_(reference_tree.model()), ranged_computation_(options.ranged)
+    , sliding_blo_(options.sliding_blo), branch_id_(branch_id)
 {
   original_branch_length_ = (edge_node->length < 2*PLLMOD_OPT_MIN_BRANCH_LEN) ?
     2*PLLMOD_OPT_MIN_BRANCH_LEN : edge_node->length;
@@ -121,13 +124,26 @@ Tiny_Tree::Tiny_Tree(pll_utree_t *edge_node, unsigned int branch_id, Tree& refer
 
   if (!opt_branches)
   {
-    lookup_.clear();
-    lookup_.resize(5);
+    if(lookup.size() != 0)
+    {
+      // take the supplied lookup
+      lookup_ = lookup;
+    }
+    else
+    {
+      const auto character_map = (partition_->states == 4) ? NT_MAP : AA_MAP;
+      const auto size = (partition_->states == 4) ? NT_MAP_SIZE : AA_MAP_SIZE;
 
-    // precompute all possible site likelihoods
-    size_t i = 0;
-    for (char nt : NT_MAP)
-      precompute_sites_static(nt, lookup_[i++], partition_.get(), tree_.get(), model_); 
+      lookup_.clear();
+      lookup_.resize(size);
+
+      // precompute all possible site likelihoods
+      for (size_t i = 0; i < size; ++i)
+        precompute_sites_static(character_map[i], lookup_[i], partition_.get(), tree_.get(), model_); 
+      
+      // pass a copy up
+      lookup = lookup_;
+    }
   }
   
 }

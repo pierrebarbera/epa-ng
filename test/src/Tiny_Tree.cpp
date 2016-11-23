@@ -17,22 +17,23 @@
 
 using namespace std;
 
+typedef std::vector<std::vector<double>> lookup_t;
+
 TEST(Tiny_Tree, place_heuristic)
 {
   // buildup
   MSA msa = build_MSA_from_file(env->reference_file);
   MSA queries = build_MSA_from_file(env->query_file);
-  Tree_Numbers nums = Tree_Numbers();
-  Range range;
-  range.span = msa.num_sites();
-
+  Tree_Numbers nums;
   Options options;
+  lookup_t lu;
+
   auto ref_tree = Tree(env->tree_file, msa, env->model, options);
 
   auto tree = ref_tree.tree();
 
   // tests
-  Tiny_Tree tt(tree, 0, ref_tree, false);
+  Tiny_Tree tt(tree, 0, ref_tree, false, options, lu);
 
   for (auto const &x : queries)
   {
@@ -53,8 +54,7 @@ TEST(Tiny_Tree, place_BLO)
   MSA queries = build_MSA_from_file(env->query_file);
   Tree_Numbers nums = Tree_Numbers();
 
-  Range range;
-  range.span = msa.num_sites();
+  lookup_t lu;
 
   Options options;
   auto ref_tree = Tree(env->tree_file, msa, env->model, options);
@@ -62,7 +62,7 @@ TEST(Tiny_Tree, place_BLO)
   auto tree = ref_tree.tree();
 
   // tests
-  Tiny_Tree tt(tree, 0, ref_tree, true);
+  Tiny_Tree tt(tree, 0, ref_tree, true, options, lu);
 
   for (auto const &x : queries)
   {
@@ -81,6 +81,8 @@ TEST(Tiny_Tree, place_from_binary)
   auto queries = build_MSA_from_file(env->query_file);
   Model model;
   Options options;
+  lookup_t lu;
+
   Tree original_tree(env->tree_file, msa, model, options);
   dump_to_binary(original_tree, env->binary_file);
   Tree read_tree(env->binary_file, model, options);
@@ -99,8 +101,8 @@ TEST(Tiny_Tree, place_from_binary)
   // test
   for (size_t i = 0; i < original_traversed; i++)
   {
-    Tiny_Tree original_tiny(original_branches[i], 0, original_tree, false);
-    Tiny_Tree read_tiny(read_branches[i], 0, read_tree, false);
+    Tiny_Tree original_tiny(original_branches[i], 0, original_tree, false, options, lu);
+    Tiny_Tree read_tiny(read_branches[i], 0, read_tree, false, options, lu);
     for(auto& seq : queries)
     {
       auto original_place = original_tiny.place(seq);
