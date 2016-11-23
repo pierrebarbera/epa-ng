@@ -23,8 +23,8 @@
 
 typedef std::unordered_map<unsigned int, std::vector<std::vector<double>>> lookupstore_t;
 
-static void place(const Work& to_place, MSA_Stream& msa, Tree& reference_tree, 
-  const std::vector<pll_utree_t *>& branches, Sample& sample, 
+static void place(const Work& to_place, MSA_Stream& msa, Tree& reference_tree,
+  const std::vector<pll_utree_t *>& branches, Sample& sample,
   bool do_blo, const Options& options, lookupstore_t& lookup_store)
 {
 
@@ -49,7 +49,7 @@ static void place(const Work& to_place, MSA_Stream& msa, Tree& reference_tree,
       auto branch_id = pair.first;
       auto branch = Tiny_Tree(branches[branch_id], branch_id, reference_tree, do_blo, options, lookup_store[branch_id]);
 
-      for (const auto& seq_id : pair.second) 
+      for (const auto& seq_id : pair.second)
         sample_parts[i].add_placement(seq_id, branch.place(msa[seq_id]));
     }
   }
@@ -79,7 +79,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
 
   unsigned int rebalance = 10;
 
-  std::vector<double> init_diff = options.prescoring 
+  std::vector<double> init_diff = options.prescoring
     ? std::vector<double>{1000.0, 1.0, 1000.0, 1.0} : std::vector<double>{1000.0, 1.0};
 
   // get initial schedule
@@ -95,7 +95,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
 
   Timer timer;
 
-  const auto EPA_MPI_STAGE_LAST_AGGREGATE 
+  const auto EPA_MPI_STAGE_LAST_AGGREGATE
     = options.prescoring ? EPA_MPI_STAGE_2_AGGREGATE : EPA_MPI_STAGE_1_AGGREGATE;
   const auto EPA_MPI_DEDICATED_WRITE_RANK = schedule[EPA_MPI_STAGE_LAST_AGGREGATE][0];
 
@@ -103,7 +103,8 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
   lgr << "P-EPA - Massively-Parallel Evolutionary Placement Algorithm\n";
   lgr << "\nInvocation: \n" << invocation << "\n";
 
-  const unsigned int chunk_size = 100;
+  const auto chunk_size = options.chunk_size;
+  lgr.dbg() << "Chunk size: " << chunk_size << std::endl;
   unsigned int num_sequences;
 
   const auto num_branches = reference_tree.nums().branches;
@@ -151,7 +152,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     // if previous chunk was a rebalance chunk or this is the first chunk (0 mod anything = 0)
     // ...then we need to correctly assign/reassign the workload of the first compute stage
     if ( !((chunk_num - 1) % rebalance) )
-    { 
+    {
       lgr.dbg() << "Assigning first stage Work" << std::endl;
       const auto& stage = schedule[EPA_MPI_STAGE_1_COMPUTE];
       std::vector<Work> parts;
@@ -163,8 +164,8 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     }
 #else
     first_placement_work = all_work;
-#endif //__MPI    
-    
+#endif //__MPI
+
     place(first_placement_work, msa_stream, reference_tree, branches, sample, !options.prescoring, options, previously_calculated_lookups);
 
 #ifdef __MPI
@@ -199,7 +200,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
       else
         discard_by_accumulated_threshold(sample, options.prescoring_threshold);
     }
-    
+
     if(options.prescoring)
       second_placement_work = Work(sample);
 #ifdef __MPI
@@ -251,7 +252,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
       discard_by_support_threshold(sample, options.support_threshold);
 
     // write results of current last stage aggregator node to a part file
-    std::string part_file_name(outdir + "epa." + std::to_string(local_rank) 
+    std::string part_file_name(outdir + "epa." + std::to_string(local_rank)
       + "." + std::to_string(chunk_num) + ".part");
     std::ofstream part_file(part_file_name);
     part_file << sample_to_jplace_string(sample, msa_stream);
@@ -274,7 +275,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
       lgr.dbg() << "aggregate the runtime statistics..." << std::endl;
       epa_mpi_gather(timer, foreman, schedule[local_stage], local_rank);
       lgr.dbg() << "Runtime aggregate done!" << std::endl;
-      
+
       // Step 2: calculate average time needed per chunk for the stage
       std::vector<double> perstage_avg(num_stages);
 

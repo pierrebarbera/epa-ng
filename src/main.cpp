@@ -58,21 +58,6 @@ int main(int argc, char** argv)
   string binary_file("");
 
   std::string banner;
-    
- 
- 
- 
- 
-
-
-  banner +=   " _____        ______ _____        ";
-  banner += "\n|  __ \\      |  ____|  __ \\ /\\    ";
-  banner += "\n| |__) |_____| |__  | |__) /  \\   ";
-  banner += "\n|  ___/______|  __| |  ___/ /\\ \\  ";
-  banner += "\n| |          | |____| |  / ____ \\";
-  banner += "\n|_|          |______|_| /_/    \\_\\ \n";
-
-  lgr << banner << std::endl;
 
   try
   {
@@ -89,23 +74,23 @@ int main(int argc, char** argv)
     ("b,binary", "Path to Binary file.", cxxopts::value<std::string>())
     ;
   cli.add_options("Output")
-    ("w,outdir", "Path to output directory.", 
+    ("w,outdir", "Path to output directory.",
       cxxopts::value<std::string>()->default_value("./"))
-    ("B,dump-binary", 
+    ("B,dump-binary",
       "Binary Dump mode: write ref. tree in binary format then exit.")
-    ("l,discard-min-lwr", 
+    ("l,discard-min-lwr",
       "Minimum likelihood weight below which a placement is discarded.",
       cxxopts::value<double>()->default_value("0.01")->implicit_value("0.01"))
-    ("L,discard-acc-lwr", 
+    ("L,discard-acc-lwr",
       "Accumulated likelihood weight after which further placements are discarded.",
       cxxopts::value<double>()->implicit_value("0.01"))
     ;
   cli.add_options("Compute")
     ("O,opt-ref-tree", "Optimize reference tree and model parameters.")
-    ("raxml-blo", 
+    ("raxml-blo",
       "Employ old style of branch length optimization during thorough insertion as opposed to sliding approach."
       "WARNING: may significantly slow down computation.")
-    ("g,dyn-heur", 
+    ("g,dyn-heur",
       "Two-phase heuristic, determination of candidate edges using accumulative threshold.",
       cxxopts::value<double>()->implicit_value("0.99"))
     ("G,fix-heur",
@@ -116,46 +101,51 @@ int main(int argc, char** argv)
       "<type>-<symmetries>-<rate/frequency model> Examples: -m DNA-GTR-EMPIRICAL, -m AA-GTR-BLOSUM62",
       cxxopts::value<std::string>()->default_value("DNA-GTR-EMPIRICAL"))
     ;
+  cli.add_options("Pipeline")
+    ("chunk-size",
+      "Number of query sequences to be read in at a time. May influence performance.",
+      cxxopts::value<unsigned int>()->default_value("1000"))
+    ;
 
   cli.parse(argc, argv);
 
   if (cli.count("help"))
   {
-    lgr << cli.help({"", "Input", "Output", "Compute"}) << std::endl;
+    lgr << cli.help({"", "Input", "Output", "Compute", "Pipeline"}) << std::endl;
     exit(EXIT_SUCCESS);
   }
 
   // check for valid input combinations
   if (not(
-        ( cli.count("tree") and cli.count("ref-msa") ) 
+        ( cli.count("tree") and cli.count("ref-msa") )
     or  ( cli.count("binary") and (cli.count("query") or cli.count("ref-msa")) )
     ))
   {
     lgr << "Must supply reference tree/msa either directly or as precomputed binary." << std::endl;
     exit(EXIT_FAILURE);
   }
-  
+
   if (cli.count("query")) query_file = cli["query"].as<std::string>();
   if (cli.count("outdir")) work_dir = cli["outdir"].as<std::string>();
   if (cli.count("tree")) tree_file = cli["tree"].as<std::string>();
   if (cli.count("ref-msa")) reference_file = cli["ref-msa"].as<std::string>();
-  if (cli.count("binary")) 
+  if (cli.count("binary"))
   {
     binary_file = cli["binary"].as<std::string>();
     options.load_binary_mode = true;
   }
   if (cli.count("discard-min-lwr")) options.support_threshold = cli["discard-min-lwr"].as<double>();
-  if (cli.count("discard-acc-lwr")) 
-  { 
-    options.support_threshold = cli["discard-acc-lwr"].as<double>(); 
-    options.acc_threshold = true; 
-  }
-  if (cli.count("fix-heur")) 
+  if (cli.count("discard-acc-lwr"))
   {
-    options.prescoring_threshold = cli["fix-heur"].as<double>(); 
-    options.prescoring = options.prescoring_by_percentage = true; 
+    options.support_threshold = cli["discard-acc-lwr"].as<double>();
+    options.acc_threshold = true;
   }
-  if (cli.count("dyn-heur")) 
+  if (cli.count("fix-heur"))
+  {
+    options.prescoring_threshold = cli["fix-heur"].as<double>();
+    options.prescoring = options.prescoring_by_percentage = true;
+  }
+  if (cli.count("dyn-heur"))
   {
     options.prescoring_threshold = cli["dyn-heur"].as<double>();
     if (options.prescoring) lgr << "Cannot use -G and -g concurrently! Running with -g " << options.prescoring_threshold <<  std::endl;
@@ -171,7 +161,7 @@ int main(int argc, char** argv)
     auto s = parts.size();
     if (s > 3)
       throw runtime_error{"Supplied too many model arguments! Must be 3 or less."};
-    else 
+    else
     {
       if (s >=1)
         sequence_type = parts[0];
@@ -183,8 +173,8 @@ int main(int argc, char** argv)
       lgr.dbg() << "Model descriptor: " << sequence_type << " "
       << model_id << " " << sub_matrix << " " << std::endl;
     }
-
   }
+  if (cli.count("chunk-size")) options.chunk_size = cli["chunk-size"].as<unsigned int>();
 
   } catch (const cxxopts::OptionException& e)
   {
@@ -206,6 +196,15 @@ int main(int argc, char** argv)
   #else
   lgr = Log(work_dir + "epa_info.log");
   #endif
+
+  banner +=   " _____        ______ _____        ";
+  banner += "\n|  __ \\      |  ____|  __ \\ /\\    ";
+  banner += "\n| |__) |_____| |__  | |__) /  \\   ";
+  banner += "\n|  ___/______|  __| |  ___/ /\\ \\  ";
+  banner += "\n| |          | |____| |  / ____ \\";
+  banner += "\n|_|          |______|_| /_/    \\_\\ \n";
+
+  lgr << banner << std::endl;
 
   MSA ref_msa;
   if (reference_file.size())

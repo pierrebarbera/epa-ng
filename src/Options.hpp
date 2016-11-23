@@ -6,7 +6,8 @@ public:
   Options ()
     : prescoring(false), opt_model(false), opt_branches(false), sliding_blo(true)
     , support_threshold(0.01), acc_threshold(false), prescoring_by_percentage(false)
-    , prescoring_threshold(0.95), ranged(false), dump_binary_mode(false), load_binary_mode(false) 
+    , prescoring_threshold(0.95), ranged(false), dump_binary_mode(false)
+    , load_binary_mode(false), chunk_size(1000)
     { }
 
   ~Options () = default;
@@ -22,4 +23,5 @@ public:
   bool ranged;
   bool dump_binary_mode;
   bool load_binary_mode;
+  unsigned int chunk_size;
 };
