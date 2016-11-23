@@ -7,7 +7,7 @@
 #include "Sequence.hpp"
 #include "constants.hpp"
 #include "Model.hpp"
-#include "Range.hpp"
+#include "Options.hpp"
 #include "Placement.hpp"
 #include "Tree.hpp"
 #include "pll_util.hpp"
@@ -32,11 +32,8 @@
 class Tiny_Tree
 {
 public:
-  Tiny_Tree(pll_utree_t * edge_node, unsigned int branch_id, Tree& reference_tree,
-    bool opt_branches, bool sliding_blo=true) : Tiny_Tree(edge_node, branch_id, reference_tree,
-    opt_branches, Range(0, reference_tree.partition()->sites), false, sliding_blo) {};
-  Tiny_Tree(pll_utree_t * edge_node , unsigned int branch_id, Tree& reference_tree,
-    bool opt_branches, Range reference_tip_range, bool ranged, bool sliding_blo);
+  Tiny_Tree(pll_utree_t * edge_node , const unsigned int branch_id, Tree& reference_tree, 
+    const bool opt_branches, const Options& options, std::vector<std::vector<double>>& lookup);
 
   ~Tiny_Tree() = default;
 
@@ -48,17 +45,14 @@ public:
 
   Placement place(const Sequence& s);
 
-  void opt_branches(bool b) {opt_branches_ = b;};
-
 private:
   // pll structures
   std::unique_ptr<pll_partition_t, partition_deleter> partition_;
   std::unique_ptr<pll_utree_t, utree_deleter> tree_;
 
-  bool opt_branches_;
+  const bool opt_branches_;
   double original_branch_length_;
   Model model_;
-  Range reference_tip_range_;
   bool tip_tip_case_ = false;
   bool ranged_computation_;
   bool sliding_blo_;

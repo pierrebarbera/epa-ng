@@ -21,8 +21,11 @@
 #include "epa_mpi_util.hpp"
 #endif
 
+typedef std::unordered_map<unsigned int, std::vector<std::vector<double>>> lookupstore_t;
+
 static void place(const Work& to_place, MSA_Stream& msa, Tree& reference_tree, 
-  const std::vector<pll_utree_t *>& branches, Sample& sample, bool do_blo, bool sliding_blo)
+  const std::vector<pll_utree_t *>& branches, Sample& sample, 
+  bool do_blo, const Options& options, lookupstore_t& lookup_store)
 {
 
 #ifdef __OMP
@@ -44,7 +47,8 @@ static void place(const Work& to_place, MSA_Stream& msa, Tree& reference_tree,
     for (const auto& pair : work_parts[i])
     {
       auto branch_id = pair.first;
-      auto branch = Tiny_Tree(branches[branch_id], branch_id, reference_tree, do_blo, sliding_blo);
+      auto branch = Tiny_Tree(branches[branch_id], branch_id, reference_tree, do_blo, options, lookup_store[branch_id]);
+
       for (const auto& seq_id : pair.second) 
         sample_parts[i].add_placement(seq_id, branch.place(msa[seq_id]));
     }
@@ -121,6 +125,8 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
   unsigned int chunk_num = 1;
   Sample sample;
 
+  lookupstore_t previously_calculated_lookups;
+
   Work all_work(std::make_pair(0, num_branches), std::make_pair(0, chunk_size));
   Work& first_placement_work = all_work;
   Work second_placement_work; // dummy structure to be filled during operation
@@ -158,7 +164,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     first_placement_work = all_work;
 #endif //__MPI    
     
-    place(first_placement_work, msa_stream, reference_tree, branches, sample, !options.prescoring, options.sliding_blo);
+    place(first_placement_work, msa_stream, reference_tree, branches, sample, !options.prescoring, options, previously_calculated_lookups);
 
 #ifdef __MPI
     // MPI: split the result and send the part to correct aggregate node
@@ -213,7 +219,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
 #endif // __MPI
     if (options.prescoring)
     {
-      place(second_placement_work, msa_stream, reference_tree, branches, sample, true, options.sliding_blo);
+      place(second_placement_work, msa_stream, reference_tree, branches, sample, true, options, previously_calculated_lookups);
     }
 #ifdef __MPI
     if(options.prescoring)
@@ -348,90 +354,3 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
 #endif
 }
 
-// ================== LEGACY CODE ==========================================
-
-
-Sample place(Tree& reference_tree, MSA& query_msa_)
-{
-  auto options = reference_tree.options();
-
-  const auto num_branches = reference_tree.nums().branches;
-  const auto num_queries = query_msa_.size();
-  // get all edges
-  std::vector<pll_utree_t *> branches(num_branches);
-  auto num_traversed_branches = utree_query_branches(reference_tree.tree(), &branches[0]);
-  assert(num_traversed_branches == num_branches);
-
-  lgr << "\nPlacing "<< std::to_string(num_queries) << " reads on " <<
-    std::to_string(num_branches) << " branches." << std::endl;
-
-  // build all tiny trees with corresponding edges
-  std::vector<Tiny_Tree> insertion_trees;
-  for (size_t branch_id = 0; branch_id < num_branches; ++branch_id)
-    insertion_trees.emplace_back(branches[branch_id], branch_id, reference_tree, !options.prescoring, options.sliding_blo);
-    /* clarification: last arg here is a flag specifying whether to optimize the branches.
-      we don't want that if the mode is prescoring */
-
-  // output class
-  Sample sample(get_numbered_newick_string(reference_tree.tree()));
-  for (size_t sequence_id = 0; sequence_id < num_queries; sequence_id++)
-    sample.emplace_back(sequence_id, num_branches);
-
-
-  // place all s on every edge
-#ifdef __OMP
-  #pragma omp parallel for schedule(dynamic)
-#endif 
-  for (size_t branch_id = 0; branch_id < num_branches; ++branch_id)
-  {
-    for (size_t sequence_id = 0; sequence_id < num_queries; ++sequence_id)
-    {
-      sample[sequence_id][branch_id] = insertion_trees[branch_id].place(query_msa_[sequence_id]);
-      // printf("sequence %d branch %d:%f\n",sequence_id, branch_id, sample[sequence_id][branch_id].likelihood());
-    }
-  }
-  // now that everything has been placed, we can compute the likelihood weight ratio
-  compute_and_set_lwr(sample);
-
-  /* prescoring was chosen: perform a second round, but only on candidate edges identified
-    during the first run */
-  if (options.prescoring)
-  {
-    lgr << "Entering second phase of placement. \n";
-    if (options.prescoring_by_percentage)
-      discard_bottom_x_percent(sample, (1.0 - options.prescoring_threshold));
-    else
-      discard_by_accumulated_threshold(sample, options.prescoring_threshold);
-
-    // build a list of placements per edge that need to be recomputed
-    std::vector<std::vector<std::tuple<Placement *, const unsigned int>>> recompute_list(num_branches);
-    for (auto & pq : sample)
-      for (auto & placement : pq)
-        recompute_list[placement.branch_id()].push_back(std::make_tuple(&placement, pq.sequence_id()));
-
-#ifdef __OMP
-    #pragma omp parallel for schedule(dynamic)
-#endif 
-    for (size_t branch_id = 0; branch_id < num_branches; branch_id++)
-    {
-      Placement * placement;
-      // Sequence * sequence;
-      auto& branch = insertion_trees[branch_id];
-      branch.opt_branches(true); // TODO only needs to be done once
-      for (auto recomp_tuple : recompute_list[branch_id])
-      {
-        placement = std::get<0>(recomp_tuple);
-        *placement = branch.place(query_msa_[std::get<1>(recomp_tuple)]);
-      }
-    }
-    compute_and_set_lwr(sample);
-  }
-
-  // finally, trim the output
-  if (options.acc_threshold)
-    discard_by_accumulated_threshold(sample, options.support_threshold);
-  else
-    discard_by_support_threshold(sample, options.support_threshold);
-
-  return sample;
-}
