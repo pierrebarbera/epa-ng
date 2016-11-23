@@ -111,7 +111,8 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
   // get all edges
   std::vector<pll_utree_t *> branches(num_branches);
   auto num_traversed_branches = utree_query_branches(reference_tree.tree(), &branches[0]);
-  assert(num_traversed_branches == num_branches);
+  if(num_traversed_branches != num_branches)
+    throw std::runtime_error{"Traversing the utree went wrong during pipeline startup!"};
 
   double lowest = 1e15;
   for (size_t i = 0; i < num_branches; ++i)

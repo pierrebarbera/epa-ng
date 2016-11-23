@@ -46,9 +46,11 @@ static double sum_precomputed_sitelk(vector<vector<double>>& lookup, const Seque
 {
   const string& seq = s.sequence();
 
+  #ifndef NDEBUG
   for(auto& lu : lookup)
     assert(seq.length() == lu.size());
-    
+  #endif
+  
   double sum = 0;
   for (size_t i = 0; i < seq.length(); ++i)
   {
