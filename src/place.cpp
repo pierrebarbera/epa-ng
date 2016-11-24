@@ -130,7 +130,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
   lookupstore_t previously_calculated_lookups;
 
   Work all_work(std::make_pair(0, num_branches), std::make_pair(0, chunk_size));
-  Work& first_placement_work = all_work;
+  Work first_placement_work;
   Work second_placement_work; // dummy structure to be filled during operation
   std::vector<std::string> part_names; // filenames of partial results
 
