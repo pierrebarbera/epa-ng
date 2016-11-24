@@ -142,13 +142,12 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
       all_work = Work(std::make_pair(0, num_branches), std::make_pair(0, num_sequences));
 
 #ifdef __MPI
-    timer.start(); // start timer of any stage
+    // timer.start(); // start timer of any stage
     //==============================================================
     // EPA_MPI_STAGE_1_COMPUTE === BEGIN
     //==============================================================
     if (local_stage == EPA_MPI_STAGE_1_COMPUTE)
     {
-
     // if previous chunk was a rebalance chunk or this is the first chunk (0 mod anything = 0)
     // ...then we need to correctly assign/reassign the workload of the first compute stage
     if ( !((chunk_num - 1) % rebalance) )
@@ -162,6 +161,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
       size_t stage_rank = std::distance(stage.begin(), it);
       first_placement_work = parts[stage_rank];
     }
+    timer.start();
 #else
     first_placement_work = all_work;
 #endif //__MPI
@@ -169,6 +169,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     place(first_placement_work, msa_stream, reference_tree, branches, sample, !options.prescoring, options, previously_calculated_lookups);
 
 #ifdef __MPI
+    timer.stop();
     // MPI: split the result and send the part to correct aggregate node
     lgr.dbg() << "Sending Stage 1 Results..." << std::endl;
     epa_mpi_split_send(sample, schedule[EPA_MPI_STAGE_1_AGGREGATE], MPI_COMM_WORLD);
@@ -188,6 +189,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     lgr.dbg() << "Recieving Stage 1 Results..." << std::endl;
     epa_mpi_recieve_merge(sample, schedule[EPA_MPI_STAGE_1_COMPUTE], MPI_COMM_WORLD);
     lgr.dbg() << "Stage 1 Recieve done!" << std::endl;
+    timer.start();
 #endif // __MPI
 
     compute_and_set_lwr(sample);
@@ -206,7 +208,10 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
 #ifdef __MPI
     // if prescoring was selected, we need to send the intermediate results off to thorough placement
     if (options.prescoring)
+    {
+      timer.stop();
       epa_mpi_split_send(second_placement_work, schedule[EPA_MPI_STAGE_2_COMPUTE], MPI_COMM_WORLD);
+    }
     } // endif (local_stage == EPA_MPI_STAGE_1_AGGREGATE)
     //==============================================================
     // EPA_MPI_STAGE_1_AGGREGATE === END
@@ -218,12 +223,14 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     if (local_stage == EPA_MPI_STAGE_2_COMPUTE and options.prescoring)
     {
     epa_mpi_recieve_merge(second_placement_work, schedule[EPA_MPI_STAGE_1_AGGREGATE], MPI_COMM_WORLD);
+    timer.start();
 #endif // __MPI
     if (options.prescoring)
     {
       place(second_placement_work, msa_stream, reference_tree, branches, sample, true, options, previously_calculated_lookups);
     }
 #ifdef __MPI
+    timer.stop();
     if(options.prescoring)
       epa_mpi_split_send(sample, schedule[EPA_MPI_STAGE_2_AGGREGATE], MPI_COMM_WORLD);
 
@@ -238,9 +245,11 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     if (local_stage == EPA_MPI_STAGE_LAST_AGGREGATE)
     {
       // only if this is the 4th stage do we need to get from mpi
-      if (local_stage == EPA_MPI_STAGE_2_AGGREGATE)
-        epa_mpi_recieve_merge(sample, schedule[EPA_MPI_STAGE_2_COMPUTE], MPI_COMM_WORLD);
-
+    if (local_stage == EPA_MPI_STAGE_2_AGGREGATE)
+    {
+      epa_mpi_recieve_merge(sample, schedule[EPA_MPI_STAGE_2_COMPUTE], MPI_COMM_WORLD);
+      timer.start();
+    }
 #endif // __MPI
     // recompute the lwrs
     if (options.prescoring)
@@ -260,12 +269,13 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     part_file.close();
 
 #ifdef __MPI
+    timer.stop();
     } // endif aggregate cleanup
 
     //==============================================================
     // EPA_MPI_STAGE_2_AGGREGATE === END
     //==============================================================
-    timer.stop(); // stop timer of any stage
+    // timer.stop(); // stop timer of any stage
 
     if ( !(chunk_num % rebalance) ) // time to rebalance
     {
@@ -302,11 +312,30 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
       MPI_Comm_free(&stage_comm);
       lgr.dbg() << "Broadcasting done!" << std::endl;
 
+      lgr.dbg() << "perstage average:";
+      for (size_t i = 0; i < perstage_avg.size(); ++i)
+      {
+        lgr.dbg() << " " << perstage_avg[i];
+      }
+      lgr.dbg() << std::endl;
+
       // Step 5: calculate schedule on every rank, deterministically!
       to_difficulty(perstage_avg);
+
+      lgr.dbg() << "perstage difficulty:";
+      for (size_t i = 0; i < perstage_avg.size(); ++i)
+      {
+        lgr.dbg() << " " << perstage_avg[i];
+      }
+      lgr.dbg() << std::endl;
+
       auto nps = solve(num_stages, world_size, perstage_avg);
       reassign(local_rank, nps, schedule, &local_stage);
       // Step 6: re-engage pipeline with new assignments
+      lgr.dbg() << "New Schedule:";
+      for (size_t i = 0; i < nps.size(); ++i)
+        lgr.dbg() << " " << nps[i];
+      lgr.dbg() << std::endl;
       // compute stages should try to keep their edge assignment! affinity!
       lgr.dbg() << "Rebalancing done!" << std::endl;
     }
