@@ -1,6 +1,6 @@
 #pragma once
 
-#include <algorithm>
+#include <numeric>
 #include <unordered_map>
 #include <cereal/types/unordered_map.hpp>
 

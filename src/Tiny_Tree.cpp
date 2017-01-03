@@ -1,7 +1,7 @@
 #include "Tiny_Tree.hpp"
 
 #include <vector>
-#include <algorithm>
+#include <numeric>
 
 #include "tiny_util.hpp"
 #include "pll_util.hpp"

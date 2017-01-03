@@ -2,7 +2,10 @@
 
 #include <fstream>
 #include <chrono>
+
+#ifdef __OMP
 #include <omp.h>
+#endif
 
 #include "file_io.hpp"
 #include "jplace_util.hpp"
