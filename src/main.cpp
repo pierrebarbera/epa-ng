@@ -105,6 +105,9 @@ int main(int argc, char** argv)
     ("chunk-size",
       "Number of query sequences to be read in at a time. May influence performance.",
       cxxopts::value<unsigned int>()->default_value("1000"))
+    ("T,threads",
+      "Number of threads to use. 0 means number of cores = number of threads (only works if compiled with OpenMP)",
+      cxxopts::value<unsigned int>()->default_value("0"))
     ;
 
   cli.parse(argc, argv);
@@ -175,6 +178,7 @@ int main(int argc, char** argv)
     }
   }
   if (cli.count("chunk-size")) options.chunk_size = cli["chunk-size"].as<unsigned int>();
+  if (cli.count("threads")) options.num_threads = cli["threads"].as<unsigned int>();
 
   } catch (const cxxopts::OptionException& e)
   {

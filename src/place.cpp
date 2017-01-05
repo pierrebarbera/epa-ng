@@ -33,7 +33,7 @@ static void place(const Work& to_place, MSA_Stream& msa, Tree& reference_tree,
 {
 
 #ifdef __OMP
-  unsigned int num_threads = omp_get_max_threads();
+  unsigned int num_threads = options.num_threads ? options.num_threads : omp_get_max_threads();
 #else
   unsigned int num_threads = 1;
 #endif
