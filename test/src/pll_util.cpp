@@ -47,7 +47,7 @@ TEST(pll_util, utree_query_branches)
 
   // teardown
   pll_partition_destroy(part);
-  pll_utree_destroy(tree);
+  pll_utree_destroy(tree, nullptr);
 }
 
 TEST(pll_util, set_unique_clv_indices)
@@ -90,7 +90,7 @@ TEST(pll_util, set_unique_clv_indices)
 
   // teardown
   pll_partition_destroy(part);
-  pll_utree_destroy(tree);
+  pll_utree_destroy(tree, nullptr);
 }
 
 static int cb_set_branchlengths_one(pll_utree_t * node)
@@ -134,7 +134,7 @@ TEST(pll_util, get_numbered_newick_string)
   // teardown
 
   pll_partition_destroy(part);
-  pll_utree_destroy(tree);
+  pll_utree_destroy(tree, nullptr);
 }
 
 TEST(pll_util, sum_branch_lengths)

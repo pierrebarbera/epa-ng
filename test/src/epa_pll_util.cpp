@@ -47,7 +47,7 @@ TEST(epa_pll_util, link_tree_msa)
 
   // teardown
   pll_partition_destroy(part);
-  pll_utree_destroy(tree);
+  pll_utree_destroy(tree, nullptr);
 
 }
 
@@ -98,7 +98,7 @@ TEST(epa_pll_util, precompute_clvs)
   // teardown
   utree_free_node_data(tree);
   pll_partition_destroy(part);
-  pll_utree_destroy(tree);
+  pll_utree_destroy(tree, nullptr);
 }
 
 TEST(epa_pll_util, split_combined_msa)

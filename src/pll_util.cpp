@@ -8,15 +8,6 @@
 
 using namespace std;
 
-void utree_destroy(pll_utree_t * tree)
-{
-  if (tree)
-  {
-    // utree_free_node_data(tree);
-    pll_utree_destroy(tree);
-  }
-}
-
 void fasta_close(pll_fasta_t* fptr) { if(fptr) pll_fasta_close(fptr); }
 
 static void set_missing_branch_lengths_recursive(pll_utree_t * tree, double length)
@@ -197,6 +188,12 @@ int utree_free_node_data(pll_utree_t * node)
   free_node_data(node->back);
 
   return 1;
+}
+
+void utree_destroy(pll_utree_t * tree)
+{
+  if (tree)
+    pll_utree_destroy(tree, nullptr);
 }
 
 static void utree_query_branches_recursive(pll_utree_t * node, pll_utree_t ** node_list, unsigned int * index)

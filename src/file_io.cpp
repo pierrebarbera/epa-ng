@@ -80,7 +80,7 @@ pll_utree_t * build_tree_from_file(const string& tree_file, Tree_Numbers& nums)
   else
   {
    tree = pll_rtree_unroot(rtree);
-   pll_rtree_destroy(rtree);
+   pll_rtree_destroy(rtree, nullptr);
 
    /* optional step if using default PLL clv/pmatrix index assignments */
    pll_utree_reset_template_indices(tree, num_tip_nodes);

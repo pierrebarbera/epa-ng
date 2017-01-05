@@ -40,7 +40,7 @@ TEST(file_io, build_partition_from_file)
   EXPECT_EQ(nums.branches, 13);
 
   pll_partition_destroy(part);
-  pll_utree_destroy(tree);
+  pll_utree_destroy(tree, nullptr);
 }
 
 TEST(file_io, file_check)

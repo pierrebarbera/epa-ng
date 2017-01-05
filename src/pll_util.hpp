@@ -19,11 +19,11 @@ typedef void (*fasta_deleter)(pll_fasta_t*);
 // deleters
 void fasta_close(pll_fasta_t* fptr);
 void utree_destroy(pll_utree_t * tree);
+int utree_free_node_data(pll_utree_t * node);
 
 // interface
 int cb_partial_traversal(pll_utree_t * node);
 int cb_full_traversal(pll_utree_t * node);
-int utree_free_node_data(pll_utree_t * node);
 unsigned int utree_query_branches(pll_utree_t * node, pll_utree_t ** node_list);
 void set_unique_clv_indices(pll_utree_t * tree, const int num_tip_nodes);
 void set_missing_branch_lengths(pll_utree_t * tree, double length);
