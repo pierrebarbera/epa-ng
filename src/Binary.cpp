@@ -81,7 +81,7 @@ void Binary::load_clv(pll_partition_t * partition, const unsigned int clv_index)
     get_offset(map_, clv_index));
 
   if (err != PLL_SUCCESS)
-    throw runtime_error{string("Loading CLV failed: ") + pll_errmsg};
+    throw runtime_error{string("Loading CLV failed: ") + pll_errmsg + std::string(" CLV index: ") + std::to_string(clv_index)};
 
 }
 

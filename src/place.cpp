@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <chrono>
+#include <mutex>
 
 #ifdef __OMP
 #include <omp.h>
@@ -24,7 +25,7 @@
 #include "epa_mpi_util.hpp"
 #endif
 
-typedef std::unordered_map<unsigned int, std::vector<std::vector<double>>> lookupstore_t;
+typedef std::vector<std::vector<std::vector<double>>> lookupstore_t;
 
 static void place(const Work& to_place, MSA_Stream& msa, Tree& reference_tree,
   const std::vector<pll_utree_t *>& branches, Sample& sample,
@@ -36,6 +37,10 @@ static void place(const Work& to_place, MSA_Stream& msa, Tree& reference_tree,
 #else
   unsigned int num_threads = 1;
 #endif
+
+  // make mutexes for each branch ID to protect access to lookup_store
+  auto mutexes = Mutex_List(branches.size());
+
   // split the sample structure such that the parts are thread-local
   std::vector<Sample> sample_parts(num_threads);
   std::vector<Work> work_parts;
@@ -50,7 +55,9 @@ static void place(const Work& to_place, MSA_Stream& msa, Tree& reference_tree,
     for (const auto& pair : work_parts[i])
     {
       auto branch_id = pair.first;
+      mutexes[0]->lock();
       auto branch = Tiny_Tree(branches[branch_id], branch_id, reference_tree, do_blo, options, lookup_store[branch_id]);
+      mutexes[0]->unlock();
 
       for (const auto& seq_id : pair.second)
         sample_parts[i].add_placement(seq_id, branch.place(msa[seq_id]));
@@ -130,7 +137,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
   unsigned int chunk_num = 1;
   Sample sample;
 
-  lookupstore_t previously_calculated_lookups;
+  lookupstore_t previously_calculated_lookups(num_branches);
 
   Work all_work(std::make_pair(0, num_branches), std::make_pair(0, chunk_size));
   Work first_placement_work;

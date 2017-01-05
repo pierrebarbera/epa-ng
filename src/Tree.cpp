@@ -75,7 +75,8 @@ void * Tree::get_clv(const pll_utree_t* node)
 
   // prevent race condition from concurrent access to this function
   Scoped_Mutex lock_by_clv_id(locks_[i]);
-  
+  // printf("Got lock %d!\n", i);
+
   auto scaler = node->scaler_index;
   bool use_tipchars = partition_->attributes & PLL_ATTRIB_PATTERN_TIP;
 
@@ -110,6 +111,8 @@ void * Tree::get_clv(const pll_utree_t* node)
 
   assert(clv_ptr);
   
+  // printf("Release lock %d!\n", i);
+
   return clv_ptr;
 }
 
