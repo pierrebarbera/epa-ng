@@ -92,6 +92,14 @@ void epa_mpi_split_send(T& obj, std::vector<int>& dest_ranks, MPI_Comm comm)
     epa_mpi_send(parts[i], dest_ranks[i], comm);
 }
 
+void epa_mpi_split_send(Sample& obj, const unsigned int num_seq, std::vector<int>& dest_ranks, MPI_Comm comm)
+{
+  std::vector<Sample> parts;
+  split(obj, parts, dest_ranks.size(), num_seq);
+  for (size_t i = 0; i < parts.size(); ++i) 
+    epa_mpi_send(parts[i], dest_ranks[i], comm);
+}
+
 template <typename T>
 void epa_mpi_recieve_merge(T& obj, std::vector<int>& src_ranks, MPI_Comm comm)
 {

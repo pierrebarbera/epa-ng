@@ -182,7 +182,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     timer.stop();
     // MPI: split the result and send the part to correct aggregate node
     lgr.dbg() << "Sending Stage 1 Results..." << std::endl;
-    epa_mpi_split_send(sample, schedule[EPA_MPI_STAGE_1_AGGREGATE], MPI_COMM_WORLD);
+    epa_mpi_split_send(sample, num_sequences, schedule[EPA_MPI_STAGE_1_AGGREGATE], MPI_COMM_WORLD);
     lgr.dbg() << "Stage 1 Send done!" << std::endl;
 
     } // endif (local_stage == EPA_MPI_STAGE_1_COMPUTE)
@@ -242,7 +242,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
 #ifdef __MPI
     timer.stop();
     if(options.prescoring)
-      epa_mpi_split_send(sample, schedule[EPA_MPI_STAGE_2_AGGREGATE], MPI_COMM_WORLD);
+      epa_mpi_split_send(sample, num_sequences, schedule[EPA_MPI_STAGE_2_AGGREGATE], MPI_COMM_WORLD);
 
     } // endif (local_stage == EPA_MPI_STAGE_2_COMPUTE)
     //==============================================================

@@ -67,6 +67,33 @@ TEST(set_manipulators, split_sample_equal)
   EXPECT_EQ(3, parts[1][0][0].branch_id());
 }
 
+TEST(set_manipulators, split_sample_globaly_mapped)
+{
+  Sample sample_1;
+  sample_1.emplace_back(1, 0);
+  sample_1.back().emplace_back(1,-10,0.9,0.9);
+  sample_1.emplace_back(2, 0);
+  sample_1.back().emplace_back(2,-10,0.9,0.9);
+  sample_1.emplace_back(3, 0);
+  sample_1.back().emplace_back(3,-10,0.9,0.9);
+  sample_1.emplace_back(9, 0);
+  sample_1.back().emplace_back(3,-10,0.9,0.9);
+
+  vector<Sample> parts;
+
+  split(sample_1, parts, 5, 10);
+
+  ASSERT_EQ(5, parts.size());
+  ASSERT_NE(0, sample_1.size());
+
+  ASSERT_EQ(1, parts[0].size());
+  ASSERT_EQ(2, parts[1].size());
+  ASSERT_EQ(0, parts[2].size());
+  ASSERT_EQ(0, parts[3].size());
+  ASSERT_EQ(1, parts[4].size());
+
+}
+
 TEST(set_manipulators, split_work_equal)
 {
   Sample sample_1;

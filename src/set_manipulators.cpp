@@ -43,6 +43,31 @@ void split(Sample& src, vector<Sample>& parts, const vector<vector<unsigned int>
   assert(parts.size() == split_map.size());
 }
 
+/**
+ * special split function that Splits samples in buckets according to the global sequence ID
+ * of their PQueries. The goal is to have them split such that each aggregate node gets their
+ * correct set of sequence results (even if that part is empty, which constitutes a null-message)
+ * 
+ * @param
+ * @param
+ * @param
+ */
+void split(const Sample& src, std::vector<Sample>& parts, const unsigned int num_parts, const unsigned int num_sequences)
+{
+  parts.clear();
+  // ensure that there are actually as many parts as specified. We want empty parts to enable null messages
+  parts.resize(num_parts);
+  
+  const unsigned int chunk_size = ceil(num_sequences / (double)num_parts);
+
+  for (auto& pq : src)
+  {
+    auto bucket = floor(pq.sequence_id() / chunk_size);
+    parts[bucket].push_back(pq);
+  }
+
+}
+
 void split(const Work& src, std::vector<Work>& parts, const unsigned int num_parts)
 {
   if (src.size() < num_parts)

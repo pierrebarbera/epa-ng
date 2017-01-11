@@ -25,6 +25,7 @@ public:
   void clear() { pquerys_.clear(); }
   void push_back(PQuery&& pq) { pquerys_.push_back(pq); }
   void push_back(PQuery& pq) { pquerys_.push_back(pq); }
+  void push_back(const PQuery& pq) { pquerys_.push_back(pq); }
   void erase(iterator begin, iterator end) { pquerys_.erase(begin, end); }
 
   // needs to be in the header
