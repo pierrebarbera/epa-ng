@@ -12,7 +12,7 @@ build/CMakeCache.txt: CMakeLists.txt
 
 run_make: build/CMakeCache.txt
 	@echo "Running make"
-	@make -C build #VERBOSE=1
+	@make -C build #-j9 
 .PHONY: run_make
 
 update:
@@ -26,10 +26,14 @@ test: update
 .PHONY: test
 
 pll:
-	@echo "Don't forget to set the fastblo flag!"
 	mkdir -p bin
 	cd ${PLLMOD} && ./install-with-libpll.sh .. 
 .PHONY: pll
+
+pll_clean:
+	cd ${PLL} && make clean
+	cd ${PLLMOD} && make clean
+.PHONY: pll_clean
 		
 clean:
 	@echo "Cleaning"
