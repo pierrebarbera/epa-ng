@@ -7,9 +7,19 @@
 
 #include <sstream>
 #include <memory>
+#include <unordered_map>
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/vector.hpp>
 #include <cereal/types/string.hpp>
+
+// types to keep track of previous async sends
+typedef struct
+{
+  MPI_Request*  req = nullptr;
+  char*         buf = nullptr;
+} request_tuple_t;
+
+typedef typename std::unordered_map<int, request_tuple_t>  previous_request_storage_t;
 
 static void err_check(int errval)
 {
@@ -41,6 +51,22 @@ static void err_check(int errval)
   }
 }
 
+void epa_mpi_waitall(previous_request_storage_t reqs)
+{
+  for (auto& pair : reqs)
+  {
+    auto& r = pair.second;
+    if (r.req)
+    {
+      MPI_Status status;
+      err_check(MPI_Wait(r.req, &status));
+      delete[] r.buf;
+      r.buf = nullptr;
+      r.req = nullptr;
+    }
+  }
+}
+
 template <typename T>
 void epa_mpi_send(T& obj, int dest_rank, MPI_Comm comm)
 {
@@ -55,6 +81,32 @@ void epa_mpi_send(T& obj, int dest_rank, MPI_Comm comm)
   memcpy(buffer, data.c_str(), data.size() * sizeof(char));
   err_check(MPI_Send(buffer, data.size(), MPI_CHAR, dest_rank, 0, comm));
   delete[] buffer;
+}
+
+template <typename T>
+void epa_mpi_isend(T& obj, int dest_rank, MPI_Comm comm, request_tuple_t& prev_req)
+{
+  // wait for completion of previous send
+  if (prev_req.req)
+  {
+    MPI_Status status;
+    err_check(MPI_Wait(prev_req.req, &status));
+    delete[] prev_req.buf;
+    // free previous request?
+  }
+
+  // serialize the obj
+  std::stringstream ss;
+  cereal::BinaryOutputArchive out_archive(ss);
+  out_archive(obj);
+
+  // send obj to specified node
+  std::string data = ss.str();
+  auto buffer = new char[data.size()];
+  memcpy(buffer, data.c_str(), data.size() * sizeof(char));
+  err_check(MPI_Isend(buffer, data.size(), MPI_CHAR, dest_rank, 0, comm, prev_req.req));
+  
+  prev_req.buf = buffer;
 }
 
 template <typename T>
@@ -84,20 +136,28 @@ void epa_mpi_recieve(T& obj, int src_rank, MPI_Comm comm)
 }
 
 template <typename T>
-void epa_mpi_split_send(T& obj, std::vector<int>& dest_ranks, MPI_Comm comm)
+static inline void isend_all(std::vector<T>& parts, std::vector<int>& dest_ranks, MPI_Comm comm, previous_request_storage_t& prev_reqs)
+{
+  for (size_t i = 0; i < parts.size(); ++i)
+  {
+    auto dest = dest_ranks[i];
+    epa_mpi_isend(parts[i], dest, comm, prev_reqs[dest]);
+  }
+}
+
+template <typename T>
+void epa_mpi_split_send(T& obj, std::vector<int>& dest_ranks, MPI_Comm comm, previous_request_storage_t& prev_reqs)
 {
   std::vector<T> parts;
   split(obj, parts, dest_ranks.size());
-  for (size_t i = 0; i < parts.size(); ++i) 
-    epa_mpi_send(parts[i], dest_ranks[i], comm);
+  isend_all(parts, dest_ranks, comm, prev_reqs);
 }
 
-void epa_mpi_split_send(Sample& obj, const unsigned int num_seq, std::vector<int>& dest_ranks, MPI_Comm comm)
+void epa_mpi_split_send(Sample& obj, const unsigned int num_seq, std::vector<int>& dest_ranks, MPI_Comm comm, previous_request_storage_t& prev_reqs)
 {
   std::vector<Sample> parts;
   split(obj, parts, dest_ranks.size(), num_seq);
-  for (size_t i = 0; i < parts.size(); ++i) 
-    epa_mpi_send(parts[i], dest_ranks[i], comm);
+  isend_all(parts, dest_ranks, comm, prev_reqs);
 }
 
 template <typename T>

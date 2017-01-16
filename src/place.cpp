@@ -109,6 +109,8 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     = options.prescoring ? EPA_MPI_STAGE_2_AGGREGATE : EPA_MPI_STAGE_1_AGGREGATE;
   const auto EPA_MPI_DEDICATED_WRITE_RANK = schedule[EPA_MPI_STAGE_LAST_AGGREGATE][0];
 
+  previous_request_storage_t prev_requests;
+
 #endif // __MPI
   lgr << "P-EPA - Massively-Parallel Evolutionary Placement Algorithm\n";
   lgr << "\nInvocation: \n" << invocation << "\n";
@@ -182,7 +184,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     timer.stop();
     // MPI: split the result and send the part to correct aggregate node
     lgr.dbg() << "Sending Stage 1 Results..." << std::endl;
-    epa_mpi_split_send(sample, num_sequences, schedule[EPA_MPI_STAGE_1_AGGREGATE], MPI_COMM_WORLD);
+    epa_mpi_split_send(sample, num_sequences, schedule[EPA_MPI_STAGE_1_AGGREGATE], MPI_COMM_WORLD, prev_requests);
     lgr.dbg() << "Stage 1 Send done!" << std::endl;
 
     } // endif (local_stage == EPA_MPI_STAGE_1_COMPUTE)
@@ -220,7 +222,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     if (options.prescoring)
     {
       timer.stop();
-      epa_mpi_split_send(second_placement_work, schedule[EPA_MPI_STAGE_2_COMPUTE], MPI_COMM_WORLD);
+      epa_mpi_split_send(second_placement_work, schedule[EPA_MPI_STAGE_2_COMPUTE], MPI_COMM_WORLD, prev_requests);
     }
     } // endif (local_stage == EPA_MPI_STAGE_1_AGGREGATE)
     //==============================================================
@@ -242,7 +244,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
 #ifdef __MPI
     timer.stop();
     if(options.prescoring)
-      epa_mpi_split_send(sample, num_sequences, schedule[EPA_MPI_STAGE_2_AGGREGATE], MPI_COMM_WORLD);
+      epa_mpi_split_send(sample, num_sequences, schedule[EPA_MPI_STAGE_2_AGGREGATE], MPI_COMM_WORLD, prev_requests);
 
     } // endif (local_stage == EPA_MPI_STAGE_2_COMPUTE)
     //==============================================================
@@ -312,6 +314,9 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
         lgr.dbg() << "Foremen allgather done!" << std::endl;
         MPI_Comm_free(&foreman_comm);
       }
+      // ensure all messages were recieved and previous requests are cleared
+      epa_mpi_waitall(prev_requests);
+      
       MPI_BARRIER(MPI_COMM_WORLD);
       // Step 4: stage representatives forward results to all stage members
       // epa_mpi_bcast(perstage_avg, foreman, schedule[local_stage], local_rank);
