@@ -15,7 +15,7 @@
 // types to keep track of previous async sends
 typedef struct
 {
-  MPI_Request*  req = nullptr;
+  MPI_Request  req;
   char*         buf = nullptr;
 } request_tuple_t;
 
@@ -59,10 +59,9 @@ void epa_mpi_waitall(previous_request_storage_t reqs)
     if (r.req)
     {
       MPI_Status status;
-      err_check(MPI_Wait(r.req, &status));
+      err_check(MPI_Wait(&r.req, &status));
       delete[] r.buf;
       r.buf = nullptr;
-      r.req = nullptr;
     }
   }
 }
@@ -90,7 +89,7 @@ void epa_mpi_isend(T& obj, int dest_rank, MPI_Comm comm, request_tuple_t& prev_r
   if (prev_req.req)
   {
     MPI_Status status;
-    err_check(MPI_Wait(prev_req.req, &status));
+    err_check(MPI_Wait(&prev_req.req, &status));
     delete[] prev_req.buf;
     // free previous request?
   }
@@ -104,7 +103,7 @@ void epa_mpi_isend(T& obj, int dest_rank, MPI_Comm comm, request_tuple_t& prev_r
   std::string data = ss.str();
   auto buffer = new char[data.size()];
   memcpy(buffer, data.c_str(), data.size() * sizeof(char));
-  err_check(MPI_Isend(buffer, data.size(), MPI_CHAR, dest_rank, 0, comm, prev_req.req));
+  err_check(MPI_Issend(buffer, data.size(), MPI_CHAR, dest_rank, 0, comm, &prev_req.req));
   
   prev_req.buf = buffer;
 }
