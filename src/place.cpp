@@ -356,6 +356,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     }
 
 #endif // __MPI
+    prev_requests.clear();
     second_placement_work.clear();
     sample.clear();
     msa_stream.clear();
