@@ -12,7 +12,7 @@ void utree_destroy(pll_utree_t * tree)
   if (tree)
   {
     // utree_free_node_data(tree);
-    pll_utree_destroy(tree);
+    pll_utree_destroy(tree, nullptr);
   }
 }
 void fasta_close(pll_fasta_t* fptr) { if(fptr) pll_fasta_close(fptr); }
