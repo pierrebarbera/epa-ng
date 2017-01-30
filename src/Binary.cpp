@@ -10,6 +10,19 @@ using namespace std;
 
 int safe_fclose(FILE* fptr) { return fptr ? fclose(fptr) : 0; }
 
+Binary::Binary(Binary && other) : bin_fptr_(nullptr, safe_fclose)
+{
+  bin_fptr_ = std::move(other.bin_fptr_);
+  map_ = std::move(other.map_);
+}
+
+Binary& Binary::operator=(Binary && other)
+{
+  bin_fptr_ = std::move(other.bin_fptr_);
+  map_ = std::move(other.map_);
+  return *this;
+}
+
 Binary::Binary(const string& binary_file_path) : bin_fptr_(nullptr, safe_fclose)
 {
   // open the binary file
@@ -57,6 +70,7 @@ static long int get_offset(vector<pll_block_map_t>& map, const int block_id)
 
 void Binary::load_clv(pll_partition_t * partition, const unsigned int clv_index)
 {
+  std::lock_guard<std::mutex> lock(file_mutex_);
   assert(bin_fptr_);
   assert(clv_index < partition->clv_buffers + partition->tips);
   if (partition->attributes & PLL_ATTRIB_PATTERN_TIP)
@@ -81,12 +95,13 @@ void Binary::load_clv(pll_partition_t * partition, const unsigned int clv_index)
     get_offset(map_, clv_index));
 
   if (err != PLL_SUCCESS)
-    throw runtime_error{string("Loading CLV failed: ") + pll_errmsg + std::string(" CLV index: ") + std::to_string(clv_index)};
+    throw runtime_error{string("Loading CLV failed: ") + pll_errmsg + std::string(". CLV index: ") + std::to_string(clv_index)};
 
 }
 
 void Binary::load_tipchars(pll_partition_t * partition, const unsigned int tipchars_index)
 {
+  std::lock_guard<std::mutex> lock(file_mutex_);
   assert(bin_fptr_);
   assert(tipchars_index < partition->tips);
   assert(partition->attributes & PLL_ATTRIB_PATTERN_TIP);
@@ -103,6 +118,7 @@ void Binary::load_tipchars(pll_partition_t * partition, const unsigned int tipch
 
 void Binary::load_scaler(pll_partition_t * partition, const unsigned int scaler_index)
 {
+  std::lock_guard<std::mutex> lock(file_mutex_);
   assert(bin_fptr_);
   assert(scaler_index < partition->scale_buffers);
 
@@ -121,6 +137,7 @@ void Binary::load_scaler(pll_partition_t * partition, const unsigned int scaler_
 
 pll_partition_t* Binary::load_partition()
 {
+  std::lock_guard<std::mutex> lock(file_mutex_);
   // make skeleton partition that only allocates the pointers to the clv/tipchar buffers
   unsigned int attributes = PLLMOD_BIN_ATTRIB_PARTITION_LOAD_SKELETON;
   auto partition =  pllmod_binary_partition_load(bin_fptr_.get(), 0, nullptr, &attributes,
@@ -129,15 +146,12 @@ pll_partition_t* Binary::load_partition()
   if (!partition)
     throw runtime_error{string("Error loading partition: ") + pll_errmsg};
 
-  // free up buffers for things we want to load on demand
-  // TODO never alloc in the first place
-  // dealloc_buffers(partition);
-
   return partition;
 }
 
 pll_utree_t* Binary::load_utree()
 {
+  std::lock_guard<std::mutex> lock(file_mutex_);
   unsigned int attributes = 0;
   auto tree =  pllmod_binary_utree_load(bin_fptr_.get(), 0, &attributes, get_offset(map_, -2));
   if (!tree)
