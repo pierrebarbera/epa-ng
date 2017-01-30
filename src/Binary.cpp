@@ -119,71 +119,11 @@ void Binary::load_scaler(pll_partition_t * partition, const unsigned int scaler_
   partition->scale_buffer[scaler_index] = (unsigned int*)ptr;
 }
 
-// static pll_partition_t* skeleton_partition()
-// {
-//   auto attributes = PLL_ATTRIB_ARCH_SSE;
-// #ifdef __AVX
-//   attributes = PLL_ATTRIB_ARCH_AVX;
-// #endif
-
-//   attributes |= PLL_ATTRIB_PATTERN_TIP;
-
-//   auto partition = pll_partition_create(
-//     3, // number of tip nodes
-//     1, // number of extra clv buffers
-//     STATES,
-//     1, // number of sites
-//     1, // number of concurrent subs. models
-//     1, // number of probabillity matrices
-//     RATE_CATS,
-//     1, // number of scale buffers
-//     attributes);
-
-//   if (!partition)
-//     throw runtime_error{string("Creating skeleton partition: ") + pll_errmsg};
-
-//   // ensure clv, tipchar and scaler fields are only shallowly allocated
-//   // TODO
-
-//   return partition;
-// }
-
-static void dealloc_buffers(pll_partition_t* part)
-{
-  // dealloc clvs and tipchars
-  if (part->tipchars)
-    for (size_t i = 0; i < part->tips; ++i)
-    {
-      pll_aligned_free(part->tipchars[i]);
-      part->tipchars[i] = nullptr;
-    }
-
-  if (part->clv)
-  {
-    size_t start = (part->attributes & PLL_ATTRIB_PATTERN_TIP) ? part->tips : 0;
-    for (size_t i = start; i < part->clv_buffers + part->tips; ++i)
-    {
-      pll_aligned_free(part->clv[i]);
-      part->clv[i] = nullptr;
-    }
-  }
-
-  if (part->scale_buffer)
-  {
-    for (size_t i = 0; i < part->scale_buffers; ++i)
-    {
-      free(part->scale_buffer[i]);
-      part->scale_buffer[i] = nullptr;
-    }
-  }
-}
-
 pll_partition_t* Binary::load_partition()
 {
   // make skeleton partition that only allocates the pointers to the clv/tipchar buffers
-  auto skelly = nullptr;// skeleton_partition();
-  unsigned int attributes = PLLMOD_BIN_ATTRIB_PARTITION_DUMP_WGT;
-  auto partition =  pllmod_binary_partition_load(bin_fptr_.get(), 0, skelly, &attributes,
+  unsigned int attributes = PLLMOD_BIN_ATTRIB_PARTITION_LOAD_SKELETON;
+  auto partition =  pllmod_binary_partition_load(bin_fptr_.get(), 0, nullptr, &attributes,
     get_offset(map_, -1));
 
   if (!partition)
@@ -191,7 +131,7 @@ pll_partition_t* Binary::load_partition()
 
   // free up buffers for things we want to load on demand
   // TODO never alloc in the first place
-  dealloc_buffers(partition);
+  // dealloc_buffers(partition);
 
   return partition;
 }
@@ -246,7 +186,7 @@ void dump_to_binary(Tree& tree, const string& file)
     for (tip_index = 0; tip_index < num_tips; tip_index++)
     {
       if(!pllmod_binary_custom_dump(fptr, block_id++, tree.partition()->tipchars[tip_index],
-      tree.partition()->sites * sizeof(char), attributes))
+      tree.partition()->sites * sizeof(unsigned char), attributes))
         throw runtime_error{string("Dumping tipchars to binary: ") + pll_errmsg};
     }
   }

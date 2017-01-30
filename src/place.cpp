@@ -355,8 +355,8 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
       lgr.dbg() << "Rebalancing done!" << std::endl;
     }
 
-#endif // __MPI
     prev_requests.clear();
+#endif // __MPI
     second_placement_work.clear();
     sample.clear();
     msa_stream.clear();
