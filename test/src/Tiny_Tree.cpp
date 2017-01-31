@@ -11,13 +11,12 @@
 #include "src/Range.hpp"
 #include "src/pll_util.hpp"
 #include "src/epa_pll_util.hpp"
+#include "src/Lookup_Store.hpp"
 
 #include <tuple>
 #include <limits>
 
 using namespace std;
-
-typedef std::vector<std::vector<double>> lookup_t;
 
 TEST(Tiny_Tree, place_heuristic)
 {
@@ -26,7 +25,7 @@ TEST(Tiny_Tree, place_heuristic)
   MSA queries = build_MSA_from_file(env->query_file);
   Tree_Numbers nums;
   Options options;
-  lookup_t lu;
+  Lookup_Store lu;
 
   auto ref_tree = Tree(env->tree_file, msa, env->model, options);
 
@@ -54,7 +53,7 @@ TEST(Tiny_Tree, place_BLO)
   MSA queries = build_MSA_from_file(env->query_file);
   Tree_Numbers nums = Tree_Numbers();
 
-  lookup_t lu;
+  Lookup_Store lu;
 
   Options options;
   auto ref_tree = Tree(env->tree_file, msa, env->model, options);
@@ -81,7 +80,7 @@ TEST(Tiny_Tree, place_from_binary)
   auto queries = build_MSA_from_file(env->query_file);
   Model model;
   Options options;
-  lookup_t lu;
+  Lookup_Store lu;
 
   Tree original_tree(env->tree_file, msa, model, options);
   dump_to_binary(original_tree, env->binary_file);
