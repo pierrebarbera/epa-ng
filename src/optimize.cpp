@@ -173,6 +173,8 @@ static double opt_branch_lengths_pplacer(pll_partition_t * partition, pll_utree_
     pll_update_sumtable(partition,
                         score_node->clv_index,
                         score_node->back->clv_index,
+                        score_node->scaler_index,
+                        score_node->back->scaler_index,
                         &param_indices[0],
                         nr_params.sumtable);
 
@@ -211,6 +213,8 @@ static double opt_branch_lengths_pplacer(pll_partition_t * partition, pll_utree_
       pll_update_sumtable(partition,
                           blo_node->clv_index,
                           blo_node->back->clv_index,
+                          blo_node->scaler_index,
+                          blo_node->back->scaler_index,
                           &param_indices[0],
                           nr_params.sumtable);
 
