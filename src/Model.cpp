@@ -101,6 +101,11 @@ void Model::base_frequencies(double *source, unsigned int length)
     base_frequencies_[i] = source[i];
 }
 
+void Model::base_frequencies(std::vector<double> freqs)
+{
+  base_frequencies(&freqs[0], freqs.size());
+}
+
 void Model::substitution_rates(double *source, unsigned int length)
 {
   if (substitution_rates_.size() != length)
@@ -108,6 +113,11 @@ void Model::substitution_rates(double *source, unsigned int length)
 
   for (size_t i = 0; i < length; ++i)
     substitution_rates_[i] = source[i];
+}
+
+void Model::substitution_rates(std::vector<double> rates)
+{
+  substitution_rates(&rates[0], rates.size());
 }
 
 void Model::symmetries(int* source, unsigned int length)
