@@ -90,7 +90,7 @@ int main(int argc, char** argv)
   cli.add_options("Compute")
     ("O,opt-ref-tree", "Optimize reference tree and model parameters.")
     ("raxml-blo",
-      "Employ old style of branch length optimization during thorough insertion as opposed to sliding approach."
+      "Employ old style of branch length optimization during thorough insertion as opposed to sliding approach. "
       "WARNING: may significantly slow down computation.")
     ("g,dyn-heur",
       "Two-phase heuristic, determination of candidate edges using accumulative threshold.",
@@ -107,12 +107,12 @@ int main(int argc, char** argv)
       "--base-freqs 0.2:0.3:0.25:0.25",
       cxxopts::value<std::string>())
     ("sub-rates",
-      "Substitution rates to be used. Must correspond to alphabet size (e.g. 6 for DNA). Overwritten by -O."
-      "Order: A-C, A-G, A-T, C-G, C-T, G-T"
+      "Substitution rates to be used. Must correspond to alphabet size (e.g. 6 for DNA). Overwritten by -O. "
+      "Order: A-C, A-G, A-T, C-G, C-T, G-T "
       "Example: --sub-rates 0.88:2.0:1.31:0.86:3.48:1.0",
       cxxopts::value<std::string>())
     ("alpha",
-      "Alpha parameter to be used. Overwritten by -O."
+      "Alpha parameter to be used. Overwritten by -O. "
       "Example: --alpha 0.634016",
       cxxopts::value<double>())
     ;
@@ -120,14 +120,17 @@ int main(int argc, char** argv)
     ("chunk-size",
       "Number of query sequences to be read in at a time. May influence performance.",
       cxxopts::value<unsigned int>()->default_value("1000"))
+    #ifdef __OMP
     ("T,threads",
-      "Number of threads to use. 0 means number of cores = number of threads (only works if compiled with OpenMP)",
+      "Number of threads to use. If 0 is passed as argument, program will run with the maximum number "
+      "of threads available.",
       cxxopts::value<unsigned int>()->default_value("0"))
+    #endif
     ;
 
   cli.parse(argc, argv);
 
-  if (cli.count("help"))
+  if (argc == 1 || cli.count("help"))
   {
     lgr << cli.help({"", "Input", "Output", "Compute", "Pipeline"}) << std::endl;
     exit(EXIT_SUCCESS);
