@@ -10,7 +10,7 @@ public:
   typedef typename std::vector<std::vector<double>>     lookup_t;
 
   Lookup_Store(size_t num_branches) : branch_(num_branches), store_(num_branches) { }
-  Lookup_Store() = default;
+  Lookup_Store() = delete;
   ~Lookup_Store() = default;
 
   std::mutex& get_mutex(const size_t branch_id)

@@ -23,11 +23,11 @@ TEST(Tiny_Tree, place_heuristic)
   // buildup
   MSA msa = build_MSA_from_file(env->reference_file);
   MSA queries = build_MSA_from_file(env->query_file);
-  Tree_Numbers nums;
   Options options;
-  Lookup_Store lu;
 
   auto ref_tree = Tree(env->tree_file, msa, env->model, options);
+
+  Lookup_Store lu(ref_tree.nums().branches);
 
   auto tree = ref_tree.tree();
 
@@ -51,12 +51,12 @@ TEST(Tiny_Tree, place_BLO)
   // buildup
   MSA msa = build_MSA_from_file(env->reference_file);
   MSA queries = build_MSA_from_file(env->query_file);
-  Tree_Numbers nums = Tree_Numbers();
 
-  Lookup_Store lu;
 
   Options options;
   auto ref_tree = Tree(env->tree_file, msa, env->model, options);
+
+  Lookup_Store lu(ref_tree.nums().branches);
 
   auto tree = ref_tree.tree();
 
@@ -80,12 +80,12 @@ TEST(Tiny_Tree, place_from_binary)
   auto queries = build_MSA_from_file(env->query_file);
   Model model;
   Options options;
-  Lookup_Store lu;
 
   Tree original_tree(env->tree_file, msa, model, options);
   dump_to_binary(original_tree, env->binary_file);
   Tree read_tree(env->binary_file, model, options);
   string invocation("./this --is -a test");
+  Lookup_Store lu(original_tree.nums().branches);
 
   ASSERT_EQ(original_tree.nums().branches, read_tree.nums().branches);
 
