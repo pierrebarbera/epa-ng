@@ -81,7 +81,9 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
 
   lgr.dbg() << "Stages: " << num_stages << std::endl;
 
-  unsigned int rebalance = 10;
+  unsigned int rebalance = 3;
+  unsigned int rebalance_delta = rebalance;
+  bool reassign_happened = true;
 
   std::vector<double> init_diff = options.prescoring
     ? std::vector<double>{1000.0, 1.0, 1000.0, 1.0} : std::vector<double>{1000.0, 1.0};
@@ -156,7 +158,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     {
     // if previous chunk was a rebalance chunk or this is the first chunk (0 mod anything = 0)
     // ...then we need to correctly assign/reassign the workload of the first compute stage
-    if ( !((chunk_num - 1) % rebalance) )
+    if ( reassign_happened )
     {
       lgr.dbg() << "Assigning first stage Work" << std::endl;
       const auto& stage = schedule[EPA_MPI_STAGE_1_COMPUTE];
@@ -166,6 +168,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
       auto it = std::find(stage.begin(), stage.end(), local_rank);
       size_t stage_rank = std::distance(stage.begin(), it);
       first_placement_work = parts[stage_rank];
+      reassign_happened = false;
     }
     timer.start();
 #else
@@ -283,7 +286,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     //==============================================================
     // timer.stop(); // stop timer of any stage
 
-    if ( !(chunk_num % rebalance) ) // time to rebalance
+    if ( (chunk_num == rebalance) ) // time to rebalance
     {
       lgr.dbg() << "Rebalancing..." << std::endl;
       int foreman = schedule[local_stage][0];
@@ -347,6 +350,10 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
       lgr.dbg() << std::endl;
       // compute stages should try to keep their edge assignment! affinity!
       lgr.dbg() << "Rebalancing done!" << std::endl;
+      // exponential back-off style rebalance:
+      rebalance_delta *= 2;
+      rebalance += rebalance_delta;
+      reassign_happened = true;
     }
 
     prev_requests.clear();
