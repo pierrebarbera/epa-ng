@@ -1,5 +1,9 @@
 #include "Tiny_Tree.hpp"
 
+#ifdef __OMP
+#include <omp.h>
+#endif
+
 #include <vector>
 #include <numeric>
 
@@ -42,6 +46,7 @@ static void precompute_sites_static(char nt, vector<double>& result,
                                   &param_indices[0], &result[0]);
 }
 
+
 static double sum_precomputed_sitelk(vector<vector<double>>& lookup, const Sequence& s)
 {
   const string& seq = s.sequence();
@@ -68,7 +73,7 @@ static double sum_precomputed_sitelk(vector<vector<double>>& lookup, const Seque
 }
 
 Tiny_Tree::Tiny_Tree(pll_utree_t * edge_node , const unsigned int branch_id, Tree& reference_tree, 
-    const bool opt_branches, const Options& options, std::vector<std::vector<double>>& lookup)
+    const bool opt_branches, const Options& options, Lookup_Store& lookup_store)
     : partition_(nullptr, tiny_partition_destroy), tree_(nullptr, utree_destroy), opt_branches_(opt_branches)
     , model_(reference_tree.model()), ranged_computation_(options.ranged)
     , sliding_blo_(options.sliding_blo), branch_id_(branch_id)
@@ -126,10 +131,12 @@ Tiny_Tree::Tiny_Tree(pll_utree_t * edge_node , const unsigned int branch_id, Tre
 
   if (!opt_branches)
   {
-    if(lookup.size() != 0)
+    const std::lock_guard<std::mutex> lock(lookup_store.get_mutex(branch_id));
+
+    if(lookup_store.has_branch(branch_id))
     {
       // take the supplied lookup
-      lookup_ = lookup;
+      lookup_ = lookup_store[branch_id];
     }
     else
     {
@@ -144,7 +151,7 @@ Tiny_Tree::Tiny_Tree(pll_utree_t * edge_node , const unsigned int branch_id, Tre
         precompute_sites_static(character_map[i], lookup_[i], partition_.get(), tree_.get(), model_); 
       
       // pass a copy up
-      lookup = lookup_;
+      lookup_store[branch_id] = lookup_;
     }
   }
   

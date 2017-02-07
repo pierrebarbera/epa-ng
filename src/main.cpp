@@ -59,6 +59,8 @@ int main(int argc, char** argv)
 
   std::string banner;
 
+  Model model;
+
   try
   {
   cxxopts::Options cli(argv[0], "Massively-Parallel Evolutionary Placement Algorithm");
@@ -88,7 +90,7 @@ int main(int argc, char** argv)
   cli.add_options("Compute")
     ("O,opt-ref-tree", "Optimize reference tree and model parameters.")
     ("raxml-blo",
-      "Employ old style of branch length optimization during thorough insertion as opposed to sliding approach."
+      "Employ old style of branch length optimization during thorough insertion as opposed to sliding approach. "
       "WARNING: may significantly slow down computation.")
     ("g,dyn-heur",
       "Two-phase heuristic, determination of candidate edges using accumulative threshold.",
@@ -100,19 +102,35 @@ int main(int argc, char** argv)
       "Description string of the model to be used. Format: "
       "<type>-<symmetries>-<rate/frequency model> Examples: -m DNA-GTR-EMPIRICAL, -m AA-GTR-BLOSUM62",
       cxxopts::value<std::string>()->default_value("DNA-GTR-EMPIRICAL"))
+    ("base-freqs",
+      "Base frequencies to be used. Must match alphabet size. Overwritten by -O. Example: "
+      "--base-freqs 0.2:0.3:0.25:0.25",
+      cxxopts::value<std::string>())
+    ("sub-rates",
+      "Substitution rates to be used. Must correspond to alphabet size (e.g. 6 for DNA). Overwritten by -O. "
+      "Order: A-C, A-G, A-T, C-G, C-T, G-T "
+      "Example: --sub-rates 0.88:2.0:1.31:0.86:3.48:1.0",
+      cxxopts::value<std::string>())
+    ("alpha",
+      "Alpha parameter to be used. Overwritten by -O. "
+      "Example: --alpha 0.634016",
+      cxxopts::value<double>())
     ;
   cli.add_options("Pipeline")
     ("chunk-size",
       "Number of query sequences to be read in at a time. May influence performance.",
       cxxopts::value<unsigned int>()->default_value("1000"))
+    #ifdef __OMP
     ("T,threads",
-      "Number of threads to use. 0 means number of cores = number of threads (only works if compiled with OpenMP)",
+      "Number of threads to use. If 0 is passed as argument, program will run with the maximum number "
+      "of threads available.",
       cxxopts::value<unsigned int>()->default_value("0"))
+    #endif
     ;
 
   cli.parse(argc, argv);
 
-  if (cli.count("help"))
+  if (argc == 1 || cli.count("help"))
   {
     lgr << cli.help({"", "Input", "Output", "Compute", "Pipeline"}) << std::endl;
     exit(EXIT_SUCCESS);
@@ -177,6 +195,33 @@ int main(int argc, char** argv)
       << model_id << " " << sub_matrix << " " << std::endl;
     }
   }
+
+  model = Model(sequence_type, model_id, sub_matrix);
+
+  if (!options.opt_model)
+  {
+    if (cli.count("base-freqs"))
+    {
+      auto freq_strings = split_by_delimiter(cli["base-freqs"].as<std::string>(), ":");
+      std::vector<double> freqs;
+      for (auto& s : freq_strings)
+        freqs.push_back(std::stod(s));
+      model.base_frequencies(freqs);
+    }
+    if (cli.count("sub-rates"))
+    {
+      auto rate_strings = split_by_delimiter(cli["sub-rates"].as<std::string>(), ":");
+      std::vector<double> rates;
+      for (auto& s : rate_strings)
+        rates.push_back(std::stod(s));
+      model.substitution_rates(rates);
+    }
+    if (cli.count("alpha")) 
+    {
+      model.alpha(cli["alpha"].as<double>());
+    }
+  }
+
   if (cli.count("chunk-size")) options.chunk_size = cli["chunk-size"].as<unsigned int>();
   if (cli.count("threads")) options.num_threads = cli["threads"].as<unsigned int>();
 
@@ -213,8 +258,6 @@ int main(int argc, char** argv)
   MSA ref_msa;
   if (reference_file.size())
     ref_msa = build_MSA_from_file(reference_file);
-
-  Model model(sequence_type, model_id, sub_matrix);
 
   // build the Tree
   Tree tree;

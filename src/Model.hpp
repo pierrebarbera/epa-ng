@@ -23,7 +23,9 @@ public:
 
   // setters
   void base_frequencies(double* source, unsigned int length);
+  void base_frequencies(std::vector<double> freqs);
   void substitution_rates(double* source, unsigned int length);
+  void substitution_rates(std::vector<double> rates);
   void symmetries(int* source, unsigned int length);
   void alpha(double a) {alpha_ = a;};
 

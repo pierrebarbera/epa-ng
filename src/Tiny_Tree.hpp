@@ -11,6 +11,7 @@
 #include "Placement.hpp"
 #include "Tree.hpp"
 #include "pll_util.hpp"
+#include "Lookup_Store.hpp"
 
 /* Encapsulates a smallest possible unrooted tree (3 tip nodes, 1 inner node)
   for use in edge insertion:
@@ -33,7 +34,7 @@ class Tiny_Tree
 {
 public:
   Tiny_Tree(pll_utree_t * edge_node , const unsigned int branch_id, Tree& reference_tree, 
-    const bool opt_branches, const Options& options, std::vector<std::vector<double>>& lookup);
+    const bool opt_branches, const Options& options, Lookup_Store& lookup);
 
   ~Tiny_Tree() = default;
 
@@ -58,6 +59,6 @@ private:
   bool sliding_blo_;
   unsigned int branch_id_;
 
-  std::vector<std::vector<double>> lookup_;
+  Lookup_Store::lookup_t lookup_;
 
 };

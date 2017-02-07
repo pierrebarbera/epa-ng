@@ -19,16 +19,15 @@
 #include "Timer.hpp"
 #include "Work.hpp"
 #include "schedule.hpp"
+#include "Lookup_Store.hpp"
 
 #ifdef __MPI
 #include "epa_mpi_util.hpp"
 #endif
 
-typedef std::vector<std::vector<std::vector<double>>> lookupstore_t;
-
 static void place(const Work& to_place, MSA_Stream& msa, Tree& reference_tree,
   const std::vector<pll_utree_t *>& branches, Sample& sample,
-  bool do_blo, const Options& options, lookupstore_t& lookup_store)
+  bool do_blo, const Options& options, Lookup_Store& lookup_store)
 {
 
 #ifdef __OMP
@@ -51,7 +50,7 @@ static void place(const Work& to_place, MSA_Stream& msa, Tree& reference_tree,
     for (const auto& pair : work_parts[i])
     {
       auto branch_id = pair.first;
-      auto branch = Tiny_Tree(branches[branch_id], branch_id, reference_tree, do_blo, options, lookup_store[branch_id]);
+      auto branch = Tiny_Tree(branches[branch_id], branch_id, reference_tree, do_blo, options, lookup_store);
 
       for (const auto& seq_id : pair.second)
         sample_parts[i].add_placement(seq_id, branch.place(msa[seq_id]));
@@ -135,7 +134,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
   unsigned int chunk_num = 1;
   Sample sample;
 
-  lookupstore_t previously_calculated_lookups(num_branches);
+  Lookup_Store previously_calculated_lookups(num_branches);
 
   Work all_work(std::make_pair(0, num_branches), std::make_pair(0, chunk_size));
   Work first_placement_work;
