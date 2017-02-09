@@ -80,11 +80,11 @@ int main(int argc, char** argv)
       cxxopts::value<std::string>()->default_value("./"))
     ("B,dump-binary",
       "Binary Dump mode: write ref. tree in binary format then exit.")
-    ("l,discard-min-lwr",
-      "Minimum likelihood weight below which a placement is discarded.",
-      cxxopts::value<double>()->default_value("0.01")->implicit_value("0.01"))
     ("L,discard-acc-lwr",
       "Accumulated likelihood weight after which further placements are discarded.",
+      cxxopts::value<double>()->default_value("0.9999")->implicit_value("0.01"))
+    ("l,discard-min-lwr",
+      "Minimum likelihood weight below which a placement is discarded.",
       cxxopts::value<double>()->implicit_value("0.01"))
     ;
   cli.add_options("Compute")
@@ -130,7 +130,7 @@ int main(int argc, char** argv)
 
   cli.parse(argc, argv);
 
-  if (argc == 1 || cli.count("help"))
+  if (cli.count("help"))
   {
     lgr << cli.help({"", "Input", "Output", "Compute", "Pipeline"}) << std::endl;
     exit(EXIT_SUCCESS);
@@ -155,7 +155,11 @@ int main(int argc, char** argv)
     binary_file = cli["binary"].as<std::string>();
     options.load_binary_mode = true;
   }
-  if (cli.count("discard-min-lwr")) options.support_threshold = cli["discard-min-lwr"].as<double>();
+  if (cli.count("discard-min-lwr")) 
+  {
+    options.support_threshold = cli["discard-min-lwr"].as<double>();
+    options.acc_threshold = false;
+  }
   if (cli.count("discard-acc-lwr"))
   {
     options.support_threshold = cli["discard-acc-lwr"].as<double>();

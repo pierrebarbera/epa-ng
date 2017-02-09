@@ -262,11 +262,16 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     // recompute the lwrs
     if (options.prescoring)
       compute_and_set_lwr(sample);
-    // discard uninteresting placements
     if (options.acc_threshold)
+    {
+      lgr.dbg() << "Filtering by accumulated threshold: " << options.support_threshold << std::endl;
       discard_by_accumulated_threshold(sample, options.support_threshold);
+    }
     else
+    {
+      lgr.dbg() << "Filtering placements below threshold: " << options.support_threshold << std::endl;
       discard_by_support_threshold(sample, options.support_threshold);
+    }
 
     // write results of current last stage aggregator node to a part file
     std::string part_file_name(outdir + "epa." + std::to_string(local_rank)

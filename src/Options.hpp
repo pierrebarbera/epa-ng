@@ -5,7 +5,7 @@ class Options {
 public:
   Options ()
     : prescoring(false), opt_model(false), opt_branches(false), sliding_blo(true)
-    , support_threshold(0.01), acc_threshold(false), prescoring_by_percentage(false)
+    , support_threshold(0.9999), acc_threshold(true), prescoring_by_percentage(false)
     , prescoring_threshold(0.95), ranged(false), dump_binary_mode(false)
     , load_binary_mode(false), chunk_size(1000), num_threads(0)
     { }
