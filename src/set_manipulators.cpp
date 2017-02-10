@@ -70,19 +70,19 @@ void split(const Sample& src, std::vector<Sample>& parts, const unsigned int num
 
 void split(const Work& src, std::vector<Work>& parts, const unsigned int num_parts)
 {
+  bool smaller = false;
   if (src.size() < num_parts)
-    throw std::runtime_error{"Cannot split into more parts than total size of Work"};
+    smaller = true;
 
   parts.clear();
   parts.resize(num_parts);
-  unsigned int chunk_size = src.size() / num_parts;
-  unsigned int chunk_size_remainder = src.size() % num_parts;
+  const unsigned int chunk_size           = smaller ? 1 : src.size() / num_parts;
+  const unsigned int chunk_size_remainder = smaller ? 0 : src.size() % num_parts;
 
   auto branch_iter = src.begin();
   auto seq_iter = branch_iter->second.begin();
 
   bool done = false;
-
 
   for (size_t i = 0; (i < num_parts) && !done; ++i)
   {
@@ -106,11 +106,8 @@ void split(const Work& src, std::vector<Work>& parts, const unsigned int num_par
         }
         seq_iter = branch_iter->second.begin();
       }
-      
     }
   }
-
-
 }
 
 /**
