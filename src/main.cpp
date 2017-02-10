@@ -161,14 +161,14 @@ int main(int argc, char** argv)
     binary_file = cli["binary"].as<std::string>();
     options.load_binary_mode = true;
   }
-  if (cli.count("discard-acc-lwr"))
+  if (cli.count("filter-acc-lwr"))
   {
-    options.support_threshold = cli["discard-acc-lwr"].as<double>();
+    options.support_threshold = cli["filter-acc-lwr"].as<double>();
     options.acc_threshold = true;
   }
-  if (cli.count("discard-min-lwr")) 
+  if (cli.count("filter-min-lwr")) 
   {
-    options.support_threshold = cli["discard-min-lwr"].as<double>();
+    options.support_threshold = cli["filter-min-lwr"].as<double>();
     options.acc_threshold = false;
   }
   if (cli.count("filter-min")) 
