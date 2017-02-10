@@ -1,11 +1,14 @@
 #pragma once
 
+#include <limits>
+
 class Options {
 
 public:
   Options ()
     : prescoring(false), opt_model(false), opt_branches(false), sliding_blo(true)
-    , support_threshold(0.9999), acc_threshold(true), prescoring_by_percentage(false)
+    , support_threshold(0.9999), acc_threshold(true), filter_min(1)
+    , filter_max(std::numeric_limits<unsigned int>::max()), prescoring_by_percentage(false)
     , prescoring_threshold(0.95), ranged(false), dump_binary_mode(false)
     , load_binary_mode(false), chunk_size(1000), num_threads(0)
     { }
@@ -18,6 +21,8 @@ public:
   bool sliding_blo;
   double support_threshold;
   bool acc_threshold;
+  unsigned int filter_min;
+  unsigned int filter_max;
   bool prescoring_by_percentage;
   double prescoring_threshold;
   bool ranged;

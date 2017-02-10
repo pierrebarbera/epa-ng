@@ -265,12 +265,18 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     if (options.acc_threshold)
     {
       lgr.dbg() << "Filtering by accumulated threshold: " << options.support_threshold << std::endl;
-      discard_by_accumulated_threshold(sample, options.support_threshold);
+      discard_by_accumulated_threshold( sample, 
+                                        options.support_threshold,
+                                        options.filter_min,
+                                        options.filter_max);
     }
     else
     {
       lgr.dbg() << "Filtering placements below threshold: " << options.support_threshold << std::endl;
-      discard_by_support_threshold(sample, options.support_threshold);
+      discard_by_support_threshold( sample,
+                                    options.support_threshold,
+                                    options.filter_min,
+                                    options.filter_max);
     }
 
     // write results of current last stage aggregator node to a part file

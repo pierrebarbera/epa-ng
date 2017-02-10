@@ -80,12 +80,18 @@ int main(int argc, char** argv)
       cxxopts::value<std::string>()->default_value("./"))
     ("B,dump-binary",
       "Binary Dump mode: write ref. tree in binary format then exit.")
-    ("L,discard-acc-lwr",
+    ("filter-acc-lwr",
       "Accumulated likelihood weight after which further placements are discarded.",
-      cxxopts::value<double>()->default_value("0.9999")->implicit_value("0.01"))
-    ("l,discard-min-lwr",
+      cxxopts::value<double>()->default_value("0.9999"))
+    ("filter-min-lwr",
       "Minimum likelihood weight below which a placement is discarded.",
-      cxxopts::value<double>()->implicit_value("0.01"))
+      cxxopts::value<double>())
+    ("filter-min",
+      "Minimum number of placements per sequence to include in final output.",
+      cxxopts::value<unsigned int>()->default_value("1"))
+    ("filter-max",
+      "Maximum number of placements per sequence to include in final output.",
+      cxxopts::value<unsigned int>())
     ;
   cli.add_options("Compute")
     ("O,opt-ref-tree", "Optimize reference tree and model parameters.")
@@ -155,16 +161,26 @@ int main(int argc, char** argv)
     binary_file = cli["binary"].as<std::string>();
     options.load_binary_mode = true;
   }
-  if (cli.count("discard-min-lwr")) 
-  {
-    options.support_threshold = cli["discard-min-lwr"].as<double>();
-    options.acc_threshold = false;
-  }
   if (cli.count("discard-acc-lwr"))
   {
     options.support_threshold = cli["discard-acc-lwr"].as<double>();
     options.acc_threshold = true;
   }
+  if (cli.count("discard-min-lwr")) 
+  {
+    options.support_threshold = cli["discard-min-lwr"].as<double>();
+    options.acc_threshold = false;
+  }
+  if (cli.count("filter-min")) 
+  {
+    options.filter_min = cli["filter-min"].as<unsigned int>();
+  }
+  if (cli.count("filter-max")) 
+  {
+    options.filter_max = cli["filter-max"].as<unsigned int>();
+  }
+  if (options.filter_min > options.filter_max)
+    throw std::runtime_error{"filter-min must not exceed filter-max!"};
   if (cli.count("fix-heur"))
   {
     options.prescoring_threshold = cli["fix-heur"].as<double>();

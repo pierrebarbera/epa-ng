@@ -192,20 +192,53 @@ void discard_bottom_x_percent(Sample& sample, const double x)
   }
 }
 
-void discard_by_support_threshold(Sample& sample, const double thresh)
+void discard_by_support_threshold(Sample& sample, const double thresh, 
+                                  const unsigned int min, const unsigned int max)
 {
   if (thresh < 0.0 || thresh > 1.0)
     throw range_error{"thresh is not a valid likelihood weight ratio (outside of [0,1])"};
+
+  if (min < 1)
+    throw range_error{"Filter min cannot be smaller than 1!"};
+
+  if (min > max)
+    throw range_error{"Filter min cannot be smaller than max!"};
+
+  // static_assert(std::is_array<PQuery>::value,
+  //                 "PQuery not array type");
+
   for (auto &pq : sample)
   {
-    auto erase_iter = partition(pq.begin(), pq.end(),
-    [thresh](Placement &p) -> bool {return (p.lwr() > thresh);});
+    auto erase_iter = partition(
+      pq.begin(), 
+      pq.end(),
+      [thresh](Placement &p) -> bool {
+        return (p.lwr() > thresh);
+      }
+    );
+
+    if ( distance(erase_iter, (pq.begin() + min - 1)) > 0 )
+      erase_iter = pq.begin() + min - 1;
+
+    if ( pq.size() <= max && distance((pq.begin() + max - 1), erase_iter) > 0 )
+      erase_iter = pq.begin() + max - 1;
+
     pq.erase(erase_iter, pq.end());
   }
 }
 
-void discard_by_accumulated_threshold(Sample& sample, const double thresh)
+void discard_by_accumulated_threshold(Sample& sample, const double thresh,
+                                  const unsigned int min, const unsigned int max)
 {
+  if (thresh < 0.0 || thresh > 1.0)
+    throw range_error{"thresh is not a valid likelihood weight ratio (outside of [0,1])"};
+
+  if (min < 1)
+    throw range_error{"Filter min cannot be smaller than 1!"};
+  
+  if (min > max)
+    throw range_error{"Filter min cannot be smaller than max!"};
+
   // sorting phase
   for (auto &pq : sample)
     sort_by_lwr(pq);
@@ -215,11 +248,20 @@ void discard_by_accumulated_threshold(Sample& sample, const double thresh)
   {
     double sum = 0.0;
 
+
     auto pq_iter = pq.begin();
-    for (pq_iter = pq.begin(); pq_iter != pq.end() && sum < thresh; ++pq_iter)
-      sum += pq_iter->lwr();
+    const auto max_iter = ( distance(pq_iter + max - 1, pq.end()) > 0 ) ? pq_iter + max - 1 : pq.end();
+    for (pq_iter = pq.begin(); pq_iter != max_iter && sum < thresh; ++pq_iter)
+    {
       // sum up until threshold is passed. if we abort before it is passed, we would have the possibility of
       // empty lists
+      sum += pq_iter->lwr();
+      
+    }
+
+    auto to_add = distance(pq_iter, pq.begin() + min - 1);
+    if (to_add > 0)
+      advance(pq_iter, to_add);
 
     pq.erase(pq_iter, pq.end());
   }
