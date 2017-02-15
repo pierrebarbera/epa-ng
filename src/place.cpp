@@ -336,6 +336,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
       // foreman must always be rank 0 in stage communicator:
       int split_key = local_rank == foreman ? -1 : local_rank;
       MPI_Comm_split(MPI_COMM_WORLD, local_stage, split_key, &stage_comm);
+      MPI_Bcast(&perstage_avg[0], num_stages, MPI_DOUBLE, 0, stage_comm);
       MPI_Comm_free(&stage_comm);
       lgr.dbg() << "Broadcasting done!" << std::endl;
 
