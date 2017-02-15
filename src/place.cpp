@@ -310,7 +310,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
 
       int color = (local_rank == foreman) ? 1 : MPI_UNDEFINED;
       MPI_Comm foreman_comm;
-      MPI_Comm_split(MPI_COMM_WORLD, color, local_rank, &foreman_comm);
+      MPI_Comm_split(MPI_COMM_WORLD, color, local_stage, &foreman_comm);
 
       if (local_rank == foreman)
       {
@@ -330,7 +330,10 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
       lgr.dbg() << "Broadcasting..." << std::endl;
       MPI_Comm stage_comm;
       MPI_Comm_split(MPI_COMM_WORLD, local_stage, local_rank, &stage_comm);
-      MPI_Bcast(&perstage_avg[0], num_stages, MPI_DOUBLE, 0, stage_comm);
+
+      // foreman must always be rank 0 in stage communicator:
+      int split_key = local_rank == foreman ? -1 : local_rank;
+      MPI_Comm_split(MPI_COMM_WORLD, local_stage, split_key, &stage_comm);
       MPI_Comm_free(&stage_comm);
       lgr.dbg() << "Broadcasting done!" << std::endl;
 
@@ -356,7 +359,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
       // Step 6: re-engage pipeline with new assignments
       lgr.dbg() << "New Schedule:";
       for (size_t i = 0; i < nps.size(); ++i)
-        lgr.dbg() << " " << nps[i];
+        lgr.dbg() << " " << nps[i]; 
       lgr.dbg() << std::endl;
       // compute stages should try to keep their edge assignment! affinity!
       lgr.dbg() << "Rebalancing done!" << std::endl;
