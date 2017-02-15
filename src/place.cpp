@@ -290,12 +290,14 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
 #ifdef __MPI
     timer.stop();
     } // endif aggregate cleanup
-
+#endif //__MPI
+    lgr.dbg() << "Chunk " << chunk_num << " done!" << std::endl;
     //==============================================================
     // EPA_MPI_STAGE_2_AGGREGATE === END
     //==============================================================
     // timer.stop(); // stop timer of any stage
 
+#ifdef __MPI
     if ( (chunk_num == rebalance) ) // time to rebalance
     {
       lgr.dbg() << "Rebalancing..." << std::endl;
