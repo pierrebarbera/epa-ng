@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <chrono>
+#include <string>
 
 #ifdef __OMP
 #include <omp.h>
@@ -24,6 +25,32 @@
 #ifdef __MPI
 #include "epa_mpi_util.hpp"
 #endif
+
+static std::vector<std::string> split(const std::string & text, const std::string delim)
+{
+  std::vector<std::string> parts;
+  size_t start = 0;
+  size_t end = 0;
+
+  do
+  {
+    end = text.find(delim, start);
+    end = (end != std::string::npos) ? end : text.length();
+    parts.emplace_back(text.substr(start, end - start));
+    start = end + delim.length();
+  } while (end != std::string::npos and start <= text.length());
+
+  return parts;
+}
+
+static std::string trim(const std::string &s, const char l, const char r)
+{
+  auto wsfront=std::find_if(s.begin(),s.end(),[l](char c){return c==l;});
+  std::advance(wsfront, 1);
+  auto wsback=std::find_if(s.rbegin(),s.rend(),[r](char c){return c==r;}).base();
+  std::advance(wsback, -1);
+  return (wsback<=wsfront ? std::string() : std::string(wsfront,wsback));
+}
 
 static void place(const Work& to_place, MSA_Stream& msa, Tree& reference_tree,
   const std::vector<pll_utree_t *>& branches, Sample& sample,
@@ -107,6 +134,11 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
   previous_request_storage_t prev_requests;
 
 #endif // __MPI
+  Timer flight_time;
+  std::ofstream flight_file(outdir + "stat");
+
+  std::string status_file_name(outdir + "pepa.status");
+
   lgr << "P-EPA - Massively-Parallel Evolutionary Placement Algorithm\n";
   lgr << "\nInvocation: \n" << invocation << "\n";
 
@@ -141,10 +173,20 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
   Work second_placement_work; // dummy structure to be filled during operation
   std::vector<std::string> part_names; // filenames of partial results
 
+#ifdef __MPI
+  if (local_rank == 0)
+  {
+#endif
+  std::ofstream trunc_status_file(status_file_name, std::ofstream::trunc);
+  flight_time.start();
+#ifdef __MPI
+  }
+#endif
   // while data
   // TODO this could be a stream read, such that cat msa.fasta | epa ... would work
   while ((num_sequences = msa_stream.read_next(chunk_size)) > 0)
   {
+
     if (num_sequences < chunk_size)
       all_work = Work(std::make_pair(0, num_branches), std::make_pair(0, num_sequences));
 
@@ -288,9 +330,31 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     part_file.close();
 
 #ifdef __MPI
+    // gather file names from all last stage aggregate nodes on foreman, append to status file
+    epa_mpi_gather( part_names, 
+                    schedule[EPA_MPI_STAGE_LAST_AGGREGATE][0],
+                    schedule[EPA_MPI_STAGE_LAST_AGGREGATE],
+                    local_rank 
+                  );
+    if (local_rank == schedule[EPA_MPI_STAGE_LAST_AGGREGATE][0])
+    {
+#endif
+    std::ofstream status_file(status_file_name, std::ofstream::app);
+    status_file << chunk_num << ":" << chunk_size << " [";
+    for (size_t i = 0; i < part_names.size(); ++i)
+    {
+      status_file << part_names[i];
+      if (i < part_names.size() - 1) status_file << ",";  
+    }
+    status_file << "]" << std::endl;
+    part_names.clear();
+
+#ifdef __MPI
+    }
     timer.stop();
     } // endif aggregate cleanup
 #endif //__MPI
+
     lgr.dbg() << "Chunk " << chunk_num << " done!" << std::endl;
     //==============================================================
     // EPA_MPI_STAGE_2_AGGREGATE === END
@@ -298,8 +362,16 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     // timer.stop(); // stop timer of any stage
 
 #ifdef __MPI
-    if ( (chunk_num == rebalance) ) // time to rebalance
+    if ( chunk_num == rebalance ) // time to rebalance
     {
+      MPI_BARRIER(MPI_COMM_WORLD);
+      if (local_rank == 0) 
+      {
+        flight_time.stop();
+        double aft = flight_time.average() / rebalance_delta;
+        flight_file << chunk_num << ";" << aft << std::endl;
+      }
+
       lgr.dbg() << "Rebalancing..." << std::endl;
       int foreman = schedule[local_stage][0];
       // Step 1: aggregate the runtime statistics, first at the lowest rank per stage
@@ -370,14 +442,24 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
       rebalance_delta *= 2;
       rebalance += rebalance_delta;
       reassign_happened = true;
+      if (local_rank == 0) 
+      {
+        flight_time.clear();
+        flight_time.start();
+      }
     }
 
     prev_requests.clear();
+#else
+    flight_time.stop();
+    double aft = flight_time.average();
+    flight_file << chunk_num << ";" << aft << std::endl;
+    flight_time.clear();
+    flight_time.start();
 #endif // __MPI
     second_placement_work.clear();
     sample.clear();
     msa_stream.clear();
-    lgr.dbg() << "Chunk " << chunk_num << " done!" << std::endl;
     chunk_num++;
   }
 
@@ -388,24 +470,23 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
   lgr.dbg() << "Starting Post-Comp" << std::endl;
   // finally, paste all part files together
 #ifdef __MPI
-  MPI_BARRIER(MPI_COMM_WORLD);
-
-  if (local_rank != EPA_MPI_DEDICATED_WRITE_RANK)
+  MPI_BARRIER(MPI_COMM_WORLD); // must barrier to avoid paste before finish by rank 0
+  if (local_rank == EPA_MPI_DEDICATED_WRITE_RANK)
   {
-    if (local_stage == EPA_MPI_STAGE_LAST_AGGREGATE)
-      epa_mpi_send(part_names, EPA_MPI_DEDICATED_WRITE_RANK, MPI_COMM_WORLD);
-  }
-  else
-  {
-    for (auto rank : schedule[EPA_MPI_STAGE_LAST_AGGREGATE])
-    {
-      if (rank == local_rank)
-        continue;
-      std::vector<std::string> remote_obj;
-      epa_mpi_recieve(remote_obj, rank, MPI_COMM_WORLD);
-      part_names.insert(part_names.end(), remote_obj.begin(), remote_obj.end());
-    }
 #endif
+    part_names.erase(std::begin(part_names), std::end(part_names));
+
+    // parse back the file with the names, get part names by regex
+    std::ifstream status_file(status_file_name);
+    std::string line;
+    while (std::getline(status_file, line))
+    {
+      merge(part_names, split(trim(line, '[', ']'), ",") );
+    }
+
+    for (auto& p : part_names)
+      lgr.dbg() << p << std::endl;
+
     // create output file
     std::ofstream outfile(outdir + "epa_result.jplace");
     lgr << "\nOutput file: " << outdir + "epa_result.jplace" << std::endl;

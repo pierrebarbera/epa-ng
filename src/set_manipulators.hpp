@@ -60,3 +60,9 @@ void merge(T& dest, std::vector<T>& parts)
   for (const auto& p : parts)
     merge(dest, p);
 }
+
+template <class T>
+void merge(std::vector<T>& dest, const std::vector<T>& parts)
+{
+  dest.insert( std::end(dest), std::begin(parts), std::end(parts) );
+}
