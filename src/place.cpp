@@ -381,13 +381,15 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
 
       lgr.dbg() << "Rebalancing..." << std::endl;
       int foreman = schedule[local_stage][0];
+      // Step 0: get per node average
+      Timer per_node_avg({timer.average()});
       // Step 1: aggregate the runtime statistics, first at the lowest rank per stage
       lgr.dbg() << "aggregate the runtime statistics..." << std::endl;
-      epa_mpi_gather(timer, foreman, schedule[local_stage], local_rank);
+      epa_mpi_gather(per_node_avg, foreman, schedule[local_stage], local_rank);
       lgr.dbg() << "Runtime aggregate done!" << std::endl;
 
-      // Step 2: calculate average time needed per chunk for the stage
-      std::vector<double> perstage_avg(num_stages);
+      // Step 2: calculate total time needed per chunk for the stage, reflecting effort spent
+      std::vector<double> perstage_total(num_stages);
 
       int color = (local_rank == foreman) ? 1 : MPI_UNDEFINED;
       MPI_Comm foreman_comm;
@@ -395,10 +397,10 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
 
       if (local_rank == foreman)
       {
-        double avg = timer.average();
+        auto total_stagetime = per_node_avg.sum();
         // Step 3: make known to all other stage representatives (mpi_allgather)
         lgr.dbg() << "Foremen allgather..." << std::endl;
-        MPI_Allgather(&avg, 1, MPI_DOUBLE, &perstage_avg[0], 1, MPI_DOUBLE, foreman_comm);
+        MPI_Allgather(&total_stagetime, 1, MPI_DOUBLE, &perstage_total[0], 1, MPI_DOUBLE, foreman_comm);
         lgr.dbg() << "Foremen allgather done!" << std::endl;
         MPI_Comm_free(&foreman_comm);
       }
@@ -407,7 +409,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
       
       MPI_BARRIER(MPI_COMM_WORLD);
       // Step 4: stage representatives forward results to all stage members
-      // epa_mpi_bcast(perstage_avg, foreman, schedule[local_stage], local_rank);
+      // epa_mpi_bcast(perstage_total, foreman, schedule[local_stage], local_rank);
       lgr.dbg() << "Broadcasting..." << std::endl;
       MPI_Comm stage_comm;
       MPI_Comm_split(MPI_COMM_WORLD, local_stage, local_rank, &stage_comm);
@@ -415,33 +417,35 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
       // foreman must always be rank 0 in stage communicator:
       int split_key = local_rank == foreman ? -1 : local_rank;
       MPI_Comm_split(MPI_COMM_WORLD, local_stage, split_key, &stage_comm);
-      MPI_Bcast(&perstage_avg[0], num_stages, MPI_DOUBLE, 0, stage_comm);
+      MPI_Bcast(&perstage_total[0], num_stages, MPI_DOUBLE, 0, stage_comm);
       MPI_Comm_free(&stage_comm);
       lgr.dbg() << "Broadcasting done!" << std::endl;
 
-      lgr.dbg() << "perstage average:";
-      for (size_t i = 0; i < perstage_avg.size(); ++i)
+      lgr.dbg() << "perstage total:";
+      for (size_t i = 0; i < perstage_total.size(); ++i)
       {
-        lgr.dbg() << " " << perstage_avg[i];
+        lgr.dbg() << " " << perstage_total[i];
       }
       lgr.dbg() << std::endl;
 
       // Step 5: calculate schedule on every rank, deterministically!
-      to_difficulty(perstage_avg);
+      to_difficulty(perstage_total);
 
       lgr.dbg() << "perstage difficulty:";
-      for (size_t i = 0; i < perstage_avg.size(); ++i)
+      for (size_t i = 0; i < perstage_total.size(); ++i)
       {
-        lgr.dbg() << " " << perstage_avg[i];
+        lgr.dbg() << " " << perstage_total[i];
       }
       lgr.dbg() << std::endl;
 
-      auto nps = solve(num_stages, world_size, perstage_avg);
+      auto nps = solve(num_stages, world_size, perstage_total);
       reassign(local_rank, nps, schedule, &local_stage);
       // Step 6: re-engage pipeline with new assignments
       lgr.dbg() << "New Schedule:";
       for (size_t i = 0; i < nps.size(); ++i)
+      {
         lgr.dbg() << " " << nps[i]; 
+      }
       lgr.dbg() << std::endl;
       // compute stages should try to keep their edge assignment! affinity!
       lgr.dbg() << "Rebalancing done!" << std::endl;
