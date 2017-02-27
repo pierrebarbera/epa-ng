@@ -109,12 +109,14 @@ void epa_mpi_isend(T& obj, int dest_rank, MPI_Comm comm, request_tuple_t& prev_r
 }
 
 template <typename T>
-void epa_mpi_recieve(T& obj, int src_rank, MPI_Comm comm)
+void epa_mpi_recieve(T& obj, int src_rank, MPI_Comm comm, Timer& timer)
 {
   // probe to find out the message size
   MPI_Status status;
   int size;
+  timer.pause();
   err_check(MPI_Probe(src_rank, 0, comm, &status));
+  timer.resume();
   MPI_Get_count(&status, MPI_CHAR, &size);
 
   // prepare buffer
@@ -160,19 +162,19 @@ void epa_mpi_split_send(T& obj, std::vector<int>& dest_ranks, MPI_Comm comm, pre
 // }
 
 template <typename T>
-void epa_mpi_recieve_merge(T& obj, std::vector<int>& src_ranks, MPI_Comm comm)
+void epa_mpi_recieve_merge(T& obj, std::vector<int>& src_ranks, MPI_Comm comm, Timer& timer)
 {
   for (auto rank : src_ranks)
   {
     T remote_obj;
-    epa_mpi_recieve(remote_obj, rank, comm);
+    epa_mpi_recieve(remote_obj, rank, comm, timer);
     merge(obj, remote_obj);
   }
 }
 
 
 template <typename T>
-void epa_mpi_gather(T& obj, int dest_rank, std::vector<int>& src_ranks, int local_rank)
+void epa_mpi_gather(T& obj, int dest_rank, std::vector<int>& src_ranks, int local_rank, Timer& timer)
 {
   if (dest_rank != local_rank)
   {
@@ -185,14 +187,14 @@ void epa_mpi_gather(T& obj, int dest_rank, std::vector<int>& src_ranks, int loca
       if (local_rank == src_rank)
         continue;
       T remote_obj;
-      epa_mpi_recieve(remote_obj, src_rank, MPI_COMM_WORLD);
+      epa_mpi_recieve(remote_obj, src_rank, MPI_COMM_WORLD, timer);
       merge(obj, remote_obj);
     }
   }
 }
 
 template <typename T>
-void epa_mpi_bcast(T& obj, int src_rank, std::vector<int>& dest_ranks, int local_rank)
+void epa_mpi_bcast(T& obj, int src_rank, std::vector<int>& dest_ranks, int local_rank, Timer& timer)
 {
   if (src_rank == local_rank)
   {
@@ -205,7 +207,7 @@ void epa_mpi_bcast(T& obj, int src_rank, std::vector<int>& dest_ranks, int local
   }
   else
   {
-    epa_mpi_recieve(obj, src_rank, MPI_COMM_WORLD);
+    epa_mpi_recieve(obj, src_rank, MPI_COMM_WORLD, timer);
   }
 }
 

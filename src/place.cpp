@@ -242,11 +242,11 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     //==============================================================
     if (local_stage == EPA_MPI_STAGE_1_AGGREGATE)
     {
+    timer.start();
     // (MPI: recieve results, merge them)
     lgr.dbg() << "Recieving Stage 1 Results..." << std::endl;
-    epa_mpi_recieve_merge(sample, schedule[EPA_MPI_STAGE_1_COMPUTE], MPI_COMM_WORLD);
+    epa_mpi_recieve_merge(sample, schedule[EPA_MPI_STAGE_1_COMPUTE], MPI_COMM_WORLD, timer);
     lgr.dbg() << "Stage 1 Recieve done!" << std::endl;
-    timer.start();
 #endif // __MPI
 
     compute_and_set_lwr(sample);
@@ -279,8 +279,8 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     //==============================================================
     if (local_stage == EPA_MPI_STAGE_2_COMPUTE and options.prescoring)
     {
-    epa_mpi_recieve_merge(second_placement_work, schedule[EPA_MPI_STAGE_1_AGGREGATE], MPI_COMM_WORLD);
     timer.start();
+    epa_mpi_recieve_merge(second_placement_work, schedule[EPA_MPI_STAGE_1_AGGREGATE], MPI_COMM_WORLD, timer);
 #endif // __MPI
     if (options.prescoring)
     {
@@ -304,8 +304,8 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
       // only if this is the 4th stage do we need to get from mpi
     if (local_stage == EPA_MPI_STAGE_2_AGGREGATE)
     {
-      epa_mpi_recieve_merge(sample, schedule[EPA_MPI_STAGE_2_COMPUTE], MPI_COMM_WORLD);
       timer.start();
+      epa_mpi_recieve_merge(sample, schedule[EPA_MPI_STAGE_2_COMPUTE], MPI_COMM_WORLD, timer);
     }
 #endif // __MPI
     // recompute the lwrs
@@ -337,11 +337,13 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     part_file.close();
 
 #ifdef __MPI
+    Timer dummy;
     // gather file names from all last stage aggregate nodes on foreman, append to status file
     epa_mpi_gather( part_names, 
                     schedule[EPA_MPI_STAGE_LAST_AGGREGATE][0],
                     schedule[EPA_MPI_STAGE_LAST_AGGREGATE],
-                    local_rank 
+                    local_rank,
+                    dummy
                   );
     if (local_rank == schedule[EPA_MPI_STAGE_LAST_AGGREGATE][0])
     {
@@ -385,7 +387,8 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
       Timer per_node_avg({timer.average()});
       // Step 1: aggregate the runtime statistics, first at the lowest rank per stage
       lgr.dbg() << "aggregate the runtime statistics..." << std::endl;
-      epa_mpi_gather(per_node_avg, foreman, schedule[local_stage], local_rank);
+      Timer dummy;
+      epa_mpi_gather(per_node_avg, foreman, schedule[local_stage], local_rank, dummy);
       lgr.dbg() << "Runtime aggregate done!" << std::endl;
 
       // Step 2: calculate total time needed per chunk for the stage, reflecting effort spent
