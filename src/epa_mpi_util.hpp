@@ -152,12 +152,12 @@ void epa_mpi_split_send(T& obj, std::vector<int>& dest_ranks, MPI_Comm comm, pre
   isend_all(parts, dest_ranks, comm, prev_reqs);
 }
 
-void epa_mpi_split_send(Sample& obj, const unsigned int num_seq, std::vector<int>& dest_ranks, MPI_Comm comm, previous_request_storage_t& prev_reqs)
-{
-  std::vector<Sample> parts;
-  split(obj, parts, dest_ranks.size(), num_seq);
-  isend_all(parts, dest_ranks, comm, prev_reqs);
-}
+// void epa_mpi_split_send(Sample& obj, const unsigned int num_seq, std::vector<int>& dest_ranks, MPI_Comm comm, previous_request_storage_t& prev_reqs)
+// {
+//   std::vector<Sample> parts;
+//   split(obj, parts, dest_ranks.size(), num_seq);
+//   isend_all(parts, dest_ranks, comm, prev_reqs);
+// }
 
 template <typename T>
 void epa_mpi_recieve_merge(T& obj, std::vector<int>& src_ranks, MPI_Comm comm)

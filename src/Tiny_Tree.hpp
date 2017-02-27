@@ -51,7 +51,7 @@ private:
   std::unique_ptr<pll_partition_t, partition_deleter> partition_;
   std::unique_ptr<pll_utree_t, utree_deleter> tree_;
 
-  const bool opt_branches_;
+  bool opt_branches_;
   double original_branch_length_;
   Model model_;
   bool tip_tip_case_ = false;

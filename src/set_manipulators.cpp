@@ -52,17 +52,15 @@ void split(Sample& src, vector<Sample>& parts, const vector<vector<unsigned int>
  * @param
  * @param
  */
-void split(const Sample& src, std::vector<Sample>& parts, const unsigned int num_parts, const unsigned int num_sequences)
+void split(const Sample& src, std::vector<Sample>& parts, const unsigned int num_parts)
 {
   parts.clear();
   // ensure that there are actually as many parts as specified. We want empty parts to enable null messages
   parts.resize(num_parts);
-  
-  const unsigned int chunk_size = ceil(num_sequences / (double)num_parts);
 
   for (auto& pq : src)
   {
-    auto bucket = floor(pq.sequence_id() / chunk_size);
+    const auto bucket = pq.sequence_id() % num_parts;
     parts[bucket].push_back(pq);
   }
 
@@ -70,43 +68,19 @@ void split(const Sample& src, std::vector<Sample>& parts, const unsigned int num
 
 void split(const Work& src, std::vector<Work>& parts, const unsigned int num_parts)
 {
-  bool smaller = false;
-  if (src.size() < num_parts)
-    smaller = true;
-
   parts.clear();
+  // ensure that there are actually as many parts as specified. We want empty parts to enable null messages
   parts.resize(num_parts);
-  const unsigned int chunk_size           = smaller ? 1 : src.size() / num_parts;
-  const unsigned int chunk_size_remainder = smaller ? 0 : src.size() % num_parts;
 
-  auto branch_iter = src.begin();
-  auto seq_iter = branch_iter->second.begin();
+  const size_t ext_size = (src.size() - (src.size() % num_parts)) + num_parts;
+  const size_t chunk_size = ext_size / num_parts;
 
-  bool done = false;
-
-  for (size_t i = 0; (i < num_parts) && !done; ++i)
+  size_t i = 0;
+  size_t bucket = 0;
+  for (auto it : src)
   {
-    size_t to_move = (i < chunk_size_remainder) ? chunk_size + 1 : chunk_size;
-    for (; to_move > 0; --to_move)
-    {
-      auto branch_id = branch_iter->first;
-      auto seq_id = *seq_iter;
-
-      parts[i][branch_id].push_back(seq_id);
-
-      ++seq_iter;
-
-      if (seq_iter == branch_iter->second.end())
-      {
-        ++branch_iter;
-        if (branch_iter == src.end())
-        {
-          done = true;
-          break;
-        }
-        seq_iter = branch_iter->second.begin();
-      }
-    }
+    parts[bucket].add(it);
+    if(++i % chunk_size == 0) bucket++;
   }
 }
 
@@ -133,11 +107,9 @@ void merge(Sample& dest, const Sample& src)
 
 void merge(Work& dest, const Work& src)
 {
-  for (auto& i : src) 
+  for (auto it : src) 
   {
-    auto branch_id = i.first;
-    auto& seq_vec = i.second;
-    dest[branch_id].insert(dest[branch_id].end(), seq_vec.begin(), seq_vec.end());  
+    dest.add(it);
   }
 }
 

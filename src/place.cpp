@@ -74,13 +74,20 @@ static void place(const Work& to_place, MSA_Stream& msa, Tree& reference_tree,
 #endif
   for (size_t i = 0; i < work_parts.size(); ++i)
   {
-    for (const auto& pair : work_parts[i])
-    {
-      auto branch_id = pair.first;
-      auto branch = Tiny_Tree(branches[branch_id], branch_id, reference_tree, do_blo, options, lookup_store);
+    auto prev_branch_id = (*work_parts[i].begin()).branch_id;
+    auto branch = Tiny_Tree(branches[prev_branch_id], prev_branch_id, reference_tree, do_blo, options, lookup_store);
 
-      for (const auto& seq_id : pair.second)
-        sample_parts[i].add_placement(seq_id, branch.place(msa[seq_id]));
+    for (auto it : work_parts[i])
+    {
+      auto branch_id = it.branch_id;
+      auto seq_id = it.sequence_id;
+
+      if (branch_id != prev_branch_id)
+      {
+        branch = Tiny_Tree(branches[branch_id], branch_id, reference_tree, do_blo, options, lookup_store);
+      }
+
+      sample_parts[i].add_placement(seq_id, branch.place(msa[seq_id]));
     }
   }
   // merge samples back
@@ -222,7 +229,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     timer.stop();
     // MPI: split the result and send the part to correct aggregate node
     lgr.dbg() << "Sending Stage 1 Results..." << std::endl;
-    epa_mpi_split_send(sample, num_sequences, schedule[EPA_MPI_STAGE_1_AGGREGATE], MPI_COMM_WORLD, prev_requests);
+    epa_mpi_split_send(sample, schedule[EPA_MPI_STAGE_1_AGGREGATE], MPI_COMM_WORLD, prev_requests);
     lgr.dbg() << "Stage 1 Send done!" << std::endl;
 
     } // endif (local_stage == EPA_MPI_STAGE_1_COMPUTE)
@@ -282,7 +289,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
 #ifdef __MPI
     timer.stop();
     if(options.prescoring)
-      epa_mpi_split_send(sample, num_sequences, schedule[EPA_MPI_STAGE_2_AGGREGATE], MPI_COMM_WORLD, prev_requests);
+      epa_mpi_split_send(sample, schedule[EPA_MPI_STAGE_2_AGGREGATE], MPI_COMM_WORLD, prev_requests);
 
     } // endif (local_stage == EPA_MPI_STAGE_2_COMPUTE)
     //==============================================================
@@ -447,9 +454,12 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
         flight_time.clear();
         flight_time.start();
       }
+
+      prev_requests.clear();
+      timer.clear();
     }
 
-    prev_requests.clear();
+
 #else
     flight_time.stop();
     double aft = flight_time.average();
@@ -474,7 +484,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
   if (local_rank == EPA_MPI_DEDICATED_WRITE_RANK)
   {
 #endif
-    part_names.erase(std::begin(part_names), std::end(part_names));
+    part_names.clear();
 
     // parse back the file with the names, get part names by regex
     std::ifstream status_file(status_file_name);
