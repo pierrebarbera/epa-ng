@@ -8,42 +8,6 @@
 using namespace std;
 
 /**
-  Splits a Sample <source> into <parts> according to <split_map>.
-
-  <split_map> is structured as such: splitmap[part_id] = {<set of sequence id's that will be moved to the part>}
-  assumes <parts> to be empty / that its content won't be missed
-
-*/
-void split(Sample& src, vector<Sample>& parts, const vector<vector<unsigned int>>& split_map)
-{
-  parts.clear();
-  for (const auto& part_move_list : split_map)
-  {
-    parts.push_back(Sample());
-    // move all instances of pquery specified in split_map for the current part from src to parts[part_id]
-    for (auto sequence_to_move : part_move_list)
-    {
-      // using already implemented == behaviour of PQuery to find the correct pquery to move
-      PQuery query(sequence_to_move);
-      auto to_move = find(src.begin(), src.end(), query);
-
-      if (to_move != src.end())
-      {
-        // auto move_to = parts.back().end();
-        // move(to_move, to_move + 1, move_to);
-        // move the entry (leaves original entry in undefined but valid state)
-        parts.back().push_back(move(*to_move));
-
-        // remove the original entry
-        src.erase(to_move, to_move + 1);
-      }
-      // TODO fail if sequence not found?
-    }
-  }
-  assert(parts.size() == split_map.size());
-}
-
-/**
  * special split function that Splits samples in buckets according to the global sequence ID
  * of their PQueries. The goal is to have them split such that each aggregate node gets their
  * correct set of sequence results (even if that part is empty, which constitutes a null-message)

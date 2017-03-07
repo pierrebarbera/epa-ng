@@ -19,7 +19,8 @@ using namespace std;
 static constexpr size_t NT_MAP_SIZE = 16;
 static constexpr size_t AA_MAP_SIZE = 25;
 static constexpr char NT_MAP[16] = {'A', 'C', 'G', 'T', '-', 'Y', 'R', 'W', 'S', 'K', 'M', 'D', 'V', 'H', 'B', 'X'};
-static constexpr char AA_MAP[25] = {'A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y', '-', 'X', 'B', 'Z', 'J'};
+static constexpr char AA_MAP[25] = {'A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 
+                                    'T', 'V', 'W', 'Y', '-', 'X', 'B', 'Z', 'J'};
 
 static void precompute_sites_static(char nt, vector<double>& result, 
   pll_partition_t* partition, pll_utree_t* tree, Model& model)

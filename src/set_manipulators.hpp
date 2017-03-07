@@ -9,7 +9,6 @@
 #include "MSA.hpp"
 #include "Work.hpp"
 
-void split(Sample& source, std::vector<Sample>& parts, const std::vector<std::vector<unsigned int>>& split_map);
 void split(const Sample& src, std::vector<Sample>& parts, const unsigned int num_parts);
 void split(const Work& source, std::vector<Work>& parts, const unsigned int num_parts);
 void merge(Sample& dest, const Sample &src);
