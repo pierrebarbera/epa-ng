@@ -1,7 +1,6 @@
 #include "place.hpp"
 
 #include <fstream>
-#include <chrono>
 #include <string>
 
 #ifdef __OMP
@@ -134,6 +133,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
   lgr.dbg() << std::endl;
 
   Timer timer;
+  Timer dummy;
 
   const auto EPA_MPI_STAGE_LAST_AGGREGATE
     = options.prescoring ? EPA_MPI_STAGE_2_AGGREGATE : EPA_MPI_STAGE_1_AGGREGATE;
@@ -230,7 +230,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     timer.stop();
     // MPI: split the result and send the part to correct aggregate node
     lgr.dbg() << "Sending Stage 1 Results..." << std::endl;
-    epa_mpi_split_send(sample, schedule[EPA_MPI_STAGE_1_AGGREGATE], MPI_COMM_WORLD, prev_requests);
+    epa_mpi_split_send(sample, schedule[EPA_MPI_STAGE_1_AGGREGATE], MPI_COMM_WORLD, prev_requests, dummy);
     lgr.dbg() << "Stage 1 Send done!" << std::endl;
 
     } // endif (local_stage == EPA_MPI_STAGE_1_COMPUTE)
@@ -243,11 +243,11 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     //==============================================================
     if (local_stage == EPA_MPI_STAGE_1_AGGREGATE)
     {
-    timer.start();
     // (MPI: recieve results, merge them)
     lgr.dbg() << "Recieving Stage 1 Results..." << std::endl;
-    epa_mpi_recieve_merge(sample, schedule[EPA_MPI_STAGE_1_COMPUTE], MPI_COMM_WORLD, timer);
+    epa_mpi_recieve_merge(sample, schedule[EPA_MPI_STAGE_1_COMPUTE], MPI_COMM_WORLD, dummy);
     lgr.dbg() << "Stage 1 Recieve done!" << std::endl;
+    timer.start();
 #endif // __MPI
 
     compute_and_set_lwr(sample);
@@ -268,7 +268,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     if (options.prescoring)
     {
       timer.stop();
-      epa_mpi_split_send(second_placement_work, schedule[EPA_MPI_STAGE_2_COMPUTE], MPI_COMM_WORLD, prev_requests);
+      epa_mpi_split_send(second_placement_work, schedule[EPA_MPI_STAGE_2_COMPUTE], MPI_COMM_WORLD, prev_requests, dummy);
     }
     } // endif (local_stage == EPA_MPI_STAGE_1_AGGREGATE)
     //==============================================================
@@ -280,8 +280,8 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     //==============================================================
     if (local_stage == EPA_MPI_STAGE_2_COMPUTE and options.prescoring)
     {
+    epa_mpi_recieve_merge(second_placement_work, schedule[EPA_MPI_STAGE_1_AGGREGATE], MPI_COMM_WORLD, dummy);
     timer.start();
-    epa_mpi_recieve_merge(second_placement_work, schedule[EPA_MPI_STAGE_1_AGGREGATE], MPI_COMM_WORLD, timer);
 #endif // __MPI
     if (options.prescoring)
     {
@@ -290,7 +290,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
 #ifdef __MPI
     timer.stop();
     if(options.prescoring)
-      epa_mpi_split_send(sample, schedule[EPA_MPI_STAGE_2_AGGREGATE], MPI_COMM_WORLD, prev_requests);
+      epa_mpi_split_send(sample, schedule[EPA_MPI_STAGE_2_AGGREGATE], MPI_COMM_WORLD, prev_requests, dummy);
 
     } // endif (local_stage == EPA_MPI_STAGE_2_COMPUTE)
     //==============================================================
@@ -305,8 +305,8 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
       // only if this is the 4th stage do we need to get from mpi
     if (local_stage == EPA_MPI_STAGE_2_AGGREGATE)
     {
+      epa_mpi_recieve_merge(sample, schedule[EPA_MPI_STAGE_2_COMPUTE], MPI_COMM_WORLD, dummy);
       timer.start();
-      epa_mpi_recieve_merge(sample, schedule[EPA_MPI_STAGE_2_COMPUTE], MPI_COMM_WORLD, timer);
     }
 #endif // __MPI
     // recompute the lwrs
@@ -338,7 +338,6 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     part_file.close();
 
 #ifdef __MPI
-    Timer dummy;
     // gather file names from all last stage aggregate nodes on foreman, append to status file
     epa_mpi_gather( part_names, 
                     schedule[EPA_MPI_STAGE_LAST_AGGREGATE][0],
