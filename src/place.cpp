@@ -88,6 +88,7 @@ static void place(const Work& to_place, MSA_Stream& msa, Tree& reference_tree,
       }
 
       sample_parts[i].add_placement(seq_id, branch.place(msa[seq_id]));
+      prev_branch_id = branch_id;
     }
   }
   // merge samples back
