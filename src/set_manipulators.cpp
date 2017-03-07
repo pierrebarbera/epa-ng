@@ -107,9 +107,19 @@ void merge(Sample& dest, const Sample& src)
 
 void merge(Work& dest, const Work& src)
 {
+  auto prev_branch_id = (*src.begin()).branch_id + 1;
   for (auto it : src) 
   {
-    dest.add(it);
+    const auto branch_id = it.branch_id;
+    if (prev_branch_id != branch_id)
+    {
+      dest[branch_id];
+      dest[branch_id].insert( dest.at(branch_id).end(),
+                              src.at(branch_id).begin(), 
+                              src.at(branch_id).end()
+                            );
+    }
+    prev_branch_id = branch_id;
   }
 }
 
