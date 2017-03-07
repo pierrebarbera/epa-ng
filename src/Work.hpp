@@ -72,7 +72,7 @@ public:
 
   inline void add(key_type branch_id, value_type seq_id)
   {
-    work_set_[branch_id].push_back(seq_id);
+    work_set_[branch_id].emplace_back(seq_id);
   }
 
   inline void add(Work_Pair& it);
@@ -89,6 +89,7 @@ public:
   // const_iterator cend() { return work_set_.cend(); }
 
   // Operator overloads
+  const container_value_type& at (const key_type index) const { return work_set_.at(index); }
   container_value_type& operator[] (const key_type index) { return work_set_[index]; }
   
   // serialization
