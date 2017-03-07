@@ -298,7 +298,7 @@ int main(int argc, char** argv)
   {
     if (query_file.size() != 0)
     {
-      queries = MSA_Stream(query_file);
+      queries = MSA_Stream(query_file, options.chunk_size);
 
     }
     // attempt to split msa if it is intermingled with (supposed) query sequences

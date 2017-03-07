@@ -209,7 +209,6 @@ struct status_type
 //       }
 //     }
 //   } while (num_recieved < num_src_ranks);
- 
 // }
 
 template <typename T>

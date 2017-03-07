@@ -4,6 +4,7 @@
 #include <vector>
 #include <stdexcept>
 #include <memory>
+#include <thread>
 
 #include "pllhead.hpp"
 #include "Sequence.hpp"
@@ -11,7 +12,10 @@
 
 class MSA_Stream {
 public:
-  MSA_Stream (const std::string& msa_file);
+  using container_type  = std::vector<Sequence>;
+  using file_type       = std::unique_ptr<pll_fasta_t, fasta_deleter>;
+
+  MSA_Stream (const std::string& msa_file , const size_t initial_size);
   MSA_Stream() : fptr_(nullptr, fasta_close) { }
   ~MSA_Stream () = default;
 
@@ -21,12 +25,13 @@ public:
   MSA_Stream& operator= (MSA_Stream const& other) = delete;
   MSA_Stream& operator= (MSA_Stream && other) = default;
 
-  void clear() { sequence_list_.clear(); }
-  unsigned int read_next(const unsigned int number);
-  const Sequence& operator[](const unsigned int idx) const;
+  // void clear() { active_chunk_->clear(); }
+  size_t read_next(const size_t number);
+  const Sequence& operator[](const size_t idx) const;
 
 private:
-  std::unique_ptr<pll_fasta_t, fasta_deleter> fptr_;
-  std::vector<Sequence> sequence_list_;
-
+  file_type fptr_;
+  container_type active_chunk_;
+  container_type prefetch_chunk_;
+  std::thread prefetcher_;
 };
