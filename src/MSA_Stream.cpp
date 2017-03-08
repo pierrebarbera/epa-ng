@@ -33,7 +33,6 @@ static void read_chunk(MSA_Stream::file_type::pointer fptr, const size_t number,
     sites = sequence_length;
     number_left--;
   }
-  printf("read_chunk! returned size: %lu\n", prefetch_buffer.size());
 }
 
 MSA_Stream::MSA_Stream (const std::string& msa_file, const size_t initial_size)
@@ -80,7 +79,6 @@ size_t MSA_Stream::read_next(const size_t number)
   // read_chunk(fptr_.get(), number, prefetch_chunk_);
 
   // return size of current buffer
-  printf("read_next! returned size: %lu\n", active_chunk_.size());
   return active_chunk_.size();
 }
 
