@@ -16,7 +16,7 @@ TEST(Tree, process_from_binary)
   #ifndef __MPI
   // setup
   auto msa = build_MSA_from_file(env->reference_file);
-  auto queries = MSA_Stream(env->query_file);
+  auto queries = MSA_Stream(env->query_file, 1);
   Model model;
   Options options;
   Tree original_tree(env->tree_file, msa, model, options);

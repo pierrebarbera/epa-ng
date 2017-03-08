@@ -9,38 +9,6 @@
 
 using namespace std;
 
-TEST(set_manipulators, split_sample)
-{
-  Sample sample_1;
-  unsigned int s_a = 0, s_b = 1, s_c = 2;
-  sample_1.emplace_back(s_a, 0);
-  sample_1.back().emplace_back(1,-10,0.9,0.9);
-  sample_1.emplace_back(s_b, 0);
-  sample_1.back().emplace_back(2,-10,0.9,0.9);
-  sample_1.emplace_back(s_c, 0);
-  sample_1.back().emplace_back(3,-10,0.9,0.9);
-
-  vector<Sample> parts;
-  vector<vector<unsigned int>> split_map;
-  split_map.push_back({s_a, s_b});
-  split_map.push_back({s_c});
-
-  assert(split_map[0].size() == 2);
-  assert(split_map[1].size() == 1);
-
-  split(sample_1, parts, split_map);
-
-  ASSERT_EQ(2, parts.size());
-  ASSERT_EQ(0, sample_1.size());
-
-  ASSERT_EQ(2, parts[0].size());
-  ASSERT_EQ(1, parts[1].size());
-
-  EXPECT_EQ(1, parts[0][0][0].branch_id());
-  EXPECT_EQ(2, parts[0][1][0].branch_id());
-  EXPECT_EQ(3, parts[1][0][0].branch_id());
-}
-
 TEST(set_manipulators, split_sample_equal)
 {
   Sample sample_1;
@@ -63,8 +31,20 @@ TEST(set_manipulators, split_sample_equal)
   ASSERT_EQ(1, parts[1].size());
 
   EXPECT_EQ(1, parts[0][0][0].branch_id());
-  EXPECT_EQ(2, parts[0][1][0].branch_id());
-  EXPECT_EQ(3, parts[1][0][0].branch_id());
+  EXPECT_EQ(3, parts[0][1][0].branch_id());
+  EXPECT_EQ(2, parts[1][0][0].branch_id());
+}
+
+TEST(set_manipulators, split_sample_empty)
+{
+  Sample sample_1;
+  vector<Sample> parts;
+
+  split(sample_1, parts, 2);
+
+  ASSERT_EQ(2, parts.size());
+  ASSERT_EQ(0, parts[0].size());
+  ASSERT_EQ(0, parts[1].size());
 }
 
 TEST(set_manipulators, split_sample_globaly_mapped)
@@ -81,15 +61,15 @@ TEST(set_manipulators, split_sample_globaly_mapped)
 
   vector<Sample> parts;
 
-  split(sample_1, parts, 5, 10);
+  split(sample_1, parts, 5);
 
   ASSERT_EQ(5, parts.size());
   ASSERT_NE(0, sample_1.size());
 
-  ASSERT_EQ(1, parts[0].size());
-  ASSERT_EQ(2, parts[1].size());
-  ASSERT_EQ(0, parts[2].size());
-  ASSERT_EQ(0, parts[3].size());
+  ASSERT_EQ(0, parts[0].size());
+  ASSERT_EQ(1, parts[1].size());
+  ASSERT_EQ(1, parts[2].size());
+  ASSERT_EQ(1, parts[3].size());
   ASSERT_EQ(1, parts[4].size());
 
 }
@@ -175,77 +155,58 @@ TEST(set_manipulators, split_work_equal_large)
 
   split(work, parts, stage_size);
 
-  auto comp_keys = [](std::pair<unsigned int, std::vector<unsigned int>> a, std::pair<unsigned int, std::vector<unsigned int>> b)
-  {return a.first < b.first;};
-
   for (size_t i = 0; i < stage_size; ++i)
   {
-    auto it_b = parts[i].begin();
-    auto it_e = parts[i].end();
-    size_t branch_id = std::min_element(it_b, it_e, comp_keys)->first;
-    size_t branch_id_end = std::max_element(it_b, it_e, comp_keys)->first;
-    // printf("Rank %d, span: [%d, %d), size: %d\n", i, branch_id, branch_id_end, parts[i].size());
-    ASSERT_GE(branch_id_end, branch_id);
     ASSERT_GT(parts[i].size(), 0);
   }
 }
 
-TEST(set_manipulators, split_work_equal_less_branches)
+TEST(set_manipulators, split_work_empty)
 {
-  unsigned int num_branches = 20;
-  unsigned int stage_size = 127;
+  const size_t stage_size = 10;
 
-  Work work(std::make_pair(0,num_branches),std::make_pair(0,100));
+  Work work;
+
   std::vector<Work> parts;
 
   split(work, parts, stage_size);
 
-  auto comp_keys = [](std::pair<unsigned int, std::vector<unsigned int>> a, std::pair<unsigned int, std::vector<unsigned int>> b)
-  {return a.first < b.first;};
-
   for (size_t i = 0; i < stage_size; ++i)
   {
-    ASSERT_GT(parts[i].size(), 0);
-    auto it_b = parts[i].begin();
-    auto it_e = parts[i].end();
-    size_t branch_id = std::min_element(it_b, it_e, comp_keys)->first;
-    size_t branch_id_end = std::max_element(it_b, it_e, comp_keys)->first;
-    // printf("Rank %d, span: [%d, %d), size: %d\n", i, branch_id, branch_id_end, parts[i].size());
-    ASSERT_GE(branch_id_end, branch_id);
-    ASSERT_GT(parts[i].size(), 0);
+    ASSERT_EQ(parts[i].size(), 0); 
   }
 }
 
 TEST(set_manipulators, split_work_null_parts)
 {
-  unsigned int num_branches = 20;
-  unsigned int stage_size = 127;
+  const size_t num_branches = 2;
+  const size_t stage_size = 250;
+  const size_t num_seqs = 100;
 
-  Work work(std::make_pair(0,num_branches),std::make_pair(0,1));
+  assert(num_seqs * num_branches < stage_size);
+
+  Work work(std::make_pair(0,num_branches),std::make_pair(0,num_seqs));
+
+  // size_t num = 0;
+  // for (auto w : work)
+  //   ++num;
+
+  // printf("num: %lu\n", num);
+
   std::vector<Work> parts;
 
   split(work, parts, stage_size);
 
-  auto comp_keys = [](std::pair<unsigned int, std::vector<unsigned int>> a, std::pair<unsigned int, std::vector<unsigned int>> b)
-  {return a.first < b.first;};
-
   for (size_t i = 0; i < stage_size; ++i)
   {
-    if (i < num_branches)
+    if (i < num_seqs * num_branches)
     {
-      ASSERT_GT(parts[i].size(), 0);
-      auto it_b = parts[i].begin();
-      auto it_e = parts[i].end();
-      size_t branch_id = std::min_element(it_b, it_e, comp_keys)->first;
-      size_t branch_id_end = std::max_element(it_b, it_e, comp_keys)->first;
-      // printf("Rank %d, span: [%d, %d), size: %d\n", i, branch_id, branch_id_end, parts[i].size());
-      ASSERT_GE(branch_id_end, branch_id);
-      ASSERT_GT(parts[i].size(), 0);
+      ASSERT_EQ(parts[i].size(), 1);
     }
     else
     {
-      ASSERT_EQ(parts[i].size(), 0);
-    }
+      ASSERT_EQ(parts[i].size(), 0); 
+    }  
   }
 }
 
@@ -307,13 +268,6 @@ TEST(set_manipulators, merge_work)
   // printf("\n");
 
   EXPECT_EQ(work.size(), dest.size());
-
-  for(auto& i : work) 
-  {
-    EXPECT_EQ(i.second.size(), dest[i.first].size());
-  }
-
-
 }
 
 TEST(set_manipulators, merge_sample)

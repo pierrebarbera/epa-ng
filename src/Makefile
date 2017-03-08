@@ -21,9 +21,9 @@ DBG=-g
 
 INCLUDES=-I$(CEREAL) -I$(CXXOPTS) -I$(PLL_INC)
 LIB_PATHS=  -L$(PLL_LIB)
-LIBS=$(PLL_LIB)libpll_optimize.a $(PLL_LIB)libpll_msa.a $(PLL_LIB)libpll_binary.a $(PLL_LIB)libpll.a -lm
+LIBS=$(PLL_LIB)libpll_optimize.a $(PLL_LIB)libpll_msa.a $(PLL_LIB)libpll_binary.a $(PLL_LIB)libpll.a -lm -lpthread
 
-CFLAGS= $(WARNINGS) -std=c++11 $(DBG) $(INCLUDES) $(CF)
+CFLAGS= $(WARNINGS) -std=c++11 -pthread $(DBG) $(INCLUDES) $(CF)
 LINKFLAGS=$(DBG) $(RPATHS) $(LIB_PATHS)
 
 TARGET=$(BIN)/epamk
