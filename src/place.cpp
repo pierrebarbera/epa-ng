@@ -147,8 +147,8 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
 
   std::string status_file_name(outdir + "pepa.status");
 
-  lgr << "P-EPA - Massively-Parallel Evolutionary Placement Algorithm\n";
-  lgr << "\nInvocation: \n" << invocation << "\n";
+  lgr << "P-EPA - Massively-Parallel Evolutionary Placement Algorithm" << std::endl;
+  lgr << "\nInvocation: \n" << invocation << std::endl;
 
   const auto chunk_size = options.chunk_size;
   lgr.dbg() << "Chunk size: " << chunk_size << std::endl;
