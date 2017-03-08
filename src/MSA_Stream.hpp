@@ -16,7 +16,7 @@ public:
   using file_type       = std::unique_ptr<pll_fasta_t, fasta_deleter>;
 
   MSA_Stream (const std::string& msa_file , const size_t initial_size);
-  MSA_Stream() = delete;// : fptr_(nullptr, fasta_close) { }
+  MSA_Stream() : fptr_(nullptr, fasta_close) { }
   ~MSA_Stream();
 
   MSA_Stream(MSA_Stream const& other) = delete;
