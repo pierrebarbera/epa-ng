@@ -34,7 +34,7 @@ class Tiny_Tree
 {
 public:
   Tiny_Tree(pll_utree_t * edge_node , const unsigned int branch_id, Tree& reference_tree, 
-    const bool opt_branches, const Options& options, Lookup_Store& lookup);
+    const bool opt_branches, const Options& options, std::shared_ptr<Lookup_Store>& lookup);
 
   ~Tiny_Tree() = default;
 
@@ -59,6 +59,6 @@ private:
   bool sliding_blo_;
   unsigned int branch_id_;
 
-  Lookup_Store::lookup_t lookup_;
+  std::shared_ptr<Lookup_Store> lookup_;
 
 };

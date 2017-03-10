@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <string>
+#include <memory>
 
 #ifdef __OMP
 #include <omp.h>
@@ -53,7 +54,7 @@ static std::string trim(const std::string &s, const char l, const char r)
 
 static void place(const Work& to_place, MSA_Stream& msa, Tree& reference_tree,
   const std::vector<pll_utree_t *>& branches, Sample& sample,
-  bool do_blo, const Options& options, Lookup_Store& lookup_store)
+  bool do_blo, const Options& options, std::shared_ptr<Lookup_Store>& lookup_store)
 {
 
 #ifdef __OMP
@@ -174,7 +175,11 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
   unsigned int chunk_num = 1;
   Sample sample;
 
-  Lookup_Store previously_calculated_lookups(num_branches);
+  ;
+
+  std::shared_ptr<Lookup_Store> previously_calculated_lookups(
+    new Lookup_Store(num_branches, reference_tree.partition()->states)
+  );
 
   Work all_work(std::make_pair(0, num_branches), std::make_pair(0, chunk_size));
   Work first_placement_work;

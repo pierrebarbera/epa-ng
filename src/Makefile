@@ -1,5 +1,8 @@
 BIN=../bin
-TEST=../test/data
+TEST=../test/data/lucas
+TREE=$(TEST)/20k.newick
+REF=$(TEST)/1k_reference.fasta
+QRY=$(TEST)/1k_query.fasta
 LOGDIR=../test/log
 OUTDIR=/tmp/epa
 CEREAL=../libs/cereal/include/
@@ -9,9 +12,9 @@ PLL_LIB=../libs/lib/
 
 F+=
 CF+=
-BINARY_WRITE= -t $(TEST)/ref.tre -s $(TEST)/aln.fasta -q $(TEST)/query.fasta -B -w $(OUTDIR) $(F)
-BINARY_READ=-b $(OUTDIR)/epa_binary_file -q $(TEST)/query.fasta -w $(OUTDIR) --filter-min-lwr 0.0 $(F)
-NORM_TEST=-t $(TEST)/ref.tre -s $(TEST)/aln.fasta -q $(TEST)/query.fasta -w $(OUTDIR) $(F)
+BINARY_WRITE= -t $(TREE) -s $(REF) -B -w $(OUTDIR) $(F)
+BINARY_READ=-b $(OUTDIR)/epa_binary_file -q $(QRY) -w $(OUTDIR) -g 0.99 --filter-min-lwr 0.0 $(F)
+NORM_TEST=-t $(TREE) -s $(REF) -q $(QRY) -w $(OUTDIR) -g 0.99 $(F)
 
 #CC=clang++
 CC=g++

@@ -13,17 +13,15 @@
 #include "Tree_Numbers.hpp"
 #include "Range.hpp"
 #include "set_manipulators.hpp"
+#include "Log.hpp"
 
 using namespace std;
 
-static constexpr size_t NT_MAP_SIZE = 16;
-static constexpr size_t AA_MAP_SIZE = 25;
-static constexpr char NT_MAP[16] = {'A', 'C', 'G', 'T', '-', 'Y', 'R', 'W', 'S', 'K', 'M', 'D', 'V', 'H', 'B', 'X'};
-static constexpr char AA_MAP[25] = {'A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 
-                                    'T', 'V', 'W', 'Y', '-', 'X', 'B', 'Z', 'J'};
-
-static void precompute_sites_static(char nt, vector<double>& result, 
-  pll_partition_t* partition, pll_utree_t* tree, Model& model)
+static void precompute_sites_static(char nt
+                                  , vector<double>& result
+                                  , pll_partition_t* partition
+                                  , pll_utree_t* tree
+                                  , Model& model)
 {
   const size_t sites = partition->sites;
   result.clear();
@@ -35,10 +33,14 @@ static void precompute_sites_static(char nt, vector<double>& result,
   auto err_check = pll_set_tip_states(partition, tree->back->clv_index, model.char_map(),
                      seq.c_str());
 
-  if (err_check == PLL_FAILURE)
-    throw runtime_error{"Set tip states during sites precompution failed!"};
+  if (err_check == PLL_FAILURE) {
+    throw runtime_error{
+      string("Set tip states during sites precompution failed! pll_errmsg: ")
+      + pll_errmsg
+    };
+  }
 
-  pll_compute_edge_loglikelihood(partition,
+  pll_compute_edge_loglikelihood( partition,
                                   tree->back->clv_index,
                                   PLL_SCALE_BUFFER_NONE, 
                                   tree->clv_index,
@@ -48,36 +50,16 @@ static void precompute_sites_static(char nt, vector<double>& result,
 }
 
 
-static double sum_precomputed_sitelk(vector<vector<double>>& lookup, const Sequence& s)
-{
-  const string& seq = s.sequence();
-
-  #ifndef NDEBUG
-  for(auto& lu : lookup)
-    assert(seq.length() == lu.size());
-  #endif
-  
-  double sum = 0;
-  for (size_t i = 0; i < seq.length(); ++i)
-  {
-    size_t c;
-    auto find_iter = find(begin(NT_MAP), end(NT_MAP), seq[i]);
-    if(find_iter != end(NT_MAP))
-    {
-      c = distance(begin(NT_MAP), find_iter);
-      sum += lookup[c][i];
-    }
-    else
-      throw runtime_error{"Unrecognized character! during sum_precomputed_sitelk"};
-  }
-  return sum;
-}
-
 Tiny_Tree::Tiny_Tree(pll_utree_t * edge_node , const unsigned int branch_id, Tree& reference_tree, 
-    const bool opt_branches, const Options& options, Lookup_Store& lookup_store)
-    : partition_(nullptr, tiny_partition_destroy), tree_(nullptr, utree_destroy), opt_branches_(opt_branches)
-    , model_(reference_tree.model()), ranged_computation_(options.ranged)
-    , sliding_blo_(options.sliding_blo), branch_id_(branch_id)
+    const bool opt_branches, const Options& options, std::shared_ptr<Lookup_Store>& lookup_store)
+    : partition_(nullptr, tiny_partition_destroy)
+    , tree_(nullptr, utree_destroy)
+    , opt_branches_(opt_branches)
+    , model_(reference_tree.model())
+    , ranged_computation_(options.ranged)
+    , sliding_blo_(options.sliding_blo)
+    , branch_id_(branch_id)
+    , lookup_(lookup_store)
 {
   original_branch_length_ = (edge_node->length < 2*PLLMOD_OPT_MIN_BRANCH_LEN) ?
     2*PLLMOD_OPT_MIN_BRANCH_LEN : edge_node->length;
@@ -132,27 +114,23 @@ Tiny_Tree::Tiny_Tree(pll_utree_t * edge_node , const unsigned int branch_id, Tre
 
   if (!opt_branches)
   {
-    const std::lock_guard<std::mutex> lock(lookup_store.get_mutex(branch_id));
+    // lgr.dbg() << "precomputation for branch " << branch_id << std::endl;
+    const std::lock_guard<std::mutex> lock(lookup_store->get_mutex(branch_id));
 
-    if(lookup_store.has_branch(branch_id))
+    if( not lookup_store->has_branch(branch_id))
     {
-      // take the supplied lookup
-      lookup_ = lookup_store[branch_id];
-    }
-    else
-    {
-      const auto character_map = (partition_->states == 4) ? NT_MAP : AA_MAP;
-      const auto size = (partition_->states == 4) ? NT_MAP_SIZE : AA_MAP_SIZE;
-
-      lookup_.clear();
-      lookup_.resize(size);
+      const auto size = lookup_store->char_map_size();
 
       // precompute all possible site likelihoods
-      for (size_t i = 0; i < size; ++i)
-        precompute_sites_static(character_map[i], lookup_[i], partition_.get(), tree_.get(), model_); 
-      
-      // pass a copy up
-      lookup_store[branch_id] = lookup_;
+      vector<vector<double>> precomputed_sites(size);
+      for (size_t i = 0; i < size; ++i) {
+        precompute_sites_static(lookup_store->char_map(i),
+                                precomputed_sites[i],
+                                partition_.get(),
+                                tree_.get(),
+                                model_);
+      }
+      lookup_store->init_branch(branch_id, precomputed_sites);
     }
   }
   
@@ -233,10 +211,9 @@ Placement Tiny_Tree::place(const Sequence &s)
     op.child2_matrix_index = child2->pmatrix_index;
 
     pll_update_partials(partition_.get(), &op, 1);
-  }
-  else
-  {
-    logl = sum_precomputed_sitelk(lookup_, s);
+
+  } else {
+    logl = lookup_->sum_precomputed_sitelk(branch_id_, s.sequence());
   }
 
   assert(distal_length <= original_branch_length_);
