@@ -60,10 +60,12 @@ const Sequence& MSA_Stream::operator[](const size_t idx) const
 
 size_t MSA_Stream::read_next(const size_t number)
 {
+#ifdef __PREFETCH
   // join prefetching thread to ensure new chunk exists
   if (prefetcher_.joinable()) {
     prefetcher_.join();
   }
+#endif
 
   // perform pointer swap to data
   std::swap(active_chunk_, prefetch_chunk_);
@@ -74,18 +76,21 @@ size_t MSA_Stream::read_next(const size_t number)
   }
   
   // start request next chunk from prefetcher (async)
+#ifdef __PREFETCH
   prefetcher_ = std::thread(read_chunk, fptr_.get(), number, std::ref(prefetch_chunk_));
-
-  // read_chunk(fptr_.get(), number, prefetch_chunk_);
-
+#else
+  read_chunk(fptr_.get(), number, prefetch_chunk_);
+#endif
   // return size of current buffer
   return active_chunk_.size();
 }
 
 MSA_Stream::~MSA_Stream() 
 {
+#ifdef __PREFETCH
   // avoid dangling threads
   if (prefetcher_.joinable()) {
     prefetcher_.join();
   }
+#endif
 }

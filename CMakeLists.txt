@@ -3,8 +3,9 @@ cmake_minimum_required (VERSION 2.8.10 FATAL_ERROR)
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 set(CMAKE_DISABLE_SOURCE_CHANGES  ON)
 
-set (ENABLE_MPI OFF)
-set (ENABLE_OMP OFF)
+set (ENABLE_MPI       OFF)
+set (ENABLE_OMP       OFF)
+set (ENABLE_PREFETCH  OFF)
 
 project (epa CXX)
 
@@ -24,17 +25,23 @@ endif()
 # set (epa_VERSION_MAJOR 0)
 # set (epa_VERSION_MINOR 1)
 
-set (CMAKE_BUILD_TYPE DEBUG)
-#set (CMAKE_BUILD_TYPE RELEASE)
+# set (CMAKE_BUILD_TYPE DEBUG)
+set (CMAKE_BUILD_TYPE RELEASE)
 # set (CMAKE_VERBOSE_MAKEFILE ON)
 
 message (STATUS "Building ${CMAKE_BUILD_TYPE}")
 
 set (WARN_FLAGS               "-Wall -Wextra")
-set (CMAKE_CXX_FLAGS          "-std=c++11 -pthread ${WARN_FLAGS}")
+set (CMAKE_CXX_FLAGS          "-std=c++11 ${WARN_FLAGS}")
 
 set (CMAKE_CXX_FLAGS_DEBUG    "-g")
 set (CMAKE_CXX_FLAGS_RELEASE  "-O3 -DNDEBUG")
+
+if(ENABLE_PREFETCH)
+find_package (Threads)
+message(STATUS "Enabling Prefetching")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__PREFETCH")
+endif()
 
 if(ENABLE_OMP)
 message(STATUS "Checking for OpenMP")

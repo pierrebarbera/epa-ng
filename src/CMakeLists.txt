@@ -9,6 +9,9 @@ target_link_libraries (epa_module ${PROJECT_SOURCE_DIR}/libs/lib/libpll_optimize
 target_link_libraries (epa_module ${PROJECT_SOURCE_DIR}/libs/lib/libpll_msa.a)
 target_link_libraries (epa_module ${PROJECT_SOURCE_DIR}/libs/lib/libpll.a)
 target_link_libraries (epa_module m)
+if(ENABLE_PREFETCH)
+target_link_libraries (epa_module ${CMAKE_THREAD_LIBS_INIT})
+endif()
 
 if(MPI_FOUND)
 target_link_libraries (epa_module ${MPI_CXX_LIBRARIES})

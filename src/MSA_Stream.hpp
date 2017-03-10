@@ -4,7 +4,10 @@
 #include <vector>
 #include <stdexcept>
 #include <memory>
+
+#ifdef __PREFETCH
 #include <thread>
+#endif
 
 #include "pllhead.hpp"
 #include "Sequence.hpp"
@@ -33,5 +36,7 @@ private:
   file_type fptr_;
   container_type active_chunk_;
   container_type prefetch_chunk_;
+#ifdef __PREFETCH
   std::thread prefetcher_;
+#endif
 };
