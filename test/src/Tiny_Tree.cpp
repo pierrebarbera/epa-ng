@@ -27,12 +27,12 @@ TEST(Tiny_Tree, place_heuristic)
 
   auto ref_tree = Tree(env->tree_file, msa, env->model, options);
 
-  Lookup_Store lu(ref_tree.nums().branches);
+  shared_ptr<Lookup_Store> lu_ptr(new Lookup_Store(ref_tree.nums().branches, ref_tree.partition()->states));
 
   auto tree = ref_tree.tree();
 
   // tests
-  Tiny_Tree tt(tree, 0, ref_tree, false, options, lu);
+  Tiny_Tree tt(tree, 0, ref_tree, false, options, lu_ptr);
 
   for (auto const &x : queries)
   {
@@ -56,12 +56,12 @@ TEST(Tiny_Tree, place_BLO)
   Options options;
   auto ref_tree = Tree(env->tree_file, msa, env->model, options);
 
-  Lookup_Store lu(ref_tree.nums().branches);
+  shared_ptr<Lookup_Store> lu_ptr(new Lookup_Store(ref_tree.nums().branches, ref_tree.partition()->states));
 
   auto tree = ref_tree.tree();
 
   // tests
-  Tiny_Tree tt(tree, 0, ref_tree, true, options, lu);
+  Tiny_Tree tt(tree, 0, ref_tree, true, options, lu_ptr);
 
   for (auto const &x : queries)
   {
@@ -85,7 +85,7 @@ TEST(Tiny_Tree, place_from_binary)
   dump_to_binary(original_tree, env->binary_file);
   Tree read_tree(env->binary_file, model, options);
   string invocation("./this --is -a test");
-  Lookup_Store lu(original_tree.nums().branches);
+  shared_ptr<Lookup_Store> lu_ptr(new Lookup_Store(original_tree.nums().branches, original_tree.partition()->states));
 
   ASSERT_EQ(original_tree.nums().branches, read_tree.nums().branches);
 
@@ -100,8 +100,8 @@ TEST(Tiny_Tree, place_from_binary)
   // test
   for (size_t i = 0; i < original_traversed; i++)
   {
-    Tiny_Tree original_tiny(original_branches[i], 0, original_tree, false, options, lu);
-    Tiny_Tree read_tiny(read_branches[i], 0, read_tree, false, options, lu);
+    Tiny_Tree original_tiny(original_branches[i], 0, original_tree, false, options, lu_ptr);
+    Tiny_Tree read_tiny(read_branches[i], 0, read_tree, false, options, lu_ptr);
     for(auto& seq : queries)
     {
       auto original_place = original_tiny.place(seq);
