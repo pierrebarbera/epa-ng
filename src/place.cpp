@@ -52,7 +52,7 @@ static std::string trim(const std::string &s, const char l, const char r)
   return (wsback<=wsfront ? std::string() : std::string(wsfront,wsback));
 }
 
-static void place(const Work& to_place, MSA_Stream& msa, Tree& reference_tree,
+static void place(const Work& to_place, MSA& msa, Tree& reference_tree,
   const std::vector<pll_utree_t *>& branches, Sample& sample,
   bool do_blo, const Options& options, std::shared_ptr<Lookup_Store>& lookup_store)
 {
@@ -72,18 +72,15 @@ static void place(const Work& to_place, MSA_Stream& msa, Tree& reference_tree,
 #ifdef __OMP
   #pragma omp parallel for schedule(dynamic)
 #endif
-  for (size_t i = 0; i < work_parts.size(); ++i)
-  {
+  for (size_t i = 0; i < work_parts.size(); ++i) {
     auto prev_branch_id = (*work_parts[i].begin()).branch_id;
     auto branch = Tiny_Tree(branches[prev_branch_id], prev_branch_id, reference_tree, do_blo, options, lookup_store);
 
-    for (auto it : work_parts[i])
-    {
+    for (auto it : work_parts[i]) {
       auto branch_id = it.branch_id;
       auto seq_id = it.sequence_id;
 
-      if (branch_id != prev_branch_id)
-      {
+      if (branch_id != prev_branch_id) {
         branch = Tiny_Tree(branches[branch_id], branch_id, reference_tree, do_blo, options, lookup_store);
       }
 
@@ -94,6 +91,7 @@ static void place(const Work& to_place, MSA_Stream& msa, Tree& reference_tree,
   // merge samples back
   merge(sample, sample_parts);
 }
+
 
 void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& outdir,
               const Options& options, const std::string& invocation)
@@ -109,7 +107,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
   lgr.dbg() << "World Size: " << world_size << std::endl;
 
   // shuffle available nodes to the different stages
-  std::vector<std::vector<int>> schedule;
+  schedule_type schedule;
   int local_stage;
   const unsigned int num_stages = options.prescoring ? 4 : 2;
 
@@ -119,16 +117,15 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
   unsigned int rebalance_delta = rebalance;
   bool reassign_happened = true;
 
-  std::vector<double> init_diff = options.prescoring
-    ? std::vector<double>{1000.0, 1.0, 1000.0, 1.0} : std::vector<double>{1000.0, 1.0};
+  std::vector<double> init_diff = options.prescoring ? 
+      std::vector<double>{1000.0, 1.0, 1000.0, 1.0} : std::vector<double>{1000.0, 1.0};
 
   // get initial schedule
   auto init_nps = solve(num_stages, world_size, init_diff);
   assign(local_rank, init_nps, schedule, &local_stage);
 
   lgr.dbg() << "Schedule: ";
-  for (size_t i = 0; i < schedule.size(); ++i)
-  {
+  for (size_t i = 0; i < schedule.size(); ++i) {
     lgr.dbg() << schedule[i].size() << " ";
   }
   lgr.dbg() << std::endl;
@@ -153,19 +150,18 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
 
   const auto chunk_size = options.chunk_size;
   lgr.dbg() << "Chunk size: " << chunk_size << std::endl;
-  unsigned int num_sequences;
 
   const auto num_branches = reference_tree.nums().branches;
 
   // get all edges
   std::vector<pll_utree_t *> branches(num_branches);
   auto num_traversed_branches = utree_query_branches(reference_tree.tree(), &branches[0]);
-  if(num_traversed_branches != num_branches)
+  if (num_traversed_branches != num_branches) {
     throw std::runtime_error{"Traversing the utree went wrong during pipeline startup!"};
+  }
 
   double lowest = 1e15;
-  for (size_t i = 0; i < num_branches; ++i)
-  {
+  for (size_t i = 0; i < num_branches; ++i) {
     if(branches[i]->length < lowest)
       lowest = branches[i]->length;
   }
@@ -174,8 +170,6 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
 
   unsigned int chunk_num = 1;
   Sample sample;
-
-  ;
 
   std::shared_ptr<Lookup_Store> previously_calculated_lookups(
     new Lookup_Store(num_branches, reference_tree.partition()->states)
@@ -195,13 +189,16 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
 #ifdef __MPI
   }
 #endif
+  MSA chunk;
+  size_t num_sequences;
   // while data
   // TODO this could be a stream read, such that cat msa.fasta | epa ... would work
-  while ((num_sequences = msa_stream.read_next(chunk_size)) > 0)
+  while ((num_sequences = msa_stream.read_next(chunk, chunk_size)) > 0)
   {
 
-    if (num_sequences < chunk_size)
+    if (num_sequences < chunk_size) {
       all_work = Work(std::make_pair(0, num_branches), std::make_pair(0, num_sequences));
+    }
 
 #ifdef __MPI
     // timer.start(); // start timer of any stage
@@ -229,7 +226,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     first_placement_work = all_work;
 #endif //__MPI
 
-    place(first_placement_work, msa_stream, reference_tree, branches, sample, !options.prescoring, options, previously_calculated_lookups);
+    place(first_placement_work, chunk, reference_tree, branches, sample, !options.prescoring, options, previously_calculated_lookups);
 
 #ifdef __MPI
     timer.stop();
@@ -258,12 +255,12 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     compute_and_set_lwr(sample);
 
     // if this was a prescring run, select the candidate edges
-    if (options.prescoring)
-    {
-      if (options.prescoring_by_percentage)
+    if (options.prescoring) {
+      if (options.prescoring_by_percentage) {
         discard_bottom_x_percent(sample, (1.0 - options.prescoring_threshold));
-      else
+      } else {
         discard_by_accumulated_threshold(sample, options.prescoring_threshold);
+      }
     }
 
     if(options.prescoring)
@@ -290,7 +287,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
 #endif // __MPI
     if (options.prescoring)
     {
-      place(second_placement_work, msa_stream, reference_tree, branches, sample, true, options, previously_calculated_lookups);
+      place(second_placement_work, chunk, reference_tree, branches, sample, true, options, previously_calculated_lookups);
     }
 #ifdef __MPI
     timer.stop();
@@ -338,7 +335,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     std::string part_file_name(outdir + "epa." + std::to_string(local_rank)
       + "." + std::to_string(chunk_num) + ".part");
     std::ofstream part_file(part_file_name);
-    part_file << sample_to_jplace_string(sample, msa_stream);
+    part_file << sample_to_jplace_string(sample, chunk);
     part_names.push_back(part_file_name);
     part_file.close();
 

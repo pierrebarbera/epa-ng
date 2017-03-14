@@ -27,7 +27,7 @@ static void read_chunk(MSA_Stream::file_type::pointer fptr, const size_t number,
 
     for (long i = 0; i < sequence_length; ++i) sequence[i] = toupper(sequence[i]);
     
-    prefetch_buffer.emplace_back(header, sequence);
+    prefetch_buffer.append(header, sequence);
     free(sequence);
     free(header);
     sites = sequence_length;
@@ -36,7 +36,7 @@ static void read_chunk(MSA_Stream::file_type::pointer fptr, const size_t number,
 }
 
 MSA_Stream::MSA_Stream (const std::string& msa_file, const size_t initial_size)
-  : fptr_(nullptr, fasta_close), active_chunk_(), prefetch_chunk_()
+  : fptr_(nullptr, fasta_close)
 {
   fptr_ = file_type(pll_fasta_open(msa_file.c_str(), pll_map_fasta),
                     fasta_close);
@@ -49,16 +49,16 @@ MSA_Stream::MSA_Stream (const std::string& msa_file, const size_t initial_size)
   // prefetcher_ = std::thread(read_chunk, fptr_.get(), initial_size, std::ref(prefetch_chunk_));
 }
 
-const Sequence& MSA_Stream::operator[](const size_t idx) const
-{
-  if(idx >= active_chunk_.size()) {
-    throw std::runtime_error{std::string("Trying to access MSA_Stream entry out of bounds. i = ") + std::to_string(idx) };
-  }
+// const Sequence& MSA_Stream::operator[](const size_t idx) const
+// {
+//   if(idx >= active_chunk_.size()) {
+//     throw std::runtime_error{std::string("Trying to access MSA_Stream entry out of bounds. i = ") + std::to_string(idx) };
+//   }
 
-  return active_chunk_[idx];
-}
+//   return active_chunk_[idx];
+// }
 
-size_t MSA_Stream::read_next(const size_t number)
+size_t MSA_Stream::read_next(MSA_Stream::container_type& result, const size_t number)
 {
 #ifdef __PREFETCH
   // join prefetching thread to ensure new chunk exists
@@ -66,10 +66,8 @@ size_t MSA_Stream::read_next(const size_t number)
     prefetcher_.join();
   }
 #endif
-
   // perform pointer swap to data
-  std::swap(active_chunk_, prefetch_chunk_);
-  // active_chunk_.swap(prefetch_chunk_);
+  std::swap(result, prefetch_chunk_);
 
   if (!fptr_) {
     throw std::runtime_error{"fptr was invalid during read_next!"};
@@ -82,7 +80,7 @@ size_t MSA_Stream::read_next(const size_t number)
   read_chunk(fptr_.get(), number, prefetch_chunk_);
 #endif
   // return size of current buffer
-  return active_chunk_.size();
+  return result.size();
 }
 
 MSA_Stream::~MSA_Stream() 
