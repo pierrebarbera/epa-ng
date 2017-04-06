@@ -32,7 +32,7 @@ set (CMAKE_BUILD_TYPE RELEASE)
 message (STATUS "Building ${CMAKE_BUILD_TYPE}")
 
 set (WARN_FLAGS               "-Wall -Wextra")
-set (CMAKE_CXX_FLAGS          "-std=c++11 ${WARN_FLAGS}")
+set (CMAKE_CXX_FLAGS          "-std=c++14 ${WARN_FLAGS}")
 
 set (CMAKE_CXX_FLAGS_DEBUG    "-g")
 set (CMAKE_CXX_FLAGS_RELEASE  "-O3 -DNDEBUG")

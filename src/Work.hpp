@@ -5,6 +5,7 @@
 #include <cereal/types/map.hpp>
 
 #include "Sample.hpp"
+#include "Token.hpp"
 
 // forward declaration
 class WorkIterator;
@@ -15,7 +16,7 @@ class WorkIterator;
  *
  * Meant as a structure that can be used by nodes to figure out what to compute.
  */
-class Work
+class Work : public Token
 {
 public:
   using key_type              = size_t;

@@ -26,7 +26,7 @@ INCLUDES=-I$(CEREAL) -I$(CXXOPTS) -I$(PLL_INC)
 LIB_PATHS=  -L$(PLL_LIB)
 LIBS=$(PLL_LIB)libpll_optimize.a $(PLL_LIB)libpll_msa.a $(PLL_LIB)libpll_binary.a $(PLL_LIB)libpll.a -lm -lpthread
 
-CFLAGS= $(WARNINGS) -std=c++11 -pthread $(DBG) $(INCLUDES) $(CF)
+CFLAGS= $(WARNINGS) -std=c++14 -pthread $(DBG) $(INCLUDES) $(CF)
 LINKFLAGS=$(DBG) $(RPATHS) $(LIB_PATHS)
 
 TARGET=$(BIN)/epamk
@@ -35,8 +35,8 @@ CPP=$(wildcard *.cpp)
 OBJS=$(notdir $(CPP:.cpp=.o))
 OUT_OBJS=$(addprefix $(BIN)/,$(OBJS))
 
-callgrind: CFLAGS= $(WARNINGS) -std=c++11 -O2
-profile: CFLAGS= $(WARNINGS) -std=c++11 -O2
+callgrind: CFLAGS= $(WARNINGS) -std=c++14 -O2
+profile: CFLAGS= $(WARNINGS) -std=c++14 -O2
 omp: CC=g++
 omp: DBG=
 omp: LIBS+=-lgomp

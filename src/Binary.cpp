@@ -58,8 +58,9 @@ static long int get_offset(vector<pll_block_map_t>& map, const int block_id)
   auto item = map.begin();
   while (item != map.end())
   {
-    if (item->block_id == block_id)
+    if (item->block_id == block_id) {
       break;
+    }
     item++;
   }
 

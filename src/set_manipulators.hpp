@@ -12,7 +12,7 @@
 void split(const Sample& src, std::vector<Sample>& parts, const unsigned int num_parts);
 void split(const Work& source, std::vector<Work>& parts, const unsigned int num_parts);
 void merge(Sample& dest, const Sample &src);
-void merge(Work& dest, const Work &src);
+void merge(Work& dest, const Work& src);
 void merge(Timer& dest, const Timer& src);
 void compute_and_set_lwr(Sample& sample);
 void discard_bottom_x_percent(Sample& sample, const double x);

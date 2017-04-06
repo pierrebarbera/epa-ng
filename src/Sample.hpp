@@ -6,8 +6,9 @@
 #include <cereal/types/vector.hpp>
 
 #include "PQuery.hpp"
+#include "Token.hpp"
 
-class Sample {
+class Sample : public Token {
 public:
   typedef PQuery                                            value_type;
   typedef typename std::vector<value_type>::iterator        iterator;

@@ -6,8 +6,13 @@
 #include "Model.hpp"
 #include "Sample.hpp"
 #include "MSA.hpp"
+#include "Work.hpp"
+#include "Pipeline.hpp"
 
 #include <string>
 
 void process(Tree& tree, MSA_Stream& msa_stream, const std::string& outdir, const Options& options,
+  const std::string& invocation);
+
+void tmp_pipeline_test(Tree& tree, MSA_Stream& msa_stream, const std::string& outdir, const Options& options,
   const std::string& invocation);

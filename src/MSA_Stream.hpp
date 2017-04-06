@@ -29,9 +29,7 @@ public:
   MSA_Stream& operator= (MSA_Stream const& other) = delete;
   MSA_Stream& operator= (MSA_Stream && other) = default;
 
-  // void clear() { active_chunk_->clear(); }
   size_t read_next(container_type& result, const size_t number);
-  // const Sequence& operator[](const size_t idx) const;
 
 private:
   file_type fptr_;

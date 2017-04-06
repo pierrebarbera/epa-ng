@@ -3,6 +3,7 @@
 #include <fstream>
 #include <string>
 #include <memory>
+#include <functional>
 
 #ifdef __OMP
 #include <omp.h>
@@ -21,6 +22,7 @@
 #include "Work.hpp"
 #include "schedule.hpp"
 #include "Lookup_Store.hpp"
+#include "Pipeline.hpp"
 
 #ifdef __MPI
 #include "epa_mpi_util.hpp"
@@ -91,7 +93,6 @@ static void place(const Work& to_place, MSA& msa, Tree& reference_tree,
   // merge samples back
   merge(sample, sample_parts);
 }
-
 
 void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& outdir,
               const Options& options, const std::string& invocation)
@@ -516,5 +517,145 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
 #ifdef __MPI
   }
 #endif
+}
+
+void tmp_pipeline_test( Tree& reference_tree, 
+                        MSA_Stream& msa_stream, 
+                        const std::string& outdir,
+                        const Options& options,
+                        const std::string& invocation)
+{
+  using namespace std::placeholders;
+
+  auto local_rank = 0;
+
+  lgr << "WARNING! THIS FUNCTION IS EXPERIMENTAL!" << std::endl;
+
+  // Timer flight_time;
+  // std::ofstream flight_file(outdir + "stat");
+
+  // std::string status_file_name(outdir + "pepa.status");
+
+  const auto chunk_size = options.chunk_size;
+  lgr.dbg() << "Chunk size: " << chunk_size << std::endl;
+
+  const auto num_branches = reference_tree.nums().branches;
+
+  // get all edges
+  std::vector<pll_utree_t *> branches(num_branches);
+  auto num_traversed_branches = utree_query_branches(reference_tree.tree(), &branches[0]);
+  if (num_traversed_branches != num_branches) {
+    throw std::runtime_error{"Traversing the utree went wrong during pipeline startup!"};
+  }
+
+  unsigned int chunk_num = 1;
+  
+  std::shared_ptr<Lookup_Store> lookups(
+    new Lookup_Store(num_branches, reference_tree.partition()->states)
+  );
+
+  Work all_work(std::make_pair(0, num_branches), std::make_pair(0, chunk_size));
+  
+  MSA chunk;
+
+  auto ingestion = [&](VoidToken&) -> Work {
+    lgr.dbg() << "INGESTING" << std::endl;
+    auto num_sequences = msa_stream.read_next(chunk, chunk_size);
+    Work work;
+    if (num_sequences < chunk_size) {
+      work = Work(std::make_pair(0, num_branches), std::make_pair(0, num_sequences));
+    } else {
+      work = all_work;
+    }
+    return work;
+  };
+
+  auto preplacement = [&](Work& work) -> Sample {
+    lgr.dbg() << "PREPLACING" << std::endl;
+    
+    
+    Sample result;
+
+    place(work, 
+          chunk, 
+          reference_tree, 
+          branches, 
+          result,
+          false, 
+          options, 
+          lookups
+    );
+    return result;
+  };
+
+  auto candidate_selection = [&](Sample& sample) -> Work {
+    lgr.dbg() << "SELECTING CANDIDATES" << std::endl;
+
+    compute_and_set_lwr(sample);
+
+    if (options.prescoring_by_percentage) {
+      discard_bottom_x_percent(sample, (1.0 - options.prescoring_threshold));
+    } else {
+      discard_by_accumulated_threshold(sample, options.prescoring_threshold);
+    }
+    return Work(sample);
+  };
+
+
+  auto thorough_placement = [&](Work& work) -> Sample {
+    lgr.dbg() << "BLO PLACEMENT" << std::endl;
+
+    Sample result;
+    place(work,
+          chunk,
+          reference_tree,
+          branches,
+          result,
+          true,
+          options,
+          lookups
+    );
+    return result;
+  };
+
+  auto write_result = [&](Sample& sample) -> VoidToken {
+    lgr.dbg() << "WRITING" << std::endl;
+
+    compute_and_set_lwr(sample);
+    if (options.acc_threshold) {
+      lgr.dbg() << "Filtering by accumulated threshold: " << options.support_threshold << std::endl;
+      discard_by_accumulated_threshold( sample, 
+                                        options.support_threshold,
+                                        options.filter_min,
+                                        options.filter_max);
+    } else {
+      lgr.dbg() << "Filtering placements below threshold: " << options.support_threshold << std::endl;
+      discard_by_support_threshold( sample,
+                                    options.support_threshold,
+                                    options.filter_min,
+                                    options.filter_max);
+    }
+
+    // write results of current last stage aggregator node to a part file
+    std::string part_file_name(outdir + "epa." + std::to_string(local_rank)
+      + "." + std::to_string(chunk_num) + ".part");
+    std::ofstream part_file(part_file_name);
+    part_file << sample_to_jplace_string(sample, chunk);
+    // part_names.push_back(part_file_name);
+    part_file.close();
+    ++chunk_num;
+    return VoidToken();
+  };
+
+
+  // Pipeline<Work&, Sample&> heuristic_pipeline(
+  Pipeline heuristic_pipeline(
+    ingestion,
+    preplacement,
+    candidate_selection,
+    thorough_placement,
+    write_result
+  );
+  heuristic_pipeline.process();
 }
 

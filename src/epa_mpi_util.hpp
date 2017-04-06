@@ -16,11 +16,11 @@
 // types to keep track of previous async sends
 typedef struct
 {
-  MPI_Request  req;
-  char*         buf = nullptr;
-} request_tuple_t;
+  MPI_Request req;
+  char*       buf = nullptr;
+} request_tuple;
 
-typedef typename std::unordered_map<int, request_tuple_t>  previous_request_storage_t;
+typedef typename std::unordered_map<int, request_tuple>  previous_request_storage_t;
 
 static void err_check(int errval)
 {
