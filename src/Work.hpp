@@ -58,6 +58,13 @@ public:
       for (value_type seq_id = seq_range.first; seq_id < seq_range.second; ++seq_id)
         work_set_[branch_id].push_back(seq_id);      
   }
+
+  Work(Work const& other) = default;
+  Work(Work && other) = default;
+
+  Work& operator=(Work const&) = default;
+  Work& operator=(Work &&) = default;
+
   Work() = default;       
   ~Work() = default;
 

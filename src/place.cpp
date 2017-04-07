@@ -525,7 +525,9 @@ void tmp_pipeline_test( Tree& reference_tree,
                         const Options& options,
                         const std::string& invocation)
 {
-  using namespace std::placeholders;
+  // using namespace std::placeholders;
+  // 
+  (void)invocation;
 
   auto local_rank = 0;
 
@@ -561,19 +563,19 @@ void tmp_pipeline_test( Tree& reference_tree,
   auto ingestion = [&](VoidToken&) -> Work {
     lgr.dbg() << "INGESTING" << std::endl;
     auto num_sequences = msa_stream.read_next(chunk, chunk_size);
-    Work work;
-    if (num_sequences < chunk_size) {
-      work = Work(std::make_pair(0, num_branches), std::make_pair(0, num_sequences));
-    } else {
-      work = all_work;
-    }
-    return work;
+    // Work work;
+    // if (num_sequences < chunk_size) {
+      return Work(std::make_pair(0, num_branches), std::make_pair(0, num_sequences));
+    // } else {
+    //   return all_work;
+    // }
+    // return Work(std::make_pair(0, num_branches), std::make_pair(0, num_sequences));
   };
+
 
   auto preplacement = [&](Work& work) -> Sample {
     lgr.dbg() << "PREPLACING" << std::endl;
-    
-    
+
     Sample result;
 
     place(work, 
@@ -588,6 +590,7 @@ void tmp_pipeline_test( Tree& reference_tree,
     return result;
   };
 
+
   auto candidate_selection = [&](Sample& sample) -> Work {
     lgr.dbg() << "SELECTING CANDIDATES" << std::endl;
 
@@ -598,7 +601,9 @@ void tmp_pipeline_test( Tree& reference_tree,
     } else {
       discard_by_accumulated_threshold(sample, options.prescoring_threshold);
     }
-    return Work(sample);
+    Work ret(sample);
+    // return Work(sample);
+    return ret;
   };
 
 
@@ -636,6 +641,7 @@ void tmp_pipeline_test( Tree& reference_tree,
                                     options.filter_max);
     }
 
+
     // write results of current last stage aggregator node to a part file
     std::string part_file_name(outdir + "epa." + std::to_string(local_rank)
       + "." + std::to_string(chunk_num) + ".part");
@@ -649,13 +655,19 @@ void tmp_pipeline_test( Tree& reference_tree,
 
 
   // Pipeline<Work&, Sample&> heuristic_pipeline(
-  Pipeline heuristic_pipeline(
-    ingestion,
-    preplacement,
-    candidate_selection,
-    thorough_placement,
-    write_result
-  );
-  heuristic_pipeline.process();
+  // Pipeline heuristic_pipeline(
+  //   ingestion,
+  //   preplacement,
+  //   candidate_selection,
+  //   thorough_placement,
+  //   write_result
+  // );
+  // Pipeline h_p;
+  auto h_p = make_pipeline(ingestion)
+    .push(preplacement)
+    .push(candidate_selection)
+    .push(thorough_placement)
+    .push(write_result);
+  h_p.process();
 }
 
