@@ -39,106 +39,90 @@
 //   return std::tuple_cat(make_stage_tuple(f), make_stage_tuple(fs...));
 // }
 
+template < class I, class... lambdas>
+struct stage_types_base;
+
+template < std::size_t... I, class... lambdas >
+struct stage_types_base<std::index_sequence<I...>, lambdas...>
+{
+  using types = typename std::tuple< Typed_Stage<I, lambdas>... >;
+};
+
+template < class... lambdas >
+struct stage_types 
+  : stage_types_base<std::make_index_sequence<sizeof...(lambdas) >, lambdas...>
+{
+};
+
 /**
  * Basic Pipeline Class. Runs all stages in serial.
  */
-// template <typename input, typename output>
 template <class... lambdas>
 class Pipeline
 {
-  // using global_in  = std::function<void(Token&)>;
-  // using global_out = std::function<void(Token&)>;
-  // static constexpr auto size_ = sizeof...(lambdas);
-
-  // static void noop(Token&) { }
+  using lambda_pack     = pack<lambdas...>;
+  // using stack_type      = typename stage_types< lambdas... >::types;
+  using stack_type      = typename stage_types< lambdas... >::types;
+  // using token_set_type  = typename tuple_concat_left<
+  //                           typename Typed_Stage<
+  //                             0u,
+  //                             typename element<0u,lambda_pack>::type
+  //                           >::in_type, 
+  //                           pack<
+  //                             typename Typed_Stage<0u, lambdas>::out_type...
+  //                           >
+  //                         >::type;
+  using token_set_type  = typename token_types< stack_type >::types;
 
 public:
 
-  Pipeline(const std::tuple<Typed_Stage<lambdas>...>& stages)
+  Pipeline(const stack_type & stages)
     : stages_(stages)
   { }
+
+  ~Pipeline() = default;
 
   template <class Function>
   auto push(const Function& f) const
   {
-    using stage_type = Typed_Stage<Function>;
+    constexpr size_t num_stages = sizeof...(lambdas) + 1u;
+    constexpr auto new_stage_id = num_stages - 1u;
 
-    std::tuple<Typed_Stage<lambdas>..., stage_type> stage_tuple
+    using stage_type = Typed_Stage<new_stage_id, Function>;
+    using new_stack_type = typename stage_types<lambdas..., Function>::types;
+
+    new_stack_type stage_tuple
       = std::tuple_cat(stages_, std::make_tuple(stage_type(f)));
     
     return Pipeline<lambdas..., Function>(stage_tuple);
   }
-  
-  // Pipeline( lambdas... fn )
-  //   // : stages_(source_function, fn...)
-  // {
-  //   constexpr size_t num_tasks = sizeof...(lambdas);
-  //   // static_assert(num_tasks >= 3, "Pipeline must be assigned at least 3 function types.");
-
-  //   // std::tuple<lambdas...> f_tuple{fn...};
-
-  //   stages_ = make_stage_tuple(fn...);
-  //   // in_func_ = head(f_tuple);
-  //   // // just the innermost functions: skip the first one, then of that set skip the last one
-  //   // auto process_funcs  = rskip(skip(f_tuple));
-  //   // out_func_ = tail(f_tuple); //std::get<sizeof...(lambdas) - 1u>(f_tuple);
-
-  //   // size_t task_num = 0;
-  //   // for_each(f_tuple, [&](auto f) {
-  //   //   using traits = thrill::common::FunctionTraits<decltype(f)>;
-  //   //   using base_in_type = typename traits::template arg<0>;
-  //   //   using base_out_type = typename traits::result_type;
-
-  //   //   using in_type = typename std::remove_reference<base_in_type>::type;
-  //   //   using out_type = typename std::remove_reference<base_out_type>::type;
-
-  //   //   std::function<void(in_type&)> in_func = [](in_type&){};
-  //   //   std::function<void(out_type&)> out_func = [](out_type&){};
-  //   //   // global_out out_func = Pipeline::noop;
-  //   //   // if ( task_num == 0 ) {
-  //   //   //   in_func = in_func_;
-  //   //   // } 
-  //   //   // if ( task_num == num_tasks - 1u) {
-  //   //   //   out_func = out_func_;
-  //   //   // }
-  //   //   stages_.emplace_back(
-  //   //     new Typed_Stage<in_type&, out_type&>(
-  //   //       in_func,
-  //   //       f,
-  //   //       out_func
-  //   //     )
-  //   //   );
-  //   //   ++task_num;
-  //   // });
-
-  //   // for (auto& s : stages_) {
-  //   //   s->exec(true);
-  //   // }
-  // }
-
-  ~Pipeline() = default;
 
   void process()
   {
-    Token token; 
-    while (token) { //returns valid if data token or default initialized
+    token_set_type tokens;
 
-      if(token.rebalance()) {
+    while (std::get<0u>(tokens)) { //returns valid if data token or default initialized
+
+      if(std::get<0u>(tokens).rebalance()) {
         // do the kansas city shuffle...
       }
 
-      // for (auto& s : stages_) {
       for_each(stages_, [&](auto& s) {
 
-        if (s.exec()) {
-          
-          s.accept(token); // noop if shared mem, mpi_merge_receive if mpi
-          
-          auto result = s.process(token); // casts asbtract token to its input type and runs the user code
+        // TODO carry over the token status!
 
-          token = static_cast<Token>(result);
+        if (s.exec()) {
+
+          constexpr auto stage_id = s.id;
+
+          auto& in_token = std::get<stage_id>(tokens);
+          auto& out_token = std::get<stage_id+1u>(tokens);
           
-          s.put(token); // noop if shared mem, mpi_split_send if mpi
+          s.accept(in_token); // noop if shared mem, mpi_merge_receive if mpi
+          
+          out_token = s.process(in_token); // casts asbtract token to its input type and runs the user code
+
+          s.put(out_token); // noop if shared mem, mpi_split_send if mpi
 
         }
       });
@@ -146,15 +130,14 @@ public:
   }
 
 private:
-  // std::vector<std::unique_ptr<Stage>> stages_;
-  std::tuple<Typed_Stage<lambdas>...> stages_;
+  stack_type stages_;
 
 };
 
 template <class lambda>
 auto make_pipeline(const lambda& f) 
 {
-  return Pipeline<lambda>(std::make_tuple(Typed_Stage<lambda>(f)));
+  return Pipeline<lambda>(std::make_tuple(Typed_Stage<0u, lambda>(f)));
 }
 
 #ifdef __MPI

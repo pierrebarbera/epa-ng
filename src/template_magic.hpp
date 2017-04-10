@@ -85,3 +85,105 @@ for_each(std::tuple<Tp...>& t, FuncT f)
   f(std::get<I>(t));
   for_each<I + 1, FuncT, Tp...>(t, f);
 }
+
+/**
+ * A function to link two two-tuples of compatible types into one three-tuple
+ */
+
+template <class in, class inter, class out>
+auto tuple_link(std::tuple<in, inter> a, std::tuple<inter, out> b)
+{
+  return std::tuple<in, inter, out>(
+    std::get<0>(a),
+    std::get<1>(a),
+    std::get<1>(b)
+  );
+}
+
+/**
+ * building a tuple of the input/output types of a set of Stages
+ */
+template <class... more_Stages>
+struct token_out_types
+{
+  // using types = std::tuple<>;
+};
+
+template <class Stage, class... more_Stages>
+struct token_out_types<Stage, more_Stages...>
+{
+  using types = typename std::tuple<
+    typename Stage::out_type, 
+    token_out_types<more_Stages...>
+  >;
+};
+
+template <class Stage, class... more_Stages>
+struct token_types_app
+{
+  using types = typename std::tuple<
+    typename Stage::in_type, 
+    typename token_out_types<Stage, more_Stages...>::types
+  >;
+};
+
+template < class I, class StageTuple>
+struct token_types_base;
+
+template < std::size_t... I, class StageTuple >
+struct token_types_base<std::index_sequence<I...>, StageTuple>
+{
+  using types = typename std::tuple< 
+    typename std::tuple_element<0u, StageTuple>::type::in_type, 
+    typename std::tuple_element<I, StageTuple>::type::out_type... 
+  >;
+};
+
+template < class StageTuple >
+struct token_types
+  : token_types_base<std::make_index_sequence< std::tuple_size<StageTuple>::value >, StageTuple>
+{
+};
+
+// Store parameter pack
+template<typename... T>
+struct pack
+{
+    static const unsigned int size = sizeof...(T);
+};
+ 
+// Get i-th element of parameter pack
+template<int n, typename F, typename... T>
+struct element_at : public element_at<n-1, T...>
+{
+};
+ 
+template<typename F, typename... T>
+struct element_at<0, F, T...>
+{
+    typedef F type;
+};
+ 
+// Get i-th element of pack
+template<int n, typename P>
+struct element
+{
+};
+ 
+template<int n, typename... T>
+struct element<n, pack<T...>>
+{
+    typedef typename element_at<n, T...>::type type;
+};
+
+// Concat at left
+template<typename a, typename b>
+struct tuple_concat_left
+{
+};
+ 
+template<typename a, typename... b>
+struct tuple_concat_left<a, pack<b...>>
+{
+    typedef pack<a, b...> type;
+};
