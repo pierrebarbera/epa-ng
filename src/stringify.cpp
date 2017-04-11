@@ -2,35 +2,41 @@
 
 using namespace std;
 
-void rwnd(ostream& ss, unsigned int chars)
-{
-  long pos = ss.tellp();
-  ss.seekp (pos - (chars * sizeof(char)));
-}
-
 std::string to_string(Model& model)
 {
   ostringstream output;
+  size_t i = 0;
 
   output << "Substitution Matrix Symmetries: " << NEWL;
-  for (auto sym : model.symmetries())
-    output << to_string(sym) << ", ";
+  for (auto sym : model.symmetries()) {
+    output << to_string(sym);
+    if (++i < model.symmetries().size()) {
+      output << ",";  
+    }
+  }
 
-  rwnd(output, 2);
   output << NEWL;
 
   output << "Base Frequencies: " << NEWL;
-  for (auto freq : model.base_frequencies())
-    output << to_string(freq) << ", ";
+  i = 0;
+  for (auto freq : model.base_frequencies()) {
+    output << to_string(freq);
+    if (++i < model.base_frequencies().size()) {
+      output << ",";  
+    }
+  }
 
-  rwnd(output, 2);
   output << NEWL;
 
   output << "Substitution Rates: " << NEWL;
-  for (auto rate : model.substitution_rates())
+  i = 0;
+  for (auto rate : model.substitution_rates()){
     output << to_string(rate) << ", ";
+    if (++i < model.substitution_rates().size()) {
+      output << ",";  
+    }
+  }
 
-  rwnd(output, 2);
   output << NEWL;
 
   output << "Alpha: " << model.alpha() << NEWL;

@@ -6,16 +6,18 @@ using namespace std;
 
 void merge_into(ofstream& dest, const vector<string>& sources)
 {
+  size_t i = 0;
   for (const auto& file_n : sources)
   {
     ifstream file(file_n);
     dest << file.rdbuf();
-    rwnd(dest, 1);
-    dest << "," << NEWL;
+    dest.clear(); // empty input files silently set failure flags!
+    if (++i < sources.size()) {
+      dest << ",";
+    }
+    dest << NEWL;
     file.close();
   }
-  rwnd(dest, 2);
-  dest << NEWL;
 }
 
 string placement_to_jplace_string(const Placement& p)
@@ -38,24 +40,27 @@ string pquery_to_jplace_string(const PQuery& pquery, const MSA& msa)
   output << "    {\"p\":" << NEWL; // p for pquery
   output << "      [" << NEWL; // opening bracket for pquery array
 
+  size_t i = 0;
   for (const auto& place : pquery)
   {
     // individual pquery
-    output << "      " << placement_to_jplace_string(place) << "," << NEWL;
+    output << "      " << placement_to_jplace_string(place);
+    if (++i < pquery.size()) {
+      output << ",";  
+    }
+    output << NEWL;
   } 
-
-  // undo last comma and newline
-  rwnd(output, 2);
-  output << NEWL;
 
   // closing bracket for pquery array, and start of name column
   output << "      ]," << NEWL <<"    \"n\": [";
   // list of sequence headers
-  for (const auto& header : msa[pquery.sequence_id()].header_list() )
-    output << "\"" << header.c_str() << "\",";
-
-  // rewind last comma
-  rwnd(output, 1);
+  i = 0;
+  for (const auto& header : msa[pquery.sequence_id()].header_list() ) {
+    output << "\"" << header.c_str() << "\"";
+    if (++i < msa[pquery.sequence_id()].header_list().size()) {
+      output << ",";  
+    }
+  }
 
   output << "]" << NEWL; // close name bracket
 
@@ -100,12 +105,14 @@ string sample_to_jplace_string(const Sample& sample, const MSA& msa)
 {
   ostringstream output;
 
-  for (const auto& p : sample)
-    output << pquery_to_jplace_string(p, msa) << "," << NEWL;
-
-  // undo the last comma
-  rwnd(output, 2);
-  output << NEWL;
+  size_t i = 0;
+  for (const auto& p : sample) {
+    output << pquery_to_jplace_string(p, msa); 
+    if (++i < sample.size()) {
+      output << ",";
+    }
+    output << NEWL;
+  }
   return output.str();
 }
 

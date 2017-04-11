@@ -8,6 +8,4 @@
 
 constexpr char NEWL = '\n';
 
-void rwnd(std::ostream& ss, unsigned int chars);
-
 std::string to_string(Model& model);
