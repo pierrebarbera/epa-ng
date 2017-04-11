@@ -29,6 +29,13 @@ public:
     return status_;
   }
 
+  virtual void is_last(const bool b) final
+  {
+    if (b) {
+      status_ = token_status::END;
+    }
+  }
+
 private:
 
   token_status status_ = token_status::DATA;

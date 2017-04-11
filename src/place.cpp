@@ -569,7 +569,7 @@ void tmp_pipeline_test( Tree& reference_tree,
     
     if (num_sequences <= 0) {
       Work work;
-      work.status(token_status::END);
+      work.is_last(true);
       return work;
     } else if (num_sequences < chunk_size) {
       return Work(std::make_pair(0, num_branches), std::make_pair(0, num_sequences));
