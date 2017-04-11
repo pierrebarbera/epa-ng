@@ -4,6 +4,7 @@
 #include <utility>
 
 #include "function_traits.hpp"
+#include "seventeen.hpp"
 
 template < typename T , typename... Ts >
 auto head( std::tuple<T,Ts...> t )
@@ -87,46 +88,8 @@ for_each(std::tuple<Tp...>& t, FuncT f)
 }
 
 /**
- * A function to link two two-tuples of compatible types into one three-tuple
+ * building a tuple of the input/output types of a tuple of Stages
  */
-
-template <class in, class inter, class out>
-auto tuple_link(std::tuple<in, inter> a, std::tuple<inter, out> b)
-{
-  return std::tuple<in, inter, out>(
-    std::get<0>(a),
-    std::get<1>(a),
-    std::get<1>(b)
-  );
-}
-
-/**
- * building a tuple of the input/output types of a set of Stages
- */
-template <class... more_Stages>
-struct token_out_types
-{
-  // using types = std::tuple<>;
-};
-
-template <class Stage, class... more_Stages>
-struct token_out_types<Stage, more_Stages...>
-{
-  using types = typename std::tuple<
-    typename Stage::out_type, 
-    token_out_types<more_Stages...>
-  >;
-};
-
-template <class Stage, class... more_Stages>
-struct token_types_app
-{
-  using types = typename std::tuple<
-    typename Stage::in_type, 
-    typename token_out_types<Stage, more_Stages...>::types
-  >;
-};
-
 template < class I, class StageTuple>
 struct token_types_base;
 
@@ -145,45 +108,21 @@ struct token_types
 {
 };
 
-// Store parameter pack
-template<typename... T>
-struct pack
+
+/**
+ * Building a Stage Tuple out of a bunch of lambda functions/functors
+ */
+template < class I, class... lambdas>
+struct stage_types_base;
+
+template < std::size_t... I, class... lambdas >
+struct stage_types_base<std::index_sequence<I...>, lambdas...>
 {
-    static const unsigned int size = sizeof...(T);
-};
- 
-// Get i-th element of parameter pack
-template<int n, typename F, typename... T>
-struct element_at : public element_at<n-1, T...>
-{
-};
- 
-template<typename F, typename... T>
-struct element_at<0, F, T...>
-{
-    typedef F type;
-};
- 
-// Get i-th element of pack
-template<int n, typename P>
-struct element
-{
-};
- 
-template<int n, typename... T>
-struct element<n, pack<T...>>
-{
-    typedef typename element_at<n, T...>::type type;
+  using types = typename std::tuple< Typed_Stage<I, lambdas>... >;
 };
 
-// Concat at left
-template<typename a, typename b>
-struct tuple_concat_left
+template < class... lambdas >
+struct stage_types 
+  : stage_types_base<std::make_index_sequence<sizeof...(lambdas) >, lambdas...>
 {
-};
- 
-template<typename a, typename... b>
-struct tuple_concat_left<a, pack<b...>>
-{
-    typedef pack<a, b...> type;
 };

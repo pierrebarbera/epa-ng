@@ -4,10 +4,6 @@
 #include "Options.hpp"
 #include "Tree.hpp"
 #include "Model.hpp"
-#include "Sample.hpp"
-#include "MSA.hpp"
-#include "Work.hpp"
-#include "Pipeline.hpp"
 
 #include <string>
 

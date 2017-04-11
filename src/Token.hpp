@@ -1,16 +1,17 @@
 #pragma once
 
+enum class token_status {DATA, BALANCE, END};
+
 class Token
 {
 public:
-  enum class token_status {DATA, BALANCE, END};
 
   Token()   = default;
   ~Token()  = default;
 
-  virtual operator bool() const final
+  virtual bool valid() const final
   {
-    return (status_ == token_status::DATA);
+    return (status_ != token_status::END);
   }
 
   virtual bool rebalance() const final
@@ -18,9 +19,14 @@ public:
     return (status_ == token_status::BALANCE);
   }
 
-  virtual void status(token_status s) final
+  virtual void status(const token_status& s) final
   {
     status_ = s;
+  }
+
+  virtual token_status status() const final
+  {
+    return status_;
   }
 
 private:

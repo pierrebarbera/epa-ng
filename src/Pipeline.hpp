@@ -14,64 +14,13 @@
 #include "function_traits.hpp"
 #include "template_magic.hpp"
 
-// template <class Function>
-// auto make_stage_tuple(Function& f)
-// {
-//   using traits = thrill::common::FunctionTraits<decltype(f)>;
-//   using base_in_type = typename traits::template arg<0>;
-//   using base_out_type = typename traits::result_type;
-
-//   // using in_type = typename std::remove_reference<base_in_type>::type;
-//   // using out_type = typename std::remove_reference<base_out_type>::type;
-
-//   return std::make_tuple(Typed_Stage<base_in_type, base_out_type>(f));
-// }
-
-// auto make_stage_tuple()
-// {
-//   return std::tuple<>();
-// }
-
-// template <class Function, class... OtherFunctions>
-// auto make_stage_tuple(Function& f, OtherFunctions... fs)
-// {
-
-//   return std::tuple_cat(make_stage_tuple(f), make_stage_tuple(fs...));
-// }
-
-template < class I, class... lambdas>
-struct stage_types_base;
-
-template < std::size_t... I, class... lambdas >
-struct stage_types_base<std::index_sequence<I...>, lambdas...>
-{
-  using types = typename std::tuple< Typed_Stage<I, lambdas>... >;
-};
-
-template < class... lambdas >
-struct stage_types 
-  : stage_types_base<std::make_index_sequence<sizeof...(lambdas) >, lambdas...>
-{
-};
-
 /**
  * Basic Pipeline Class. Runs all stages in serial.
  */
 template <class... lambdas>
 class Pipeline
 {
-  using lambda_pack     = pack<lambdas...>;
-  // using stack_type      = typename stage_types< lambdas... >::types;
   using stack_type      = typename stage_types< lambdas... >::types;
-  // using token_set_type  = typename tuple_concat_left<
-  //                           typename Typed_Stage<
-  //                             0u,
-  //                             typename element<0u,lambda_pack>::type
-  //                           >::in_type, 
-  //                           pack<
-  //                             typename Typed_Stage<0u, lambdas>::out_type...
-  //                           >
-  //                         >::type;
   using token_set_type  = typename token_types< stack_type >::types;
 
 public:
@@ -101,15 +50,12 @@ public:
   {
     token_set_type tokens;
 
-    while (std::get<0u>(tokens)) { //returns valid if data token or default initialized
+    // "last" token that is still used on the particular MPI-Rank (or thread or...)
+    Token const * last_token = nullptr;
 
-      if(std::get<0u>(tokens).rebalance()) {
-        // do the kansas city shuffle...
-      }
+    do { 
 
       for_each(stages_, [&](auto& s) {
-
-        // TODO carry over the token status!
 
         if (s.exec()) {
 
@@ -119,14 +65,26 @@ public:
           auto& out_token = std::get<stage_id+1u>(tokens);
           
           s.accept(in_token); // noop if shared mem, mpi_merge_receive if mpi
-          
+
           out_token = s.process(in_token); // casts asbtract token to its input type and runs the user code
+
+          if (stage_id != 0) {
+            // carry over the token status
+            out_token.status(in_token.status());
+          }
 
           s.put(out_token); // noop if shared mem, mpi_split_send if mpi
 
+          last_token = &out_token;
+
         }
       });
-    }
+
+      if(last_token->rebalance()) {
+        // do the kansas city shuffle...
+      }
+
+    } while (last_token->valid()); //returns valid if data token or default initialized
   }
 
 private:

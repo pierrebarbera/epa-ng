@@ -23,6 +23,9 @@
 #include "schedule.hpp"
 #include "Lookup_Store.hpp"
 #include "Pipeline.hpp"
+#include "MSA.hpp"
+#include "Work.hpp"
+#include "Sample.hpp"
 
 #ifdef __MPI
 #include "epa_mpi_util.hpp"
@@ -563,15 +566,17 @@ void tmp_pipeline_test( Tree& reference_tree,
   auto ingestion = [&](VoidToken&) -> Work {
     lgr.dbg() << "INGESTING" << std::endl;
     auto num_sequences = msa_stream.read_next(chunk, chunk_size);
-    // Work work;
-    // if (num_sequences < chunk_size) {
+    
+    if (num_sequences <= 0) {
+      Work work;
+      work.status(token_status::END);
+      return work;
+    } else if (num_sequences < chunk_size) {
       return Work(std::make_pair(0, num_branches), std::make_pair(0, num_sequences));
-    // } else {
-    //   return all_work;
-    // }
-    // return Work(std::make_pair(0, num_branches), std::make_pair(0, num_sequences));
+    } else {
+      return all_work;
+    }
   };
-
 
   auto preplacement = [&](Work& work) -> Sample {
     lgr.dbg() << "PREPLACING" << std::endl;
@@ -590,7 +595,6 @@ void tmp_pipeline_test( Tree& reference_tree,
     return result;
   };
 
-
   auto candidate_selection = [&](Sample& sample) -> Work {
     lgr.dbg() << "SELECTING CANDIDATES" << std::endl;
 
@@ -601,9 +605,7 @@ void tmp_pipeline_test( Tree& reference_tree,
     } else {
       discard_by_accumulated_threshold(sample, options.prescoring_threshold);
     }
-    Work ret(sample);
-    // return Work(sample);
-    return ret;
+    return Work(sample);
   };
 
 
@@ -653,16 +655,6 @@ void tmp_pipeline_test( Tree& reference_tree,
     return VoidToken();
   };
 
-
-  // Pipeline<Work&, Sample&> heuristic_pipeline(
-  // Pipeline heuristic_pipeline(
-  //   ingestion,
-  //   preplacement,
-  //   candidate_selection,
-  //   thorough_placement,
-  //   write_result
-  // );
-  // Pipeline h_p;
   auto h_p = make_pipeline(ingestion)
     .push(preplacement)
     .push(candidate_selection)
