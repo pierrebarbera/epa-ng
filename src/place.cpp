@@ -97,6 +97,33 @@ static void place(const Work& to_place, MSA& msa, Tree& reference_tree,
   merge(sample, sample_parts);
 }
 
+static void merge_write_results(const std::string& status_file_name, 
+                                const std::string& outdir, 
+                                const std::string& newick_string,
+                                const std::string& invocation)
+{
+  std::vector<std::string> part_names;
+
+  // parse back the file with the names, get part names by regex
+  std::ifstream status_file(status_file_name);
+  std::string line;
+  while (std::getline(status_file, line)) {
+    merge(part_names, split(trim(line, '[', ']'), ",") );
+  }
+
+  for (auto& p : part_names) {
+    lgr.dbg() << p << std::endl;
+  }
+
+  // create output file
+  std::ofstream outfile(outdir + "epa_result.jplace");
+  lgr << "\nOutput file: " << outdir + "epa_result.jplace" << std::endl;
+  outfile << init_jplace_string(newick_string);
+  merge_into(outfile, part_names);
+  outfile << finalize_jplace_string(invocation);
+  outfile.close();
+}
+
 void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& outdir,
               const Options& options, const std::string& invocation)
 {
@@ -497,26 +524,12 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
   if (local_rank == EPA_MPI_DEDICATED_WRITE_RANK)
   {
 #endif
-    part_names.clear();
+    auto newick_string = get_numbered_newick_string(reference_tree.tree());
 
-    // parse back the file with the names, get part names by regex
-    std::ifstream status_file(status_file_name);
-    std::string line;
-    while (std::getline(status_file, line))
-    {
-      merge(part_names, split(trim(line, '[', ']'), ",") );
-    }
-
-    for (auto& p : part_names)
-      lgr.dbg() << p << std::endl;
-
-    // create output file
-    std::ofstream outfile(outdir + "epa_result.jplace");
-    lgr << "\nOutput file: " << outdir + "epa_result.jplace" << std::endl;
-    outfile << init_jplace_string(get_numbered_newick_string(reference_tree.tree()));
-    merge_into(outfile, part_names);
-    outfile << finalize_jplace_string(invocation);
-    outfile.close();
+    merge_write_results(status_file_name, 
+                        outdir, 
+                        newick_string,
+                        invocation);
 #ifdef __MPI
   }
 #endif
@@ -528,18 +541,18 @@ void tmp_pipeline_test( Tree& reference_tree,
                         const Options& options,
                         const std::string& invocation)
 {
-  // using namespace std::placeholders;
-  // 
-  (void)invocation;
 
   auto local_rank = 0;
 
   lgr << "WARNING! THIS FUNCTION IS EXPERIMENTAL!" << std::endl;
 
   // Timer flight_time;
-  // std::ofstream flight_file(outdir + "stat");
+  std::ofstream flight_file(outdir + "stat");
 
-  // std::string status_file_name(outdir + "pepa.status");
+  std::string status_file_name(outdir + "pepa.status");
+  std::ofstream trunc_status_file(status_file_name, std::ofstream::trunc);
+
+  std::vector<std::string> part_names;
 
   const auto chunk_size = options.chunk_size;
   lgr.dbg() << "Chunk size: " << chunk_size << std::endl;
@@ -645,12 +658,27 @@ void tmp_pipeline_test( Tree& reference_tree,
 
 
     // write results of current last stage aggregator node to a part file
-    std::string part_file_name(outdir + "epa." + std::to_string(local_rank)
-      + "." + std::to_string(chunk_num) + ".part");
-    std::ofstream part_file(part_file_name);
-    part_file << sample_to_jplace_string(sample, chunk);
-    // part_names.push_back(part_file_name);
-    part_file.close();
+    if (sample.size()) {
+      std::string part_file_name(outdir + "epa." + std::to_string(local_rank)
+        + "." + std::to_string(chunk_num) + ".part");
+      std::ofstream part_file(part_file_name);
+      part_file << sample_to_jplace_string(sample, chunk);
+      part_names.push_back(part_file_name);
+      part_file.close();
+
+      // TODO for MPI, somehow ensure this code is only run on the stage foreman
+
+      std::ofstream status_file(status_file_name, std::ofstream::app);
+      status_file << chunk_num << ":" << chunk_size << " [";
+      for (size_t i = 0; i < part_names.size(); ++i)
+      {
+        status_file << part_names[i];
+        if (i < part_names.size() - 1) status_file << ",";  
+      }
+      status_file << "]" << std::endl;
+      part_names.clear();
+    }
+    
     ++chunk_num;
     return VoidToken();
   };
@@ -661,5 +689,13 @@ void tmp_pipeline_test( Tree& reference_tree,
     .push(thorough_placement)
     .push(write_result);
   h_p.process();
+
+  auto newick_string = get_numbered_newick_string(reference_tree.tree());
+
+  merge_write_results(status_file_name, 
+                      outdir, 
+                      newick_string,
+                      invocation);
+
 }
 
