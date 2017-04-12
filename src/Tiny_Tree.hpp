@@ -36,6 +36,7 @@ public:
   Tiny_Tree(pll_utree_t * edge_node , const unsigned int branch_id, Tree& reference_tree, 
     const bool opt_branches, const Options& options, std::shared_ptr<Lookup_Store>& lookup);
 
+  Tiny_Tree() = delete;
   ~Tiny_Tree() = default;
 
   Tiny_Tree(Tiny_Tree const& other) = delete;

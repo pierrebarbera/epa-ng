@@ -4,6 +4,7 @@
 #include <string>
 #include <memory>
 #include <functional>
+#include <limits>
 
 #ifdef __OMP
 #include <omp.h>
@@ -78,18 +79,19 @@ static void place(const Work& to_place, MSA& msa, Tree& reference_tree,
   #pragma omp parallel for schedule(dynamic)
 #endif
   for (size_t i = 0; i < work_parts.size(); ++i) {
-    auto prev_branch_id = (*work_parts[i].begin()).branch_id;
-    auto branch = Tiny_Tree(branches[prev_branch_id], prev_branch_id, reference_tree, do_blo, options, lookup_store);
+    auto prev_branch_id = std::numeric_limits<size_t>::max();
+
+    std::shared_ptr<Tiny_Tree> branch = nullptr;
 
     for (auto it : work_parts[i]) {
       auto branch_id = it.branch_id;
       auto seq_id = it.sequence_id;
 
-      if (branch_id != prev_branch_id) {
-        branch = Tiny_Tree(branches[branch_id], branch_id, reference_tree, do_blo, options, lookup_store);
+      if ((branch_id != prev_branch_id) or not branch) {
+        branch = std::shared_ptr<Tiny_Tree>(new Tiny_Tree(branches[branch_id], branch_id, reference_tree, do_blo, options, lookup_store));
       }
 
-      sample_parts[i].add_placement(seq_id, branch.place(msa[seq_id]));
+      sample_parts[i].add_placement(seq_id, branch->place(msa[seq_id]));
       prev_branch_id = branch_id;
     }
   }

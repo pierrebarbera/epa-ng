@@ -128,7 +128,7 @@ public:
     //     Constructors and Rule of Five
     // -----------------------------------------------------
 
-    WorkIterator() = default;
+    WorkIterator() = delete;
 
     WorkIterator( WorkType const& target, bool is_end )
         : map_it( std::begin( target ) )
