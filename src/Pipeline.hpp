@@ -24,9 +24,11 @@ class Pipeline
   using token_set_type  = typename token_types< stack_type >::types;
 
 public:
+  using hook_type       = std::function<void()>;
 
-  Pipeline(const stack_type & stages)
+  Pipeline(const stack_type & stages, const hook_type & per_loop_hook)
     : stages_(stages)
+    , per_loop_hook_(per_loop_hook)
   { }
 
   ~Pipeline() = default;
@@ -43,7 +45,7 @@ public:
     new_stack_type stage_tuple
       = std::tuple_cat(stages_, std::make_tuple(stage_type(f)));
     
-    return Pipeline<lambdas..., Function>(stage_tuple);
+    return Pipeline<lambdas..., Function>(stage_tuple, per_loop_hook_);
   }
 
   void process()
@@ -54,6 +56,9 @@ public:
     Token const * last_token = nullptr;
 
     do { 
+
+      // per-loop pre-hook
+      per_loop_hook_();
 
       for_each(stages_, [&](auto& s) {
 
@@ -89,13 +94,16 @@ public:
 
 private:
   stack_type stages_;
+  hook_type per_loop_hook_;
 
 };
 
-template <class lambda>
-auto make_pipeline(const lambda& f) 
+template <class stage_f>
+auto make_pipeline( const stage_f& first_stage, 
+                    const typename Pipeline<stage_f>::hook_type& per_loop_hook
+                      = [](){}) 
 {
-  return Pipeline<lambda>(std::make_tuple(Typed_Stage<0u, lambda>(f)));
+  return Pipeline<stage_f>(std::make_tuple(Typed_Stage<0u, stage_f>(first_stage)), per_loop_hook);
 }
 
 #ifdef __MPI

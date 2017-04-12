@@ -578,9 +578,16 @@ void tmp_pipeline_test( Tree& reference_tree,
   
   MSA chunk;
 
+  size_t num_sequences = 0;
+
+  auto prehook = [&]() -> void {
+    lgr.dbg() << "INGESTING - READING" << std::endl;
+    num_sequences = msa_stream.read_next(chunk, chunk_size);
+  };
+
   auto ingestion = [&](VoidToken&) -> Work {
-    lgr.dbg() << "INGESTING" << std::endl;
-    auto num_sequences = msa_stream.read_next(chunk, chunk_size);
+    lgr.dbg() << "INGESTING - CREATING WORK" << std::endl;
+    // auto num_sequences = msa_stream.read_next(chunk, chunk_size);
     
     if (num_sequences <= 0) {
       Work work;
@@ -685,7 +692,7 @@ void tmp_pipeline_test( Tree& reference_tree,
     return VoidToken();
   };
 
-  auto h_p = make_pipeline(ingestion)
+  auto h_p = make_pipeline(ingestion, prehook)
     .push(preplacement)
     .push(candidate_selection)
     .push(thorough_placement)
