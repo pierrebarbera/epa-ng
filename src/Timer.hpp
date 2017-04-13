@@ -6,6 +6,8 @@
 #include <cereal/types/vector.hpp>
 #include <cereal/types/chrono.hpp>
 
+static constexpr unsigned int factor() {return 1000;};
+
 class Timer {
 public:
   // Typedefs
@@ -13,14 +15,13 @@ public:
   using clock           = std::chrono::high_resolution_clock;
   using iterator        = std::vector<duration>::iterator;
   using const_iterator  = std::vector<duration>::const_iterator;
-  const unsigned int factor          = 1000;
   
   // Constructors/Destructors
   Timer(std::vector<double> init_list) 
   {
     for (auto elem : init_list)
     {
-      duration fp_ms(static_cast<unsigned int>(elem*factor));
+      duration fp_ms(static_cast<unsigned int>(elem*factor()));
       ts_.push_back(fp_ms);
     }
   }
@@ -60,7 +61,7 @@ public:
   {
     auto end = clock::now();
     
-    duration pause_total(static_cast<unsigned int>(this->sum_pauses()*factor)); 
+    duration pause_total(static_cast<unsigned int>(this->sum_pauses()*factor())); 
 
     auto runtime = std::chrono::duration_cast<duration>(end - start_) - pause_total;
     ts_.push_back(runtime);

@@ -18,7 +18,6 @@ public:
 
   void move_sequences(iterator begin, iterator end);
   void append(const std::string& header, const std::string& sequence);
-  // void append(Sequence s);
   void erase(iterator begin, iterator end) {sequence_list_.erase(begin, end);}
   void clear() {sequence_list_.clear();}
 

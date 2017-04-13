@@ -6,10 +6,8 @@
 
 #include "pllhead.hpp"
 
-using namespace std;
-
 // map for determining model symmetries
-static const unordered_map<string, vector<int>> MODEL_MAP(
+static const std::unordered_map<std::string, std::vector<int>> MODEL_MAP(
   {
     {"JC69", {0,0,0,0,0,0}},
     {"K80", {0,1,0,0,1,0}},
@@ -18,7 +16,7 @@ static const unordered_map<string, vector<int>> MODEL_MAP(
 );
 
 // map for determining rates and frequencies symmetries
-static const unordered_map<string, pair<const double*, const double*>> AA_RATE_FREQ_MAP(
+static const std::unordered_map<std::string, std::pair<const double*, const double*>> AA_RATE_FREQ_MAP(
   {
     {"DAYHOFF", {pll_aa_rates_dayhoff, pll_aa_freqs_dayhoff}},
     {"LG", {pll_aa_rates_lg, pll_aa_freqs_lg}},
@@ -42,7 +40,7 @@ static const unordered_map<string, pair<const double*, const double*>> AA_RATE_F
   }
 );
 
-Model::Model(string sequence_type, string model_id, string sub_matrix)
+Model::Model(std::string sequence_type, std::string model_id, std::string sub_matrix)
   : alpha_(1.0), base_frequencies_({0.25,0.25,0.25,0.25}),
     substitution_rates_({0.5,0.5,0.5,0.5,0.5,1.0})
 {
@@ -54,7 +52,7 @@ Model::Model(string sequence_type, string model_id, string sub_matrix)
 
   if(sequence_type.compare("DNA") != 0 
     and sequence_type.compare("AA") != 0)
-    throw runtime_error{string("Sequence data type not recognized! Input: ") + sequence_type};
+    throw std::runtime_error{std::string("Sequence data type not recognized! Input: ") + sequence_type};
 
 
   if (sequence_type.compare("DNA") == 0)
@@ -71,7 +69,7 @@ Model::Model(string sequence_type, string model_id, string sub_matrix)
 
     auto find_iter = AA_RATE_FREQ_MAP.find(sub_matrix);
     if (find_iter == AA_RATE_FREQ_MAP.end())
-      throw runtime_error{string("Sub. Matrix Identifier not found! String passed: ") + sub_matrix};
+      throw std::runtime_error{std::string("Sub. Matrix Identifier not found! String passed: ") + sub_matrix};
 
     auto rates = find_iter->second.first;
     auto freqs = find_iter->second.second;
@@ -87,18 +85,20 @@ Model::Model(string sequence_type, string model_id, string sub_matrix)
   // set symmetries
   auto find_iter = MODEL_MAP.find(model_id);
   if (find_iter == MODEL_MAP.end())
-    throw runtime_error{string("Model Identifier not found! String passed: ") + model_id};
+    throw std::runtime_error{std::string("Model Identifier not found! String passed: ") + model_id};
   for (auto n : find_iter->second)
     subs_symmetries_.push_back(n);
 }
 
 void Model::base_frequencies(double *source, unsigned int length)
 {
-  if (base_frequencies_.size() != length)
-    throw runtime_error{"Inappropriate number of base frequencies"};
+  if (base_frequencies_.size() != length) {
+    throw std::runtime_error{"Inappropriate number of base frequencies"};
+  }
 
-  for (size_t i = 0; i < length; ++i)
+  for (size_t i = 0; i < length; ++i) {
     base_frequencies_[i] = source[i];
+  }
 }
 
 void Model::base_frequencies(std::vector<double> freqs)
@@ -108,11 +108,13 @@ void Model::base_frequencies(std::vector<double> freqs)
 
 void Model::substitution_rates(double *source, unsigned int length)
 {
-  if (substitution_rates_.size() != length)
-    throw runtime_error{"Inappropriate number of substitution rates"};
+  if (substitution_rates_.size() != length) {
+    throw std::runtime_error{"Inappropriate number of substitution rates"};
+  }
 
-  for (size_t i = 0; i < length; ++i)
+  for (size_t i = 0; i < length; ++i) {
     substitution_rates_[i] = source[i];
+  }
 }
 
 void Model::substitution_rates(std::vector<double> rates)
@@ -123,8 +125,9 @@ void Model::substitution_rates(std::vector<double> rates)
 void Model::symmetries(int* source, unsigned int length)
 {
   if (subs_symmetries_.size() != length)
-    throw runtime_error{"Inappropriate number of substitution symmetries"};
+    throw std::runtime_error{"Inappropriate number of substitution symmetries"};
 
-  for (size_t i = 0; i < length; ++i)
+  for (size_t i = 0; i < length; ++i) {
     subs_symmetries_[i] = source[i];
+  }
 }

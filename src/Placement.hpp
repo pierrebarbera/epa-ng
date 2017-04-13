@@ -6,15 +6,18 @@ public:
 
   Placement(unsigned int branch_id, double likelihood, double pendant_length,
     double distal_length)
-    : branch_id_(branch_id), likelihood_(likelihood), lwr_(0.0), pendant_length_(pendant_length),
-      distal_length_(distal_length)
-  {};
+    : branch_id_(branch_id)
+    , likelihood_(likelihood)
+    , lwr_(0.0)
+    , pendant_length_(pendant_length)
+    , distal_length_(distal_length)
+  { }
 
   Placement(Placement const& other) = default;
-  Placement(Placement&& other) = default;
+  Placement(Placement&& other)      = default;
 
   Placement& operator= (Placement const& other) = default;
-  Placement& operator= (Placement && other) = default;
+  Placement& operator= (Placement && other)     = default;
 
   ~Placement() = default;
 

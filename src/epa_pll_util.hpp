@@ -12,11 +12,18 @@
 #include "Model.hpp"
 #include "Tree.hpp"
 
-void link_tree_msa(pll_utree_t * tree, pll_partition_t * partition, Model& model, 
-              const MSA& msa, const unsigned int num_tip_nodes,
-              std::vector<Range> &valid_map);
-void precompute_clvs(pll_utree_t * tree, pll_partition_t * partition, const Tree_Numbers& nums);
-void split_combined_msa(MSA& source, MSA& target, Tree& tree);
+void link_tree_msa( pll_utree_t * tree, 
+                    pll_partition_t * partition, 
+                    Model& model, 
+                    const MSA& msa, 
+                    const unsigned int num_tip_nodes, 
+                    std::vector<Range> &valid_map);
+void precompute_clvs( pll_utree_t * tree, 
+                      pll_partition_t * partition, 
+                      const Tree_Numbers& nums);
+void split_combined_msa(MSA& source, 
+                        MSA& target, 
+                        Tree& tree);
 Model get_model(pll_partition_t* partition);
 
 // operator overloads

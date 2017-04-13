@@ -8,8 +8,12 @@
 
 using namespace std;
 
-void link_tree_msa(pll_utree_t * tree, pll_partition_t * partition, Model& model, const MSA& msa, 
-  const unsigned int num_tip_nodes, vector<Range> &valid_map)
+void link_tree_msa( pll_utree_t * tree, 
+                    pll_partition_t * partition, 
+                    Model& model, 
+                    const MSA& msa, 
+                    const unsigned int num_tip_nodes, 
+                    vector<Range> &valid_map)
 {
   // obtain pointers to all tip nodes
   vector<pll_utree_t*> tip_nodes(num_tip_nodes);
@@ -20,8 +24,9 @@ void link_tree_msa(pll_utree_t * tree, pll_partition_t * partition, Model& model
   unordered_map<string, unsigned int> map; // mapping labels to tip clv indices
 
   /* populate the hash table with tree tip labels */
-  for (size_t i = 0; i < num_tip_nodes; ++i)
+  for (size_t i = 0; i < num_tip_nodes; ++i) {
     map[tip_nodes[i]->label] = i;
+  }
 
   /* find sequences in hash table and link them with the corresponding taxa */
   for (auto const &s : msa)
@@ -44,7 +49,9 @@ void link_tree_msa(pll_utree_t * tree, pll_partition_t * partition, Model& model
   }
 }
 
-void precompute_clvs(pll_utree_t * tree, pll_partition_t * partition, const Tree_Numbers& nums)
+void precompute_clvs( pll_utree_t * tree, 
+                      pll_partition_t * partition, 
+                      const Tree_Numbers& nums)
 {
   unsigned int num_matrices, num_ops;
 
@@ -69,7 +76,9 @@ void precompute_clvs(pll_utree_t * tree, pll_partition_t * partition, const Tree
     unsigned int traversal_size;
     if (pll_utree_traverse(node->back, cb_partial_traversal, &travbuffer[0], &traversal_size)
                 != PLL_SUCCESS)
+    {
       throw runtime_error{"Function pll_utree_traverse() requires inner nodes as parameters"};
+    }
 
     /* given the computed traversal descriptor, generate the operations
        structure, and the corresponding probability matrix indices that
@@ -95,7 +104,9 @@ void precompute_clvs(pll_utree_t * tree, pll_partition_t * partition, const Tree
   utree_free_node_data(tree);
 }
 
-void split_combined_msa(MSA& source, MSA& target, Tree& tree)
+void split_combined_msa(MSA& source, 
+                        MSA& target, 
+                        Tree& tree)
 {
   vector<pll_utree_t*> tip_nodes(tree.nums().tip_nodes);
   pll_utree_query_tipnodes(tree.tree(), &tip_nodes[0]);
@@ -124,12 +135,13 @@ Model get_model(pll_partition_t* partition)
 {
   string seq_type;
 
-  if (partition->states == 4)
+  if (partition->states == 4) {
     seq_type = "DNA";
-  else if (partition->states == 20)
+  } else if (partition->states == 20) {
     seq_type = "AA";
-  else
+  } else {
     throw runtime_error{"Couldn't determine sequence type from partition"};
+  }
 
   Model model(seq_type, "GTR", "");
 

@@ -46,9 +46,9 @@ public:
     //     Typedefs
     // -------------------------------------------------------------
 
-    typedef T                                       value_type;
-    typedef typename std::vector<T>::iterator       iterator;
-    typedef typename std::vector<T>::const_iterator const_iterator;
+    using value_type    = T;
+    using iterator      = typename std::vector<T>::iterator;
+    using const_iterator= typename std::vector<T>::const_iterator;
 
     // -------------------------------------------------------------
     //     Constructors and Rule of Five

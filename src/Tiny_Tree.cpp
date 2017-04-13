@@ -17,11 +17,11 @@
 
 using namespace std;
 
-static void precompute_sites_static(char nt
-                                  , vector<double>& result
-                                  , pll_partition_t* partition
-                                  , pll_utree_t* tree
-                                  , Model& model)
+static void precompute_sites_static(char nt,
+                                    vector<double>& result,
+                                    pll_partition_t* partition,
+                                    pll_utree_t* tree,
+                                    Model& model)
 {
   const size_t sites = partition->sites;
   result.clear();

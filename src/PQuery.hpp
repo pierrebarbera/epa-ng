@@ -8,23 +8,25 @@
 
 class PQuery {
 public:
-  typedef Placement                                         value_type;
-  typedef typename std::vector<value_type>::iterator        iterator;
-  typedef typename std::vector<value_type>::const_iterator  const_iterator;
+  using value_type      = Placement;
+  using iterator        = std::vector<value_type>::iterator;
+  using const_iterator  = std::vector<value_type>::const_iterator;
 
-  PQuery() : sequence_id_(0) {};
+  PQuery() = default;
   PQuery (const unsigned int seq_id, const unsigned int size)
-    : sequence_id_(seq_id), placements_(size) {}
+    : sequence_id_(seq_id), placements_(size) 
+  { }
   PQuery (const unsigned int seq_id)
-    : sequence_id_(seq_id) {}
+    : sequence_id_(seq_id) 
+  { }
   ~PQuery() = default;
 
   // move and copy semantics
   PQuery(PQuery const& other) = default;
-  PQuery(PQuery&& other) = default;
+  PQuery(PQuery&& other)      = default;
 
   PQuery& operator= (PQuery const& other) = default;
-  PQuery& operator= (PQuery && other) = default;
+  PQuery& operator= (PQuery && other)     = default;
 
   // needs to be in the header
   template<typename ...Args> void emplace_back(Args && ...args)
@@ -58,6 +60,6 @@ public:
   template<class Archive>
   void serialize(Archive& ar) { ar(sequence_id_, placements_); }
 private:
-  unsigned int sequence_id_;
+  unsigned int sequence_id_ = 0;
   std::vector<Placement> placements_;
 };

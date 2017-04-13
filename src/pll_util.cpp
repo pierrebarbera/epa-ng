@@ -8,23 +8,27 @@
 
 using namespace std;
 
-void fasta_close(pll_fasta_t* fptr) { if(fptr) pll_fasta_close(fptr); }
+void fasta_close(pll_fasta_t* fptr) 
+{ 
+  if(fptr) pll_fasta_close(fptr); 
+}
 
 static void set_missing_branch_lengths_recursive(pll_utree_t * tree, double length)
 {
-  if (tree)
-  {
+  if (tree) {
     /* set branch length to length if not set */
-    if (!tree->length)
+    if (!tree->length) {
       tree->length = length;
+    }
 
-    if (tree->next)
-    {
-      if (!tree->next->length)
+    if (tree->next) {
+      if (!tree->next->length){
         tree->next->length = length;
+      }
 
-      if (!tree->next->next->length)
+      if (!tree->next->next->length){
         tree->next->next->length = length;
+      }
 
       set_missing_branch_lengths_recursive(tree->next->back, length);
       set_missing_branch_lengths_recursive(tree->next->next->back, length);
@@ -41,10 +45,8 @@ void set_missing_branch_lengths(pll_utree_t * tree, double length)
 static double sum_branch_lengths_recursive(const pll_utree_t * const tree)
 {
   double length = 0.0;
-  if (tree)
-  {
-    if (tree->next) // inner node
-    {
+  if (tree) {
+    if (tree->next) {
       length = sum_branch_lengths_recursive(tree->next->back);
       length += sum_branch_lengths_recursive(tree->next->next->back);
     }
@@ -62,12 +64,10 @@ double sum_branch_lengths(const pll_utree_t * const tree)
 
 static void set_branch_lengths_recursive(pll_utree_t * tree, double length)
 {
-  if (tree)
-  {
+  if (tree) {
     tree->length = length;
 
-    if (tree->next)
-    {
+    if (tree->next) {
       tree->next->length = length;
       tree->next->next->length = length;
 
@@ -85,8 +85,7 @@ void set_branch_lengths(pll_utree_t * tree, double length)
 
 static void set_unique_clv_indices_recursive(pll_utree_t * tree, const int num_tip_nodes)
 {
-  if (tree && tree->next)
-  {
+  if (tree and tree->next) {
     unsigned int idx = tree->clv_index;
     /* new index is in principle old index * 3 + 0 for the first traversed, + 1 for the
       second etc., however we need to account for the first num_tip_nodes entries, as
@@ -125,9 +124,8 @@ int cb_partial_traversal(pll_utree_t * node)
      element is not yet allocated then we allocate it, set the direction
      and instruct the traversal routine to place the node in the traversal array
      by returning 1 */
-  node_info = (node_info_t *)(node->data);
-  if (!node_info)
-  {
+  node_info = static_cast<node_info_t *>(node->data);
+  if (!node_info) {
     /* allocate data element */
     node->data             = (node_info_t *)calloc(1,sizeof(node_info_t));
     node->next->data       = (node_info_t *)calloc(1,sizeof(node_info_t));
@@ -152,7 +150,7 @@ int cb_partial_traversal(pll_utree_t * node)
 
 int cb_full_traversal(pll_utree_t * node)
 {
-  (void) node;
+  static_cast<void>(node);
   return 1;
 }
 
@@ -161,11 +159,9 @@ static void free_node_data(pll_utree_t * node)
 
   // currently we don't allocate a data struct at the tips
 
-  if (node->next) // we are at a inner node
-  {
+  if (node->next) { // we are at a inner node
     // free all memory behind data of current node triplet
-    if (node->data)
-    {
+    if (node->data) {
       free(node->data);
       free(node->next->data);
       free(node->next->next->data);
@@ -192,16 +188,18 @@ int utree_free_node_data(pll_utree_t * node)
 
 void utree_destroy(pll_utree_t * tree)
 {
-  if (tree)
+  if (tree) {
     pll_utree_destroy(tree, nullptr);
+  }
 }
 
-static void utree_query_branches_recursive(pll_utree_t * node, pll_utree_t ** node_list, unsigned int * index)
+static void utree_query_branches_recursive( pll_utree_t * node, 
+                                            pll_utree_t ** node_list, 
+                                            unsigned int * index)
 {
   // Postorder traversal
 
-  if (node->next) // inner node
-  {
+  if (node->next) { // inner node
     utree_query_branches_recursive(node->next->back, node_list, index);
     utree_query_branches_recursive(node->next->next->back, node_list, index);
   }
@@ -224,11 +222,12 @@ unsigned int utree_query_branches(pll_utree_t * node, pll_utree_t ** node_list)
   return index;
 }
 
-static void get_numbered_newick_string_recursive(pll_utree_t * node, ostringstream &ss, unsigned int * index)
+static void get_numbered_newick_string_recursive( pll_utree_t * node, 
+                                                  ostringstream &ss, 
+                                                  unsigned int * index)
 {
 
-  if (node->next) // inner node
-  {
+  if (node->next) { //inner node
     ss << "(";
     get_numbered_newick_string_recursive(node->next->back, ss, index);
     ss << ",";
@@ -263,13 +262,13 @@ string get_numbered_newick_string(pll_utree_t * root)
   return ss.str();
 }
 
-void reset_triplet_lengths(pll_utree_t * toward_pendant, pll_partition_t * partition, const double old_length)
+void reset_triplet_lengths( pll_utree_t * toward_pendant, 
+                            pll_partition_t * partition, 
+                            const double old_length)
 {
   double half_original = old_length / 2.0;
-  
 
-  if (toward_pendant)
-  {
+  if (toward_pendant) {
     // set up branch lengths
     toward_pendant->length = DEFAULT_BRANCH_LENGTH;
     toward_pendant->back->length = DEFAULT_BRANCH_LENGTH;
@@ -287,8 +286,7 @@ void reset_triplet_lengths(pll_utree_t * toward_pendant, pll_partition_t * parti
     toward_pendant->next->next->back->pmatrix_index = 0;
   }
 
-  if (partition)
-  {
+  if (partition) {
     double branch_lengths[3] = {half_original, half_original, DEFAULT_BRANCH_LENGTH};
     unsigned int matrix_indices[3] = {0, 1, 2};
     vector<unsigned int> param_indices(partition->rate_cats, 0);
@@ -297,24 +295,30 @@ void reset_triplet_lengths(pll_utree_t * toward_pendant, pll_partition_t * parti
 }
 
 // TODO adjust when using pattern compression
-void shift_partition_focus(pll_partition_t * partition, const int offset, const unsigned int span)
+void shift_partition_focus( pll_partition_t * partition, 
+                            const int offset, 
+                            const unsigned int span)
 {
-  const auto clv_size = partition->rate_cats * partition->states_padded;
+  const auto clv_size = static_cast<int>(partition->rate_cats * partition->states_padded);
   const auto num_tips = partition->tips;
   const auto max_index = num_tips + partition->clv_buffers;
 
   // shift the tip chars
-  if (partition->attributes & PLL_ATTRIB_PATTERN_TIP)
-    for (size_t i = 0; i < num_tips; i++)
+  if (partition->attributes & PLL_ATTRIB_PATTERN_TIP) {
+    for (size_t i = 0; i < num_tips; i++) {
       partition->tipchars[i] += offset;
+    }
+  }
 
   // shift the clvs
-  for (size_t i = 0; i < max_index; i++)
-    partition->clv[i] += offset * (int)clv_size;
+  for (size_t i = 0; i < max_index; i++) {
+    partition->clv[i] += offset * clv_size;
+  }
 
   // shift the scalers
-  for (size_t i = 0; i < partition->scale_buffers; i++)
+  for (size_t i = 0; i < partition->scale_buffers; i++) {
     partition->scale_buffer[i] += offset;
+  }
 
   // shift the pattern weights
   partition->pattern_weights += offset;
@@ -330,10 +334,11 @@ pll_utree_t * get_tip_node(pll_utree_t * node)
 {
   pll_utree_t * tip_node = nullptr;
   // node is the tip
-  if (!node->next)
+  if (!node->next) {
     tip_node = node;
-  else if (!node->back->next)
+  } else if (!node->back->next) {
     tip_node = node->back;
+  }
 
   return tip_node;
 }

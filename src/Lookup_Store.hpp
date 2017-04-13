@@ -8,14 +8,19 @@
 
 #include "Matrix.hpp"
 
-static constexpr size_t NT_MAP_SIZE = 16;
-static constexpr size_t AA_MAP_SIZE = 25;
-static constexpr unsigned char NT_MAP[16] = 
+constexpr unsigned char NT_MAP[] = 
   {'A', 'C', 'G', 'T', '-', 'Y', 'R', 'W', 'S', 'K', 'M', 'D', 'V', 'H', 'B', 'X'};
-static constexpr unsigned char AA_MAP[25] = 
+constexpr unsigned char AA_MAP[] = 
   { 'A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 
     'T', 'V', 'W', 'Y', '-', 'X', 'B', 'Z', 'J'};
-static constexpr size_t INVALID = std::numeric_limits<size_t>::max();
+
+template <size_t S, class T>
+constexpr size_t array_size(T (&)[S]) noexcept {return S;}
+
+constexpr size_t NT_MAP_SIZE = array_size(NT_MAP);
+constexpr size_t AA_MAP_SIZE = array_size(AA_MAP);
+
+constexpr size_t INVALID = std::numeric_limits<size_t>::max();
 
 class Lookup_Store
 {
@@ -37,7 +42,7 @@ public:
     }
   }
 
-  Lookup_Store() = delete;
+  Lookup_Store()  = delete;
   ~Lookup_Store() = default;
 
   void init_branch(const size_t branch_id, std::vector<std::vector<double>> precomps)

@@ -10,13 +10,17 @@
 
 class Sample : public Token {
 public:
-  typedef PQuery                                            value_type;
-  typedef typename std::vector<value_type>::iterator        iterator;
-  typedef typename std::vector<value_type>::const_iterator  const_iterator;
+  using value_type      = PQuery;
+  using iterator        = std::vector<value_type>::iterator;
+  using const_iterator  = std::vector<value_type>::const_iterator;
 
   Sample() = default;
-  Sample(unsigned int size) : pquerys_(size) {};
-  Sample(const std::string newick) : newick_(newick) {};
+  Sample(unsigned int size) 
+    : pquerys_(size) 
+  { }
+  Sample(const std::string newick) 
+    : newick_(newick) 
+  { }
   ~Sample() = default;
 
   // member access

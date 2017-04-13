@@ -10,9 +10,26 @@
 #include "Stage.hpp"
 #include "Token.hpp"
 #include "schedule.hpp"
-#include "function_stack.hpp"
 #include "function_traits.hpp"
 #include "template_magic.hpp"
+
+/**
+ * Building a Stage Tuple out of a bunch of lambda functions/functors
+ */
+template < class I, class... lambdas>
+struct stage_types_base;
+
+template < std::size_t... I, class... lambdas >
+struct stage_types_base<std::index_sequence<I...>, lambdas...>
+{
+  using types = typename std::tuple< Typed_Stage<I, lambdas>... >;
+};
+
+template < class... lambdas >
+struct stage_types 
+  : stage_types_base<std::make_index_sequence<sizeof...(lambdas) >, lambdas...>
+{
+};
 
 /**
  * Basic Pipeline Class. Runs all stages in serial.
@@ -64,7 +81,7 @@ public:
 
         if (s.exec()) {
 
-          constexpr auto stage_id = s.id;
+          constexpr auto stage_id = s.id();
 
           auto& in_token = std::get<stage_id>(tokens);
           auto& out_token = std::get<stage_id+1u>(tokens);

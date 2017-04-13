@@ -8,12 +8,13 @@
 
 #include "pllhead.hpp"
 
-typedef std::unique_ptr<FILE, int(*)(FILE*)> unique_fptr;
 // custom deleter
 int safe_fclose(FILE* fptr);
 
 class Binary {
 public:
+  using file_ptr_type = std::unique_ptr<FILE, int(*)(FILE*)>;
+  
   Binary(const std::string& bin_file_path);
   Binary() : bin_fptr_(nullptr, safe_fclose) { }
   Binary(Binary && other);
@@ -29,7 +30,7 @@ public:
   pll_utree_t* load_utree();
 private:
   std::mutex file_mutex_;
-  unique_fptr bin_fptr_;
+  file_ptr_type bin_fptr_;
   std::vector<pll_block_map_t> map_;
 };
 

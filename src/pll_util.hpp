@@ -12,9 +12,9 @@ typedef struct
 } node_info_t;
 
 // deleter typedefs
-typedef void(*partition_deleter)(pll_partition_t*);
-typedef void(*utree_deleter)(pll_utree_t*);
-typedef void (*fasta_deleter)(pll_fasta_t*);
+using partition_deleter = void(*)(pll_partition_t*);
+using utree_deleter     = void(*)(pll_utree_t*);
+using fasta_deleter     = void(*)(pll_fasta_t*);
 
 // deleters
 void fasta_close(pll_fasta_t* fptr);

@@ -27,7 +27,7 @@ Binary::Binary(const string& binary_file_path) : bin_fptr_(nullptr, safe_fclose)
 {
   // open the binary file
   pll_binary_header_t header;
-  bin_fptr_ = unique_fptr(pllmod_binary_open(binary_file_path.c_str(), &header), safe_fclose);
+  bin_fptr_ = file_ptr_type(pllmod_binary_open(binary_file_path.c_str(), &header), safe_fclose);
 
   if (!bin_fptr_)
     throw runtime_error{"Could not open binary file for reading."};

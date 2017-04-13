@@ -15,8 +15,9 @@ Log lgr;
 
 static void ensure_dir_has_slash(string& dir)
 {
-  if (dir.length() > 0 && dir.back() != '/')
+  if (dir.length() > 0 && dir.back() != '/') {
     dir += "/";
+  }
 }
 
 static std::vector<std::string> split_by_delimiter(const std::string & text, const std::string delim)

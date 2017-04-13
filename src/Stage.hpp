@@ -13,14 +13,10 @@
  */
 class Stage
 {
-// private:
-//   Stage() = default;
-//   virtual ~Stage() = default;
 
 public:
-  // virtual void accept(Token&) = 0;
-  // virtual Token process(Token&) = 0;
-  // virtual void put(Token&) = 0;
+  Stage() = default;
+  ~Stage() = default;
 
   virtual bool exec() const final
   {
@@ -44,24 +40,18 @@ template <size_t I, typename lambda>
 class Typed_Stage : public Stage
 {
 public:
-  static constexpr size_t id = I;
-
-  // size_t id() const {return id_;}
+  static constexpr size_t id() {return I;};
 
   using traits = thrill::common::FunctionTraits<lambda>;
 
   using base_in_type  = typename traits::template arg<0>;
   using base_out_type = typename traits::result_type;
-  using in_type       = typename std::remove_reference<base_in_type>::type;
-  using out_type      = typename std::remove_reference<base_out_type>::type;
-  // using in_type_ptr   = std::shared_ptr<in_type>;
-  // using out_type_ptr   = std::shared_ptr<out_type>;
+  using in_type       = std::remove_reference_t<base_in_type>;
+  using out_type      = std::remove_reference_t<base_out_type>;
 
   using accept_func_type  = std::function<void(in_type&)>;
   using process_func_type = std::function<out_type(in_type&)>;
   using put_func_type     = std::function<void(out_type&)>;
-
-  using TokenPtr = std::shared_ptr<Token>;
 
   Typed_Stage(accept_func_type   accept,
               process_func_type  process,
@@ -90,7 +80,7 @@ public:
     return process_(arg);
   }
 
-  void put(out_type& arg) 
+  void put(out_type& arg)
   {
     put_(arg);
   }

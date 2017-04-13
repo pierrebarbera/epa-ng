@@ -116,7 +116,9 @@ string sample_to_jplace_string(const Sample& sample, const MSA& msa)
   return output.str();
 }
 
-string full_jplace_string(const Sample& sample, const string& invocation, const MSA& msa)
+string full_jplace_string(const Sample& sample, 
+                          const string& invocation, 
+                          const MSA& msa)
 {
   ostringstream output;
 

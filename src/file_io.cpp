@@ -89,14 +89,16 @@ pll_utree_t * build_tree_from_file(const string& tree_file, Tree_Numbers& nums)
   if (num_tip_nodes < 3)
     throw runtime_error{"Number of tip nodes too small"};
 
-  nums.init(num_tip_nodes);
+  nums = Tree_Numbers(num_tip_nodes);
 
   set_missing_branch_lengths(tree, DEFAULT_BRANCH_LENGTH);
 
   return tree;
 }
 
-pll_partition_t *  build_partition_from_file(const Model& model, Tree_Numbers& nums,  const int num_sites)
+pll_partition_t *  build_partition_from_file( const Model& model, 
+                                              Tree_Numbers& nums, 
+                                              const int num_sites)
 {
   assert(nums.tip_nodes); // nums must have been initialized correctly
 

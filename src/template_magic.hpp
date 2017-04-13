@@ -109,20 +109,4 @@ struct token_types
 };
 
 
-/**
- * Building a Stage Tuple out of a bunch of lambda functions/functors
- */
-template < class I, class... lambdas>
-struct stage_types_base;
 
-template < std::size_t... I, class... lambdas >
-struct stage_types_base<std::index_sequence<I...>, lambdas...>
-{
-  using types = typename std::tuple< Typed_Stage<I, lambdas>... >;
-};
-
-template < class... lambdas >
-struct stage_types 
-  : stage_types_base<std::make_index_sequence<sizeof...(lambdas) >, lambdas...>
-{
-};
