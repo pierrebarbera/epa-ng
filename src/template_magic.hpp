@@ -88,6 +88,22 @@ for_each(std::tuple<Tp...>& t, FuncT f)
 }
 
 /**
+ * Separate tuple for_each function that operates on a pair of elements
+ */
+template<std::size_t I = 0, class FuncT, class... Tp>
+inline typename std::enable_if<I == sizeof...(Tp) - 1u, void>::type
+for_each_pair(std::tuple<Tp...> &, FuncT) // Unused arguments are given no names.
+{ }
+
+template<std::size_t I = 0, class FuncT, class... Tp>
+inline typename std::enable_if<I < sizeof...(Tp) - 1u, void>::type
+for_each_pair(std::tuple<Tp...>& t, FuncT f)
+{
+  f(std::get<I>(t), std::get<I+1u>(t));
+  for_each_pair<I + 1, FuncT, Tp...>(t, f);
+}
+
+/**
  * building a tuple of the input/output types of a tuple of Stages
  */
 template < class I, class StageTuple>

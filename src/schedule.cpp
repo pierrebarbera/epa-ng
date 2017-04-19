@@ -50,7 +50,7 @@ std::vector<unsigned int> solve(unsigned int stages,
 
 void assign(const int local_rank,
             std::vector<unsigned int>& nodes_per_stage, 
-            std::vector<std::vector<int>>& rank_assignm,
+            schedule_type& rank_assignm,
             int* local_stage)
 {
   rank_assignm.clear();
@@ -70,7 +70,7 @@ void assign(const int local_rank,
 
 void reassign(const int local_rank,
               std::vector<unsigned int>& nodes_per_stage, 
-              std::vector<std::vector<int>>& rank_assignm,
+              schedule_type& rank_assignm,
               int* local_stage)
 {
   assert(nodes_per_stage.size() == rank_assignm.size());

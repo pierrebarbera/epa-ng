@@ -9,6 +9,8 @@
 
 #include "Stage.hpp"
 #include "Token.hpp"
+#include "Timer.hpp"
+#include "Intercom.hpp"
 #include "schedule.hpp"
 #include "function_traits.hpp"
 #include "template_magic.hpp"
@@ -43,9 +45,11 @@ class Pipeline
 public:
   using hook_type       = std::function<void()>;
 
-  Pipeline(const stack_type & stages, const hook_type & per_loop_hook)
+  Pipeline( const stack_type& stages, 
+            const hook_type& per_loop_hook)
     : stages_(stages)
     , per_loop_hook_(per_loop_hook)
+    , icom_(std::tuple_size<stack_type>::value)
   { }
 
   ~Pipeline() = default;
@@ -104,14 +108,91 @@ public:
 
       if(last_token->rebalance()) {
         // do the kansas city shuffle...
+        // calculate new schedule
+        icom_.rebalance(elapsed_time_);
+
+        // reassign the local per-stage execution status
+        assign_exec_status_();
+
+        // reassign the inter-stage communication operations
+        assign_comm_ops_();
       }
 
     } while (last_token->valid()); //returns valid if data token or default initialized
   }
 
 private:
+
+  void assign_exec_status_()
+  {
+    for_each(stages_, [&](auto& s) {
+      s.exec(icom_.stage_active(s.id()));
+    });
+  }
+
+  /**
+   * Assign appropriate communication operations between the stages according to the
+   * current schedule.
+   *
+   */
+  void assign_comm_ops_()
+  {
+    /**
+     * Contiguous active stages communicate via no-op (aka. they share the same memory),
+     * whereas between such clusters MPI communication routines are called
+     */
+    #ifdef __MPI
+    for_each_pair(stages_, [&](auto& lhs, auto& rhs) {
+      using lhs_t = std::remove_reference_t<decltype(lhs)>;
+      using rhs_t = std::remove_reference_t<decltype(rhs)>;
+      using put_arg_t     = typename lhs_t::out_type;
+      using accept_arg_t  = typename rhs_t::in_type;
+      using put_func_t    = typename lhs_t::put_func_type;
+      using accept_func_t = typename rhs_t::accept_func_type;
+
+      put_func_t put        = [](put_arg_t&){};
+      accept_func_t accept  = [](accept_arg_t&){};
+
+      using namespace std::placeholders;
+
+      constexpr auto src = lhs.id();
+      constexpr auto dst = rhs.id();
+      
+      if (lhs.exec()) {
+        if (not rhs.exec()) {
+          put = std::bind(
+            epa_mpi_split_send<put_arg_t>, 
+            _1, 
+            std::ref(icom_.schedule(dst)), 
+            MPI_COMM_WORLD,
+            std::ref(icom_.previous_requests()),
+            std::ref(pause_time_)
+          );
+        }
+      } else {
+        if (rhs.exec()) {
+          accept = std::bind(
+            epa_mpi_receive_merge<accept_arg_t>, 
+            _1, 
+            std::ref(icom_.schedule(src)),
+            MPI_COMM_WORLD,
+            // std::ref(icom_.previous_requests()),
+            std::ref(pause_time_)
+          );
+        }
+      }
+
+      lhs.set_put_func(put);
+      rhs.set_accept_func(accept); 
+    });
+    #endif //__MPI
+  }
+
   stack_type stages_;
   hook_type per_loop_hook_;
+  Intercom icom_;
+  Timer pause_time_;
+  Timer elapsed_time_;
 
 };
 
@@ -122,59 +203,3 @@ auto make_pipeline( const stage_f& first_stage,
 {
   return Pipeline<stage_f>(std::make_tuple(Typed_Stage<0u, stage_f>(first_stage)), per_loop_hook);
 }
-
-#ifdef __MPI
-
-#include "epa_mpi_util.hpp"
-
-/**
- * MPI Pipeline Class. On each rank, runs the parts of the pipeline assigned to that rank
- */
-template <typename input, typename output, typename ... lambdas>
-class MPI_Pipeline : public Pipeline<input, output>
-{
-public:
-  using super_type  = Pipeline<input, output>; 
-  using source_type = super_type::source_type;
-  using sink_type   = super_type::sink_type;
-
-  MPI_Pipeline( std::vector<double> initial_difficulty,
-                lambdas... fn)
-    : super_type(fn...)
-  {
-    if (stages.size() != initial_difficulty.size()) {
-      throw std::runtime_error{"Initial difficulty must match number of stages!"};
-    }
-
-    int local_rank = 0;
-    int local_stage;
-    int world_size;
-    MPI_Comm_rank(MPI_COMM_WORLD, &local_rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-
-    // get initial schedule
-    auto init_nps = solve(num_stages, world_size, initial_difficulty);
-    assign(local_rank, init_nps, schedule_, &local_stage);
-
-    lgr.dbg() << "Schedule: ";
-    for (size_t i = 0; i < schedule.size(); ++i) {
-      lgr.dbg() << schedule[i].size() << " ";
-    }
-    lgr.dbg() << std::endl;
-
-    for (size_t stage = 0; stage < stages_.size(); ++stage) {
-      stages_[stage].exec = (local_stage == stage);
-    }
-
-
-  }
-
-  MPI_Pipeline() = delete;
-
-  ~MPI_Pipeline() = default;
-
-private:
-  schedule_type schedule_;
-};
-
-#endif

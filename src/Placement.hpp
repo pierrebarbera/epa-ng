@@ -4,8 +4,10 @@ class Placement {
 public:
   Placement() = default;
 
-  Placement(unsigned int branch_id, double likelihood, double pendant_length,
-    double distal_length)
+  Placement(unsigned int branch_id, 
+            double likelihood, 
+            double pendant_length, 
+            double distal_length)
     : branch_id_(branch_id)
     , likelihood_(likelihood)
     , lwr_(0.0)

@@ -278,9 +278,9 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     //==============================================================
     if (local_stage == EPA_MPI_STAGE_1_AGGREGATE)
     {
-    // (MPI: recieve results, merge them)
+    // (MPI: receive results, merge them)
     lgr.dbg() << "Recieving Stage 1 Results..." << std::endl;
-    epa_mpi_recieve_merge(sample, schedule[EPA_MPI_STAGE_1_COMPUTE], MPI_COMM_WORLD, dummy);
+    epa_mpi_receive_merge(sample, schedule[EPA_MPI_STAGE_1_COMPUTE], MPI_COMM_WORLD, dummy);
     lgr.dbg() << "Stage 1 Recieve done!" << std::endl;
     timer.start();
 #endif // __MPI
@@ -315,7 +315,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     //==============================================================
     if (local_stage == EPA_MPI_STAGE_2_COMPUTE and options.prescoring)
     {
-    epa_mpi_recieve_merge(second_placement_work, schedule[EPA_MPI_STAGE_1_AGGREGATE], MPI_COMM_WORLD, dummy);
+    epa_mpi_receive_merge(second_placement_work, schedule[EPA_MPI_STAGE_1_AGGREGATE], MPI_COMM_WORLD, dummy);
     timer.start();
 #endif // __MPI
     if (options.prescoring)
@@ -340,7 +340,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
       // only if this is the 4th stage do we need to get from mpi
     if (local_stage == EPA_MPI_STAGE_2_AGGREGATE)
     {
-      epa_mpi_recieve_merge(sample, schedule[EPA_MPI_STAGE_2_COMPUTE], MPI_COMM_WORLD, dummy);
+      epa_mpi_receive_merge(sample, schedule[EPA_MPI_STAGE_2_COMPUTE], MPI_COMM_WORLD, dummy);
       timer.start();
     }
 #endif // __MPI
@@ -442,7 +442,7 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
         lgr.dbg() << "Foremen allgather done!" << std::endl;
         MPI_Comm_free(&foreman_comm);
       }
-      // ensure all messages were recieved and previous requests are cleared
+      // ensure all messages were received and previous requests are cleared
       epa_mpi_waitall(prev_requests);
       
       MPI_BARRIER(MPI_COMM_WORLD);

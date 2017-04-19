@@ -84,7 +84,7 @@ void epa_mpi_send(T& obj, int dest_rank, MPI_Comm comm)
 }
 
 template <typename T>
-void epa_mpi_isend(T& obj, int dest_rank, MPI_Comm comm, request_tuple_t& prev_req, Timer& timer)
+void epa_mpi_isend(T& obj, int dest_rank, MPI_Comm comm, request_tuple& prev_req, Timer& timer)
 {
   // wait for completion of previous send
   if (prev_req.req)
@@ -112,7 +112,7 @@ void epa_mpi_isend(T& obj, int dest_rank, MPI_Comm comm, request_tuple_t& prev_r
 }
 
 template <typename T>
-void epa_mpi_recieve(T& obj, int src_rank, MPI_Comm comm, Timer& timer)
+void epa_mpi_receive(T& obj, int src_rank, MPI_Comm comm, Timer& timer)
 {
   // probe to find out the message size
   MPI_Status status;
@@ -157,32 +157,32 @@ void epa_mpi_split_send(T& obj, std::vector<int>& dest_ranks, MPI_Comm comm, pre
   isend_all(parts, dest_ranks, comm, prev_reqs, timer);
 }
 
-enum class recieve_status {WAITING, READY, DONE};
+enum class receive_status {WAITING, READY, DONE};
 
 struct status_type
 {
   int rank;
-  recieve_status status;
+  receive_status status;
 };
 
 // template <typename T>
-// void epa_mpi_recieve_merge(T& obj, std::vector<int>& src_ranks, MPI_Comm comm, Timer& timer)
+// void epa_mpi_receive_merge(T& obj, std::vector<int>& src_ranks, MPI_Comm comm, Timer& timer)
 // {
 //   const auto num_src_ranks = src_ranks.size();
-//   size_t num_recieved = 0;
+//   size_t num_received = 0;
 
 //   std::vector<status_type> status_list(num_src_ranks);
 //   size_t i = 0;
 //   for (auto& rank : src_ranks)
 //   {
 //     status_list[i].rank   = rank;
-//     status_list[i].status = recieve_status::WAITING;
+//     status_list[i].status = receive_status::WAITING;
 //     ++i;
 //   }
   
 //     to avoid waits as much as possible: build a list that tells us for which src ranks
-//     there are currently messages waiting to be recieved, then recieve those.
-//     Repeat this procedure of nonblocking check and blocking recieve until all source ranks
+//     there are currently messages waiting to be received, then receive those.
+//     Repeat this procedure of nonblocking check and blocking receive until all source ranks
 //     have been visited ONCE (as we still want per chunk synchronicity)
    
 //   do
@@ -193,31 +193,31 @@ struct status_type
 //       MPI_Status stat;
 //       int message_available = false;
 //       err_check(MPI_Iprobe(s.rank, 0, comm, &message_available, &stat));
-//       if (message_available) s.status = recieve_status::READY;
+//       if (message_available) s.status = receive_status::READY;
 //     }
 
-//     // blocking recieve of all that are ready
+//     // blocking receive of all that are ready
 //     for (auto& s : status_list)
 //     {
-//       if (s.status == recieve_status::READY)
+//       if (s.status == receive_status::READY)
 //       {
 //         T remote_obj;
-//         epa_mpi_recieve(remote_obj, s.rank, comm, timer);
+//         epa_mpi_receive(remote_obj, s.rank, comm, timer);
 //         merge(obj, remote_obj);
-//         ++num_recieved;
-//         s.status = recieve_status::DONE;
+//         ++num_received;
+//         s.status = receive_status::DONE;
 //       }
 //     }
-//   } while (num_recieved < num_src_ranks);
+//   } while (num_received < num_src_ranks);
 // }
 
 template <typename T>
-void epa_mpi_recieve_merge(T& obj, std::vector<int>& src_ranks, MPI_Comm comm, Timer& timer)
+void epa_mpi_receive_merge(T& obj, std::vector<int>& src_ranks, MPI_Comm comm, Timer& timer)
 {
   for (auto rank : src_ranks)
   {
     T remote_obj;
-    epa_mpi_recieve(remote_obj, rank, comm, timer);
+    epa_mpi_receive(remote_obj, rank, comm, timer);
     merge(obj, remote_obj);
   }
 }
@@ -235,7 +235,7 @@ void epa_mpi_gather(T& obj, int dest_rank, std::vector<int>& src_ranks, int loca
       if (local_rank == src_rank)
         continue;
       T remote_obj;
-      epa_mpi_recieve(remote_obj, src_rank, MPI_COMM_WORLD, timer);
+      epa_mpi_receive(remote_obj, src_rank, MPI_COMM_WORLD, timer);
       merge(obj, remote_obj);
     }
   }
@@ -255,7 +255,7 @@ void epa_mpi_bcast(T& obj, int src_rank, std::vector<int>& dest_ranks, int local
   }
   else
   {
-    epa_mpi_recieve(obj, src_rank, MPI_COMM_WORLD, timer);
+    epa_mpi_receive(obj, src_rank, MPI_COMM_WORLD, timer);
   }
 }
 
