@@ -9,7 +9,7 @@
 #include "Sequence.hpp"
 #include "optimize.hpp"
 #include "set_manipulators.hpp"
-#include "Log.hpp"
+#include "logging.hpp"
 #include "stringify.hpp"
 
 using namespace std;
@@ -38,14 +38,14 @@ Tree::Tree(const string &tree_file, const MSA &msa, Model &model, Options& optio
   // perform branch length and model optimization on the reference tree
   optimize(model_, tree_.get(), partition_.get(), nums_, options_.opt_branches, options_.opt_model);
 
-  lgr.dbg() << to_string(model_);
+  LOG_DBG << to_string(model_);
 
-  lgr.dbg() << "Tree length: " << sum_branch_lengths(tree_.get()) << endl;
+  LOG_DBG << "Tree length: " << sum_branch_lengths(tree_.get()) << endl;
 
   precompute_clvs(tree_.get(), partition_.get(), nums_);
 
-  lgr.dbg() << "\nPost-optimization reference tree log-likelihood: ";
-  lgr.dbg() << to_string(this->ref_tree_logl()) << endl;
+  LOG_DBG << "\nPost-optimization reference tree log-likelihood: ";
+  LOG_DBG << to_string(this->ref_tree_logl()) << endl;
 }
 
 /**

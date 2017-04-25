@@ -6,12 +6,12 @@
 #include <cxxopts.hpp>
 
 #include "mpihead.hpp"
-#include "Log.hpp"
+#include "logging.hpp"
 #include "epa.hpp"
 
 using namespace std;
 
-Log lgr;
+// Log lgr;
 
 static void ensure_dir_has_slash(string& dir)
 {
@@ -39,6 +39,8 @@ static std::vector<std::string> split_by_delimiter(const std::string & text, con
 
 int main(int argc, char** argv)
 {
+  genesis::utils::Logging::log_to_stdout();
+
   MPI_INIT(&argc, &argv);
 
   string invocation("");
@@ -139,7 +141,7 @@ int main(int argc, char** argv)
 
   if (cli.count("help"))
   {
-    lgr << cli.help({"", "Input", "Output", "Compute", "Pipeline"}) << std::endl;
+    LOG_INFO << cli.help({"", "Input", "Output", "Compute", "Pipeline"}) << std::endl;
     exit(EXIT_SUCCESS);
   }
 
@@ -149,7 +151,7 @@ int main(int argc, char** argv)
     or  ( cli.count("binary") and (cli.count("query") or cli.count("ref-msa")) )
     ))
   {
-    lgr << "Must supply reference tree/msa either directly or as precomputed binary." << std::endl;
+    LOG_INFO << "Must supply reference tree/msa either directly or as precomputed binary." << std::endl;
     exit(EXIT_FAILURE);
   }
 
@@ -190,7 +192,9 @@ int main(int argc, char** argv)
   if (cli.count("dyn-heur"))
   {
     options.prescoring_threshold = cli["dyn-heur"].as<double>();
-    if (options.prescoring) lgr << "Cannot use -G and -g concurrently! Running with -g " << options.prescoring_threshold <<  std::endl;
+    if (options.prescoring)  {
+      LOG_INFO << "Cannot use -G and -g concurrently! Running with -g " << options.prescoring_threshold <<  std::endl;
+    }
     options.prescoring = true;
     options.prescoring_by_percentage = false;
   }
@@ -212,7 +216,7 @@ int main(int argc, char** argv)
       if (s >= 3)
         sub_matrix = parts[2];
 
-      lgr.dbg() << "Model descriptor: " << sequence_type << " "
+      LOG_DBG << "Model descriptor: " << sequence_type << " "
       << model_id << " " << sub_matrix << " " << std::endl;
     }
   }
@@ -260,10 +264,14 @@ int main(int argc, char** argv)
   #ifdef __MPI
   int local_rank = 0;
   MPI_Comm_rank(MPI_COMM_WORLD, &local_rank);
-  bool to_cout = (local_rank == 0);
-  lgr = Log(work_dir + std::to_string(local_rank) + ".epa_info.log", to_cout);
+  if (local_rank != 0) {
+    genesis::utils::Logging::log_to_stdout(false);  
+  }
+  genesis::utils::Logging::log_to_file(work_dir + std::to_string(local_rank) + ".epa_info.log");
+  // LOG_INFO = Log(work_dir + std::to_string(local_rank) + ".epa_info.log", to_cout);
   #else
-  lgr = Log(work_dir + "epa_info.log");
+  // LOG_INFO = Log(work_dir + "epa_info.log");
+  genesis::utils::Logging::log_to_file(work_dir + "epa_info.log");
   #endif
 
   banner +=   " _____        ______ _____        ";
@@ -273,7 +281,7 @@ int main(int argc, char** argv)
   banner += "\n| |          | |____| |  / ____ \\";
   banner += "\n|_|          |______|_| /_/    \\_\\ \n";
 
-  lgr << banner << std::endl;
+  LOG_INFO << banner << std::endl;
 
   MSA ref_msa;
   if (reference_file.size()) {
@@ -283,7 +291,7 @@ int main(int argc, char** argv)
   // build the Tree
   Tree tree;
   if (options.load_binary_mode) {
-    lgr << "Loading from binary" << endl;
+    LOG_INFO << "Loading from binary" << endl;
     tree = Tree(binary_file, model, options);
   } else {
     // build the full tree with all possible clv's
@@ -302,7 +310,7 @@ int main(int argc, char** argv)
   }
   // dump to binary if specified
   if (options.dump_binary_mode) {
-    lgr << "Writing to binary" << endl;
+    LOG_INFO << "Writing to binary" << endl;
     string dump_file(work_dir + "epa_binary_file");
     dump_to_binary(tree, dump_file);
     MPI_FINALIZE();
@@ -316,7 +324,7 @@ int main(int argc, char** argv)
   auto end = chrono::high_resolution_clock::now();
   auto runtime = chrono::duration_cast<chrono::seconds>(end - start).count();
 
-  lgr << "\nTime spent placing: " << runtime << "s" << endl;
+  LOG_INFO << "\nTime spent placing: " << runtime << "s" << endl;
 
   MPI_FINALIZE();
 	return EXIT_SUCCESS;

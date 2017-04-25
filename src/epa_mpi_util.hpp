@@ -5,7 +5,7 @@
 #include "mpihead.hpp"
 #include "Sample.hpp"
 #include "Timer.hpp"
-#include "Log.hpp"
+#include "logging.hpp"
 
 #include <sstream>
 #include <memory>
@@ -92,10 +92,10 @@ void epa_mpi_isend(T& obj, int dest_rank, MPI_Comm comm, request_tuple& prev_req
   {
     MPI_Status status;
     timer.pause();
-    lgr.dbg() << "previous request detected, calling wait...";
-    lgr.dbg().flush();
+    LOG_DBG << "previous request detected, calling wait...";
+    LOG_DBG.flush();
     err_check(MPI_Wait(&prev_req.req, &status));
-    lgr.dbg() << " Done!" << std::endl;
+    LOG_DBG << " Done!" << std::endl;
     timer.resume();
     delete[] prev_req.buf;
     // free previous request?
@@ -156,8 +156,8 @@ static inline void isend_all(std::vector<T>& parts, std::vector<int>& dest_ranks
 template <typename T>
 void epa_mpi_split_send(T& obj, std::vector<int>& dest_ranks, MPI_Comm comm, previous_request_storage_t& prev_reqs, Timer& timer)
 {
-  lgr.dbg() << "Sending...";
-  lgr.dbg().flush();
+  LOG_DBG << "Sending...";
+  LOG_DBG.flush();
 
   std::vector<T> parts;
   split(obj, parts, dest_ranks.size());
@@ -169,7 +169,7 @@ void epa_mpi_split_send(T& obj, std::vector<int>& dest_ranks, MPI_Comm comm, pre
 
   isend_all(parts, dest_ranks, comm, prev_reqs, timer);
 
-  lgr.dbg() << " Done!" << std::endl;
+  LOG_DBG << " Done!" << std::endl;
 }
 
 enum class receive_status {WAITING, READY, DONE};

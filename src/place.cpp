@@ -14,7 +14,7 @@
 #include "jplace_util.hpp"
 #include "stringify.hpp"
 #include "set_manipulators.hpp"
-#include "Log.hpp"
+#include "logging.hpp"
 #include "Tiny_Tree.hpp"
 #include "mpihead.hpp"
 #include "pll_util.hpp"
@@ -114,12 +114,12 @@ static void merge_write_results(const std::string& status_file_name,
   }
 
   for (auto& p : part_names) {
-    lgr.dbg() << p << std::endl;
+    LOG_DBG << p << std::endl;
   }
 
   // create output file
   std::ofstream outfile(outdir + "epa_result.jplace");
-  lgr << "\nOutput file: " << outdir + "epa_result.jplace" << std::endl;
+  LOG_INFO << "\nOutput file: " << outdir + "epa_result.jplace" << std::endl;
   outfile << init_jplace_string(newick_string);
   merge_into(outfile, part_names);
   outfile << finalize_jplace_string(invocation);
@@ -140,14 +140,14 @@ void process( Tree& reference_tree,
   MPI_Comm_rank(MPI_COMM_WORLD, &local_rank);
   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
-  lgr.dbg() << "World Size: " << world_size << std::endl;
+  LOG_DBG << "World Size: " << world_size << std::endl;
 
   // shuffle available nodes to the different stages
   schedule_type schedule;
   int local_stage;
   const unsigned int num_stages = options.prescoring ? 4 : 2;
 
-  lgr.dbg() << "Stages: " << num_stages << std::endl;
+  LOG_DBG << "Stages: " << num_stages << std::endl;
 
   unsigned int rebalance = 3;
   unsigned int rebalance_delta = rebalance;
@@ -160,11 +160,11 @@ void process( Tree& reference_tree,
   auto init_nps = solve(num_stages, world_size, init_diff);
   assign(local_rank, init_nps, schedule, &local_stage);
 
-  lgr.dbg() << "Schedule: ";
+  LOG_DBG << "Schedule: ";
   for (size_t i = 0; i < schedule.size(); ++i) {
-    lgr.dbg() << schedule[i].size() << " ";
+    LOG_DBG << schedule[i].size() << " ";
   }
-  lgr.dbg() << std::endl;
+  LOG_DBG << std::endl;
 
   Timer timer;
   Timer dummy;
@@ -181,11 +181,11 @@ void process( Tree& reference_tree,
 
   std::string status_file_name(outdir + "pepa.status");
 
-  lgr << "P-EPA - Massively-Parallel Evolutionary Placement Algorithm" << std::endl;
-  lgr << "\nInvocation: \n" << invocation << std::endl;
+  LOG_INFO << "P-EPA - Massively-Parallel Evolutionary Placement Algorithm" << std::endl;
+  LOG_INFO << "\nInvocation: \n" << invocation << std::endl;
 
   const auto chunk_size = options.chunk_size;
-  lgr.dbg() << "Chunk size: " << chunk_size << std::endl;
+  LOG_DBG << "Chunk size: " << chunk_size << std::endl;
 
   const auto num_branches = reference_tree.nums().branches;
 
@@ -202,7 +202,7 @@ void process( Tree& reference_tree,
       lowest = branches[i]->length;
   }
 
-  lgr.dbg() << "smallest BL: " << lowest << std::endl;
+  LOG_DBG << "smallest BL: " << lowest << std::endl;
 
   unsigned int chunk_num = 1;
   Sample sample;
@@ -247,7 +247,7 @@ void process( Tree& reference_tree,
     // ...then we need to correctly assign/reassign the workload of the first compute stage
     if ( reassign_happened )
     {
-      lgr.dbg() << "Assigning first stage Work" << std::endl;
+      LOG_DBG << "Assigning first stage Work" << std::endl;
       const auto& stage = schedule[EPA_MPI_STAGE_1_COMPUTE];
       std::vector<Work> parts;
       split(all_work, parts, stage.size());
@@ -267,9 +267,9 @@ void process( Tree& reference_tree,
 #ifdef __MPI
     timer.stop();
     // MPI: split the result and send the part to correct aggregate node
-    lgr.dbg() << "Sending Stage 1 Results..." << std::endl;
+    LOG_DBG << "Sending Stage 1 Results..." << std::endl;
     epa_mpi_split_send(sample, schedule[EPA_MPI_STAGE_1_AGGREGATE], MPI_COMM_WORLD, prev_requests, dummy);
-    lgr.dbg() << "Stage 1 Send done!" << std::endl;
+    LOG_DBG << "Stage 1 Send done!" << std::endl;
 
     } // endif (local_stage == EPA_MPI_STAGE_1_COMPUTE)
     //==============================================================
@@ -282,9 +282,9 @@ void process( Tree& reference_tree,
     if (local_stage == EPA_MPI_STAGE_1_AGGREGATE)
     {
     // (MPI: receive results, merge them)
-    lgr.dbg() << "Recieving Stage 1 Results..." << std::endl;
+    LOG_DBG << "Recieving Stage 1 Results..." << std::endl;
     epa_mpi_receive_merge(sample, schedule[EPA_MPI_STAGE_1_COMPUTE], MPI_COMM_WORLD, dummy);
-    lgr.dbg() << "Stage 1 Recieve done!" << std::endl;
+    LOG_DBG << "Stage 1 Recieve done!" << std::endl;
     timer.start();
 #endif // __MPI
 
@@ -353,13 +353,13 @@ void process( Tree& reference_tree,
       compute_and_set_lwr(sample);
     }
     if (options.acc_threshold) {
-      lgr.dbg() << "Filtering by accumulated threshold: " << options.support_threshold << std::endl;
+      LOG_DBG << "Filtering by accumulated threshold: " << options.support_threshold << std::endl;
       discard_by_accumulated_threshold( sample, 
                                         options.support_threshold,
                                         options.filter_min,
                                         options.filter_max);
     } else {
-      lgr.dbg() << "Filtering placements below threshold: " << options.support_threshold << std::endl;
+      LOG_DBG << "Filtering placements below threshold: " << options.support_threshold << std::endl;
       discard_by_support_threshold( sample,
                                     options.support_threshold,
                                     options.filter_min,
@@ -401,7 +401,7 @@ void process( Tree& reference_tree,
     } // endif aggregate cleanup
 #endif //__MPI
 
-    lgr.dbg() << "Chunk " << chunk_num << " done!" << std::endl;
+    LOG_DBG << "Chunk " << chunk_num << " done!" << std::endl;
     //==============================================================
     // EPA_MPI_STAGE_2_AGGREGATE === END
     //==============================================================
@@ -418,15 +418,15 @@ void process( Tree& reference_tree,
         flight_file << chunk_num << ";" << aft << std::endl;
       }
 
-      lgr.dbg() << "Rebalancing..." << std::endl;
+      LOG_DBG << "Rebalancing..." << std::endl;
       int foreman = schedule[local_stage][0];
       // Step 0: get per node average
       Timer per_node_avg({timer.average()});
       // Step 1: aggregate the runtime statistics, first at the lowest rank per stage
-      lgr.dbg() << "aggregate the runtime statistics..." << std::endl;
+      LOG_DBG << "aggregate the runtime statistics..." << std::endl;
       Timer dummy;
       epa_mpi_gather(per_node_avg, foreman, schedule[local_stage], local_rank, dummy);
-      lgr.dbg() << "Runtime aggregate done!" << std::endl;
+      LOG_DBG << "Runtime aggregate done!" << std::endl;
 
       // Step 2: calculate total time needed per chunk for the stage, reflecting effort spent
       std::vector<double> perstage_total(num_stages);
@@ -439,9 +439,9 @@ void process( Tree& reference_tree,
       {
         auto total_stagetime = per_node_avg.sum();
         // Step 3: make known to all other stage representatives (mpi_allgather)
-        lgr.dbg() << "Foremen allgather..." << std::endl;
+        LOG_DBG << "Foremen allgather..." << std::endl;
         MPI_Allgather(&total_stagetime, 1, MPI_DOUBLE, &perstage_total[0], 1, MPI_DOUBLE, foreman_comm);
-        lgr.dbg() << "Foremen allgather done!" << std::endl;
+        LOG_DBG << "Foremen allgather done!" << std::endl;
         MPI_Comm_free(&foreman_comm);
       }
       // ensure all messages were received and previous requests are cleared
@@ -450,7 +450,7 @@ void process( Tree& reference_tree,
       MPI_BARRIER(MPI_COMM_WORLD);
       // Step 4: stage representatives forward results to all stage members
       // epa_mpi_bcast(perstage_total, foreman, schedule[local_stage], local_rank);
-      lgr.dbg() << "Broadcasting..." << std::endl;
+      LOG_DBG << "Broadcasting..." << std::endl;
       MPI_Comm stage_comm;
       MPI_Comm_split(MPI_COMM_WORLD, local_stage, local_rank, &stage_comm);
 
@@ -459,36 +459,36 @@ void process( Tree& reference_tree,
       MPI_Comm_split(MPI_COMM_WORLD, local_stage, split_key, &stage_comm);
       MPI_Bcast(&perstage_total[0], num_stages, MPI_DOUBLE, 0, stage_comm);
       MPI_Comm_free(&stage_comm);
-      lgr.dbg() << "Broadcasting done!" << std::endl;
+      LOG_DBG << "Broadcasting done!" << std::endl;
 
-      lgr.dbg() << "perstage total:";
+      LOG_DBG << "perstage total:";
       for (size_t i = 0; i < perstage_total.size(); ++i)
       {
-        lgr.dbg() << " " << perstage_total[i];
+        LOG_DBG << " " << perstage_total[i];
       }
-      lgr.dbg() << std::endl;
+      LOG_DBG << std::endl;
 
       // Step 5: calculate schedule on every rank, deterministically!
       to_difficulty(perstage_total);
 
-      lgr.dbg() << "perstage difficulty:";
+      LOG_DBG << "perstage difficulty:";
       for (size_t i = 0; i < perstage_total.size(); ++i)
       {
-        lgr.dbg() << " " << perstage_total[i];
+        LOG_DBG << " " << perstage_total[i];
       }
-      lgr.dbg() << std::endl;
+      LOG_DBG << std::endl;
 
       auto nps = solve(num_stages, world_size, perstage_total);
       reassign(local_rank, nps, schedule, &local_stage);
       // Step 6: re-engage pipeline with new assignments
-      lgr.dbg() << "New Schedule:";
+      LOG_DBG << "New Schedule:";
       for (size_t i = 0; i < nps.size(); ++i)
       {
-        lgr.dbg() << " " << nps[i]; 
+        LOG_DBG << " " << nps[i]; 
       }
-      lgr.dbg() << std::endl;
+      LOG_DBG << std::endl;
       // compute stages should try to keep their edge assignment! affinity!
-      lgr.dbg() << "Rebalancing done!" << std::endl;
+      LOG_DBG << "Rebalancing done!" << std::endl;
       // exponential back-off style rebalance:
       rebalance_delta *= 2;
       rebalance += rebalance_delta;
@@ -521,7 +521,7 @@ void process( Tree& reference_tree,
   //==============================================================
   // POST COMPUTATION
   //==============================================================
-  lgr.dbg() << "Starting Post-Comp" << std::endl;
+  LOG_DBG << "Starting Post-Comp" << std::endl;
   // finally, paste all part files together
 #ifdef __MPI
   MPI_BARRIER(MPI_COMM_WORLD); // must barrier to avoid paste before finish by rank 0
@@ -548,7 +548,7 @@ void tmp_pipeline_test( Tree& reference_tree,
 
   auto local_rank = 0;
 
-  lgr << "WARNING! THIS FUNCTION IS EXPERIMENTAL!" << std::endl;
+  LOG_INFO << "WARNING! THIS FUNCTION IS EXPERIMENTAL!" << std::endl;
 
   // Timer flight_time;
   std::ofstream flight_file(outdir + "stat");
@@ -559,7 +559,7 @@ void tmp_pipeline_test( Tree& reference_tree,
   std::vector<std::string> part_names;
 
   const auto chunk_size = options.chunk_size;
-  lgr.dbg() << "Chunk size: " << chunk_size << std::endl;
+  LOG_DBG << "Chunk size: " << chunk_size << std::endl;
 
   const auto num_branches = reference_tree.nums().branches;
 
@@ -583,12 +583,12 @@ void tmp_pipeline_test( Tree& reference_tree,
   size_t num_sequences = 0;
 
   auto prehook = [&]() -> void {
-    lgr.dbg() << "INGESTING - READING" << std::endl;
+    LOG_DBG << "INGESTING - READING" << std::endl;
     num_sequences = msa_stream.read_next(chunk, chunk_size);
   };
 
   auto ingestion = [&](VoidToken&) -> Work {
-    lgr.dbg() << "INGESTING - CREATING WORK" << std::endl;
+    LOG_DBG << "INGESTING - CREATING WORK" << std::endl;
     // auto num_sequences = msa_stream.read_next(chunk, chunk_size);
     if (num_sequences <= 0) {
       Work work;
@@ -602,7 +602,7 @@ void tmp_pipeline_test( Tree& reference_tree,
   };
 
   auto preplacement = [&](Work& work) -> Sample {
-    lgr.dbg() << "PREPLACING" << std::endl;
+    LOG_DBG << "PREPLACING" << std::endl;
 
     Sample result;
 
@@ -619,7 +619,7 @@ void tmp_pipeline_test( Tree& reference_tree,
   };
 
   auto candidate_selection = [&](Sample& sample) -> Work {
-    lgr.dbg() << "SELECTING CANDIDATES" << std::endl;
+    LOG_DBG << "SELECTING CANDIDATES" << std::endl;
 
     compute_and_set_lwr(sample);
 
@@ -633,7 +633,7 @@ void tmp_pipeline_test( Tree& reference_tree,
 
 
   auto thorough_placement = [&](Work& work) -> Sample {
-    lgr.dbg() << "BLO PLACEMENT" << std::endl;
+    LOG_DBG << "BLO PLACEMENT" << std::endl;
 
     Sample result;
     place(work,
@@ -649,17 +649,17 @@ void tmp_pipeline_test( Tree& reference_tree,
   };
 
   auto write_result = [&](Sample& sample) -> VoidToken {
-    lgr.dbg() << "WRITING" << std::endl;
+    LOG_DBG << "WRITING" << std::endl;
 
     compute_and_set_lwr(sample);
     if (options.acc_threshold) {
-      lgr.dbg() << "Filtering by accumulated threshold: " << options.support_threshold << std::endl;
+      LOG_DBG << "Filtering by accumulated threshold: " << options.support_threshold << std::endl;
       discard_by_accumulated_threshold( sample, 
                                         options.support_threshold,
                                         options.filter_min,
                                         options.filter_max);
     } else {
-      lgr.dbg() << "Filtering placements below threshold: " << options.support_threshold << std::endl;
+      LOG_DBG << "Filtering placements below threshold: " << options.support_threshold << std::endl;
       discard_by_support_threshold( sample,
                                     options.support_threshold,
                                     options.filter_min,

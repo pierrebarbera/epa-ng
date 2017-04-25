@@ -4,10 +4,8 @@
 
 #include "Epatest.hpp"
 #include "src/mpihead.hpp"
-#include "src/Log.hpp"
 
 Epatest* env;
-Log lgr(false);
 
 int main(int argc, char** argv)
 {
@@ -33,7 +31,8 @@ int main(int argc, char** argv)
   env->out_dir  = std::string("/tmp/epatest/");
   std::string cmd("mkdir ");
   cmd += env->out_dir.c_str();
-  system(cmd.c_str());
+  auto sysret = system(cmd.c_str());
+  (void) sysret; //quenching a warning
   env->binary_file = env->out_dir + "persisted.bin";
 
   ::testing::InitGoogleTest(&argc, argv);

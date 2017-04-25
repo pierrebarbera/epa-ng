@@ -13,7 +13,7 @@
 #include "Tree_Numbers.hpp"
 #include "Range.hpp"
 #include "set_manipulators.hpp"
-#include "Log.hpp"
+#include "logging.hpp"
 
 using namespace std;
 
@@ -114,7 +114,7 @@ Tiny_Tree::Tiny_Tree(pll_utree_t * edge_node , const unsigned int branch_id, Tre
 
   if (!opt_branches)
   {
-    // lgr.dbg() << "precomputation for branch " << branch_id << std::endl;
+    // LOG_DBG << "precomputation for branch " << branch_id << std::endl;
     const std::lock_guard<std::mutex> lock(lookup_store->get_mutex(branch_id));
 
     if( not lookup_store->has_branch(branch_id))

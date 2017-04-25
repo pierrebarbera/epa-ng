@@ -97,10 +97,10 @@ public:
           s.accept(in_token); // noop if shared mem, mpi_merge_receive if mpi
 
           if (in_token.valid()) {
-            lgr.dbg() << "in_token size: " << in_token.size() << std::endl;
+            LOG_DBG << "in_token size: " << in_token.size() << std::endl;
             out_token = s.process(in_token); // do the actual work
           } else {
-            lgr.dbg() << std::to_string(icom_.rank()) << " received end token. Terminating." << std::endl;
+            LOG_DBG << std::to_string(icom_.rank()) << " received end token. Terminating." << std::endl;
             out_token.is_last(true);
           }
 
@@ -109,7 +109,7 @@ public:
             out_token.status(in_token.status());
           }
 
-          lgr << "out_token size: " << out_token.size() << std::endl;
+          LOG_INFO << "out_token size: " << out_token.size() << std::endl;
 
           s.put(out_token); // noop if shared mem, mpi_split_send if mpi
 
