@@ -12,13 +12,13 @@ build/CMakeCache.txt: CMakeLists.txt
 
 run_make: build/CMakeCache.txt
 	@echo "Running make"
-	@make -C build #-j8 
+	$(MAKE) -C build 
 .PHONY: run_make
 
 update:
 	@touch src/CMakeLists.txt
 	@touch test/src/CMakeLists.txt
-	@make -C build
+	$(MAKE) -C build
 .PHONY: update
 
 unittest: update
