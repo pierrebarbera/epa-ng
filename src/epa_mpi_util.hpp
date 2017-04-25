@@ -232,8 +232,9 @@ void epa_mpi_gather(T& obj, int dest_rank, std::vector<int>& src_ranks, int loca
   {
     for (auto src_rank : src_ranks)
     {
-      if (local_rank == src_rank)
+      if (local_rank == src_rank) {
         continue;
+      }
       T remote_obj;
       epa_mpi_receive(remote_obj, src_rank, MPI_COMM_WORLD, timer);
       merge(obj, remote_obj);

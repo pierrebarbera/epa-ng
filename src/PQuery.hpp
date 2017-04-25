@@ -58,7 +58,7 @@ public:
 
   // serialization
   template<class Archive>
-  void serialize(Archive& ar) { ar(sequence_id_, placements_); }
+  void serialize(Archive& ar) { ar( sequence_id_, placements_ ); }
 private:
   unsigned int sequence_id_ = 0;
   std::vector<Placement> placements_;

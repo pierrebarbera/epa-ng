@@ -126,8 +126,11 @@ static void merge_write_results(const std::string& status_file_name,
   outfile.close();
 }
 
-void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& outdir,
-              const Options& options, const std::string& invocation)
+void process( Tree& reference_tree, 
+              MSA_Stream& msa_stream, 
+              const std::string& outdir,
+              const Options& options, 
+              const std::string& invocation)
 {
   /* ===== COMMON DEFINITIONS ===== */
   int local_rank = 0;
@@ -324,8 +327,9 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     }
 #ifdef __MPI
     timer.stop();
-    if(options.prescoring)
+    if(options.prescoring) {
       epa_mpi_split_send(sample, schedule[EPA_MPI_STAGE_2_AGGREGATE], MPI_COMM_WORLD, prev_requests, dummy);
+    }
 
     } // endif (local_stage == EPA_MPI_STAGE_2_COMPUTE)
     //==============================================================
@@ -345,18 +349,16 @@ void process(Tree& reference_tree, MSA_Stream& msa_stream, const std::string& ou
     }
 #endif // __MPI
     // recompute the lwrs
-    if (options.prescoring)
+    if (options.prescoring) {
       compute_and_set_lwr(sample);
-    if (options.acc_threshold)
-    {
+    }
+    if (options.acc_threshold) {
       lgr.dbg() << "Filtering by accumulated threshold: " << options.support_threshold << std::endl;
       discard_by_accumulated_threshold( sample, 
                                         options.support_threshold,
                                         options.filter_min,
                                         options.filter_max);
-    }
-    else
-    {
+    } else {
       lgr.dbg() << "Filtering placements below threshold: " << options.support_threshold << std::endl;
       discard_by_support_threshold( sample,
                                     options.support_threshold,
@@ -679,8 +681,7 @@ void tmp_pipeline_test( Tree& reference_tree,
 
       std::ofstream status_file(status_file_name, std::ofstream::app);
       status_file << chunk_num << ":" << chunk_size << " [";
-      for (size_t i = 0; i < part_names.size(); ++i)
-      {
+      for (size_t i = 0; i < part_names.size(); ++i) {
         status_file << part_names[i];
         if (i < part_names.size() - 1) status_file << ",";  
       }

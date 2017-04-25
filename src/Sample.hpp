@@ -45,12 +45,9 @@ public:
     // if seq_id in pquerys_
     auto iter = std::end(pquerys_);
     if ((iter = std::find(std::begin(pquerys_), std::end(pquerys_), PQuery(seq_id))) 
-      != std::end(pquerys_))
-    {
+      != std::end(pquerys_)) {
       iter->emplace_back(std::forward<Args>(args)...);
-    }
-    else
-    {
+    } else {
       pquerys_.push_back(seq_id);
       pquerys_.back().emplace_back(std::forward<Args>(args)...);
     }

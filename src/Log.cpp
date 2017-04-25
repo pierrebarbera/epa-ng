@@ -1,11 +1,11 @@
 #include "Log.hpp"
 
 Log::Log(const std::string& log_file, bool stdout) 
-  : log_file_(new std::ofstream(log_file)),
-    out_( new Teed_ostream(stdout ? std::cout.rdbuf() : nullptr, (*log_file_).rdbuf()) ),
-    err_( new Prefixed_ostream(*out_, "[ PEPA ERROR ] ") ),
-    dbg_( new Prefixed_ostream(*out_, "[ PEPA DEBUG ] ") )
-  { }
+  : log_file_(new std::ofstream(log_file))
+  ,  out_( new Teed_ostream(stdout ? std::cout.rdbuf() : nullptr, (*log_file_).rdbuf()) )
+  ,  err_( new Prefixed_ostream(*out_, "[ ERROR ] ") )
+  ,  dbg_( new Prefixed_ostream(*out_, "[ DEBUG ] ") )
+{ }
 
 Log::Log() : Log("/dev/null") { }
 
@@ -13,11 +13,18 @@ Log::Log(bool stdout) : Log("/dev/null", stdout) { }
 
 Log::~Log() 
 {
-  if(log_file_) 
+  if (log_file_) {
     log_file_->close();
+  }
 }
 
-void Log::flush() {std::cout.flush();if(log_file_)(*log_file_).flush();};
+void Log::flush() 
+{
+  std::cout.flush();
+  if (log_file_) {
+    (*log_file_).flush();
+  }
+};
 
 Log& Log::operator=(Log&& other)
 {

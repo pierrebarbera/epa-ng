@@ -246,8 +246,7 @@ int main(int argc, char** argv)
   if (cli.count("chunk-size")) options.chunk_size = cli["chunk-size"].as<unsigned int>();
   if (cli.count("threads")) options.num_threads = cli["threads"].as<unsigned int>();
 
-  } catch (const cxxopts::OptionException& e)
-  {
+  } catch (const cxxopts::OptionException& e) {
     std::cout << "error parsing options: " << e.what() << std::endl;
     exit(EXIT_FAILURE);
   }
@@ -277,41 +276,32 @@ int main(int argc, char** argv)
   lgr << banner << std::endl;
 
   MSA ref_msa;
-  if (reference_file.size())
+  if (reference_file.size()) {
     ref_msa = build_MSA_from_file(reference_file);
+  }
 
   // build the Tree
   Tree tree;
-  if (options.load_binary_mode)
-  {
+  if (options.load_binary_mode) {
     lgr << "Loading from binary" << endl;
     tree = Tree(binary_file, model, options);
-  }
-  else
-  {
+  } else {
     // build the full tree with all possible clv's
     tree = Tree(tree_file, ref_msa, model, options);
   }
 
   // build the query stream
   MSA_Stream queries;
-  if (not options.dump_binary_mode)
-  {
-    if (query_file.size() != 0)
-    {
+  if (not options.dump_binary_mode) {
+    if (query_file.size() != 0) {
       queries = MSA_Stream(query_file, options.chunk_size);
-
-    }
-    // attempt to split msa if it is intermingled with (supposed) query sequences
-    else
-    {
+    } else { // attempt to split msa if it is intermingled with (supposed) query sequences
       throw runtime_error{"Combined MSA files not currently supported, please split them and specify using -s and -q."};
       // split_combined_msa(ref_msa, queries, tree);
     }
   }
   // dump to binary if specified
-  if (options.dump_binary_mode)
-  {
+  if (options.dump_binary_mode) {
     lgr << "Writing to binary" << endl;
     string dump_file(work_dir + "epa_binary_file");
     dump_to_binary(tree, dump_file);

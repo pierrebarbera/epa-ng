@@ -16,9 +16,10 @@ void to_difficulty(std::vector<double>& perstage_avg)
   );
 }
 
+
 std::vector<unsigned int> solve(unsigned int stages, 
                                 unsigned int nodes, 
-                                std::vector<double>& difficulty_per_stage)
+                                const std::vector<double>& difficulty_per_stage)
 {
   assert(difficulty_per_stage.size() == stages);
   if (nodes < stages) {

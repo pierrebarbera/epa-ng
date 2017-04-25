@@ -71,16 +71,18 @@ public:
   double sum()
   {
     duration sum(0);
-    for (auto p : ts_)
+    for (auto p : ts_) {
       sum += p;
+    }
     return sum.count();
   }
 
   double sum_pauses()
   {
     duration pause_total(0);
-    for (auto p : pauses_)
+    for (auto p : pauses_) {
       pause_total += p;
+    }
     return pause_total.count();
   }
 

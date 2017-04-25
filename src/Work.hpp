@@ -54,9 +54,11 @@ public:
    */
   Work(std::pair<key_type, key_type>&& branch_range, std::pair<value_type, value_type>&& seq_range)
   {
-    for (key_type branch_id = branch_range.first; branch_id < branch_range.second; ++branch_id)
-      for (value_type seq_id = seq_range.first; seq_id < seq_range.second; ++seq_id)
+    for (key_type branch_id = branch_range.first; branch_id < branch_range.second; ++branch_id) {
+      for (value_type seq_id = seq_range.first; seq_id < seq_range.second; ++seq_id) {
         work_set_[branch_id].push_back(seq_id);      
+      }
+    }
   }
 
   Work(Work const& other) = default;
