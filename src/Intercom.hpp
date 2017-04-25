@@ -1,13 +1,14 @@
 #pragma once
 
-#ifdef __MPI
-#include <mpi.h>
-
 #include "schedule.hpp"
 #include "mpihead.hpp"
 #include "epa_mpi_util.hpp"
 #include "Log.hpp"
 #include "Timer.hpp"
+
+#ifdef __MPI
+#include <mpi.h>
+
 
 /**
  * Class encapsulating the Communication and scheduling work used by the
@@ -181,6 +182,16 @@ public:
     prev_requests_.clear();
     timer.clear();
   }
+
+  void barrier() const
+  {
+    MPI_BARRIER(MPI_COMM_WORLD);
+  }
+
+  int rank()
+  {
+    return local_rank_;
+  }
  
 private:
   int local_rank_   = -1;
@@ -200,6 +211,14 @@ public:
   Intercom(const size_t) {}
   Intercom() = default;
   ~Intercom()= default;
+
+
+  // auto& schedule(const size_t) { }
+  // auto& previous_requests() { }
+  bool stage_active(const size_t) const { return true; }
+  void rebalance(Timer&) { } 
+  void barrier() const { }
+  int rank() { return 0; }
   
 };
 

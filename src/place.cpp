@@ -590,7 +590,6 @@ void tmp_pipeline_test( Tree& reference_tree,
   auto ingestion = [&](VoidToken&) -> Work {
     lgr.dbg() << "INGESTING - CREATING WORK" << std::endl;
     // auto num_sequences = msa_stream.read_next(chunk, chunk_size);
-    
     if (num_sequences <= 0) {
       Work work;
       work.is_last(true);

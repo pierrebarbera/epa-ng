@@ -50,7 +50,9 @@ public:
     : stages_(stages)
     , per_loop_hook_(per_loop_hook)
     , icom_(std::tuple_size<stack_type>::value)
-  { }
+  { 
+     init_pipeline_();
+  }
 
   ~Pipeline() = default;
 
@@ -76,7 +78,9 @@ public:
     // "last" token that is still used on the particular MPI-Rank (or thread or...)
     Token const * last_token = nullptr;
 
+    size_t chunk_num = 1;
     do { 
+      elapsed_time_.start();
 
       // per-loop pre-hook
       per_loop_hook_();
@@ -92,12 +96,20 @@ public:
           
           s.accept(in_token); // noop if shared mem, mpi_merge_receive if mpi
 
-          out_token = s.process(in_token); // casts asbtract token to its input type and runs the user code
+          if (in_token.valid()) {
+            lgr.dbg() << "in_token size: " << in_token.size() << std::endl;
+            out_token = s.process(in_token); // do the actual work
+          } else {
+            lgr.dbg() << std::to_string(icom_.rank()) << " received end token. Terminating." << std::endl;
+            out_token.is_last(true);
+          }
 
           if (stage_id != 0) {
             // carry over the token status
             out_token.status(in_token.status());
           }
+
+          lgr << "out_token size: " << out_token.size() << std::endl;
 
           s.put(out_token); // noop if shared mem, mpi_split_send if mpi
 
@@ -106,22 +118,46 @@ public:
         }
       });
 
-      if(last_token->rebalance()) {
+      elapsed_time_.stop();
+
+      // if(last_token->rebalance()) {
+      if (rebalance_on_(chunk_num)) {
         // do the kansas city shuffle...
         // calculate new schedule
         icom_.rebalance(elapsed_time_);
 
-        // reassign the local per-stage execution status
-        assign_exec_status_();
+        init_pipeline_();
 
-        // reassign the inter-stage communication operations
-        assign_comm_ops_();
+        advance_rebalance_check_();
       }
 
+      ++chunk_num;
     } while (last_token->valid()); //returns valid if data token or default initialized
+
+    icom_.barrier();
   }
 
 private:
+
+  void init_pipeline_()
+  {
+    // reassign the local per-stage execution status
+    assign_exec_status_();
+
+    // reassign the inter-stage communication operations
+    assign_comm_ops_();
+  }
+
+  bool rebalance_on_(const size_t chunk)
+  {
+    return chunk == next_rebalance_chunk_;
+  }
+
+  void advance_rebalance_check_()
+  {
+    rebalance_delta_ *= 2;
+    next_rebalance_chunk_ += rebalance_delta_;
+  }
 
   void assign_exec_status_()
   {
@@ -193,6 +229,9 @@ private:
   Intercom icom_;
   Timer pause_time_;
   Timer elapsed_time_;
+
+  size_t next_rebalance_chunk_ = 3;
+  size_t rebalance_delta_ = next_rebalance_chunk_;
 
 };
 

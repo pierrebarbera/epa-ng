@@ -5,6 +5,7 @@
 #include "mpihead.hpp"
 #include "Sample.hpp"
 #include "Timer.hpp"
+#include "Log.hpp"
 
 #include <sstream>
 #include <memory>
@@ -91,7 +92,10 @@ void epa_mpi_isend(T& obj, int dest_rank, MPI_Comm comm, request_tuple& prev_req
   {
     MPI_Status status;
     timer.pause();
+    lgr.dbg() << "previous request detected, calling wait...";
+    lgr.dbg().flush();
     err_check(MPI_Wait(&prev_req.req, &status));
+    lgr.dbg() << " Done!" << std::endl;
     timer.resume();
     delete[] prev_req.buf;
     // free previous request?
@@ -152,9 +156,20 @@ static inline void isend_all(std::vector<T>& parts, std::vector<int>& dest_ranks
 template <typename T>
 void epa_mpi_split_send(T& obj, std::vector<int>& dest_ranks, MPI_Comm comm, previous_request_storage_t& prev_reqs, Timer& timer)
 {
+  lgr.dbg() << "Sending...";
+  lgr.dbg().flush();
+
   std::vector<T> parts;
   split(obj, parts, dest_ranks.size());
+
+  // TODO only relevant if T conforms with Token
+  for (auto& p : parts) {
+    p.status(obj.status());
+  }
+
   isend_all(parts, dest_ranks, comm, prev_reqs, timer);
+
+  lgr.dbg() << " Done!" << std::endl;
 }
 
 enum class receive_status {WAITING, READY, DONE};
@@ -219,8 +234,11 @@ void epa_mpi_receive_merge(T& obj, std::vector<int>& src_ranks, MPI_Comm comm, T
     T remote_obj;
     epa_mpi_receive(remote_obj, rank, comm, timer);
     merge(obj, remote_obj);
+    // TODO only relevant if T conforms with Token
+    obj.status(remote_obj.status());
   }
 }
+
 template <typename T>
 void epa_mpi_gather(T& obj, int dest_rank, std::vector<int>& src_ranks, int local_rank, Timer& timer)
 {
