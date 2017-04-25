@@ -4,6 +4,8 @@
 #include <vector>
 #include <algorithm>
 #include <cereal/types/vector.hpp>
+#include <cereal/types/string.hpp>
+#include <cereal/types/base_class.hpp>
 
 #include "PQuery.hpp"
 #include "Token.hpp"
@@ -66,10 +68,8 @@ public:
 
   // serialization
   template <class Archive>
-  void save(Archive & ar) const { ar( pquerys_ ); }
-
-  template <class Archive>
-  void load(Archive & ar) { ar( pquerys_ ); }
+  void serialize(Archive & ar) 
+  { ar( *static_cast<Token*>( this ), pquerys_, newick_ ); }
 
 private:
   std::vector<PQuery> pquerys_;

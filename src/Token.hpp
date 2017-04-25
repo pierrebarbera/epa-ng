@@ -1,6 +1,8 @@
 #pragma once
 
-enum class token_status {DATA, BALANCE, END};
+#include <cereal/types/base_class.hpp>
+
+enum class token_status {DATA, END};
 
 class Token
 {
@@ -12,11 +14,6 @@ public:
   virtual bool valid() const final
   {
     return (status_ != token_status::END);
-  }
-
-  virtual bool rebalance() const final
-  {
-    return (status_ == token_status::BALANCE);
   }
 
   virtual void status(const token_status& s) final
@@ -36,6 +33,10 @@ public:
     }
   }
 
+  template <class Archive>
+  void serialize( Archive & ar )
+  { ar( status_ ); }
+
 private:
 
   token_status status_ = token_status::DATA;
@@ -47,4 +48,10 @@ class VoidToken : public Token
 public:
   VoidToken() = default;
   ~VoidToken()= default;
+
+  size_t size() {return 0;}
+
+  template <class Archive>
+  void serialize( Archive & ar )
+  { ar( *static_cast<Token*>( this ) ); }
 };

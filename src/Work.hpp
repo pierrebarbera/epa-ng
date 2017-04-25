@@ -3,6 +3,8 @@
 #include <numeric>
 #include <map>
 #include <cereal/types/map.hpp>
+#include <cereal/types/vector.hpp>
+#include <cereal/types/base_class.hpp>
 
 #include "Sample.hpp"
 #include "Token.hpp"
@@ -104,10 +106,9 @@ public:
   
   // serialization
   template <class Archive>
-  void save(Archive & ar) const { ar( work_set_ ); }
+  void serialize(Archive & ar) 
+  { ar( *static_cast<Token*>( this ), work_set_ ); }
 
-  template <class Archive>
-  void load(Archive & ar) { ar( work_set_ ); }
 
 private:
   container_type work_set_;
