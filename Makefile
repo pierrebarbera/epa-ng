@@ -12,7 +12,7 @@ build/CMakeCache.txt: CMakeLists.txt
 
 run_make: build/CMakeCache.txt
 	@echo "Running make"
-	@make -C build #-j9 
+	@make -C build #-j8 
 .PHONY: run_make
 
 update:
@@ -21,7 +21,7 @@ update:
 	@make -C build
 .PHONY: update
 
-test: update
+unittest: update
 	@./test/bin/epa_test
 .PHONY: test
 
@@ -41,3 +41,29 @@ clean:
 	@rm -rf bin
 	@rm -rf test/bin
 .PHONY: clean
+
+#======================================
+#===		Test commands follow				===
+#======================================
+EPABIN=./bin/epa
+TEST=test/data/lucas
+TREE=$(TEST)/20k.newick
+REF=$(TEST)/1k_reference.fasta
+QRY=$(TEST)/1k_query.fasta
+OUTDIR=/tmp/epa
+
+BINARY_WRITE= -t $(TREE) -s $(REF) -B -w $(OUTDIR) $(F)
+BINARY_READ=-b $(OUTDIR)/epa_binary_file -q $(QRY) -w $(OUTDIR) -g 0.99 --filter-min-lwr 0.0 $(F)
+NORM_TEST=-t $(TREE) -s $(REF) -q $(QRY) -w $(OUTDIR) -g 0.99 --chunk-size=100 $(F)
+
+test: update
+	mkdir -p $(OUTDIR)
+	-rm -f $(OUTDIR)/*
+	$(EPABIN) $(NORM_TEST)
+.PHONY: test
+
+mpi_test: update
+	mkdir -p $(OUTDIR)
+	-rm -f $(OUTDIR)/*
+	mpirun -n 5 $(EPABIN) $(NORM_TEST)
+.PHONY: mpi_test
