@@ -51,6 +51,8 @@ public:
 
   size_t size() {return 0;}
 
+  void clear () {;}
+
   template <class Archive>
   void serialize( Archive & ar )
   { ar( *static_cast<Token*>( this ) ); }

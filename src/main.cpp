@@ -268,9 +268,7 @@ int main(int argc, char** argv)
     genesis::utils::Logging::log_to_stdout(false);  
   }
   genesis::utils::Logging::log_to_file(work_dir + std::to_string(local_rank) + ".epa_info.log");
-  // LOG_INFO = Log(work_dir + std::to_string(local_rank) + ".epa_info.log", to_cout);
   #else
-  // LOG_INFO = Log(work_dir + "epa_info.log");
   genesis::utils::Logging::log_to_file(work_dir + "epa_info.log");
   #endif
 

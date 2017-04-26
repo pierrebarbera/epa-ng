@@ -82,6 +82,7 @@ public:
 
   inline void accept(in_type& arg)
   {
+    arg.clear();
     accept_(arg);
   }
 

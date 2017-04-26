@@ -93,7 +93,7 @@ public:
 
           auto& in_token = std::get<stage_id>(tokens);
           auto& out_token = std::get<stage_id+1u>(tokens);
-          
+
           s.accept(in_token); // noop if shared mem, mpi_merge_receive if mpi
 
           if (in_token.valid()) {
