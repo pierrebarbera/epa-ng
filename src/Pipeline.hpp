@@ -131,6 +131,11 @@ public:
         advance_rebalance_check_();
       }
 
+      // clear the tokens at the end of each chunk
+      for_each(tokens, [](auto& t) {
+        t.clear();
+      });
+
       ++chunk_num;
     } while (last_token->valid()); //returns valid if data token or default initialized
 
