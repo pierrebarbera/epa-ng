@@ -92,10 +92,9 @@ void epa_mpi_isend(T& obj, int dest_rank, MPI_Comm comm, request_tuple& prev_req
   {
     MPI_Status status;
     timer.pause();
-    LOG_DBG << "previous request detected, calling wait...";
-    LOG_DBG.flush();
+    LOG_DBG1 << "previous request detected, calling wait...";
     err_check(MPI_Wait(&prev_req.req, &status));
-    LOG_DBG << " Done!" << std::endl;
+    LOG_DBG1 << "Done!";
     timer.resume();
     delete[] prev_req.buf;
     // free previous request?
@@ -157,7 +156,6 @@ template <typename T>
 void epa_mpi_split_send(T& obj, std::vector<int>& dest_ranks, MPI_Comm comm, previous_request_storage_t& prev_reqs, Timer& timer)
 {
   LOG_DBG << "Sending...";
-  LOG_DBG.flush();
 
   std::vector<T> parts;
   split(obj, parts, dest_ranks.size());
@@ -169,7 +167,7 @@ void epa_mpi_split_send(T& obj, std::vector<int>& dest_ranks, MPI_Comm comm, pre
 
   isend_all(parts, dest_ranks, comm, prev_reqs, timer);
 
-  LOG_DBG << " Done!" << std::endl;
+  LOG_DBG << "Done!";
 }
 
 enum class receive_status {WAITING, READY, DONE};

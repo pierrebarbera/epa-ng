@@ -4,6 +4,7 @@
 #include "mpihead.hpp"
 #include "epa_mpi_util.hpp"
 #include "logging.hpp"
+#include "stringify.hpp"
 #include "Timer.hpp"
 
 #ifdef __MPI
@@ -27,11 +28,7 @@ public:
     auto init_nps = solve(num_stages, world_size_, initial_difficulty);
     assign(local_rank_, init_nps, schedule_, &local_stage_);
 
-    LOG_DBG << "Schedule: ";
-    for (size_t i = 0; i < schedule_.size(); ++i) {
-      LOG_DBG << schedule_[i].size() << " ";
-    }
-    LOG_DBG << std::endl;
+    LOG_DBG << "Schedule: " << stringify(schedule_);
   }
 
   Intercom()   = delete;
@@ -97,16 +94,16 @@ public:
     //   flight_file << chunk_num << ";" << aft << std::endl;
     // }
 
-    LOG_DBG << "Rebalancing..." << std::endl;
+    LOG_DBG << "Rebalancing...";
     const auto foreman = schedule_[local_stage_][0];
     const auto num_stages = schedule_.size(); 
     // Step 0: get per node average
     Timer per_node_avg({timer.average()});
     // Step 1: aggregate the runtime statistics, first at the lowest rank per stage
-    LOG_DBG << "aggregate the runtime statistics..." << std::endl;
+    LOG_DBG1 << "aggregate the runtime statistics...";
     Timer dummy;
     epa_mpi_gather(per_node_avg, foreman, schedule_[local_stage_], local_rank_, dummy);
-    LOG_DBG << "Runtime aggregate done!" << std::endl;
+    LOG_DBG1 << "Runtime aggregate done!";
 
     // Step 2: calculate total time needed per chunk for the stage, reflecting effort spent
     std::vector<double> perstage_total(num_stages);
@@ -119,9 +116,9 @@ public:
     {
       auto total_stagetime = per_node_avg.sum();
       // Step 3: make known to all other stage representatives (mpi_allgather)
-      LOG_DBG << "Foremen allgather..." << std::endl;
+      LOG_DBG1 << "Foremen allgather...";
       MPI_Allgather(&total_stagetime, 1, MPI_DOUBLE, &perstage_total[0], 1, MPI_DOUBLE, foreman_comm);
-      LOG_DBG << "Foremen allgather done!" << std::endl;
+      LOG_DBG1 << "Foremen allgather done!";
       MPI_Comm_free(&foreman_comm);
     }
     // ensure all messages were received and previous requests are cleared
@@ -130,7 +127,7 @@ public:
     MPI_BARRIER(MPI_COMM_WORLD);
     // Step 4: stage representatives forward results to all stage members
     // epa_mpi_bcast(perstage_total, foreman, schedule_[local_stage_], local_rank_);
-    LOG_DBG << "Broadcasting..." << std::endl;
+    LOG_DBG1 << "Broadcasting...";
     MPI_Comm stage_comm;
     MPI_Comm_split(MPI_COMM_WORLD, local_stage_, local_rank_, &stage_comm);
 
@@ -139,36 +136,22 @@ public:
     MPI_Comm_split(MPI_COMM_WORLD, local_stage_, split_key, &stage_comm);
     MPI_Bcast(&perstage_total[0], num_stages, MPI_DOUBLE, 0, stage_comm);
     MPI_Comm_free(&stage_comm);
-    LOG_DBG << "Broadcasting done!" << std::endl;
+    LOG_DBG1 << "Broadcasting done!";
 
-    LOG_DBG << "perstage total:";
-    for (size_t i = 0; i < perstage_total.size(); ++i)
-    {
-      LOG_DBG << " " << perstage_total[i];
-    }
-    LOG_DBG << std::endl;
+    LOG_DBG1 << "perstage total: " << stringify(perstage_total);
 
     // Step 5: calculate schedule_ on every rank, deterministically!
     to_difficulty(perstage_total);
 
-    LOG_DBG << "perstage difficulty:";
-    for (size_t i = 0; i < perstage_total.size(); ++i)
-    {
-      LOG_DBG << " " << perstage_total[i];
-    }
-    LOG_DBG << std::endl;
+    LOG_DBG1 << "perstage difficulty: " << stringify(perstage_total);
 
     auto nps = solve(num_stages, world_size_, perstage_total);
     reassign(local_rank_, nps, schedule_, &local_stage_);
     // Step 6: re-engage pipeline with new assignments
-    LOG_DBG << "New Schedule:";
-    for (size_t i = 0; i < nps.size(); ++i)
-    {
-      LOG_DBG << " " << nps[i]; 
-    }
-    LOG_DBG << std::endl;
+    LOG_DBG1 << "New Schedule: " << stringify(nps);
+
     // compute stages should try to keep their edge assignment! affinity!
-    LOG_DBG << "Rebalancing done!" << std::endl;
+    LOG_DBG << "Rebalancing done!";
     // exponential back-off style rebalance:
     // rebalance_delta *= 2;
     // rebalance += rebalance_delta;

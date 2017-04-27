@@ -13,13 +13,13 @@ public:
   ~Model() = default;
 
   // getters
-  const std::vector<double>& base_frequencies() const {return base_frequencies_;};
-  std::vector<int>& symmetries()  {return subs_symmetries_;};
-  const std::vector<double>& substitution_rates() const {return substitution_rates_;};
-  double alpha() const {return alpha_;};
-  unsigned int states() const {return states_;};
-  unsigned int rate_cats() const {return rate_cats_;};
-  unsigned int const * char_map() const {return char_map_;};
+  const std::vector<double>& base_frequencies() const {return base_frequencies_;}
+  std::vector<int>& symmetries()  {return subs_symmetries_;}
+  const std::vector<double>& substitution_rates() const {return substitution_rates_;}
+  double alpha() const {return alpha_;}
+  unsigned int states() const {return states_;}
+  unsigned int rate_cats() const {return rate_cats_;}
+  unsigned int const * char_map() const {return char_map_;}
 
   // setters
   void base_frequencies(double* source, unsigned int length);

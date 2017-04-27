@@ -193,7 +193,10 @@ void Logging::log_to_stdout (const bool b)
         // if not, add it as output stream.
         ostreams_.push_back (&std::cout);
     } else {
-        std::remove(std::begin(ostreams_), std::end(ostreams_), &std::cout);
+        ostreams_.erase(
+            std::remove(std::begin(ostreams_), std::end(ostreams_), &std::cout),
+            std::end(ostreams_)
+        );
     }
 }
 

@@ -38,14 +38,13 @@ Tree::Tree(const string &tree_file, const MSA &msa, Model &model, Options& optio
   // perform branch length and model optimization on the reference tree
   optimize(model_, tree_.get(), partition_.get(), nums_, options_.opt_branches, options_.opt_model);
 
-  LOG_DBG << to_string(model_);
+  LOG_DBG << stringify(model_);
 
-  LOG_DBG << "Tree length: " << sum_branch_lengths(tree_.get()) << endl;
+  LOG_DBG << "Tree length: " << sum_branch_lengths(tree_.get());
 
   precompute_clvs(tree_.get(), partition_.get(), nums_);
 
-  LOG_DBG << "\nPost-optimization reference tree log-likelihood: ";
-  LOG_DBG << to_string(this->ref_tree_logl()) << endl;
+  LOG_DBG << "Post-optimization reference tree log-likelihood: " << to_string(this->ref_tree_logl());
 }
 
 /**
@@ -79,39 +78,35 @@ void * Tree::get_clv(const pll_utree_t* node)
   auto scaler = node->scaler_index;
   bool use_tipchars = partition_->attributes & PLL_ATTRIB_PATTERN_TIP;
 
-  if(i >= partition_->tips + partition_->clv_buffers)
+  if(i >= partition_->tips + partition_->clv_buffers) {
     throw runtime_error{"Node index out of bounds"};
+  }
 
   void* clv_ptr;
-  if (use_tipchars && i < partition_->tips)
-  {
+  if (use_tipchars && i < partition_->tips) {
     clv_ptr = partition_->tipchars[i];
     // dynamically load from disk if not in memory
-    if(!clv_ptr)
-    {
+    if(!clv_ptr) {
       binary_.load_tipchars(partition_.get(), i);
       clv_ptr = partition_->tipchars[i];
     }
-  }
-  else
-  {
+  } else {
     clv_ptr = partition_->clv[i];
     // dynamically load from disk if not in memory
-    if(!clv_ptr)
-    {
+    if(!clv_ptr) {
       binary_.load_clv(partition_.get(), i);
       clv_ptr = partition_->clv[i];
     }
   }
 
   // dynamically load the scaler if needed
-  if(scaler != PLL_SCALE_BUFFER_NONE && !(partition_->scale_buffer[scaler]))
+  if (scaler != PLL_SCALE_BUFFER_NONE 
+  and !(partition_->scale_buffer[scaler])) {
     binary_.load_scaler(partition_.get(), scaler);
+  }
 
   assert(clv_ptr);
   
-  // printf("Release lock %d!\n", i);
-
   return clv_ptr;
 }
 

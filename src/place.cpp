@@ -119,7 +119,7 @@ static void merge_write_results(const std::string& status_file_name,
 
   // create output file
   std::ofstream outfile(outdir + "epa_result.jplace");
-  LOG_INFO << "\nOutput file: " << outdir + "epa_result.jplace" << std::endl;
+  LOG_INFO << "Output file: " << outdir + "epa_result.jplace";
   outfile << init_jplace_string(newick_string);
   merge_into(outfile, part_names);
   outfile << finalize_jplace_string(invocation);
@@ -606,13 +606,13 @@ void tmp_pipeline_test( Tree& reference_tree,
 
     Sample result;
 
-    place(work, 
-          chunk, 
-          reference_tree, 
-          branches, 
+    place(work,
+          chunk,
+          reference_tree,
+          branches,
           result,
-          false, 
-          options, 
+          false,
+          options,
           lookups
     );
     return result;

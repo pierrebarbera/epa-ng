@@ -141,7 +141,7 @@ int main(int argc, char** argv)
 
   if (cli.count("help"))
   {
-    LOG_INFO << cli.help({"", "Input", "Output", "Compute", "Pipeline"}) << std::endl;
+    std::cout << cli.help({"", "Input", "Output", "Compute", "Pipeline"});
     exit(EXIT_SUCCESS);
   }
 
@@ -151,7 +151,7 @@ int main(int argc, char** argv)
     or  ( cli.count("binary") and (cli.count("query") or cli.count("ref-msa")) )
     ))
   {
-    LOG_INFO << "Must supply reference tree/msa either directly or as precomputed binary." << std::endl;
+    LOG_INFO << "Must supply reference tree/msa either directly or as precomputed binary.";
     exit(EXIT_FAILURE);
   }
 
@@ -193,7 +193,7 @@ int main(int argc, char** argv)
   {
     options.prescoring_threshold = cli["dyn-heur"].as<double>();
     if (options.prescoring)  {
-      LOG_INFO << "Cannot use -G and -g concurrently! Running with -g " << options.prescoring_threshold <<  std::endl;
+      LOG_INFO << "Cannot use -G and -g concurrently! Running with -g " << options.prescoring_threshold ;
     }
     options.prescoring = true;
     options.prescoring_by_percentage = false;
@@ -217,7 +217,7 @@ int main(int argc, char** argv)
         sub_matrix = parts[2];
 
       LOG_DBG << "Model descriptor: " << sequence_type << " "
-      << model_id << " " << sub_matrix << " " << std::endl;
+      << model_id << " " << sub_matrix << " ";
     }
   }
 
@@ -279,7 +279,7 @@ int main(int argc, char** argv)
   banner += "\n| |          | |____| |  / ____ \\";
   banner += "\n|_|          |______|_| /_/    \\_\\ \n";
 
-  LOG_INFO << banner << std::endl;
+  LOG_INFO << banner;
 
   MSA ref_msa;
   if (reference_file.size()) {
@@ -289,7 +289,7 @@ int main(int argc, char** argv)
   // build the Tree
   Tree tree;
   if (options.load_binary_mode) {
-    LOG_INFO << "Loading from binary" << endl;
+    LOG_INFO << "Loading from binary";
     tree = Tree(binary_file, model, options);
   } else {
     // build the full tree with all possible clv's
@@ -308,7 +308,7 @@ int main(int argc, char** argv)
   }
   // dump to binary if specified
   if (options.dump_binary_mode) {
-    LOG_INFO << "Writing to binary" << endl;
+    LOG_INFO << "Writing to binary";
     string dump_file(work_dir + "epa_binary_file");
     dump_to_binary(tree, dump_file);
     MPI_FINALIZE();
@@ -322,7 +322,7 @@ int main(int argc, char** argv)
   auto end = chrono::high_resolution_clock::now();
   auto runtime = chrono::duration_cast<chrono::seconds>(end - start).count();
 
-  LOG_INFO << "\nTime spent placing: " << runtime << "s" << endl;
+  LOG_INFO << "Time spent placing: " << runtime << "s";
 
   MPI_FINALIZE();
 	return EXIT_SUCCESS;
