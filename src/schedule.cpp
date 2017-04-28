@@ -27,15 +27,25 @@ std::vector<unsigned int> solve(unsigned int stages,
   }
 
   std::vector<unsigned int> nodes_per_stage(stages);
+
+  // TODO for the record the following is ugly and I hate it
+  auto constrained_begin = std::begin(difficulty_per_stage);
+  // std::advance(constrained_begin, 1);
+  auto constrained_end = std::end(difficulty_per_stage);
+  // std::advance(constrained_end, -1);
   
-  auto x1 = std::accumulate(difficulty_per_stage.begin(), difficulty_per_stage.end(), 0.0);
+  auto x1 = std::accumulate(constrained_begin, constrained_end, 0.0);
   x1 = static_cast<double>(nodes) / x1;
 
   for (size_t i = 0; i < stages; ++i) {
-    nodes_per_stage[i] = ceil(difficulty_per_stage[i] * x1);
+    if (i == 0 or i == stages - 1) {
+      nodes_per_stage[i] = 1;
+    } else {
+      nodes_per_stage[i] = ceil(difficulty_per_stage[i] * x1);
+    }
   }
 
-  int off_by;
+  int off_by = 0;
 
   while ( (off_by = std::accumulate(nodes_per_stage.begin(), nodes_per_stage.end(), 0) - nodes) ) {
     auto max_stage = std::max_element(nodes_per_stage.begin(), nodes_per_stage.end());
