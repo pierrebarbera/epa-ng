@@ -40,6 +40,7 @@ static std::vector<std::string> split_by_delimiter(const std::string & text, con
 int main(int argc, char** argv)
 {
   genesis::utils::Logging::log_to_stdout();
+  genesis::utils::Logging::max_level(genesis::utils::Logging::kDebug1);
 
   MPI_INIT(&argc, &argv);
 

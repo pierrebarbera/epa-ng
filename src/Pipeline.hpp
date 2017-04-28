@@ -207,7 +207,7 @@ private:
             std::ref(icom_.schedule(dst)), 
             MPI_COMM_WORLD,
             std::ref(icom_.previous_requests()),
-            std::ref(pause_time_)
+            std::ref(elapsed_time_)
           );
         }
       } else {
@@ -218,7 +218,7 @@ private:
             std::ref(icom_.schedule(src)),
             MPI_COMM_WORLD,
             // std::ref(icom_.previous_requests()),
-            std::ref(pause_time_)
+            std::ref(elapsed_time_)
           );
         }
       }
@@ -232,7 +232,6 @@ private:
   stack_type stages_;
   hook_type per_loop_hook_;
   Intercom icom_;
-  Timer pause_time_;
   Timer elapsed_time_;
 
   size_t next_rebalance_chunk_ = 3;

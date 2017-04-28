@@ -19,8 +19,7 @@ public:
   // Constructors/Destructors
   Timer(std::vector<double> init_list) 
   {
-    for (auto elem : init_list)
-    {
+    for (auto elem : init_list) {
       duration fp_ms(static_cast<unsigned int>(elem*FACTOR));
       ts_.push_back(fp_ms);
     }
