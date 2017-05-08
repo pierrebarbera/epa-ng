@@ -148,13 +148,17 @@ void tiny_partition_destroy(pll_partition_t * partition)
 
     partition->clv[proximal_clv_index] = nullptr;
 
-    if (partition->clv_buffers == 3) { // means tip-inner case... TODO make this cleaner
-      partition->clv[distal_clv_index_if_inner] = nullptr;
-    } 
+    const bool distal_is_tip = partition->clv_buffers == 3 ? false : true;
+    const bool pattern_tip_mode = partition->attributes & PLL_ATTRIB_PATTERN_TIP;
 
-    if (partition->attributes & PLL_ATTRIB_PATTERN_TIP 
-        and partition->clv_buffers == 2) {
-      partition->tipchars[distal_clv_index_if_tip] = nullptr;
+    if (distal_is_tip) {
+      if (pattern_tip_mode) {
+        partition->tipchars[distal_clv_index_if_tip] = nullptr;
+      } else {
+        partition->clv[distal_clv_index_if_tip] = nullptr;
+      }
+    } else {
+      partition->clv[distal_clv_index_if_inner] = nullptr;
     }
 
     pll_partition_destroy(partition);
