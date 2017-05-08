@@ -17,8 +17,9 @@ MSA build_MSA_from_file(const string& msa_file)
 {
   /* open the file */
   auto file = pll_fasta_open(msa_file.c_str(), pll_map_fasta);
-  if (!file)
+  if (!file) {
     throw runtime_error{string("Cannot open file ") + msa_file};
+  }
 
   char * sequence = NULL;
   char * header = NULL;
@@ -72,13 +73,11 @@ pll_utree_t * build_tree_from_file(const string& tree_file, Tree_Numbers& nums)
   pll_rtree_t * rtree;
 
   // load the tree unrooted
-  if (!(rtree = pll_rtree_parse_newick(tree_file.c_str(), &num_tip_nodes)))
-  {
-   if (!(tree = pll_utree_parse_newick(tree_file.c_str(), &num_tip_nodes)))
+  if (!(rtree = pll_rtree_parse_newick(tree_file.c_str(), &num_tip_nodes))) {
+   if (!(tree = pll_utree_parse_newick(tree_file.c_str(), &num_tip_nodes))) {
      throw runtime_error{"Treeparsing failed!"};
-  }
-  else
-  {
+   }
+  } else {
    tree = pll_rtree_unroot(rtree);
    pll_rtree_destroy(rtree, nullptr);
 
@@ -86,8 +85,9 @@ pll_utree_t * build_tree_from_file(const string& tree_file, Tree_Numbers& nums)
    pll_utree_reset_template_indices(tree, num_tip_nodes);
   }
 
-  if (num_tip_nodes < 3)
+  if (num_tip_nodes < 3) {
     throw runtime_error{"Number of tip nodes too small"};
+  }
 
   nums = Tree_Numbers(num_tip_nodes);
 
@@ -102,13 +102,14 @@ pll_partition_t *  build_partition_from_file( const Model& model,
 {
   assert(nums.tip_nodes); // nums must have been initialized correctly
 
-  unsigned int attributes = PLL_ATTRIB_ARCH_CPU;
+  auto attributes = PLL_ATTRIB_ARCH_CPU;
 #ifdef __AVX
   attributes = PLL_ATTRIB_ARCH_AVX;
 #elif __SSE3
   attributes = PLL_ATTRIB_ARCH_SSE;
 #endif
-  attributes |= PLL_ATTRIB_PATTERN_TIP;
+  // attributes |= PLL_ATTRIB_PATTERN_TIP;
+  attributes |= PLL_ATTRIB_SITES_REPEATS;
 
   auto partition = pll_partition_create(nums.tip_nodes,
            nums.inner_nodes * 3, //number of extra clv buffers: 3 for every direction on the node
@@ -120,8 +121,9 @@ pll_partition_t *  build_partition_from_file( const Model& model,
            (nums.inner_nodes * 3) + nums.tip_nodes, /* number of scaler buffers */
            attributes);
 
-  if (!partition)
-    throw runtime_error{"Could not create partition (build_partition_from_file)"};
+  if (!partition) {
+    throw runtime_error{std::string("Could not create partition (build_partition_from_file). pll_errmsg: ") + pll_errmsg};
+  }
 
   vector<double> rate_cats(model.rate_cats(), 0.0);
 
@@ -139,8 +141,9 @@ pll_partition_t *  build_partition_from_file( const Model& model,
 void file_check(const string& file_path)
 {
   ifstream file(file_path.c_str());
-  if (!file.good())
+  if (!file.good()) {
     throw runtime_error{string("file_check failed: ") + file_path};
+  }
 
   file.close();
 }

@@ -82,8 +82,8 @@ void * Tree::get_clv(const pll_utree_t* node)
     throw runtime_error{"Node index out of bounds"};
   }
 
-  void* clv_ptr;
-  if (use_tipchars && i < partition_->tips) {
+  void* clv_ptr = nullptr;
+  if (use_tipchars and i < partition_->tips) {
     clv_ptr = partition_->tipchars[i];
     // dynamically load from disk if not in memory
     if(!clv_ptr) {

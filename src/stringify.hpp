@@ -10,7 +10,7 @@
 constexpr char NEWL = '\n';
 
 template <class T, class lambda>
-std::string stringify_vec_impl( const std::vector<T>& vec, 
+static std::string stringify_vec_impl( const std::vector<T>& vec, 
                                 lambda toString)
 {
   std::ostringstream output;

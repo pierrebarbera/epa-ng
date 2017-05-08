@@ -10,7 +10,8 @@ using namespace std;
 
 int safe_fclose(FILE* fptr) { return fptr ? fclose(fptr) : 0; }
 
-Binary::Binary(Binary && other) : bin_fptr_(nullptr, safe_fclose)
+Binary::Binary(Binary && other) 
+  : bin_fptr_(nullptr, safe_fclose)
 {
   bin_fptr_ = std::move(other.bin_fptr_);
   map_ = std::move(other.map_);
@@ -23,21 +24,25 @@ Binary& Binary::operator=(Binary && other)
   return *this;
 }
 
-Binary::Binary(const string& binary_file_path) : bin_fptr_(nullptr, safe_fclose)
+Binary::Binary(const string& binary_file_path) 
+  : bin_fptr_(nullptr, safe_fclose)
 {
   // open the binary file
   pll_binary_header_t header;
   bin_fptr_ = file_ptr_type(pllmod_binary_open(binary_file_path.c_str(), &header), safe_fclose);
 
-  if (!bin_fptr_)
+  if (!bin_fptr_) {
     throw runtime_error{"Could not open binary file for reading."};
+  }
 
-  if (header.access_type != PLLMOD_BIN_ACCESS_RANDOM)
+  if (header.access_type != PLLMOD_BIN_ACCESS_RANDOM) {
     throw runtime_error{"Binary file must be random access enabled."};
+  }
 
-  if (header.n_blocks <= 0)
+  if (header.n_blocks <= 0) {
     throw runtime_error{string("Binary file header must have nonzero positive number of blocks: ")
               + to_string(header.n_blocks)};
+  }
 
   // proccess the random access map
   unsigned int n_blocks;
@@ -47,8 +52,9 @@ Binary::Binary(const string& binary_file_path) : bin_fptr_(nullptr, safe_fclose)
   assert(block_map);
   assert(n_blocks);
 
-  for (size_t i = 0; i < n_blocks; i++)
+  for (size_t i = 0; i < n_blocks; i++) {
     map_.push_back(block_map[i]);
+  }
 
   free(block_map);
 }
@@ -56,8 +62,7 @@ Binary::Binary(const string& binary_file_path) : bin_fptr_(nullptr, safe_fclose)
 static long int get_offset(vector<pll_block_map_t>& map, const int block_id)
 {
   auto item = map.begin();
-  while (item != map.end())
-  {
+  while (item != map.end()) {
     if (item->block_id == block_id) {
       break;
     }
@@ -187,38 +192,49 @@ void dump_to_binary(Tree& tree, const string& file)
   bool use_tipchars = tree.partition()->attributes & PLL_ATTRIB_PATTERN_TIP;
 
   // dump the utree structure
-  if(!pllmod_binary_utree_dump(fptr, block_id++, tree.tree(), num_tips, attributes))
+  if(!pllmod_binary_utree_dump(fptr, block_id++, tree.tree(), num_tips, attributes)) {
     throw runtime_error{string("Dumping the utree to binary: ") + pll_errmsg};
+  }
 
   // dump the partition
-  if(!pllmod_binary_partition_dump(fptr, block_id++, tree.partition(), attributes))
+  if(!pllmod_binary_partition_dump(fptr, block_id++, tree.partition(), attributes)) {
     throw runtime_error{string("Dumping partition to binary: ") + pll_errmsg};
+  }
 
   // dump the tipchars, but only if partition uses them
   size_t tip_index = 0;
-  if (use_tipchars)
-  {
-    for (tip_index = 0; tip_index < num_tips; tip_index++)
-    {
-      if(!pllmod_binary_custom_dump(fptr, block_id++, tree.partition()->tipchars[tip_index],
-      tree.partition()->sites * sizeof(unsigned char), attributes))
+  if (use_tipchars) {
+    for (tip_index = 0; tip_index < num_tips; tip_index++) {
+      if(!pllmod_binary_custom_dump(fptr, 
+                                    block_id++, 
+                                    tree.partition()->tipchars[tip_index],
+                                    tree.partition()->sites * sizeof(unsigned char), 
+                                    attributes)) {
         throw runtime_error{string("Dumping tipchars to binary: ") + pll_errmsg};
+      }
     }
   }
 
   // dump the clvs
-  for (size_t clv_index = tip_index; clv_index < max_clv_index; clv_index++)
-  {
-    if(!pllmod_binary_clv_dump(fptr, block_id++, tree.partition(), clv_index, attributes))
+  for (size_t clv_index = tip_index; clv_index < max_clv_index; clv_index++) {
+    if(!pllmod_binary_clv_dump( fptr, 
+                                block_id++, 
+                                tree.partition(), 
+                                clv_index, 
+                                attributes)) {
       throw runtime_error{string("Dumping clvs to binary: ") + pll_errmsg};
+    }
   }
 
   // dump the scalers
-  for (size_t scaler_index = 0; scaler_index < num_scalers; scaler_index++)
-  {
-    if(!pllmod_binary_custom_dump(fptr, block_id++, tree.partition()->scale_buffer[scaler_index],
-      tree.partition()->sites * sizeof(unsigned int), attributes))
+  for (size_t scaler_index = 0; scaler_index < num_scalers; scaler_index++) {
+    if(!pllmod_binary_custom_dump(fptr, 
+                                  block_id++, 
+                                  tree.partition()->scale_buffer[scaler_index],
+                                  tree.partition()->sites * sizeof(unsigned int), 
+                                  attributes)) {
       throw runtime_error{string("Dumping scalers to binary: ") + pll_errmsg};
+    }
   }
 
   fclose(fptr);

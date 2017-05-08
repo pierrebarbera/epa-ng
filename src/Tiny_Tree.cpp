@@ -50,16 +50,20 @@ static void precompute_sites_static(char nt,
 }
 
 
-Tiny_Tree::Tiny_Tree(pll_utree_t * edge_node , const unsigned int branch_id, Tree& reference_tree, 
-    const bool opt_branches, const Options& options, std::shared_ptr<Lookup_Store>& lookup_store)
-    : partition_(nullptr, tiny_partition_destroy)
-    , tree_(nullptr, utree_destroy)
-    , opt_branches_(opt_branches)
-    , model_(reference_tree.model())
-    , ranged_computation_(options.ranged)
-    , sliding_blo_(options.sliding_blo)
-    , branch_id_(branch_id)
-    , lookup_(lookup_store)
+Tiny_Tree::Tiny_Tree( pll_utree_t * edge_node, 
+                      const unsigned int branch_id, 
+                      Tree& reference_tree, 
+                      const bool opt_branches, 
+                      const Options& options, 
+                      std::shared_ptr<Lookup_Store>& lookup_store)
+  : partition_(nullptr, tiny_partition_destroy)
+  , tree_(nullptr, utree_destroy)
+  , opt_branches_(opt_branches)
+  , model_(reference_tree.model())
+  , ranged_computation_(options.ranged)
+  , sliding_blo_(options.sliding_blo)
+  , branch_id_(branch_id)
+  , lookup_(lookup_store)
 {
   original_branch_length_ = (edge_node->length < 2*PLLMOD_OPT_MIN_BRANCH_LEN) ?
     2*PLLMOD_OPT_MIN_BRANCH_LEN : edge_node->length;
@@ -112,13 +116,11 @@ Tiny_Tree::Tiny_Tree(pll_utree_t * edge_node , const unsigned int branch_id, Tre
   // use update_partials to compute the clv pointing toward the new tip
   pll_update_partials(partition_.get(), &op, 1);
 
-  if (!opt_branches)
-  {
+  if (!opt_branches) {
     // LOG_DBG << "precomputation for branch " << branch_id << std::endl;
     const std::lock_guard<std::mutex> lock(lookup_store->get_mutex(branch_id));
 
-    if( not lookup_store->has_branch(branch_id))
-    {
+    if( not lookup_store->has_branch(branch_id) ) {
       const auto size = lookup_store->char_map_size();
 
       // precompute all possible site likelihoods
@@ -147,14 +149,12 @@ Placement Tiny_Tree::place(const Sequence &s)
   vector<unsigned int> param_indices(model_.rate_cats(), 0);
 
   Range range(0, partition_->sites);
-  if (ranged_computation_)
-  {
+  if (ranged_computation_) {
     range = get_valid_range(s.sequence());
     // range = superset(get_valid_range(s.sequence()), reference_tip_range_);
   }
 
-  if (opt_branches_)
-  {
+  if (opt_branches_) {
 
     /* differentiate between the normal case and the tip tip case:
       in the normal case we want to compute the partial toward the newly placed sequence.
@@ -176,8 +176,9 @@ Placement Tiny_Tree::place(const Sequence &s)
     auto err_check = pll_set_tip_states(partition_.get(), tree_->back->clv_index, model_.char_map(),
                        s.sequence().c_str());
 
-    if (err_check == PLL_FAILURE)
+    if (err_check == PLL_FAILURE) {
       throw runtime_error{"Set tip states during placement failed!"};
+    }
 
     // optimize the branches using pnly the portion of the sites specified by range
     logl = call_focused(partition_.get(), range, optimize_branch_triplet, virtual_root, sliding_blo_);

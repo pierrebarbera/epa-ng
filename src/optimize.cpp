@@ -303,17 +303,21 @@ double optimize_branch_triplet( pll_partition_t * partition,
   vector<unsigned int> matrix_indices(3);
   vector<pll_operation_t> operations(4);
 
-  traverse_update_partials(tree, partition, &travbuffer[0], &branch_lengths[0],
-    &matrix_indices[0], &operations[0]);
+  traverse_update_partials( tree, 
+                            partition, 
+                            &travbuffer[0], 
+                            &branch_lengths[0], 
+                            &matrix_indices[0], 
+                            &operations[0]);
 
   vector<unsigned int> param_indices(partition->rate_cats, 0);
 
   auto cur_logl = -numeric_limits<double>::infinity();
-  int smoothings = 32;
+  const int smoothings = 32;
 
-  if (sliding)
+  if (sliding) {
     cur_logl = -opt_branch_lengths_pplacer(partition, tree, smoothings, OPT_BRANCH_EPSILON);
-  else
+  } else {
     cur_logl = -pllmod_opt_optimize_branch_lengths_local (
                                                 partition,
                                                 tree,
@@ -324,6 +328,7 @@ double optimize_branch_triplet( pll_partition_t * partition,
                                                 smoothings,
                                                 1, // radius
                                                 1); // keep update
+  }
 
  
   return cur_logl;

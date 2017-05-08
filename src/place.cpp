@@ -58,9 +58,14 @@ static std::string trim(const std::string &s, const char l, const char r)
   return (wsback<=wsfront ? std::string() : std::string(wsfront,wsback));
 }
 
-static void place(const Work& to_place, MSA& msa, Tree& reference_tree,
-  const std::vector<pll_utree_t *>& branches, Sample& sample,
-  bool do_blo, const Options& options, std::shared_ptr<Lookup_Store>& lookup_store)
+static void place(const Work& to_place, 
+                  MSA& msa, 
+                  Tree& reference_tree, 
+                  const std::vector<pll_utree_t *>& branches, 
+                  Sample& sample, 
+                  bool do_blo, 
+                  const Options& options, 
+                  std::shared_ptr<Lookup_Store>& lookup_store)
 {
 
 #ifdef __OMP
@@ -81,14 +86,14 @@ static void place(const Work& to_place, MSA& msa, Tree& reference_tree,
   for (size_t i = 0; i < work_parts.size(); ++i) {
     auto prev_branch_id = std::numeric_limits<size_t>::max();
 
-    std::shared_ptr<Tiny_Tree> branch = nullptr;
+    std::shared_ptr<Tiny_Tree> branch(nullptr);
 
     for (auto it : work_parts[i]) {
       auto branch_id = it.branch_id;
       auto seq_id = it.sequence_id;
 
       if ((branch_id != prev_branch_id) or not branch) {
-        branch = std::shared_ptr<Tiny_Tree>(new Tiny_Tree(branches[branch_id], branch_id, reference_tree, do_blo, options, lookup_store));
+        branch = std::make_shared<Tiny_Tree>(branches[branch_id], branch_id, reference_tree, do_blo, options, lookup_store);
       }
 
       sample_parts[i].add_placement(seq_id, branch->place(msa[seq_id]));
@@ -572,9 +577,8 @@ void tmp_pipeline_test( Tree& reference_tree,
 
   unsigned int chunk_num = 1;
   
-  std::shared_ptr<Lookup_Store> lookups(
-    new Lookup_Store(num_branches, reference_tree.partition()->states)
-  );
+  auto lookups = 
+    std::make_shared<Lookup_Store>(num_branches, reference_tree.partition()->states);
 
   Work all_work(std::make_pair(0, num_branches), std::make_pair(0, chunk_size));
   
