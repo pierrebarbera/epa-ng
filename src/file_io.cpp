@@ -8,17 +8,15 @@
 #include "constants.hpp"
 #include "pll_util.hpp"
 
-using namespace std;
-
 /* reads in sequences from a file
   msa_file: string specifying the file path
 */
-MSA build_MSA_from_file(const string& msa_file)
+MSA build_MSA_from_file(const std::string& msa_file)
 {
   /* open the file */
   auto file = pll_fasta_open(msa_file.c_str(), pll_map_fasta);
   if (!file) {
-    throw runtime_error{string("Cannot open file ") + msa_file};
+    throw std::runtime_error{std::string("Cannot open file ") + msa_file};
   }
 
   char * sequence = NULL;
@@ -35,7 +33,7 @@ MSA build_MSA_from_file(const string& msa_file)
   sites = sequence_length;
 
   if (sites == -1 || sites == 0)
-    throw runtime_error{"Unable to read MSA file"};
+    throw std::runtime_error{"Unable to read MSA file"};
 
   auto msa = MSA(sites);
   msa.append(header, sequence);
@@ -48,7 +46,7 @@ MSA build_MSA_from_file(const string& msa_file)
   {
 
     if (sites && sites != sequence_length)
-      throw runtime_error{"MSA file does not contain equal size sequences"};
+      throw std::runtime_error{"MSA file does not contain equal size sequences"};
 
     if (!sites) sites = sequence_length;
 
@@ -58,14 +56,14 @@ MSA build_MSA_from_file(const string& msa_file)
   }
 
   if (pll_errno != PLL_ERROR_FILE_EOF)
-    throw runtime_error{string("Error while reading file: ") +  msa_file};
+    throw std::runtime_error{std::string("Error while reading file: ") +  msa_file};
 
   pll_fasta_close(file);
 
   return msa;
 }
 
-pll_utree_t * build_tree_from_file(const string& tree_file, Tree_Numbers& nums)
+pll_utree_t * build_tree_from_file(const std::string& tree_file, Tree_Numbers& nums)
 {
   unsigned int num_tip_nodes;
 
@@ -75,7 +73,7 @@ pll_utree_t * build_tree_from_file(const string& tree_file, Tree_Numbers& nums)
   // load the tree unrooted
   if (!(rtree = pll_rtree_parse_newick(tree_file.c_str(), &num_tip_nodes))) {
    if (!(tree = pll_utree_parse_newick(tree_file.c_str(), &num_tip_nodes))) {
-     throw runtime_error{"Treeparsing failed!"};
+     throw std::runtime_error{"Treeparsing failed!"};
    }
   } else {
    tree = pll_rtree_unroot(rtree);
@@ -86,7 +84,7 @@ pll_utree_t * build_tree_from_file(const string& tree_file, Tree_Numbers& nums)
   }
 
   if (num_tip_nodes < 3) {
-    throw runtime_error{"Number of tip nodes too small"};
+    throw std::runtime_error{"Number of tip nodes too small"};
   }
 
   nums = Tree_Numbers(num_tip_nodes);
@@ -122,10 +120,10 @@ pll_partition_t *  build_partition_from_file( const Model& model,
            attributes);
 
   if (!partition) {
-    throw runtime_error{std::string("Could not create partition (build_partition_from_file). pll_errmsg: ") + pll_errmsg};
+    throw std::runtime_error{std::string("Could not create partition (build_partition_from_file). pll_errmsg: ") + pll_errmsg};
   }
 
-  vector<double> rate_cats(model.rate_cats(), 0.0);
+  std::vector<double> rate_cats(model.rate_cats(), 0.0);
 
   /* compute the discretized category rates from a gamma distribution
      with alpha shape */
@@ -138,11 +136,11 @@ pll_partition_t *  build_partition_from_file( const Model& model,
 
 }
 
-void file_check(const string& file_path)
+void file_check(const std::string& file_path)
 {
-  ifstream file(file_path.c_str());
+  std::ifstream file(file_path.c_str());
   if (!file.good()) {
-    throw runtime_error{string("file_check failed: ") + file_path};
+    throw std::runtime_error{std::string("file_check failed: ") + file_path};
   }
 
   file.close();

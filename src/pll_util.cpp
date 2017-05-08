@@ -6,8 +6,6 @@
 
 #include "constants.hpp"
 
-using namespace std;
-
 void fasta_close(pll_fasta_t* fptr) 
 { 
   if(fptr) pll_fasta_close(fptr); 
@@ -223,7 +221,7 @@ unsigned int utree_query_branches(pll_utree_t * node, pll_utree_t ** node_list)
 }
 
 static void get_numbered_newick_string_recursive( pll_utree_t * node, 
-                                                  ostringstream &ss, 
+                                                  std::ostringstream &ss, 
                                                   unsigned int * index)
 {
 
@@ -234,15 +232,15 @@ static void get_numbered_newick_string_recursive( pll_utree_t * node,
     get_numbered_newick_string_recursive(node->next->next->back, ss, index);
     ss << "):" << node->length << "{" << *index << "}";
   } else {
-    ss << node->label << ":" << setprecision(20) << node->length << "{" << *index << "}";
+    ss << node->label << ":" << std::setprecision(20) << node->length << "{" << *index << "}";
   }
   *index = *index + 1;
 
 }
 
-string get_numbered_newick_string(pll_utree_t * root)
+std::string get_numbered_newick_string(pll_utree_t * root)
 {
-  ostringstream ss;
+  std::ostringstream ss;
   unsigned int index = 0;
   //ss.precision(20);
 
@@ -289,7 +287,7 @@ void reset_triplet_lengths( pll_utree_t * toward_pendant,
   if (partition) {
     double branch_lengths[3] = {half_original, half_original, DEFAULT_BRANCH_LENGTH};
     unsigned int matrix_indices[3] = {0, 1, 2};
-    vector<unsigned int> param_indices(partition->rate_cats, 0);
+    std::vector<unsigned int> param_indices(partition->rate_cats, 0);
     pll_update_prob_matrices(partition, &param_indices[0], matrix_indices, branch_lengths, 3);
   }
 }

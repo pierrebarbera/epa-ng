@@ -12,9 +12,7 @@
 #include "logging.hpp"
 #include "stringify.hpp"
 
-using namespace std;
-
-Tree::Tree(const string &tree_file, const MSA &msa, Model &model, Options& options)
+Tree::Tree(const std::string &tree_file, const MSA &msa, Model &model, Options& options)
   : ref_msa_(msa)
   , model_(model)
   , options_(options)
@@ -25,7 +23,7 @@ Tree::Tree(const string &tree_file, const MSA &msa, Model &model, Options& optio
 
   locks_ = Mutex_List(partition_->tips + partition_->clv_buffers);
 
-  valid_map_ = vector<Range>(nums_.tip_nodes);
+  valid_map_ = std::vector<Range>(nums_.tip_nodes);
   link_tree_msa(tree_.get(), 
                 partition_.get(), 
                 model_, 
@@ -44,13 +42,13 @@ Tree::Tree(const string &tree_file, const MSA &msa, Model &model, Options& optio
 
   precompute_clvs(tree_.get(), partition_.get(), nums_);
 
-  LOG_DBG << "Post-optimization reference tree log-likelihood: " << to_string(this->ref_tree_logl());
+  LOG_DBG << "Post-optimization reference tree log-likelihood: " << std::to_string(this->ref_tree_logl());
 }
 
 /**
   Constructs the structures from binary file.
 */
-Tree::Tree(const string& bin_file, Model &model, Options& options)
+Tree::Tree(const std::string& bin_file, Model &model, Options& options)
   : model_(model)
   , options_(options)
   , binary_(bin_file)
@@ -79,7 +77,7 @@ void * Tree::get_clv(const pll_utree_t* node)
   bool use_tipchars = partition_->attributes & PLL_ATTRIB_PATTERN_TIP;
 
   if(i >= partition_->tips + partition_->clv_buffers) {
-    throw runtime_error{"Node index out of bounds"};
+    throw std::runtime_error{"Node index out of bounds"};
   }
 
   void* clv_ptr = nullptr;
@@ -112,7 +110,7 @@ void * Tree::get_clv(const pll_utree_t* node)
 
 double Tree::ref_tree_logl()
 {
-  vector<unsigned int> param_indices(model_.rate_cats(), 0);
+  std::vector<unsigned int> param_indices(model_.rate_cats(), 0);
   // ensure clvs are there
   this->get_clv(tree_.get());
   this->get_clv(tree_.get()->back);

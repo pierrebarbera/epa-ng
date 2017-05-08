@@ -12,8 +12,6 @@
 #include "constants.hpp"
 #include "logging.hpp"
 
-using namespace std;
-
 static void traverse_update_partials( pll_utree_t * tree, 
                                       pll_partition_t * partition, 
                                       pll_utree_t ** travbuffer, 
@@ -22,7 +20,7 @@ static void traverse_update_partials( pll_utree_t * tree,
                                       pll_operation_t * operations)
 {
   unsigned int num_matrices, num_ops;
-  vector<unsigned int> param_indices(partition->rate_cats, 0);
+  std::vector<unsigned int> param_indices(partition->rate_cats, 0);
   /* perform a full traversal*/
   assert(tree->next != nullptr);
   unsigned int traversal_size;
@@ -88,7 +86,7 @@ static double opt_branch_lengths_pplacer( pll_partition_t * partition,
          xmax,    /* max branch length */
          xtol,    /* tolerance */
          xres;    /* optimal found branch length */
-  vector<unsigned int> param_indices(partition->rate_cats, 0);
+  std::vector<unsigned int> param_indices(partition->rate_cats, 0);
 
   const auto score_node = tree;
   const auto blo_node = tree->next->back;
@@ -120,8 +118,7 @@ static double opt_branch_lengths_pplacer( pll_partition_t * partition,
   double lengths[3] = {blo_node->length, blo_antinode->length, score_node->length};
   unsigned int p_indices[3] = {blo_node->pmatrix_index, blo_antinode->pmatrix_index, score_node->pmatrix_index};
 
-  if(!opt_proximal && original_length > PLLMOD_OPT_MIN_BRANCH_LEN)
-  {
+  if(!opt_proximal && original_length > PLLMOD_OPT_MIN_BRANCH_LEN) {
     blo_node->length = PLLMOD_OPT_MIN_BRANCH_LEN;
     blo_antinode->length = original_length - PLLMOD_OPT_MIN_BRANCH_LEN;
     pll_update_prob_matrices(partition, &param_indices[0], p_indices, lengths, 1);
@@ -151,18 +148,21 @@ static double opt_branch_lengths_pplacer( pll_partition_t * partition,
 
   /* allocate the sumtable */
   auto sites_alloc = partition->sites;
-  if (partition->attributes & PLL_ATTRIB_AB_FLAG)
+  if (partition->attributes & PLL_ATTRIB_AB_FLAG) {
     sites_alloc += partition->states;
-
-  if ((nr_params.sumtable = (double *) pll_aligned_alloc(
-       sites_alloc * partition->rate_cats * partition->states_padded *
-       sizeof(double), partition->alignment)) == nullptr)
-  {
-    throw runtime_error{"Cannot allocate memory for bl opt variables"};
   }
 
-  while (smoothings)
-  {
+  if ((nr_params.sumtable = static_cast<double *> (
+      pll_aligned_alloc(sites_alloc 
+                        * partition->rate_cats
+                        * partition->states_padded 
+                        * sizeof(double), 
+                        partition->alignment))) 
+        == nullptr) {
+    throw std::runtime_error{"Cannot allocate memory for bl opt variables"};
+  }
+
+  while (smoothings) {
     auto old_blonode_length = blo_node->length;
     auto old_pendant_length = score_node->length;
 
@@ -260,8 +260,7 @@ static double opt_branch_lengths_pplacer( pll_partition_t * partition,
                                         nullptr);
 
     
-    if(new_loglikelihood - loglikelihood > new_loglikelihood * 1e-14)
-    {
+    if(new_loglikelihood - loglikelihood > new_loglikelihood * 1e-14) {
       // printf("Worse logl by %lf units! %d. iter\n", new_loglikelihood - loglikelihood, 32 - smoothings);
       // the NR procedure returned a worse logl than the previous iteration
       // thus we reset the branch lengths to the previous values and return
@@ -275,14 +274,13 @@ static double opt_branch_lengths_pplacer( pll_partition_t * partition,
     --smoothings;
 
     /* check convergence */
-    if (fabs (new_loglikelihood - loglikelihood) < tolerance)
+    if (fabs (new_loglikelihood - loglikelihood) < tolerance) {
       smoothings = 0;
+    }
 
     loglikelihood = new_loglikelihood;
 
   }
-
-  
 
   /* deallocate sumtable */
   pll_aligned_free(nr_params.sumtable);
@@ -298,10 +296,10 @@ double optimize_branch_triplet( pll_partition_t * partition,
     tree = tree->back;
   }
 
-  vector<pll_utree_t*> travbuffer(4);
-  vector<double> branch_lengths(3);
-  vector<unsigned int> matrix_indices(3);
-  vector<pll_operation_t> operations(4);
+  std::vector<pll_utree_t*> travbuffer(4);
+  std::vector<double> branch_lengths(3);
+  std::vector<unsigned int> matrix_indices(3);
+  std::vector<pll_operation_t> operations(4);
 
   traverse_update_partials( tree, 
                             partition, 
@@ -310,9 +308,9 @@ double optimize_branch_triplet( pll_partition_t * partition,
                             &matrix_indices[0], 
                             &operations[0]);
 
-  vector<unsigned int> param_indices(partition->rate_cats, 0);
+  std::vector<unsigned int> param_indices(partition->rate_cats, 0);
 
-  auto cur_logl = -numeric_limits<double>::infinity();
+  auto cur_logl = -std::numeric_limits<double>::infinity();
   const int smoothings = 32;
 
   if (sliding) {
@@ -355,7 +353,7 @@ static double optimize_branch_lengths(pll_utree_t * tree,
 
   pll_errno = 0; // hotfix
 
-  vector<unsigned int> param_indices(partition->rate_cats, 0);
+  std::vector<unsigned int> param_indices(partition->rate_cats, 0);
 
   cur_logl = -1 * pllmod_opt_optimize_branch_lengths_iterative(
     partition,
@@ -368,10 +366,10 @@ static double optimize_branch_lengths(pll_utree_t * tree,
     1); // keep updating BLs during call
 
   if (cur_logl+1e-6 < lnl_monitor) {
-    throw runtime_error{string("cur_logl < lnl_monitor: ") 
-                        + to_string(cur_logl) 
-                        + string(" : ")
-                        + to_string(lnl_monitor)};
+    throw std::runtime_error{std::string("cur_logl < lnl_monitor: ") 
+                        + std::to_string(cur_logl) 
+                        + std::string(" : ")
+                        + std::to_string(lnl_monitor)};
   }
 
   // reupdate the indices as they may have changed
@@ -410,13 +408,13 @@ void optimize(Model& model,
   compute_and_set_empirical_frequencies(partition, model);
 
   auto symmetries = (&(model.symmetries())[0]);
-  vector<unsigned int> param_indices(model.rate_cats(), 0);
+  std::vector<unsigned int> param_indices(model.rate_cats(), 0);
 
   // sadly we explicitly need these buffers here and in the params structure
-  vector<pll_utree_t*> travbuffer(nums.nodes);
-  vector<double> branch_lengths(nums.branches);
-  vector<unsigned int> matrix_indices(nums.branches);
-  vector<pll_operation_t> operations(nums.nodes);
+  std::vector<pll_utree_t*> travbuffer(nums.nodes);
+  std::vector<double> branch_lengths(nums.branches);
+  std::vector<unsigned int> matrix_indices(nums.branches);
+  std::vector<pll_operation_t> operations(nums.nodes);
 
   traverse_update_partials(tree, partition, &travbuffer[0], &branch_lengths[0],
     &matrix_indices[0], &operations[0]);
@@ -454,7 +452,7 @@ void optimize(Model& model,
   params.factr = OPT_FACTR;
   params.pgtol = OPT_PARAM_EPSILON;
 
-  vector<pll_utree_t*> branches(nums.branches);
+  std::vector<pll_utree_t*> branches(nums.branches);
   auto num_traversed = utree_query_branches(tree, &branches[0]);
   assert (num_traversed == nums.branches);
   unsigned int branch_index = 0;

@@ -6,22 +6,20 @@
 #include "pll_util.hpp"
 #include "set_manipulators.hpp"
 
-using namespace std;
-
 void link_tree_msa( pll_utree_t * tree, 
                     pll_partition_t * partition, 
                     Model& model, 
                     const MSA& msa, 
                     const unsigned int num_tip_nodes, 
-                    vector<Range> &valid_map)
+                    std::vector<Range> &valid_map)
 {
   // obtain pointers to all tip nodes
-  vector<pll_utree_t*> tip_nodes(num_tip_nodes);
+  std::vector<pll_utree_t*> tip_nodes(num_tip_nodes);
   pll_utree_query_tipnodes(tree, &tip_nodes[0]);
 
   // and associate the sequences from the MSA file with the correct tips
   /* create a hash table of size num_tip_nodes */
-  unordered_map<string, unsigned int> map; // mapping labels to tip clv indices
+  std::unordered_map<std::string, unsigned int> map; // mapping labels to tip clv indices
 
   /* populate the hash table with tree tip labels */
   for (size_t i = 0; i < num_tip_nodes; ++i) {
@@ -29,15 +27,13 @@ void link_tree_msa( pll_utree_t * tree,
   }
 
   /* find sequences in hash table and link them with the corresponding taxa */
-  for (auto const &s : msa)
-  {
+  for (auto const &s : msa) {
     auto map_value = map.find(s.header());
 
     // failure tolerance: the MSA may also contain query sequences
-    if (map_value == map.end())
-    {
+    if (map_value == map.end()) {
       continue;
-      // throw runtime_error{string("Sequence with header does not appear in the tree: ") + s.header()};
+      // throw runtime_error{std::string("Sequence with header does not appear in the tree: ") + s.header()};
     }
 
     auto clv_index = map_value->second;
@@ -56,28 +52,29 @@ void precompute_clvs( pll_utree_t * tree,
   unsigned int num_matrices, num_ops;
 
   /* various buffers for creating a postorder traversal and operations structures */
-  vector<unsigned int> param_indices(partition->rate_cats, 0);
-  vector<pll_utree_t*> travbuffer(nums.nodes);
-  vector<double> branch_lengths(nums.branches);
-  vector<unsigned int> matrix_indices(nums.branches);
-  vector<pll_operation_t> operations(nums.nodes);
+  std::vector<unsigned int> param_indices(partition->rate_cats, 0);
+  std::vector<pll_utree_t*> travbuffer(nums.nodes);
+  std::vector<double> branch_lengths(nums.branches);
+  std::vector<unsigned int> matrix_indices(nums.branches);
+  std::vector<pll_operation_t> operations(nums.nodes);
 
   // get a list of all tip nodes
-  vector<pll_utree_t*> tip_nodes(nums.tip_nodes);
+  std::vector<pll_utree_t*> tip_nodes(nums.tip_nodes);
   pll_utree_query_tipnodes(tree, &tip_nodes[0]);
 
   /* adjust clv indices such that every direction has its own */
   set_unique_clv_indices(tree, nums.tip_nodes); /* in pll_util.cpp */
 
-  for (auto node : tip_nodes)
-  {
+  for (auto node : tip_nodes) {
     /* perform a partial postorder traversal of the unrooted tree  starting at the current tip
       and returning every node whose clv in the direction of the tip hasn't been calculated yet*/
     unsigned int traversal_size;
-    if (pll_utree_traverse(node->back, cb_partial_traversal, &travbuffer[0], &traversal_size)
-                != PLL_SUCCESS)
-    {
-      throw runtime_error{"Function pll_utree_traverse() requires inner nodes as parameters"};
+    if (pll_utree_traverse( node->back, 
+                            cb_partial_traversal, 
+                            &travbuffer[0], 
+                            &traversal_size)
+                != PLL_SUCCESS) {
+      throw std::runtime_error{"Function pll_utree_traverse() requires inner nodes as parameters"};
     }
 
     /* given the computed traversal descriptor, generate the operations
@@ -108,12 +105,11 @@ void split_combined_msa(MSA& source,
                         MSA& target, 
                         Tree& tree)
 {
-  vector<pll_utree_t*> tip_nodes(tree.nums().tip_nodes);
+  std::vector<pll_utree_t*> tip_nodes(tree.nums().tip_nodes);
   pll_utree_query_tipnodes(tree.tree(), &tip_nodes[0]);
 
   auto falsegroup_begin = partition(source.begin(), source.end(),
-    [&tip_nodes](const Sequence& em)
-    {
+    [&tip_nodes](const Sequence& em) {
       return find(tip_nodes.begin(), tip_nodes.end(), em) != tip_nodes.end();
     });
   target.num_sites(source.num_sites());
@@ -133,14 +129,14 @@ bool operator==(const Sequence& s, const pll_utree_t * node)
 
 Model get_model(pll_partition_t* partition)
 {
-  string seq_type;
+  std::string seq_type;
 
   if (partition->states == 4) {
     seq_type = "DNA";
   } else if (partition->states == 20) {
     seq_type = "AA";
   } else {
-    throw runtime_error{"Couldn't determine sequence type from partition"};
+    throw std::runtime_error{"Couldn't determine sequence type from partition"};
   }
 
   Model model(seq_type, "GTR", "");

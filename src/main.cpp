@@ -9,11 +9,7 @@
 #include "logging.hpp"
 #include "epa.hpp"
 
-using namespace std;
-
-// Log lgr;
-
-static void ensure_dir_has_slash(string& dir)
+static void ensure_dir_has_slash(std::string& dir)
 {
   if (dir.length() > 0 && dir.back() != '/') {
     dir += "/";
@@ -44,10 +40,10 @@ int main(int argc, char** argv)
 
   MPI_INIT(&argc, &argv);
 
-  string invocation("");
-  string sequence_type("DNA");
-  string model_id("GTR");
-  string sub_matrix("");
+  std::string invocation("");
+  std::string sequence_type("DNA");
+  std::string model_id("GTR");
+  std::string sub_matrix("");
   Options options;
   for (int i = 0; i < argc; ++i)
   {
@@ -55,11 +51,11 @@ int main(int argc, char** argv)
     invocation += " ";
   }
 
-  string query_file("");
-  string work_dir("");
-  string tree_file("");
-  string reference_file("");
-  string binary_file("");
+  std::string query_file("");
+  std::string work_dir("");
+  std::string tree_file("");
+  std::string reference_file("");
+  std::string binary_file("");
 
   std::string banner;
 
@@ -207,7 +203,7 @@ int main(int argc, char** argv)
     auto parts = split_by_delimiter(cli["model"].as<std::string>(), "-");
     auto s = parts.size();
     if (s > 3)
-      throw runtime_error{"Supplied too many model arguments! Must be 3 or less."};
+      throw std::runtime_error{"Supplied too many model arguments! Must be 3 or less."};
     else
     {
       if (s >=1)
@@ -303,25 +299,25 @@ int main(int argc, char** argv)
     if (query_file.size() != 0) {
       queries = MSA_Stream(query_file, options.chunk_size);
     } else { // attempt to split msa if it is intermingled with (supposed) query sequences
-      throw runtime_error{"Combined MSA files not currently supported, please split them and specify using -s and -q."};
+      throw std::runtime_error{"Combined MSA files not currently supported, please split them and specify using -s and -q."};
       // split_combined_msa(ref_msa, queries, tree);
     }
   }
   // dump to binary if specified
   if (options.dump_binary_mode) {
     LOG_INFO << "Writing to binary";
-    string dump_file(work_dir + "epa_binary_file");
+    std::string dump_file(work_dir + "epa_binary_file");
     dump_to_binary(tree, dump_file);
     MPI_FINALIZE();
   	return EXIT_SUCCESS;
   }
 
   // start the placement process and write to file
-  auto start = chrono::high_resolution_clock::now();
+  auto start = std::chrono::high_resolution_clock::now();
   // process(tree, queries, work_dir, options, invocation);
   tmp_pipeline_test(tree, queries, work_dir, options, invocation);
-  auto end = chrono::high_resolution_clock::now();
-  auto runtime = chrono::duration_cast<chrono::seconds>(end - start).count();
+  auto end = std::chrono::high_resolution_clock::now();
+  auto runtime = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
 
   LOG_INFO << "Time spent placing: " << runtime << "s";
 

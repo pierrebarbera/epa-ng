@@ -5,8 +5,6 @@
 #include <algorithm>
 #include <iterator>
 
-using namespace std;
-
 /**
  * special split function that Splits samples in buckets according to the global sequence ID
  * of their PQueries. The goal is to have them split such that each aggregate node gets their
@@ -94,7 +92,7 @@ void compute_and_set_lwr(Sample& sample)
 {
   for (auto &pq : sample) {
     double total = 0.0;
-    double max=-numeric_limits<double>::infinity();
+    double max=-std::numeric_limits<double>::infinity();
 
     // find the maximum
     for (auto &p : pq) {
@@ -125,7 +123,7 @@ static void sort_by_lwr(PQuery& pq)
 void discard_bottom_x_percent(Sample& sample, const double x)
 {
   if (x < 0.0 || x > 1.0) {
-    throw range_error{"x is not a percentage (outside of [0,1])"};
+    throw std::range_error{"x is not a percentage (outside of [0,1])"};
   }
 
   for (auto &pq : sample) {
@@ -143,15 +141,15 @@ void discard_by_support_threshold(Sample& sample,
                                   const unsigned int max)
 {
   if (thresh < 0.0 || thresh > 1.0){
-    throw range_error{"thresh is not a valid likelihood weight ratio (outside of [0,1])"};
+    throw std::range_error{"thresh is not a valid likelihood weight ratio (outside of [0,1])"};
   }
 
   if (min < 1) {
-    throw range_error{"Filter min cannot be smaller than 1!"};
+    throw std::range_error{"Filter min cannot be smaller than 1!"};
   }
 
   if (min > max) {
-    throw range_error{"Filter min cannot be smaller than max!"};
+    throw std::range_error{"Filter min cannot be smaller than max!"};
   }
 
   // static_assert(std::is_array<PQuery>::value,
@@ -182,15 +180,15 @@ void discard_by_accumulated_threshold(Sample& sample, const double thresh,
                                   const unsigned int min, const unsigned int max)
 {
   if (thresh < 0.0 || thresh > 1.0) {
-    throw range_error{"thresh is not a valid likelihood weight ratio (outside of [0,1])"};
+    throw std::range_error{"thresh is not a valid likelihood weight ratio (outside of [0,1])"};
   }
 
   if (min < 1) {
-    throw range_error{"Filter min cannot be smaller than 1!"};
+    throw std::range_error{"Filter min cannot be smaller than 1!"};
   }
   
   if (min > max) {
-    throw range_error{"Filter min cannot be smaller than max!"};
+    throw std::range_error{"Filter min cannot be smaller than max!"};
   }
 
   // sorting phase
@@ -238,7 +236,7 @@ Range superset(Range a, Range b)
  *  0  1  2  3  4  5  6  7  8  9 10
  *  Output: (3,6)
  */
-Range get_valid_range(string sequence)
+Range get_valid_range(std::string sequence)
 {
   unsigned int lower = 0;
   unsigned int upper = sequence.length();

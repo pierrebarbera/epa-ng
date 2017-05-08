@@ -1,10 +1,8 @@
 #include "stringify.hpp"
 
-using namespace std;
-
 std::string stringify(Model& model)
 {
-  ostringstream output;
+  std::ostringstream output;
 
   output << "Substitution Matrix Symmetries: " << NEWL;
   output << stringify(model.symmetries()) << NEWL;

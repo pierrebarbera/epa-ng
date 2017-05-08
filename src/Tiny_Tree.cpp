@@ -15,10 +15,8 @@
 #include "set_manipulators.hpp"
 #include "logging.hpp"
 
-using namespace std;
-
 static void precompute_sites_static(char nt,
-                                    vector<double>& result,
+                                    std::vector<double>& result,
                                     pll_partition_t* partition,
                                     pll_utree_t* tree,
                                     Model& model)
@@ -26,16 +24,16 @@ static void precompute_sites_static(char nt,
   const size_t sites = partition->sites;
   result.clear();
   result.resize(sites);
-  string seq(sites, nt);
+  std::string seq(sites, nt);
 
-  vector<unsigned int> param_indices(model.rate_cats(), 0);
+  std::vector<unsigned int> param_indices(model.rate_cats(), 0);
 
   auto err_check = pll_set_tip_states(partition, tree->back->clv_index, model.char_map(),
                      seq.c_str());
 
   if (err_check == PLL_FAILURE) {
-    throw runtime_error{
-      string("Set tip states during sites precompution failed! pll_errmsg: ")
+    throw std::runtime_error{
+      std::string("Set tip states during sites precompution failed! pll_errmsg: ")
       + pll_errmsg
     };
   }
@@ -83,11 +81,11 @@ Tiny_Tree::Tiny_Tree( pll_utree_t * edge_node,
     old_proximal = old_distal->back;
   }
 
-  tree_ = unique_ptr<pll_utree_t, utree_deleter>(
+  tree_ = std::unique_ptr<pll_utree_t, utree_deleter>(
       	                    make_tiny_tree_structure(old_proximal, old_distal, tip_tip_case_),
                             utree_destroy);
 
-  partition_ = unique_ptr<pll_partition_t, partition_deleter>(
+  partition_ = std::unique_ptr<pll_partition_t, partition_deleter>(
                                 make_tiny_partition(reference_tree, tree_.get(), old_proximal, old_distal, tip_tip_case_),
                                 tiny_partition_destroy);
 
@@ -110,7 +108,7 @@ Tiny_Tree::Tiny_Tree( pll_utree_t * edge_node,
   unsigned int matrix_indices[3] = {proximal->pmatrix_index, distal->pmatrix_index, tree_->pmatrix_index};
 
   // use branch lengths to compute the probability matrices
-  vector<unsigned int> param_indices(model_.rate_cats(), 0);
+  std::vector<unsigned int> param_indices(model_.rate_cats(), 0);
   pll_update_prob_matrices(partition_.get(), &param_indices[0], matrix_indices, branch_lengths, 3);
 
   // use update_partials to compute the clv pointing toward the new tip
@@ -124,7 +122,7 @@ Tiny_Tree::Tiny_Tree( pll_utree_t * edge_node,
       const auto size = lookup_store->char_map_size();
 
       // precompute all possible site likelihoods
-      vector<vector<double>> precomputed_sites(size);
+      std::vector<std::vector<double>> precomputed_sites(size);
       for (size_t i = 0; i < size; ++i) {
         precompute_sites_static(lookup_store->char_map(i),
                                 precomputed_sites[i],
@@ -146,7 +144,7 @@ Placement Tiny_Tree::place(const Sequence &s)
   auto distal_length = tree_->next->length;
   auto pendant_length = tree_->length;
   double logl = 0.0;
-  vector<unsigned int> param_indices(model_.rate_cats(), 0);
+  std::vector<unsigned int> param_indices(model_.rate_cats(), 0);
 
   Range range(0, partition_->sites);
   if (ranged_computation_) {
@@ -177,7 +175,7 @@ Placement Tiny_Tree::place(const Sequence &s)
                        s.sequence().c_str());
 
     if (err_check == PLL_FAILURE) {
-      throw runtime_error{"Set tip states during placement failed!"};
+      throw std::runtime_error{"Set tip states during placement failed!"};
     }
 
     // optimize the branches using pnly the portion of the sites specified by range
