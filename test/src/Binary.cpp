@@ -53,6 +53,32 @@ TEST(Binary, write)
 
 }
 
+static int full_trav(pll_utree_t*)
+{
+  return 1;
+}
+
+static auto create_scaler_to_clv_map(Tree& tree)
+{
+  const auto num_scalers = tree.partition()->scale_buffers;
+  std::vector<unsigned int> map(num_scalers);
+
+  std::vector<pll_utree_t*> travbuffer(tree.nums().nodes);
+  unsigned int trav_size = 0;
+  pll_utree_traverse( tree.tree(), 
+                      full_trav, 
+                      &travbuffer[0], 
+                      &trav_size);
+
+  for (auto& n : travbuffer) {
+    if (n->scaler_index != PLL_SCALE_BUFFER_NONE) {
+      map[n->scaler_index] = n->clv_index;
+    }
+  }
+
+  return map;
+}
+
 TEST(Binary, read)
 {
   // setup
@@ -167,11 +193,14 @@ TEST(Binary, read)
     node.clv_index = i;
     node.scaler_index = 0;
     double* read_clv = (double*) read_tree.get_clv(&node);
-    for (size_t j = 0; j < part->sites + part->states_padded + part->rate_cats; j++)
+    const auto clv_size = pll_get_clv_size(part, i);
+    for (size_t j = 0; j < clv_size; j++)
     {
       ASSERT_DOUBLE_EQ(part->clv[i][j], read_clv[j]);
     }
   }
+
+  const auto stoc = create_scaler_to_clv_map(read_tree);
 
   // check scalers
   for (size_t i = 0; i < part->scale_buffers; i++)
@@ -180,9 +209,31 @@ TEST(Binary, read)
     node.clv_index = 0;
     node.scaler_index = i;
     read_tree.get_clv(&node);
-    for (size_t j = 0; j < part->sites; j++)
+    const auto scaler_size =  pll_get_sites_number(read_part, stoc[i]);
+    for (size_t j = 0; j < scaler_size; j++)
     {
       EXPECT_EQ(part->scale_buffer[i][j], read_part->scale_buffer[i][j]);
+    }
+  }
+
+  // check repeats specific structures
+  const auto rep = part->repeats; 
+  const auto read_rep = read_part->repeats; 
+  if (rep) {
+    for (size_t i = 0; i < part->scale_buffers; ++i) {
+      EXPECT_EQ(rep->perscale_max_id[i], read_rep->perscale_max_id[i]);
+    }
+    for (size_t i = 0; i < part->clv_buffers + part->tips; ++i) {
+      EXPECT_EQ(rep->pernode_max_id[i], read_rep->pernode_max_id[i]);
+      EXPECT_EQ(rep->pernode_allocated_clvs[i], read_rep->pernode_allocated_clvs[i]);
+
+      for (size_t j = 0; j < part->sites; ++j) {
+        EXPECT_EQ(rep->pernode_site_id[i][j], read_rep->pernode_site_id[i][j]);
+      }
+
+      for (size_t j = 0; j < pll_get_sites_number(part, i); ++j) {
+        EXPECT_EQ(rep->pernode_id_site[i][j], read_rep->pernode_id_site[i][j]);
+      }
     }
   }
 }

@@ -12,7 +12,10 @@
 #include "logging.hpp"
 #include "stringify.hpp"
 
-Tree::Tree(const std::string &tree_file, const MSA &msa, Model &model, Options& options)
+Tree::Tree( const std::string &tree_file, 
+            const MSA &msa,
+            Model &model, 
+            Options& options)
   : ref_msa_(msa)
   , model_(model)
   , options_(options)

@@ -202,16 +202,18 @@ int main(int argc, char** argv)
   {
     auto parts = split_by_delimiter(cli["model"].as<std::string>(), "-");
     auto s = parts.size();
-    if (s > 3)
+    if (s > 3) {
       throw std::runtime_error{"Supplied too many model arguments! Must be 3 or less."};
-    else
-    {
-      if (s >=1)
+    } else {
+      if (s >=1) {
         sequence_type = parts[0];
-      if (s >= 2)
+      }
+      if (s >= 2) {
         model_id = parts[1];
-      if (s >= 3)
+      }
+      if (s >= 3) {
         sub_matrix = parts[2];
+      }
 
       LOG_DBG << "Model descriptor: " << sequence_type << " "
       << model_id << " " << sub_matrix << " ";
@@ -300,7 +302,9 @@ int main(int argc, char** argv)
       queries = MSA_Stream(query_file, options.chunk_size);
     } else { // attempt to split msa if it is intermingled with (supposed) query sequences
       throw std::runtime_error{"Combined MSA files not currently supported, please split them and specify using -s and -q."};
-      // split_combined_msa(ref_msa, queries, tree);
+      // MSA tmp;
+      // split_combined_msa(ref_msa, tmp, tree);
+      
     }
   }
   // dump to binary if specified

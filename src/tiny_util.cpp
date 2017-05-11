@@ -1,5 +1,7 @@
 #include "tiny_util.hpp"
 
+#include <type_traits>
+
 #include "pll_util.hpp"
 
 
@@ -9,11 +11,73 @@ constexpr unsigned int new_tip_clv_index          = 1;
 constexpr unsigned int distal_clv_index_if_tip    = 2;
 constexpr unsigned int distal_clv_index_if_inner  = 5;
 
+template <class T, 
+          typename = typename std::enable_if<std::is_pointer<T>::value>::type>
+static void alloc_and_copy(T& dest, const T src, const size_t size)
+{
+  using base_t = std::remove_pointer_t<decltype(src)>;
+
+  if (dest != nullptr) {
+    free(dest);
+  }
+
+  dest = static_cast<T>(calloc(size, sizeof(base_t)));
+
+  memcpy( dest,
+          src,
+          size * sizeof(base_t));
+}
+
+//TODO src_part should be const const
+static void deep_copy_scaler( pll_partition_t* dest_part,
+                              pll_utree_t* dest_node,
+                              pll_partition_t* src_part,
+                              pll_utree_t const * const src_node)
+{
+  if (src_node->scaler_index != PLL_SCALE_BUFFER_NONE
+    and src_part->scale_buffer[src_node->scaler_index] != nullptr) {
+    
+    const auto scaler_size = pll_get_sites_number(src_part, 
+                                                  src_node->clv_index);
+
+    alloc_and_copy( dest_part->scale_buffer[dest_node->scaler_index], 
+                    src_part->scale_buffer[src_node->scaler_index], 
+                    scaler_size);
+  }
+}
+
+static void deep_copy_repeats(pll_partition_t* dest_part,
+                              pll_utree_t* dest_node,
+                              pll_partition_t* src_part,
+                              pll_utree_t const * const src_node)
+{
+  // copy size info
+  if (src_node->scaler_index != PLL_SCALE_BUFFER_NONE) {
+    dest_part->repeats->perscale_max_id[dest_node->scaler_index]
+      = src_part->repeats->perscale_max_id[src_node->scaler_index];
+  }
+  
+  dest_part->repeats->pernode_max_id[dest_node->clv_index]
+    = src_part->repeats->pernode_max_id[src_node->clv_index];
+  dest_part->repeats->pernode_allocated_clvs[dest_node->clv_index]
+    = src_part->repeats->pernode_allocated_clvs[src_node->clv_index];
+
+  const auto size = pll_get_sites_number(src_part, src_node->clv_index);
+
+  alloc_and_copy( dest_part->repeats->pernode_site_id[dest_node->clv_index], 
+                  src_part->repeats->pernode_site_id[src_node->clv_index], 
+                  src_part->sites);
+  alloc_and_copy( dest_part->repeats->pernode_id_site[dest_node->clv_index], 
+                  src_part->repeats->pernode_id_site[src_node->clv_index], 
+                  size);
+
+}
+
 
 pll_partition_t * make_tiny_partition(Tree& reference_tree, 
                                       const pll_utree_t * tree, 
-                                      const pll_utree_t * old_proximal, 
-                                      const pll_utree_t * old_distal, 
+                                      pll_utree_t const * const old_proximal, 
+                                      pll_utree_t const * const old_distal, 
                                       const bool tip_tip_case)
 {
   /**
@@ -117,17 +181,32 @@ pll_partition_t * make_tiny_partition(Tree& reference_tree,
     tiny->clv[distal->clv_index] = static_cast<double*>(reference_tree.get_clv(old_distal));
   }
 
+
   // deep copy scalers
-  if (old_proximal->scaler_index != PLL_SCALE_BUFFER_NONE) {
-    memcpy(tiny->scale_buffer[proximal->scaler_index],
-      old_partition->scale_buffer[old_proximal->scaler_index],
-      sizeof(unsigned int) * old_partition->sites);
+  deep_copy_scaler( tiny,
+                    proximal,
+                    old_partition,
+                    old_proximal);
+
+  deep_copy_scaler( tiny,
+                    distal,
+                    old_partition,
+                    old_distal);
+
+  // copy the repeats structures
+  if (old_partition->repeats) {
+    // then do the per-clv stuff, but only for the two relevant clv
+    deep_copy_repeats(tiny,
+                      proximal,
+                      old_partition,
+                      old_proximal);
+
+    deep_copy_repeats(tiny,
+                      distal,
+                      old_partition,
+                      old_distal);
   }
-  if (old_distal->scaler_index != PLL_SCALE_BUFFER_NONE) {
-    memcpy(tiny->scale_buffer[distal->scaler_index],
-      old_partition->scale_buffer[old_distal->scaler_index],
-      sizeof(unsigned int) * old_partition->sites);
-  }
+
 
   return tiny;
 }

@@ -22,7 +22,7 @@ touch $LOG
 
 echo "RUNNING EPA" >> $LOG
 export OMP_NUM_THREADS=4
-(time ../bin/epamk -t $TREE -s $REF_MSA -q $QRY_MSA  -g 0.95 -w $OUT) &>> $LOG
+valgrind --tool=helgrind ../bin/epa -t $TREE -s $REF_MSA -q $QRY_MSA -g 0.95 -w $OUT
 
 #echo "RUNNING PPLACER" >> $LOG
 #(time ./pplacer -t data/lucas/20k.newick -s 1k/RAxML_info.1k --out-dir $OUT data/lucas/1k.fasta) &>> $LOG

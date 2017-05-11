@@ -22,6 +22,7 @@ add_executable        (epa_test_module ${epa_test_sources})
 target_link_libraries (epa_test_module ${PROJECT_SOURCE_DIR}/libs/lib/libpll_binary.a)
 target_link_libraries (epa_test_module ${PROJECT_SOURCE_DIR}/libs/lib/libpll_optimize.a)
 target_link_libraries (epa_test_module ${PROJECT_SOURCE_DIR}/libs/lib/libpll_msa.a)
+target_link_libraries (epa_test_module ${PROJECT_SOURCE_DIR}/libs/lib/libpll_util.a)
 target_link_libraries (epa_test_module ${PROJECT_SOURCE_DIR}/libs/lib/libpll.a)
 target_link_libraries (epa_test_module m)
 

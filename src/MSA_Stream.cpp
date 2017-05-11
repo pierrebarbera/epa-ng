@@ -62,6 +62,7 @@ MSA_Stream::MSA_Stream( const std::string& msa_file,
 size_t MSA_Stream::read_next( MSA_Stream::container_type& result, 
                               const size_t number)
 {
+
 #ifdef __PREFETCH
   // join prefetching thread to ensure new chunk exists
   if (prefetcher_.joinable()) {
