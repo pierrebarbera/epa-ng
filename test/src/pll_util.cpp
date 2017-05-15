@@ -146,12 +146,13 @@ TEST(pll_util, sum_branch_lengths)
 
   tree = build_tree_from_file(env->tree_file, nums);
   part = build_partition_from_file( env->model, nums, msa.num_sites());
-  (void) part;
   set_branch_lengths(tree, 1.0);
   auto total_length = sum_branch_lengths(tree);
 
   EXPECT_DOUBLE_EQ(nums.branches, total_length);
 
+  pll_partition_destroy(part);
+  pll_utree_destroy(tree, nullptr);
 }
 
 TEST(pll_util, shift_partition_focus_shifty)
@@ -222,6 +223,7 @@ TEST(pll_util, shift_partition_focus_shifty)
 
   // teardown
   shift_partition_focus(part, -begin, 10);
+  delete[] seq;
   pll_partition_destroy(part);
 }
 

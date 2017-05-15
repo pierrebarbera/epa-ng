@@ -98,6 +98,8 @@ int main(int argc, char** argv)
     ("raxml-blo",
       "Employ old style of branch length optimization during thorough insertion as opposed to sliding approach. "
       "WARNING: may significantly slow down computation.")
+    ("repeats",
+      "Employ site repeats optimization. Can improve memory usage, depending on the data. ")
     ("g,dyn-heur",
       "Two-phase heuristic, determination of candidate edges using accumulative threshold.",
       cxxopts::value<double>()->implicit_value("0.99"))
@@ -197,6 +199,7 @@ int main(int argc, char** argv)
   }
   if (cli.count("opt-ref-tree")) options.opt_branches = options.opt_model = true;
   if (cli.count("raxml-blo")) options.sliding_blo = false;
+  if (cli.count("repeats")) options.repeats = true;
   if (cli.count("dump-binary")) options.dump_binary_mode =  true;
   if (cli.count("model"))
   {

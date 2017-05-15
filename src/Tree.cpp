@@ -21,7 +21,10 @@ Tree::Tree( const std::string &tree_file,
   , options_(options)
 {
   tree_ = utree_ptr(build_tree_from_file(tree_file, nums_), utree_destroy);
-  partition_ = partition_ptr( build_partition_from_file(model_, nums_, ref_msa_.num_sites()),
+  partition_ = partition_ptr( build_partition_from_file(model_, 
+                                                        nums_, 
+                                                        ref_msa_.num_sites(),
+                                                        options_.repeats ), 
                               pll_partition_destroy);
 
   locks_ = Mutex_List(partition_->tips + partition_->clv_buffers);
@@ -51,7 +54,7 @@ Tree::Tree( const std::string &tree_file,
 /**
   Constructs the structures from binary file.
 */
-Tree::Tree(const std::string& bin_file, Model &model, Options& options)
+Tree::Tree(const std::string& bin_file, Model& model, Options& options)
   : model_(model)
   , options_(options)
   , binary_(bin_file)

@@ -28,8 +28,10 @@ static void precompute_sites_static(char nt,
 
   std::vector<unsigned int> param_indices(model.rate_cats(), 0);
 
-  auto err_check = pll_set_tip_states(partition, tree->back->clv_index, model.char_map(),
-                     seq.c_str());
+  auto err_check = pll_set_tip_states(partition, 
+                                      tree->back->clv_index, 
+                                      model.char_map(),
+                                      seq.c_str());
 
   if (err_check == PLL_FAILURE) {
     throw std::runtime_error{
@@ -146,12 +148,6 @@ Placement Tiny_Tree::place(const Sequence &s)
   double logl = 0.0;
   std::vector<unsigned int> param_indices(model_.rate_cats(), 0);
 
-  Range range(0, partition_->sites);
-  if (ranged_computation_) {
-    range = get_valid_range(s.sequence());
-    // range = superset(get_valid_range(s.sequence()), reference_tip_range_);
-  }
-
   if (opt_branches_) {
 
     /* differentiate between the normal case and the tip tip case:
@@ -178,9 +174,7 @@ Placement Tiny_Tree::place(const Sequence &s)
       throw std::runtime_error{"Set tip states during placement failed!"};
     }
 
-    // optimize the branches using pnly the portion of the sites specified by range
-    logl = call_focused(partition_.get(), range, optimize_branch_triplet, virtual_root, sliding_blo_);
-    // logl = optimize_branch_triplet(partition_.get(), virtual_root, sliding_blo_);
+    logl = optimize_branch_triplet(partition_.get(), virtual_root, sliding_blo_);
 
     assert(tree_->length >= 0);
     assert(tree_->next->length >= 0);

@@ -15,5 +15,6 @@ MSA build_MSA_from_file(const std::string& msa_file);
 pll_utree_t * build_tree_from_file(const std::string& tree_file, Tree_Numbers& nums);
 pll_partition_t * build_partition_from_file(const Model& model,
                                             Tree_Numbers& nums, 
-                                            const int num_sites);
+                                            const int num_sites,
+                                            const bool repeats = false);
 void file_check(const std::string& file_path);

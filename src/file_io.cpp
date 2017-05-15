@@ -96,7 +96,8 @@ pll_utree_t * build_tree_from_file(const std::string& tree_file, Tree_Numbers& n
 
 pll_partition_t *  build_partition_from_file( const Model& model, 
                                               Tree_Numbers& nums, 
-                                              const int num_sites)
+                                              const int num_sites,
+                                              const bool repeats)
 {
   assert(nums.tip_nodes); // nums must have been initialized correctly
 
@@ -106,8 +107,12 @@ pll_partition_t *  build_partition_from_file( const Model& model,
 #elif __SSE3
   attributes = PLL_ATTRIB_ARCH_SSE;
 #endif
-  attributes |= PLL_ATTRIB_PATTERN_TIP;
-  // attributes |= PLL_ATTRIB_SITES_REPEATS;
+
+  if (repeats) {
+    attributes |= PLL_ATTRIB_SITES_REPEATS;
+  } else {
+    attributes |= PLL_ATTRIB_PATTERN_TIP;
+  }
 
   auto partition = pll_partition_create(nums.tip_nodes,
            nums.inner_nodes * 3, //number of extra clv buffers: 3 for every direction on the node
