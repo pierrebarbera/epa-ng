@@ -21,8 +21,13 @@ public:
   using partition_ptr = std::unique_ptr<pll_partition_t, partition_deleter>;
   using utree_ptr     = std::unique_ptr<pll_utree_t, utree_deleter>;
 
-  Tree(const std::string& tree_file, const MSA& msa, Model& model, Options& options);
-  Tree(const std::string& bin_file, Model &model, Options& options);
+  Tree( const std::string& tree_file, 
+        const MSA& msa, 
+        Model& model, 
+        const Options& options);
+  Tree( const std::string& bin_file, 
+        Model &model, 
+        const Options& options);
   Tree()  = default;
   ~Tree() = default;
 
@@ -36,10 +41,10 @@ public:
   Tree_Numbers& nums() { return nums_; }
   Model& model() { return model_; }
   Options& options() { return options_; }
-  pll_partition_t * partition() { return partition_.get(); }
-  pll_utree_t * tree() { return tree_.get(); }
+  auto partition() { return partition_.get(); }
+  auto tree() { return tree_.get(); }
 
-  void * get_clv(const pll_utree_t*);
+  void * get_clv(const pll_unode_t*);
 
   double ref_tree_logl();
 

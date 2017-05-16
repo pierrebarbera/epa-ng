@@ -19,22 +19,39 @@ using fasta_deleter     = void(*)(pll_fasta_t*);
 // deleters
 void fasta_close(pll_fasta_t* fptr);
 void utree_destroy(pll_utree_t * tree);
-int utree_free_node_data(pll_utree_t * node);
+int utree_free_node_data(pll_unode_t * node);
 
-// interface
-int cb_partial_traversal(pll_utree_t * node);
-int cb_full_traversal(pll_utree_t * node);
-unsigned int utree_query_branches(pll_utree_t * node, pll_utree_t ** node_list);
-void set_unique_clv_indices(pll_utree_t * tree, const int num_tip_nodes);
-void set_missing_branch_lengths(pll_utree_t * tree, double length);
-void set_branch_lengths(pll_utree_t * tree, double length);
-std::string get_numbered_newick_string(pll_utree_t * root);
+// traversal callbacks
+int cb_partial_traversal(pll_unode_t * node);
+int cb_full_traversal(pll_unode_t * node);
+
+// recursive traversal functions
+unsigned int utree_query_branches(pll_utree_t const * const node, 
+                                  pll_unode_t ** node_list);
+void set_unique_clv_indices(pll_unode_t * const tree, 
+                            const int num_tip_nodes);
+void set_missing_branch_lengths(pll_utree_t * tree, 
+                                const double length);
+void set_branch_lengths(pll_utree_t * tree, 
+                        const double length);
+double sum_branch_lengths(pll_utree_t const * const tree);
+
+// tiny tree specific
+void reset_triplet_lengths( pll_unode_t * toward_pendant, 
+                            pll_partition_t * partition, 
+                            const double old_length);
+
+// general helpers
+std::string get_numbered_newick_string(pll_utree_t const * const root);
+pll_unode_t * get_tip_node(pll_unode_t * node);
+
+pll_unode_t* get_root(pll_utree_t const * const tree);
+
+pll_utree_t* make_utree_struct(pll_unode_t * root, const unsigned int num_nodes);
+
+// deprecated
 void shift_partition_focus(pll_partition_t * partition, const int offset, const unsigned int span);
-pll_utree_t * get_tip_node(pll_utree_t * node);
-double sum_branch_lengths(const pll_utree_t * const tree);
-void reset_triplet_lengths(pll_utree_t * toward_pendant, pll_partition_t * partition, const double old_length);
 
-// templates
 template<typename Func, typename ...Args>
 double call_focused(pll_partition_t * partition, Range& range, Func func, Args && ...args)
 {

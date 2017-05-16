@@ -13,17 +13,13 @@ void link_tree_msa( pll_utree_t * tree,
                     const unsigned int num_tip_nodes, 
                     std::vector<Range> &valid_map)
 {
-  // obtain pointers to all tip nodes
-  std::vector<pll_utree_t*> tip_nodes(num_tip_nodes);
-  pll_utree_query_tipnodes(tree, &tip_nodes[0]);
-
-  // and associate the sequences from the MSA file with the correct tips
+  // associate the sequences from the MSA file with the correct tips
   /* create a hash table of size num_tip_nodes */
   std::unordered_map<std::string, unsigned int> map; // mapping labels to tip clv indices
 
   /* populate the hash table with tree tip labels */
   for (size_t i = 0; i < num_tip_nodes; ++i) {
-    map[tip_nodes[i]->label] = i;
+    map[tree->nodes[i]->label] = i;
   }
 
   /* find sequences in hash table and link them with the corresponding taxa */
@@ -45,7 +41,7 @@ void link_tree_msa( pll_utree_t * tree,
   }
 }
 
-void precompute_clvs( pll_utree_t * tree, 
+void precompute_clvs( pll_utree_t const * const tree, 
                       pll_partition_t * partition, 
                       const Tree_Numbers& nums)
 {
@@ -53,28 +49,28 @@ void precompute_clvs( pll_utree_t * tree,
 
   /* various buffers for creating a postorder traversal and operations structures */
   std::vector<unsigned int> param_indices(partition->rate_cats, 0);
-  std::vector<pll_utree_t*> travbuffer(nums.nodes);
+  std::vector<pll_unode_t*> travbuffer(nums.nodes);
   std::vector<double> branch_lengths(nums.branches);
   std::vector<unsigned int> matrix_indices(nums.branches);
   std::vector<pll_operation_t> operations(nums.nodes);
 
-  // get a list of all tip nodes
-  std::vector<pll_utree_t*> tip_nodes(nums.tip_nodes);
-  pll_utree_query_tipnodes(tree, &tip_nodes[0]);
+  const auto root = get_root(tree);
 
   /* adjust clv indices such that every direction has its own */
-  set_unique_clv_indices(tree, nums.tip_nodes); /* in pll_util.cpp */
+  set_unique_clv_indices(root, nums.tip_nodes);
 
-  for (auto node : tip_nodes) {
+  for (size_t i = 0; i < tree->tip_count; ++i) {
+    const auto node = tree->nodes[i];
     /* perform a partial postorder traversal of the unrooted tree  starting at the current tip
       and returning every node whose clv in the direction of the tip hasn't been calculated yet*/
     unsigned int traversal_size;
     if (pll_utree_traverse( node->back, 
-                            cb_partial_traversal, 
+                            PLL_TREE_TRAVERSE_POSTORDER,
+                            cb_partial_traversal,
                             &travbuffer[0], 
                             &traversal_size)
                 != PLL_SUCCESS) {
-      throw std::runtime_error{"Function pll_utree_traverse() requires inner nodes as parameters"};
+      throw std::runtime_error{"Function pll_unode_traverse() requires inner nodes as parameters"};
     }
 
     /* given the computed traversal descriptor, generate the operations
@@ -98,18 +94,19 @@ void precompute_clvs( pll_utree_t * tree,
        will be carried out sequentially starting from operation 0 towrds num_ops-1 */
     pll_update_partials(partition, &operations[0], num_ops);
   }
-  utree_free_node_data(tree);
+  utree_free_node_data(root);
 }
 
 void split_combined_msa(MSA& source, 
                         MSA& target, 
                         Tree& tree)
 {
-  std::vector<pll_utree_t*> tip_nodes(tree.nums().tip_nodes);
-  pll_utree_query_tipnodes(tree.tree(), &tip_nodes[0]);
+  std::vector<pll_unode_t*> tip_nodes(tree.nums().tip_nodes);
+  tip_nodes.assign( tree.tree()->nodes, 
+                    tree.tree()->nodes + tree.tree()->tip_count);
 
   auto falsegroup_begin = partition(source.begin(), source.end(),
-    [&tip_nodes](const Sequence& em) {
+    [tip_nodes = std::move(tip_nodes)](const Sequence& em) {
       return find(tip_nodes.begin(), tip_nodes.end(), em) != tip_nodes.end();
     });
   target.num_sites(source.num_sites());
@@ -117,12 +114,12 @@ void split_combined_msa(MSA& source,
   source.erase(falsegroup_begin, source.end());
 }
 
-bool operator==(const pll_utree_t * node, const Sequence& s)
+bool operator==(const pll_unode_t * node, const Sequence& s)
 {
   return s.header().compare(node->label) == 0;
 }
 
-bool operator==(const Sequence& s, const pll_utree_t * node)
+bool operator==(const Sequence& s, const pll_unode_t * node)
 {
   return operator==(node, s);
 }

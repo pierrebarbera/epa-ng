@@ -27,7 +27,7 @@ public:
   void load_tipchars(pll_partition_t * partition, const unsigned int tipchars_index);
   void load_scaler(pll_partition_t * partition, const unsigned int scaler_index);
   pll_partition_t* load_partition();
-  pll_utree_t* load_utree();
+  pll_utree_t* load_utree(const unsigned int num_tips);
 private:
   std::mutex file_mutex_;
   file_ptr_type bin_fptr_;

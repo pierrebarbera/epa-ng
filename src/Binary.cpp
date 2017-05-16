@@ -182,21 +182,22 @@ pll_partition_t* Binary::load_partition()
   return partition;
 }
 
-pll_utree_t* Binary::load_utree()
+pll_utree_t* Binary::load_utree(const unsigned int num_tips)
 {
   std::lock_guard<std::mutex> lock(file_mutex_);
   unsigned int attributes = 0;
-  auto tree =  pllmod_binary_utree_load(bin_fptr_.get(), 
+  auto root =  pllmod_binary_utree_load(bin_fptr_.get(), 
                                         0, 
                                         &attributes, 
                                         get_offset(map_, -2));
-  if (!tree) {
+  if (!root) {
     throw std::runtime_error{std::string("Loading tree: ") + pll_errmsg};
   }
-  return tree;
+
+  return pll_utree_wraptree(root, num_tips);
 }
 
-static int full_trav(pll_utree_t*)
+static int full_trav(pll_unode_t*)
 {
   return 1;
 }
@@ -206,9 +207,10 @@ static auto create_scaler_to_clv_map(Tree& tree)
   const auto num_scalers = tree.partition()->scale_buffers;
   std::vector<unsigned int> map(num_scalers);
 
-  std::vector<pll_utree_t*> travbuffer(tree.nums().nodes);
+  std::vector<pll_unode_t*> travbuffer(tree.nums().nodes);
   unsigned int trav_size = 0;
-  pll_utree_traverse( tree.tree(), 
+  pll_utree_traverse( get_root(tree.tree()),
+                      PLL_TREE_TRAVERSE_POSTORDER,
                       full_trav, 
                       &travbuffer[0], 
                       &trav_size);
@@ -272,7 +274,7 @@ void dump_to_binary(Tree& tree, const std::string& file)
   }
 
   // dump the utree structure
-  if(!pllmod_binary_utree_dump(fptr, block_id++, tree.tree(), num_tips, attributes)) {
+  if(!pllmod_binary_utree_dump(fptr, block_id++, get_root(tree.tree()), num_tips, attributes)) {
     throw std::runtime_error{std::string("Error dumping the utree to binary: ") + pll_errmsg};
   }
 

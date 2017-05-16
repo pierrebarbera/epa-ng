@@ -10,7 +10,7 @@
 
 using namespace std;
 
-void check_equal(pll_utree_t* a, pll_utree_t* b)
+void check_equal(pll_unode_t* a, pll_unode_t* b)
 {
   EXPECT_DOUBLE_EQ(a->length, b->length);
   printf("AA %f is %f\n", a->length, b->length);
@@ -53,7 +53,7 @@ TEST(Binary, write)
 
 }
 
-static int full_trav(pll_utree_t*)
+static int full_trav(pll_unode_t*)
 {
   return 1;
 }
@@ -63,9 +63,10 @@ static auto create_scaler_to_clv_map(Tree& tree)
   const auto num_scalers = tree.partition()->scale_buffers;
   std::vector<unsigned int> map(num_scalers);
 
-  std::vector<pll_utree_t*> travbuffer(tree.nums().nodes);
+  std::vector<pll_unode_t*> travbuffer(tree.nums().nodes);
   unsigned int trav_size = 0;
-  pll_utree_traverse( tree.tree(), 
+  pll_utree_traverse( get_root(tree.tree()),
+                      PLL_TREE_TRAVERSE_POSTORDER,
                       full_trav, 
                       &travbuffer[0], 
                       &trav_size);
@@ -101,7 +102,7 @@ TEST(Binary, read)
 
   // compare numbered jplace strings
   string original_nns(get_numbered_newick_string(original_tree.tree()));
-  string read_nns(get_numbered_newick_string(read_tree.tree()->back));
+  string read_nns(get_numbered_newick_string(read_tree.tree()));
 
   EXPECT_STREQ(original_nns.c_str(), read_nns.c_str());
 
@@ -135,11 +136,19 @@ TEST(Binary, read)
 
   // compare tree traversals
   ASSERT_EQ(original_tree.nums().nodes, read_tree.nums().nodes);
-  vector<pll_utree_t *> original_nodes(original_tree.nums().nodes);
-  vector<pll_utree_t *> read_nodes(read_tree.nums().nodes);
+  vector<pll_unode_t *> original_nodes(original_tree.nums().nodes);
+  vector<pll_unode_t *> read_nodes(read_tree.nums().nodes);
   unsigned int original_traversed, read_traversed;
-  pll_utree_traverse(original_tree.tree(), cb_full_traversal, &original_nodes[0], &original_traversed);
-  pll_utree_traverse(read_tree.tree(), cb_full_traversal, &read_nodes[0], &read_traversed);
+  pll_utree_traverse( get_root(original_tree.tree()),
+                      PLL_TREE_TRAVERSE_POSTORDER,
+                      cb_full_traversal, 
+                      &original_nodes[0], 
+                      &original_traversed);
+  pll_utree_traverse( get_root(read_tree.tree()),
+                      PLL_TREE_TRAVERSE_POSTORDER,
+                      cb_full_traversal,
+                      &read_nodes[0],
+                      &read_traversed);
 
   ASSERT_EQ(original_traversed, read_traversed);
   ASSERT_EQ(original_traversed, original_tree.nums().nodes);
@@ -174,7 +183,7 @@ TEST(Binary, read)
   if (read_part->attributes & PLL_ATTRIB_PATTERN_TIP)
     for (size_t i = 0; i < part->tips; i++)
     {
-      pll_utree_t node;
+      pll_unode_t node;
       node.clv_index = i;
       node.scaler_index = 0;
       char* read_tipchars = (char*) read_tree.get_clv(&node);
@@ -189,7 +198,7 @@ TEST(Binary, read)
 
   for (size_t i = start; i < part->tips + part->clv_buffers; i++)
   {
-    pll_utree_t node;
+    pll_unode_t node;
     node.clv_index = i;
     node.scaler_index = 0;
     double* read_clv = (double*) read_tree.get_clv(&node);
@@ -205,7 +214,7 @@ TEST(Binary, read)
   // check scalers
   for (size_t i = 0; i < part->scale_buffers; i++)
   {
-    pll_utree_t node;
+    pll_unode_t node;
     node.clv_index = 0;
     node.scaler_index = i;
     read_tree.get_clv(&node);

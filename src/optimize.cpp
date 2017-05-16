@@ -12,9 +12,9 @@
 #include "constants.hpp"
 #include "logging.hpp"
 
-static void traverse_update_partials( pll_utree_t * tree, 
+static void traverse_update_partials( pll_unode_t * tree, 
                                       pll_partition_t * partition, 
-                                      pll_utree_t ** travbuffer, 
+                                      pll_unode_t ** travbuffer, 
                                       double * branch_lengths, 
                                       unsigned int * matrix_indices, 
                                       pll_operation_t * operations)
@@ -26,7 +26,11 @@ static void traverse_update_partials( pll_utree_t * tree,
   unsigned int traversal_size;
   // TODO this only needs to be done once, outside of this func. pass traversal size also
   // however this is practically nonexistent impact compared to clv comp
-  pll_utree_traverse(tree, cb_full_traversal, travbuffer, &traversal_size);
+  pll_utree_traverse( tree, 
+                      PLL_TREE_TRAVERSE_POSTORDER,
+                      cb_full_traversal, 
+                      travbuffer, 
+                      &traversal_size);
 
   /* given the computed traversal descriptor, generate the operations
      structure, and the corresponding probability matrix indices that
@@ -76,7 +80,7 @@ static void utree_derivative_func ( void * parameters,
  * @return            negative log likelihood after optimization
  */
 static double opt_branch_lengths_pplacer( pll_partition_t * partition, 
-                                          pll_utree_t * tree, 
+                                          pll_unode_t * inner, 
                                           unsigned int smoothings, 
                                           const double tolerance)
 {
@@ -88,9 +92,9 @@ static double opt_branch_lengths_pplacer( pll_partition_t * partition,
          xres;    /* optimal found branch length */
   std::vector<unsigned int> param_indices(partition->rate_cats, 0);
 
-  const auto score_node = tree;
-  const auto blo_node = tree->next->back;
-  const auto blo_antinode = tree->next->next->back;
+  const auto score_node = inner;
+  const auto blo_node = inner->next->back;
+  const auto blo_antinode = inner->next->next->back;
 
   pll_operation_t toward_score;
   toward_score.parent_clv_index = score_node->clv_index;
@@ -289,14 +293,14 @@ static double opt_branch_lengths_pplacer( pll_partition_t * partition,
 }
 
 double optimize_branch_triplet( pll_partition_t * partition, 
-                                pll_utree_t * tree, 
+                                pll_unode_t * tree, 
                                 const bool sliding)
 {
   if (!tree->next) {
     tree = tree->back;
   }
 
-  std::vector<pll_utree_t*> travbuffer(4);
+  std::vector<pll_unode_t*> travbuffer(4);
   std::vector<double> branch_lengths(3);
   std::vector<unsigned int> matrix_indices(3);
   std::vector<pll_operation_t> operations(4);
@@ -314,9 +318,12 @@ double optimize_branch_triplet( pll_partition_t * partition,
   const int smoothings = 32;
 
   if (sliding) {
-    cur_logl = -opt_branch_lengths_pplacer(partition, tree, smoothings, OPT_BRANCH_EPSILON);
+    cur_logl = -opt_branch_lengths_pplacer( partition, 
+                                            tree, 
+                                            smoothings, 
+                                            OPT_BRANCH_EPSILON);
   } else {
-    cur_logl = -pllmod_opt_optimize_branch_lengths_local (
+    cur_logl = -pllmod_opt_optimize_branch_lengths_local(
                                                 partition,
                                                 tree,
                                                 &param_indices[0],
@@ -332,10 +339,10 @@ double optimize_branch_triplet( pll_partition_t * partition,
   return cur_logl;
 }
 
-static double optimize_branch_lengths(pll_utree_t * tree, 
+static double optimize_branch_lengths(pll_unode_t * tree, 
                                       pll_partition_t * partition, 
                                       pll_optimize_options_t& params, 
-                                      pll_utree_t ** travbuffer, 
+                                      pll_unode_t ** travbuffer, 
                                       double cur_logl, 
                                       double lnl_monitor, 
                                       int* smoothings)
@@ -391,15 +398,17 @@ static double optimize_branch_lengths(pll_utree_t * tree,
 }
 
 void optimize(Model& model, 
-              pll_utree_t * tree, 
+              pll_utree_t * const tree, 
               pll_partition_t * partition, 
               const Tree_Numbers& nums, 
               const bool opt_branches, 
               const bool opt_model)
 {
-  if (!opt_branches && !opt_model) {
+  if (not opt_branches and not opt_model) {
     return;
   }
+
+  const auto root = get_root(tree);
 
   if (opt_branches) {
     set_branch_lengths(tree, DEFAULT_BRANCH_LENGTH);
@@ -411,20 +420,27 @@ void optimize(Model& model,
   std::vector<unsigned int> param_indices(model.rate_cats(), 0);
 
   // sadly we explicitly need these buffers here and in the params structure
-  std::vector<pll_utree_t*> travbuffer(nums.nodes);
+  std::vector<pll_unode_t*> travbuffer(nums.nodes);
   std::vector<double> branch_lengths(nums.branches);
   std::vector<unsigned int> matrix_indices(nums.branches);
   std::vector<pll_operation_t> operations(nums.nodes);
 
-  traverse_update_partials(tree, partition, &travbuffer[0], &branch_lengths[0],
-    &matrix_indices[0], &operations[0]);
+  traverse_update_partials( root, 
+                            partition, 
+                            &travbuffer[0], 
+                            &branch_lengths[0],
+                            &matrix_indices[0], 
+                            &operations[0]);
 
   // compute logl once to give us a logl starting point
-  auto cur_logl = pll_compute_edge_loglikelihood (partition, tree->clv_index,
-                                                tree->scaler_index,
-                                                tree->back->clv_index,
-                                                tree->back->scaler_index,
-                                                tree->pmatrix_index, &param_indices[0], nullptr);
+  auto cur_logl = pll_compute_edge_loglikelihood( partition, 
+                                                  root->clv_index,
+                                                  root->scaler_index,
+                                                  root->back->clv_index,
+                                                  root->back->scaler_index,
+                                                  root->pmatrix_index, 
+                                                  &param_indices[0], 
+                                                  nullptr);
 
   // double cur_logl = -numeric_limits<double>::infinity();
   int smoothings;
@@ -439,12 +455,12 @@ void optimize(Model& model,
   params.lk_params.params_indices = &param_indices[0];
   params.lk_params.alpha_value = model.alpha();
   params.lk_params.rooted = 0;
-  params.lk_params.where.unrooted_t.parent_clv_index = tree->clv_index;
-  params.lk_params.where.unrooted_t.parent_scaler_index = tree->scaler_index;
-  params.lk_params.where.unrooted_t.child_clv_index = tree->back->clv_index;
+  params.lk_params.where.unrooted_t.parent_clv_index = root->clv_index;
+  params.lk_params.where.unrooted_t.parent_scaler_index = root->scaler_index;
+  params.lk_params.where.unrooted_t.child_clv_index = root->back->clv_index;
   params.lk_params.where.unrooted_t.child_scaler_index =
-    tree->back->scaler_index;
-  params.lk_params.where.unrooted_t.edge_pmatrix_index = tree->pmatrix_index;
+    root->back->scaler_index;
+  params.lk_params.where.unrooted_t.edge_pmatrix_index = root->pmatrix_index;
 
   /* optimization parameters */
   params.params_index = 0;
@@ -452,7 +468,7 @@ void optimize(Model& model,
   params.factr = OPT_FACTR;
   params.pgtol = OPT_PARAM_EPSILON;
 
-  std::vector<pll_utree_t*> branches(nums.branches);
+  std::vector<pll_unode_t*> branches(nums.branches);
   auto num_traversed = utree_query_branches(tree, &branches[0]);
   assert (num_traversed == nums.branches);
   unsigned int branch_index = 0;

@@ -63,31 +63,29 @@ MSA build_MSA_from_file(const std::string& msa_file)
   return msa;
 }
 
-pll_utree_t * build_tree_from_file(const std::string& tree_file, Tree_Numbers& nums)
+pll_utree_s * build_tree_from_file(const std::string& tree_file, Tree_Numbers& nums)
 {
-  unsigned int num_tip_nodes;
-
   pll_utree_t * tree;
   pll_rtree_t * rtree;
 
   // load the tree unrooted
-  if (!(rtree = pll_rtree_parse_newick(tree_file.c_str(), &num_tip_nodes))) {
-   if (!(tree = pll_utree_parse_newick(tree_file.c_str(), &num_tip_nodes))) {
-     throw std::runtime_error{"Treeparsing failed!"};
-   }
+  if (!(rtree = pll_rtree_parse_newick(tree_file.c_str()))) {
+    if (!(tree = pll_utree_parse_newick(tree_file.c_str()))) {
+      throw std::runtime_error{"Treeparsing failed!"};
+    }
   } else {
-   tree = pll_rtree_unroot(rtree);
-   pll_rtree_destroy(rtree, nullptr);
+    tree = pll_rtree_unroot(rtree);
+    pll_rtree_destroy(rtree, nullptr);
 
-   /* optional step if using default PLL clv/pmatrix index assignments */
-   pll_utree_reset_template_indices(tree, num_tip_nodes);
+    /* optional step if using default PLL clv/pmatrix index assignments */
+    pll_utree_reset_template_indices(get_root(tree), tree->tip_count);
   }
 
-  if (num_tip_nodes < 3) {
+  if (tree->tip_count < 3) {
     throw std::runtime_error{"Number of tip nodes too small"};
   }
 
-  nums = Tree_Numbers(num_tip_nodes);
+  nums = Tree_Numbers(tree->tip_count);
 
   set_missing_branch_lengths(tree, DEFAULT_BRANCH_LENGTH);
 
@@ -132,10 +130,18 @@ pll_partition_t *  build_partition_from_file( const Model& model,
 
   /* compute the discretized category rates from a gamma distribution
      with alpha shape */
-  pll_compute_gamma_cats(model.alpha(), model.rate_cats(), &rate_cats[0]);
-  pll_set_frequencies(partition, 0, &(model.base_frequencies()[0]));
-  pll_set_subst_params(partition, 0, &(model.substitution_rates()[0]));
-  pll_set_category_rates(partition, &rate_cats[0]);
+  pll_compute_gamma_cats( model.alpha(), 
+                          model.rate_cats(), 
+                          &rate_cats[0],
+                          PLL_GAMMA_RATES_MEAN);
+  pll_set_frequencies(partition, 
+                      0, 
+                      &(model.base_frequencies()[0]));
+  pll_set_subst_params( partition, 
+                        0, 
+                        &(model.substitution_rates()[0]));
+  pll_set_category_rates( partition, 
+                          &rate_cats[0]);
 
   return partition;
 

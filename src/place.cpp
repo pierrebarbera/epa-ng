@@ -61,7 +61,7 @@ static std::string trim(const std::string &s, const char l, const char r)
 static void place(const Work& to_place, 
                   MSA& msa, 
                   Tree& reference_tree, 
-                  const std::vector<pll_utree_t *>& branches, 
+                  const std::vector<pll_unode_t *>& branches, 
                   Sample& sample, 
                   bool do_blo, 
                   const Options& options, 
@@ -195,7 +195,7 @@ void process( Tree& reference_tree,
   const auto num_branches = reference_tree.nums().branches;
 
   // get all edges
-  std::vector<pll_utree_t *> branches(num_branches);
+  std::vector<pll_unode_t *> branches(num_branches);
   auto num_traversed_branches = utree_query_branches(reference_tree.tree(), &branches[0]);
   if (num_traversed_branches != num_branches) {
     throw std::runtime_error{"Traversing the utree went wrong during pipeline startup!"};
@@ -569,7 +569,7 @@ void tmp_pipeline_test( Tree& reference_tree,
   const auto num_branches = reference_tree.nums().branches;
 
   // get all edges
-  std::vector<pll_utree_t *> branches(num_branches);
+  std::vector<pll_unode_t *> branches(num_branches);
   auto num_traversed_branches = utree_query_branches(reference_tree.tree(), &branches[0]);
   if (num_traversed_branches != num_branches) {
     throw std::runtime_error{"Traversing the utree went wrong during pipeline startup!"};

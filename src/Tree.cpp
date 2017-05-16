@@ -15,7 +15,7 @@
 Tree::Tree( const std::string &tree_file, 
             const MSA &msa,
             Model &model, 
-            Options& options)
+            const Options& options)
   : ref_msa_(msa)
   , model_(model)
   , options_(options)
@@ -40,7 +40,12 @@ Tree::Tree( const std::string &tree_file,
   // find_collapse_equal_sequences(query_msa_);
 
   // perform branch length and model optimization on the reference tree
-  optimize(model_, tree_.get(), partition_.get(), nums_, options_.opt_branches, options_.opt_model);
+  optimize( model_, 
+            tree_.get(), 
+            partition_.get(), 
+            nums_, 
+            options_.opt_branches, 
+            options_.opt_model);
 
   LOG_DBG << stringify(model_);
 
@@ -54,17 +59,19 @@ Tree::Tree( const std::string &tree_file,
 /**
   Constructs the structures from binary file.
 */
-Tree::Tree(const std::string& bin_file, Model& model, Options& options)
+Tree::Tree( const std::string& bin_file, 
+            Model& model, 
+            const Options& options)
   : model_(model)
   , options_(options)
   , binary_(bin_file)
 {
-  tree_ = utree_ptr(binary_.load_utree(), utree_destroy);
   partition_ = partition_ptr(binary_.load_partition(), pll_partition_destroy);
+  nums_ = Tree_Numbers(partition_->tips);
+  tree_ = utree_ptr(binary_.load_utree(partition_->tips), utree_destroy);
 
   locks_ = Mutex_List(partition_->tips + partition_->clv_buffers);
 
-  nums_ = Tree_Numbers(partition_->tips);
 }
 
 /**
@@ -72,7 +79,7 @@ Tree::Tree(const std::string& bin_file, Model& model, Options& options)
   If they are not currently in memory, fetches them from file.
   Ensures that associated scalers are allocated and ready on return.
 */
-void * Tree::get_clv(const pll_utree_t* node)
+void * Tree::get_clv(const pll_unode_t* node)
 {
   auto i = node->clv_index;
 
@@ -117,16 +124,17 @@ void * Tree::get_clv(const pll_utree_t* node)
 double Tree::ref_tree_logl()
 {
   std::vector<unsigned int> param_indices(model_.rate_cats(), 0);
+  const auto root = get_root(tree_.get());
   // ensure clvs are there
-  this->get_clv(tree_.get());
-  this->get_clv(tree_.get()->back);
+  this->get_clv(root);
+  this->get_clv(root->back);
 
   return pll_compute_edge_loglikelihood(partition_.get(), 
-                                        tree_->clv_index, 
-                                        tree_->scaler_index, 
-                                        tree_->back->clv_index,
-                                        tree_->back->scaler_index, 
-                                        tree_->pmatrix_index, 
+                                        root->clv_index, 
+                                        root->scaler_index, 
+                                        root->back->clv_index,
+                                        root->back->scaler_index, 
+                                        root->pmatrix_index, 
                                         &param_indices[0], 
                                         nullptr);
 }

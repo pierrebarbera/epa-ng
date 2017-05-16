@@ -26,7 +26,7 @@ TEST(pll_util, utree_query_branches)
   part = build_partition_from_file( env->model, nums, msa.num_sites());
 
   // tests
-  vector<pll_utree_t *> node_list(nums.branches);
+  vector<pll_unode_t *> node_list(nums.branches);
   auto num_traversed = utree_query_branches(tree, &node_list[0]);
 
   EXPECT_EQ(nums.branches, num_traversed);
@@ -60,13 +60,15 @@ TEST(pll_util, set_unique_clv_indices)
 
   tree = build_tree_from_file(env->tree_file, nums);
   part = build_partition_from_file( env->model, nums, msa.num_sites());
-  set_unique_clv_indices(tree, nums.tip_nodes);
+
+  set_unique_clv_indices(get_root(tree), nums.tip_nodes);
 
   // tests
-  vector<pll_utree_t *> inner_nodes(nums.inner_nodes);
-  pll_utree_query_innernodes(tree, &inner_nodes[0]);
-  vector<pll_utree_t *> tip_nodes(nums.tip_nodes);
-  pll_utree_query_tipnodes(tree, &tip_nodes[0]);
+  vector<pll_unode_t *> tip_nodes(nums.tip_nodes);
+  tip_nodes.assign(tree->nodes, tree->nodes + nums.tip_nodes);
+
+  vector<pll_unode_t *> inner_nodes(nums.inner_nodes);
+  inner_nodes.assign(tree->nodes + nums.tip_nodes, tree->nodes + nums.nodes);
 
   // check for duplicate clv indices
   vector<unsigned int> index_list;
@@ -93,7 +95,7 @@ TEST(pll_util, set_unique_clv_indices)
   pll_utree_destroy(tree, nullptr);
 }
 
-static int cb_set_branchlengths_one(pll_utree_t * node)
+static int cb_set_branchlengths_one(pll_unode_t * node)
 {
   node->length = 1;
   if(node->next)
@@ -123,9 +125,13 @@ TEST(pll_util, get_numbered_newick_string)
   string valid(
   "(Seal:1{0},(Whale:1{1},(Mouse:1{2},(Human:1{3},(Chicken:1{4},(Frog:1{5},Loach:1{6}):1{7}):1{8}):1{9}):1{10}):1{11},Cow:1{12});");
 
-  vector<pll_utree_t*> travbuffer(nums.nodes);
+  vector<pll_unode_t*> travbuffer(nums.nodes);
   unsigned int traversal_size;
-  pll_utree_traverse(tree, cb_set_branchlengths_one, &travbuffer[0], &traversal_size);
+  pll_utree_traverse( get_root(tree), 
+                      PLL_TREE_TRAVERSE_POSTORDER,
+                      cb_set_branchlengths_one, 
+                      &travbuffer[0], 
+                      &traversal_size);
 
   auto ret_string =  get_numbered_newick_string(tree);
 
@@ -249,7 +255,7 @@ TEST(pll_util, shift_partition_focus_logtest)
 
   /* discretized category rates from a gamma distribution with alpha shape 1 */
   double rate_cats[4];
-  pll_compute_gamma_cats(1.0, 4, rate_cats);
+  pll_compute_gamma_cats(1.0, 4, rate_cats, PLL_GAMMA_RATES_MEAN);
 
   /* set frequencies */
   pll_set_frequencies(part, 0, frequencies);

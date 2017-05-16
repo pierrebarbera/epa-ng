@@ -30,10 +30,8 @@ TEST(epa_pll_util, link_tree_msa)
   link_tree_msa(tree, part, model, msa, nums.tip_nodes, valid_map);
 
   // tests
-  vector<pll_utree_t *> tip_nodes(nums.tip_nodes);
-  auto size = pll_utree_query_tipnodes(tree, &tip_nodes[0]);
-
-  EXPECT_EQ(size, 8);
+  vector<pll_unode_t *> tip_nodes(nums.tip_nodes);
+  tip_nodes.assign(tree->nodes, tree->nodes + nums.tip_nodes);
 
   for (auto n : tip_nodes) {
     ASSERT_NE(n, nullptr);
@@ -67,7 +65,7 @@ TEST(epa_pll_util, precompute_clvs)
   precompute_clvs(tree, part, nums);
 
   // tests
-  vector<pll_utree_t *> node_list(nums.branches);
+  vector<pll_unode_t *> node_list(nums.branches);
   utree_query_branches(tree, &node_list[0]);
 
   // all edge logl should be the same
@@ -96,7 +94,7 @@ TEST(epa_pll_util, precompute_clvs)
   EXPECT_NE(log_new, 0.0);
 
   // teardown
-  utree_free_node_data(tree);
+  utree_free_node_data(get_root(tree));
   pll_partition_destroy(part);
   pll_utree_destroy(tree, nullptr);
 }
@@ -105,7 +103,6 @@ TEST(epa_pll_util, split_combined_msa)
 {
   // buildup
   auto combined_msa = build_MSA_from_file(env->combined_file);
-  Tree_Numbers nums = Tree_Numbers();
   Model model;
   Options options;
 
@@ -119,9 +116,11 @@ TEST(epa_pll_util, split_combined_msa)
   EXPECT_EQ(combined_msa.size(), 8);
   EXPECT_EQ(query_msa.size(), 2);
 
-  for (auto x : combined_msa)
-    for (auto y : query_msa)
+  for (auto x : combined_msa) {
+    for (auto y : query_msa) {
       EXPECT_STRNE(x.header().c_str(), y.header().c_str());
+    }
+  }
 
   // teardown
 }

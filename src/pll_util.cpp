@@ -11,7 +11,7 @@ void fasta_close(pll_fasta_t* fptr)
   if(fptr) pll_fasta_close(fptr); 
 }
 
-static void set_missing_branch_lengths_recursive(pll_utree_t * tree, double length)
+static void set_missing_branch_lengths_recursive(pll_unode_t * tree, const double length)
 {
   if (tree) {
     /* set branch length to length if not set */
@@ -34,13 +34,14 @@ static void set_missing_branch_lengths_recursive(pll_utree_t * tree, double leng
   }
 }
 
-void set_missing_branch_lengths(pll_utree_t * tree, double length)
+void set_missing_branch_lengths(pll_utree_t * tree, const double length)
 {
-  set_missing_branch_lengths_recursive(tree, length);
-  set_missing_branch_lengths_recursive(tree->back, length);
+  const auto root = get_root(tree);
+  set_missing_branch_lengths_recursive(root, length);
+  set_missing_branch_lengths_recursive(root->back, length);
 }
 
-static double sum_branch_lengths_recursive(const pll_utree_t * const tree)
+static double sum_branch_lengths_recursive(pll_unode_t const  * const tree)
 {
   double length = 0.0;
   if (tree) {
@@ -53,14 +54,15 @@ static double sum_branch_lengths_recursive(const pll_utree_t * const tree)
   return length;
 }
 
-double sum_branch_lengths(const pll_utree_t * const tree)
+double sum_branch_lengths(pll_utree_t const * const tree)
 {
-  double length = sum_branch_lengths_recursive(tree);
-  length += sum_branch_lengths_recursive(tree->back);
-  return length - tree->length;
+  const auto root = get_root(tree);
+  double length = sum_branch_lengths_recursive(root);
+  length += sum_branch_lengths_recursive(root->back);
+  return length - root->length;
 }
 
-static void set_branch_lengths_recursive(pll_utree_t * tree, double length)
+static void set_branch_lengths_recursive(pll_unode_t * tree, const double length)
 {
   if (tree) {
     tree->length = length;
@@ -75,13 +77,14 @@ static void set_branch_lengths_recursive(pll_utree_t * tree, double length)
   }
 }
 
-void set_branch_lengths(pll_utree_t * tree, double length)
+void set_branch_lengths(pll_utree_t * tree, const double length)
 {
-  set_branch_lengths_recursive(tree, length);
-  set_branch_lengths_recursive(tree->back, length);
+  const auto root = get_root(tree);
+  set_branch_lengths_recursive(root, length);
+  set_branch_lengths_recursive(root->back, length);
 }
 
-static void set_unique_clv_indices_recursive(pll_utree_t * tree, const int num_tip_nodes)
+static void set_unique_clv_indices_recursive(pll_unode_t * tree, const int num_tip_nodes)
 {
   if (tree and tree->next) {
     unsigned int idx = tree->clv_index;
@@ -102,14 +105,14 @@ static void set_unique_clv_indices_recursive(pll_utree_t * tree, const int num_t
   }
 }
 
-void set_unique_clv_indices(pll_utree_t * tree, const int num_tip_nodes)
+void set_unique_clv_indices(pll_unode_t * const tree, const int num_tip_nodes)
 {
   set_unique_clv_indices_recursive(tree, num_tip_nodes);
   set_unique_clv_indices_recursive(tree->back, num_tip_nodes);
 }
 
 /* a callback function for performing a partial traversal */
-int cb_partial_traversal(pll_utree_t * node)
+int cb_partial_traversal(pll_unode_t * node)
 {
   node_info_t * node_info;
 
@@ -146,13 +149,13 @@ int cb_partial_traversal(pll_utree_t * node)
   return 1;
 }
 
-int cb_full_traversal(pll_utree_t * node)
+int cb_full_traversal(pll_unode_t * node)
 {
   static_cast<void>(node);
   return 1;
 }
 
-static void free_node_data(pll_utree_t * node)
+static void free_node_data(pll_unode_t * node)
 {
 
   // currently we don't allocate a data struct at the tips
@@ -173,7 +176,7 @@ static void free_node_data(pll_utree_t * node)
   }
 }
 
-int utree_free_node_data(pll_utree_t * node)
+int utree_free_node_data(pll_unode_t * node)
 {
   if (!node->next) return 0; // not a inner node!
 
@@ -191,8 +194,8 @@ void utree_destroy(pll_utree_t * tree)
   }
 }
 
-static void utree_query_branches_recursive( pll_utree_t * node, 
-                                            pll_utree_t ** node_list, 
+static void utree_query_branches_recursive( pll_unode_t * const node, 
+                                            pll_unode_t ** node_list, 
                                             unsigned int * index)
 {
   // Postorder traversal
@@ -205,24 +208,23 @@ static void utree_query_branches_recursive( pll_utree_t * node,
   *index = *index + 1;
 }
 
-unsigned int utree_query_branches(pll_utree_t * node, pll_utree_t ** node_list)
+unsigned int utree_query_branches(pll_utree_t const * const tree, pll_unode_t ** node_list)
 {
   unsigned int index = 0;
 
-  // assure that we start at inner node
-  if (!node->next) node = node->back;
+  const auto root = get_root(tree);
 
   // utree-function: we start at a trifucation
-  utree_query_branches_recursive(node->back, node_list, &index);
-  utree_query_branches_recursive(node->next->back, node_list, &index);
-  utree_query_branches_recursive(node->next->next->back, node_list, &index);
+  utree_query_branches_recursive(root->back, node_list, &index);
+  utree_query_branches_recursive(root->next->back, node_list, &index);
+  utree_query_branches_recursive(root->next->next->back, node_list, &index);
 
   return index;
 }
 
-static void get_numbered_newick_string_recursive( pll_utree_t * node, 
+static void get_numbered_newick_string_recursive( pll_unode_t const * const node, 
                                                   std::ostringstream &ss, 
-                                                  unsigned int * index)
+                                                  unsigned int * const index)
 {
 
   if (node->next) { //inner node
@@ -238,13 +240,12 @@ static void get_numbered_newick_string_recursive( pll_utree_t * node,
 
 }
 
-std::string get_numbered_newick_string(pll_utree_t * root)
+std::string get_numbered_newick_string(pll_utree_t const * const tree)
 {
+  const auto root = get_root(tree);
+
   std::ostringstream ss;
   unsigned int index = 0;
-  //ss.precision(20);
-
-  if (!root->next) root = root->back; // ensure that we start at inner node
 
   ss << "(";
 
@@ -260,7 +261,7 @@ std::string get_numbered_newick_string(pll_utree_t * root)
   return ss.str();
 }
 
-void reset_triplet_lengths( pll_utree_t * toward_pendant, 
+void reset_triplet_lengths( pll_unode_t * toward_pendant, 
                             pll_partition_t * partition, 
                             const double old_length)
 {
@@ -288,7 +289,11 @@ void reset_triplet_lengths( pll_utree_t * toward_pendant,
     double branch_lengths[3] = {half_original, half_original, DEFAULT_BRANCH_LENGTH};
     unsigned int matrix_indices[3] = {0, 1, 2};
     std::vector<unsigned int> param_indices(partition->rate_cats, 0);
-    pll_update_prob_matrices(partition, &param_indices[0], matrix_indices, branch_lengths, 3);
+    pll_update_prob_matrices( partition, 
+                              &param_indices[0], 
+                              matrix_indices, 
+                              branch_lengths, 
+                              3);
   }
 }
 
@@ -326,11 +331,11 @@ void shift_partition_focus( pll_partition_t * partition,
 
 }
 
-/* Function to return the tip node if either <node> or <node->back> is one. Otherweise
+/* Function to return the tip node if either <node> or <node->back> is one. Otherwise
   returns null. */
-pll_utree_t * get_tip_node(pll_utree_t * node)
+pll_unode_t * get_tip_node(pll_unode_t * node)
 {
-  pll_utree_t * tip_node = nullptr;
+  pll_unode_t * tip_node = nullptr;
   // node is the tip
   if (!node->next) {
     tip_node = node;
@@ -339,4 +344,72 @@ pll_utree_t * get_tip_node(pll_utree_t * node)
   }
 
   return tip_node;
+}
+
+static void utree_query_tipnodes_recursive(pll_unode_t * node,
+                                           pll_unode_t ** node_list,
+                                           unsigned int * index)
+{
+  if (!node->next)
+  {
+    node_list[*index] = node;
+    *index = *index + 1;
+    return;
+  }
+
+  utree_query_tipnodes_recursive(node->next->back, node_list, index);
+  utree_query_tipnodes_recursive(node->next->next->back, node_list, index);
+}
+
+static unsigned int utree_query_tipnodes(pll_unode_t const * root,
+                                  pll_unode_t ** node_list)
+{
+  unsigned int index = 0;
+
+  if (!root) return 0;
+
+  if (!root->next) root = root->back;
+
+  utree_query_tipnodes_recursive(root->back, node_list, &index);
+
+  utree_query_tipnodes_recursive(root->next->back, node_list, &index);
+  utree_query_tipnodes_recursive(root->next->next->back, node_list, &index);
+
+  return index;
+}
+
+static int cb_trav_no_tips(pll_unode_t* n)
+{
+  return (n->next != nullptr);
+}
+
+pll_utree_t* make_utree_struct(pll_unode_t * root, const unsigned int num_nodes)
+{
+  auto tree = static_cast<pll_utree_t*>(calloc(1, sizeof(pll_utree_t))); 
+  auto nodes = static_cast<pll_unode_t**>(calloc(num_nodes, sizeof(pll_unode_t*)));
+
+  // get tips
+  auto tip_count = utree_query_tipnodes(root, nodes);
+
+
+  unsigned int inner_count = 0;
+  pll_utree_traverse( root, 
+                      PLL_TREE_TRAVERSE_POSTORDER, 
+                      cb_trav_no_tips, 
+                      nodes + tip_count, 
+                      &inner_count);
+
+  assert(num_nodes == tip_count + inner_count);
+
+  tree->tip_count   = tip_count;
+  tree->inner_count = inner_count;
+  tree->edge_count  = num_nodes - 1;
+  tree->nodes       = nodes;
+
+  return tree;
+} 
+
+pll_unode_t* get_root(pll_utree_t const * const tree)
+{
+  return tree->nodes[tree->tip_count+tree->inner_count-1];
 }
