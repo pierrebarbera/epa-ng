@@ -52,18 +52,25 @@ REF=$(TEST)/1k_reference.fasta
 QRY=$(TEST)/1k_query.fasta
 OUTDIR=/tmp/epa
 
-BINARY_WRITE= -t $(TREE) -s $(REF) -B -w $(OUTDIR) $(F)
-BINARY_READ=-b $(OUTDIR)/epa_binary_file -q $(QRY) -w $(OUTDIR) -g 0.99 --filter-min-lwr 0.0 $(F)
-NORM_TEST=-t $(TREE) -s $(REF) -q $(QRY) -w $(OUTDIR) -g 0.99 --chunk-size=100 $(F)
+BINARY_WRITE= -t $(TREE) -s $(REF) -B -O -w $(OUTDIR) --repeats $(F)
+BINARY_READ=-b $(OUTDIR)/epa_binary_file -q $(QRY) -w $(OUTDIR) -g 0.99 --filter-min-lwr 0.0 --repeats $(F)
+NORM_TEST=-t $(TREE) -s $(REF) -q $(QRY) -w $(OUTDIR) -g 0.99 --chunk-size=100 --repeats $(F)
 
 test: update
 	mkdir -p $(OUTDIR)
-	-rm -f $(OUTDIR)/*
-	$(EPABIN) $(NORM_TEST)
+	rm -f $(OUTDIR)/*
+	$(EPABIN) $(NORM_TEST) #--threads 4
 .PHONY: test
+
+bintest: update
+	mkdir -p $(OUTDIR)
+	rm -f $(OUTDIR)/*
+	$(EPABIN) $(BINARY_WRITE)
+	$(EPABIN) $(BINARY_READ)
+.PHONY: bintest
 
 mpi_test: update
 	mkdir -p $(OUTDIR)
-	-rm -f $(OUTDIR)/*
-	mpirun -n 5 $(EPABIN) $(NORM_TEST)
+	rm -f $(OUTDIR)/*
+	mpirun -n 32 $(EPABIN) $(NORM_TEST)
 .PHONY: mpi_test

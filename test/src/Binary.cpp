@@ -46,6 +46,8 @@ TEST(Binary, write)
   auto msa = build_MSA_from_file(env->reference_file);
   Model model;
   Options options;
+  options.opt_branches = options.opt_model = true;
+
   Tree tree(env->tree_file, msa, model, options);
 
   // test

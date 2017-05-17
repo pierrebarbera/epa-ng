@@ -62,14 +62,17 @@ static void deep_copy_repeats(pll_partition_t* dest_part,
   dest_part->repeats->pernode_allocated_clvs[dest_node->clv_index]
     = src_part->repeats->pernode_allocated_clvs[src_node->clv_index];
 
-  const auto size = pll_get_sites_number(src_part, src_node->clv_index);
 
-  alloc_and_copy( dest_part->repeats->pernode_site_id[dest_node->clv_index], 
-                  src_part->repeats->pernode_site_id[src_node->clv_index], 
-                  src_part->sites);
-  alloc_and_copy( dest_part->repeats->pernode_id_site[dest_node->clv_index], 
-                  src_part->repeats->pernode_id_site[src_node->clv_index], 
-                  size);
+  if (src_part->repeats->pernode_max_id[src_node->clv_index]) {
+    const auto size = pll_get_sites_number(src_part, src_node->clv_index);
+    
+    alloc_and_copy( dest_part->repeats->pernode_site_id[dest_node->clv_index], 
+                    src_part->repeats->pernode_site_id[src_node->clv_index], 
+                    src_part->sites);
+    alloc_and_copy( dest_part->repeats->pernode_id_site[dest_node->clv_index], 
+                    src_part->repeats->pernode_id_site[src_node->clv_index], 
+                    size);
+  }
 
 }
 
