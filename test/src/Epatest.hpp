@@ -45,3 +45,41 @@ public:
 };
 
 extern Epatest* env;
+
+#include <cmath>
+
+#define COMPL_REPEATS       (1 << 0)
+#define COMPL_OPTIMIZE      (1 << 1)
+#define COMPL_SLIDING_BLO   (1 << 2)
+#define COMPL_PRESCORING    (1 << 3)
+
+static Options get_options_config(const unsigned int d)
+{
+  Options o;
+  if (d & COMPL_REPEATS) {
+    o.repeats = not o.repeats;
+  }
+  if (d & COMPL_OPTIMIZE) {
+    o.opt_branches = not o.opt_branches;
+    o.opt_model = not o.opt_model;
+  }
+  if (d & COMPL_SLIDING_BLO) {
+    o.sliding_blo = not o.sliding_blo;
+  }
+  if (d & COMPL_PRESCORING) {
+    o.prescoring = not o.prescoring;
+  }
+  return o;
+}
+
+template <class Func>
+void all_combinations(Func f, bool verbose=false)
+{
+  for (size_t i = 0; i < pow(2, 4); ++i) {
+    auto o = get_options_config(i);
+    if (verbose) {
+      printf("%lu\n", i);
+    }
+    f(o);
+  }
+}
