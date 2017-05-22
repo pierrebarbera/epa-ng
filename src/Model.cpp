@@ -40,6 +40,22 @@ static const std::unordered_map<std::string, std::pair<const double*, const doub
   }
 );
 
+unsigned int const * get_char_map(pll_partition_t const * const partition)
+{
+  auto states = partition->states;
+  auto map = pll_map_nt;
+
+  if (states == 4) {
+    map = pll_map_nt;
+  } else if (states == 20) {
+    map = pll_map_aa;
+  } else {
+    throw std::runtime_error{"Weird number of states detected."};
+  }
+
+  return map;
+}
+
 Model::Model(std::string sequence_type, std::string model_id, std::string sub_matrix)
   : alpha_(1.0), base_frequencies_({0.25,0.25,0.25,0.25}),
     substitution_rates_({0.5,0.5,0.5,0.5,0.5,1.0})
@@ -130,4 +146,11 @@ void Model::symmetries(int* source, unsigned int length)
   for (size_t i = 0; i < length; ++i) {
     subs_symmetries_[i] = source[i];
   }
+}
+
+void Model::set_from_partition(pll_partition_t const * const)
+{
+  // this->alpha(params.lk_params.alpha_value);
+  // this->substitution_rates(partition->subst_params[0], partition->r);
+  // this->base_frequencies(partition->frequencies[params.params_index], partition->states);
 }

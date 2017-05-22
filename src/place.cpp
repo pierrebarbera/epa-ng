@@ -93,7 +93,12 @@ static void place(const Work& to_place,
       auto seq_id = it.sequence_id;
 
       if ((branch_id != prev_branch_id) or not branch) {
-        branch = std::make_shared<Tiny_Tree>(branches[branch_id], branch_id, reference_tree, do_blo, options, lookup_store);
+        branch = std::make_shared<Tiny_Tree>(branches[branch_id],
+                                             branch_id,
+                                             reference_tree,
+                                             do_blo,
+                                             options,
+                                             lookup_store);
       }
 
       sample_parts[i].add_placement(seq_id, branch->place(msa[seq_id]));

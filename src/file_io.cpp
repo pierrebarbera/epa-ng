@@ -143,6 +143,10 @@ pll_partition_t *  build_partition_from_file( const Model& model,
   pll_set_category_rates( partition, 
                           &rate_cats[0]);
 
+  // if (repeats) {
+  //   pll_resize_repeats_lookup(partition, ( REPEATS_LOOKUP_SIZE ) * 10);
+  // }
+
   return partition;
 
 }

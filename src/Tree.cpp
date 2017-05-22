@@ -53,7 +53,8 @@ Tree::Tree( const std::string &tree_file,
 
   precompute_clvs(tree_.get(), partition_.get(), nums_);
 
-  LOG_DBG << "Post-optimization reference tree log-likelihood: " << std::to_string(this->ref_tree_logl());
+  LOG_DBG << "Post-optimization reference tree log-likelihood: "
+          << std::to_string(this->ref_tree_logl());
 }
 
 /**
@@ -72,6 +73,11 @@ Tree::Tree( const std::string& bin_file,
 
   locks_ = Mutex_List(partition_->tips + partition_->clv_buffers);
 
+  // model_.set_from_partition(partition_.get());
+
+  // LOG_DBG << stringify(model_);
+
+  // LOG_DBG << "Tree length: " << sum_branch_lengths(tree_.get());
 }
 
 /**
@@ -79,7 +85,7 @@ Tree::Tree( const std::string& bin_file,
   If they are not currently in memory, fetches them from file.
   Ensures that associated scalers are allocated and ready on return.
 */
-void * Tree::get_clv(const pll_unode_t* node)
+void* Tree::get_clv(const pll_unode_t* node)
 {
   auto i = node->clv_index;
 
@@ -89,7 +95,7 @@ void * Tree::get_clv(const pll_unode_t* node)
   auto scaler = node->scaler_index;
   bool use_tipchars = partition_->attributes & PLL_ATTRIB_PATTERN_TIP;
 
-  if(i >= partition_->tips + partition_->clv_buffers) {
+  if (i >= partition_->tips + partition_->clv_buffers) {
     throw std::runtime_error{"Node index out of bounds"};
   }
 
@@ -97,14 +103,14 @@ void * Tree::get_clv(const pll_unode_t* node)
   if (use_tipchars and i < partition_->tips) {
     clv_ptr = partition_->tipchars[i];
     // dynamically load from disk if not in memory
-    if(!clv_ptr) {
+    if (!clv_ptr) {
       binary_.load_tipchars(partition_.get(), i);
       clv_ptr = partition_->tipchars[i];
     }
   } else {
     clv_ptr = partition_->clv[i];
     // dynamically load from disk if not in memory
-    if(!clv_ptr) {
+    if (!clv_ptr) {
       binary_.load_clv(partition_.get(), i);
       clv_ptr = partition_->clv[i];
     }
@@ -112,29 +118,29 @@ void * Tree::get_clv(const pll_unode_t* node)
 
   // dynamically load the scaler if needed
   if (scaler != PLL_SCALE_BUFFER_NONE 
-  and !(partition_->scale_buffer[scaler])) {
+      and !(partition_->scale_buffer[scaler])) {
     binary_.load_scaler(partition_.get(), scaler);
   }
 
   assert(clv_ptr);
-  
+
   return clv_ptr;
 }
 
 double Tree::ref_tree_logl()
 {
-  std::vector<unsigned int> param_indices(model_.rate_cats(), 0);
+  std::vector<unsigned int> param_indices(partition_->rate_cats, 0);
   const auto root = get_root(tree_.get());
   // ensure clvs are there
   this->get_clv(root);
   this->get_clv(root->back);
 
-  return pll_compute_edge_loglikelihood(partition_.get(), 
-                                        root->clv_index, 
-                                        root->scaler_index, 
+  return pll_compute_edge_loglikelihood(partition_.get(),
+                                        root->clv_index,
+                                        root->scaler_index,
                                         root->back->clv_index,
-                                        root->back->scaler_index, 
-                                        root->pmatrix_index, 
-                                        &param_indices[0], 
+                                        root->back->scaler_index,
+                                        root->pmatrix_index,
+                                        &param_indices[0],
                                         nullptr);
 }

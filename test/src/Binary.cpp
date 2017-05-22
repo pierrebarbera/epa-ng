@@ -115,23 +115,6 @@ static void read_(Options options)
   string read_nns(get_numbered_newick_string(read_tree.tree()));
 
   EXPECT_STREQ(original_nns.c_str(), read_nns.c_str());
-
-  auto read_freqs = read_part->frequencies[0];
-  auto freqs = part->frequencies[0];
-  for (size_t i = 0; i < 4; i++) {
-    EXPECT_DOUBLE_EQ(freqs[i], read_freqs[i]);
-  }
-
-  // auto read_alpha = read_tree.model().alpha();
-  // auto alpha = original_tree.model().alpha();
-  // EXPECT_DOUBLE_EQ(alpha, read_alpha);
-
-  auto read_subs = read_part->subst_params[0];
-  auto subs = part->subst_params[0];
-  for(size_t i = 0; i < 6; i++) {
-    EXPECT_DOUBLE_EQ(subs[i], read_subs[i]);
-  }
-
   // compare tree traversals
   ASSERT_EQ(original_tree.nums().nodes, read_tree.nums().nodes);
   vector<pll_unode_t *> original_nodes(original_tree.nums().nodes);
@@ -167,6 +150,32 @@ static void read_(Options options)
   ASSERT_EQ(part->tips, read_part->tips);
   ASSERT_EQ(part->clv_buffers, read_part->clv_buffers);
   ASSERT_EQ(part->attributes, read_part->attributes);
+
+  auto read_freqs = read_part->frequencies[0];
+  auto freqs = part->frequencies[0];
+  for (size_t i = 0; i < 4; i++) {
+    EXPECT_DOUBLE_EQ(freqs[i], read_freqs[i]);
+  }
+
+  auto read_subs = read_part->subst_params[0];
+  auto subs = part->subst_params[0];
+  for(size_t i = 0; i < 6; i++) {
+    EXPECT_DOUBLE_EQ(subs[i], read_subs[i]);
+  }
+
+  auto read_rates = read_part->rates;
+  auto rates = part->rates;
+  for(size_t i = 0; i < part->rate_cats; i++) {
+    EXPECT_DOUBLE_EQ(rates[i], read_rates[i]);
+  }
+
+  auto read_rate_weights = read_part->rate_weights;
+  auto rate_weights = part->rate_weights;
+  for(size_t i = 0; i < part->rate_cats; i++) {
+    EXPECT_DOUBLE_EQ(rate_weights[i], read_rate_weights[i]);
+  }
+
+
 
   // compare tips
   if (read_part->attributes & PLL_ATTRIB_PATTERN_TIP) {

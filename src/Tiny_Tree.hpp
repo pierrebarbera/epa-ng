@@ -6,7 +6,6 @@
 #include "pllhead.hpp"
 #include "Sequence.hpp"
 #include "constants.hpp"
-#include "Model.hpp"
 #include "Options.hpp"
 #include "Placement.hpp"
 #include "Tree.hpp"
@@ -58,7 +57,6 @@ private:
 
   bool opt_branches_;
   double original_branch_length_;
-  Model model_;
   bool tip_tip_case_ = false;
   bool ranged_computation_;
   bool sliding_blo_;

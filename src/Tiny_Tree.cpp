@@ -10,6 +10,7 @@
 #include "tiny_util.hpp"
 #include "pll_util.hpp"
 #include "optimize.hpp"
+#include "Model.hpp"
 #include "Tree_Numbers.hpp"
 #include "Range.hpp"
 #include "set_manipulators.hpp"
@@ -18,8 +19,7 @@
 static void precompute_sites_static(char nt,
                                     std::vector<double>& result,
                                     pll_partition_t * const partition,
-                                    pll_utree_t const * const tree,
-                                    Model& model)
+                                    pll_utree_t const * const tree)
 {
   const size_t sites  = partition->sites;
   const auto inner    = tree->nodes[3];
@@ -28,11 +28,13 @@ static void precompute_sites_static(char nt,
   result.resize(sites);
   std::string seq(sites, nt);
 
-  std::vector<unsigned int> param_indices(model.rate_cats(), 0);
+  std::vector<unsigned int> param_indices(partition->rate_cats, 0);
+
+  auto map = get_char_map(partition);
 
   auto err_check = pll_set_tip_states(partition, 
                                       new_tip->clv_index, 
-                                      model.char_map(),
+                                      map,
                                       seq.c_str());
 
   if (err_check == PLL_FAILURE) {
@@ -62,7 +64,6 @@ Tiny_Tree::Tiny_Tree( pll_unode_t * edge_node,
   : partition_(nullptr, tiny_partition_destroy)
   , tree_(nullptr, utree_destroy)
   , opt_branches_(opt_branches)
-  , model_(reference_tree.model())
   , ranged_computation_(options.ranged)
   , sliding_blo_(options.sliding_blo)
   , branch_id_(branch_id)
@@ -120,8 +121,12 @@ Tiny_Tree::Tiny_Tree( pll_unode_t * edge_node,
   unsigned int matrix_indices[3] = {proximal->pmatrix_index, distal->pmatrix_index, inner->pmatrix_index};
 
   // use branch lengths to compute the probability matrices
-  std::vector<unsigned int> param_indices(model_.rate_cats(), 0);
-  pll_update_prob_matrices(partition_.get(), &param_indices[0], matrix_indices, branch_lengths, 3);
+  std::vector<unsigned int> param_indices(reference_tree.partition()->rate_cats, 0);
+  pll_update_prob_matrices( partition_.get(), 
+                            &param_indices[0], 
+                            matrix_indices, 
+                            branch_lengths, 
+                            3);
 
   // use update_partials to compute the clv pointing toward the new tip
   pll_update_partials(partition_.get(), &op, 1);
@@ -138,8 +143,7 @@ Tiny_Tree::Tiny_Tree( pll_unode_t * edge_node,
         precompute_sites_static(lookup_store->char_map(i),
                                 precomputed_sites[i],
                                 partition_.get(),
-                                tree_.get(),
-                                model_);
+                                tree_.get());
       }
       lookup_store->init_branch(branch_id, precomputed_sites);
     }
@@ -160,7 +164,7 @@ Placement Tiny_Tree::place(const Sequence &s)
   auto distal_length = distal->length;
   auto pendant_length = inner->length;
   double logl = 0.0;
-  std::vector<unsigned int> param_indices(model_.rate_cats(), 0);
+  std::vector<unsigned int> param_indices(partition_->rate_cats, 0);
 
   if (opt_branches_) {
 
@@ -183,7 +187,7 @@ Placement Tiny_Tree::place(const Sequence &s)
     // init the new tip with s.sequence(), branch length
     auto err_check = pll_set_tip_states(partition_.get(), 
                                         new_tip->clv_index, 
-                                        model_.char_map(),
+                                        get_char_map(partition_.get()),
                                         s.sequence().c_str());
 
     if (err_check == PLL_FAILURE) {

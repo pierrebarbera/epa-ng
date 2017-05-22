@@ -3,6 +3,7 @@
 #include <vector>
 #include <unordered_map>
 #include "constants.hpp"
+#include "pll.h"
 
 /* Encapsulates the evolutionary model parameters
   TODO possible basepoint of model class hierarchy */
@@ -22,6 +23,7 @@ public:
   unsigned int const * char_map() const {return char_map_;}
 
   // setters
+  void set_from_partition(pll_partition_t const * const partition);
   void base_frequencies(double* source, unsigned int length);
   void base_frequencies(std::vector<double> freqs);
   void substitution_rates(double* source, unsigned int length);
@@ -43,3 +45,5 @@ private:
     */
   std::vector<int> subs_symmetries_;
 };
+
+unsigned int const * get_char_map(pll_partition_t const * const partition);

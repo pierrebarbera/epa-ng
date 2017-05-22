@@ -31,14 +31,15 @@ static void alloc_and_copy(T& dest, const T src, const size_t size)
 //TODO src_part should be const const
 static void deep_copy_scaler( pll_partition_t* dest_part,
                               pll_unode_t* dest_node,
-                              pll_partition_t* src_part,
+                              pll_partition_t const * const src_part,
                               pll_unode_t const * const src_node)
 {
   if (src_node->scaler_index != PLL_SCALE_BUFFER_NONE
     and src_part->scale_buffer[src_node->scaler_index] != nullptr) {
     
-    const auto scaler_size = pll_get_sites_number(src_part, 
-                                                  src_node->clv_index);
+    const auto scaler_size = 
+    pll_get_sites_number( const_cast<pll_partition_t*>(src_part), 
+                          src_node->clv_index);
 
     alloc_and_copy( dest_part->scale_buffer[dest_node->scaler_index], 
                     src_part->scale_buffer[src_node->scaler_index], 
@@ -48,7 +49,7 @@ static void deep_copy_scaler( pll_partition_t* dest_part,
 
 static void deep_copy_repeats(pll_partition_t* dest_part,
                               pll_unode_t* dest_node,
-                              pll_partition_t* src_part,
+                              pll_partition_t const * const src_part,
                               pll_unode_t const * const src_node)
 {
   // copy size info
@@ -62,9 +63,10 @@ static void deep_copy_repeats(pll_partition_t* dest_part,
   dest_part->repeats->pernode_allocated_clvs[dest_node->clv_index]
     = src_part->repeats->pernode_allocated_clvs[src_node->clv_index];
 
-
   if (src_part->repeats->pernode_max_id[src_node->clv_index]) {
-    const auto size = pll_get_sites_number(src_part, src_node->clv_index);
+    const auto size = 
+    pll_get_sites_number( const_cast<pll_partition_t*>(src_part), 
+                          src_node->clv_index);
     
     alloc_and_copy( dest_part->repeats->pernode_site_id[dest_node->clv_index], 
                     src_part->repeats->pernode_site_id[src_node->clv_index], 
@@ -91,7 +93,7 @@ pll_partition_t * make_tiny_partition(Tree& reference_tree,
     number of tips. This results in a acceptable amount of wasted memory that is never used (num_sites * bytes
     * number of clv-tips)
   */
-  pll_partition_t *old_partition = reference_tree.partition();
+  pll_partition_t const * const old_partition = reference_tree.partition();
   assert(old_partition);
 
   bool use_tipchars = old_partition->attributes & PLL_ATTRIB_PATTERN_TIP;
@@ -172,7 +174,7 @@ pll_partition_t * make_tiny_partition(Tree& reference_tree,
 
   if(tip_tip_case and use_tipchars) {
     std::string sequence(tiny->sites, 'A');
-    if( pll_set_tip_states(tiny, distal->clv_index, reference_tree.model().char_map(), sequence.c_str())
+    if( pll_set_tip_states(tiny, distal->clv_index, get_char_map(old_partition), sequence.c_str())
         == PLL_FAILURE) {
       throw std::runtime_error{"Error setting tip state"};
     }
@@ -207,8 +209,9 @@ pll_partition_t * make_tiny_partition(Tree& reference_tree,
                       distal,
                       old_partition,
                       old_distal);
+    
+    // pll_resize_repeats_lookup(tiny, ( REPEATS_LOOKUP_SIZE ) * 10);
   }
-
 
   return tiny;
 }
