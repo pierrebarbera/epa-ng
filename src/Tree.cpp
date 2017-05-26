@@ -69,6 +69,7 @@ Tree::Tree( const std::string& bin_file,
   , options_(options)
   , binary_(bin_file)
 {
+  options_.load_binary_mode = true;
   partition_ = partition_ptr(binary_.load_partition(), pll_partition_destroy);
   nums_ = Tree_Numbers(partition_->tips);
   tree_ = utree_ptr(binary_.load_utree(partition_->tips), utree_destroy);
@@ -84,13 +85,13 @@ Tree::Tree( const std::string& bin_file,
 */
 void* Tree::get_clv(const pll_unode_t* node)
 {
-  auto i = node->clv_index;
+  const auto i = node->clv_index;
 
   // prevent race condition from concurrent access to this function
   Scoped_Mutex lock_by_clv_id(locks_[i]);
 
-  auto scaler = node->scaler_index;
-  bool use_tipchars = partition_->attributes & PLL_ATTRIB_PATTERN_TIP;
+  const auto scaler = node->scaler_index;
+  const bool use_tipchars = partition_->attributes & PLL_ATTRIB_PATTERN_TIP;
 
   if (i >= partition_->tips + partition_->clv_buffers) {
     throw std::runtime_error{"Node index out of bounds"};
@@ -100,26 +101,27 @@ void* Tree::get_clv(const pll_unode_t* node)
   if (use_tipchars and i < partition_->tips) {
     clv_ptr = partition_->tipchars[i];
     // dynamically load from disk if not in memory
-    if (!clv_ptr) {
+    if (options_.load_binary_mode 
+        and clv_ptr == nullptr) {
       binary_.load_tipchars(partition_.get(), i);
       clv_ptr = partition_->tipchars[i];
     }
   } else {
     clv_ptr = partition_->clv[i];
     // dynamically load from disk if not in memory
-    if (!clv_ptr) {
+    if (options_.load_binary_mode 
+        and clv_ptr == nullptr) {
       binary_.load_clv(partition_.get(), i);
       clv_ptr = partition_->clv[i];
     }
   }
 
   // dynamically load the scaler if needed
-  if (scaler != PLL_SCALE_BUFFER_NONE 
-      and !(partition_->scale_buffer[scaler])) {
+  if (options_.load_binary_mode 
+      and scaler != PLL_SCALE_BUFFER_NONE 
+      and partition_->scale_buffer[scaler] == nullptr) {
     binary_.load_scaler(partition_.get(), scaler);
   }
-
-  assert(clv_ptr);
 
   return clv_ptr;
 }

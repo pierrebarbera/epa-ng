@@ -85,14 +85,18 @@ static void compare_samples(Sample& orig_samp, Sample& read_samp, bool verbose=f
 static void place_from_binary(const Options options)
 {
   // setup
-  auto msa     = build_MSA_from_file(env->reference_file);
+  // auto tree_file = env->data_dir + "lucas/20k.newick";
+  // auto reference_file = env->data_dir + "lucas/1k_reference.fasta";
+  auto tree_file = env->tree_file;
+  auto reference_file = env->reference_file;
+  auto msa     = build_MSA_from_file(reference_file);
   auto queries = build_MSA_from_file(env->query_file);
   // auto msa     = build_MSA_from_file(env->data_dir + "/lucas/1k_reference.fasta");
   // auto queries = build_MSA_from_file(env->data_dir + "/lucas/1k_query_100.fasta");
   
   Model model;
 
-  Tree original_tree(env->tree_file, msa, model, options);
+  Tree original_tree(tree_file, msa, model, options);
   // Tree original_tree(env->data_dir + "/lucas/20k.newick", msa, model, options);
 
   dump_to_binary(original_tree, env->binary_file);

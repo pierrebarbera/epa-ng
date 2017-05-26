@@ -14,8 +14,14 @@ TEST(optimize, repeats)
   Options options;
   Tree_Numbers nums;
   Model model;
-  auto ref_msa = build_MSA_from_file(env->data_dir + "lucas/1k_reference.fasta");
-  auto utree = build_tree_from_file(env->data_dir + "lucas/20k.newick", nums);
+
+  // auto tree_file = env->data_dir + "lucas/20k.newick";
+  // auto reference_file = env->data_dir + "lucas/1k_reference.fasta";
+  auto tree_file = env->tree_file;
+  auto reference_file = env->reference_file;
+
+  auto ref_msa = build_MSA_from_file(reference_file);
+  auto utree = build_tree_from_file(tree_file, nums);
   auto part = build_partition_from_file(model, nums, ref_msa.num_sites(), true);
   link_tree_msa(utree, 
                 part, 

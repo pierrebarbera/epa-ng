@@ -52,8 +52,10 @@ TEST(epa_pll_util, link_tree_msa)
 
 static void precompute_clvs_test(Options o)
 {
-  auto tree_file = env->data_dir + "lucas/20k.newick";
-  auto reference_file = env->data_dir + "lucas/1k_reference.fasta";
+  // auto tree_file = env->data_dir + "lucas/20k.newick";
+  // auto reference_file = env->data_dir + "lucas/1k_reference.fasta";
+  auto tree_file = env->tree_file;
+  auto reference_file = env->reference_file;
   // buildup
   auto msa = build_MSA_from_file(reference_file);
   Tree_Numbers nums;
@@ -130,7 +132,7 @@ static void precompute_clvs_test(Options o)
     id++;
   }
 
-  printf("success vs failue: %lu vs %lu\n", success, failure);
+  // printf("success vs failue: %lu vs %lu\n", success, failure);
 
   EXPECT_NE(log_new, 0.0);
 
