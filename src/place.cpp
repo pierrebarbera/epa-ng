@@ -102,6 +102,7 @@ static void place(const Work& to_place,
       }
 
       sample_parts[i].add_placement(seq_id, branch->place(msa[seq_id]));
+
       prev_branch_id = branch_id;
     }
   }
@@ -622,8 +623,8 @@ void tmp_pipeline_test( Tree& reference_tree,
           result,
           false,
           options,
-          lookups
-    );
+          lookups);
+
     return result;
   };
 
@@ -637,6 +638,7 @@ void tmp_pipeline_test( Tree& reference_tree,
     } else {
       discard_by_accumulated_threshold(sample, options.prescoring_threshold);
     }
+
     return Work(sample);
   };
 

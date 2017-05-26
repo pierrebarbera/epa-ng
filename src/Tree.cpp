@@ -29,13 +29,11 @@ Tree::Tree( const std::string &tree_file,
 
   locks_ = Mutex_List(partition_->tips + partition_->clv_buffers);
 
-  valid_map_ = std::vector<Range>(nums_.tip_nodes);
   link_tree_msa(tree_.get(), 
                 partition_.get(), 
                 model_, 
                 ref_msa_, 
-                nums_.tip_nodes, 
-                valid_map_);
+                nums_.tip_nodes);
 
   // find_collapse_equal_sequences(query_msa_);
 
@@ -58,6 +56,7 @@ Tree::Tree( const std::string &tree_file,
 
   LOG_DBG << "Post-optimization reference tree log-likelihood: "
           << std::to_string(this->ref_tree_logl());
+
 }
 
 /**
@@ -76,11 +75,6 @@ Tree::Tree( const std::string& bin_file,
 
   locks_ = Mutex_List(partition_->tips + partition_->clv_buffers);
 
-  // model_.set_from_partition(partition_.get());
-
-  // LOG_DBG << stringify(model_);
-
-  // LOG_DBG << "Tree length: " << sum_branch_lengths(tree_.get());
 }
 
 /**

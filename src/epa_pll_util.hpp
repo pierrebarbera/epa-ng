@@ -16,8 +16,7 @@ void link_tree_msa( pll_utree_t * tree,
                     pll_partition_t * partition, 
                     Model& model, 
                     const MSA& msa, 
-                    const unsigned int num_tip_nodes, 
-                    std::vector<Range> &valid_map);
+                    const unsigned int num_tip_nodes);
 void precompute_clvs( pll_utree_t const * const tree, 
                       pll_partition_t * partition, 
                       const Tree_Numbers& nums);

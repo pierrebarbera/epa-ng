@@ -22,8 +22,8 @@ static void precompute_sites_static(char nt,
                                     pll_utree_t const * const tree)
 {
   const size_t sites  = partition->sites;
-  const auto inner    = tree->nodes[3];
   const auto new_tip  = tree->nodes[2];
+  const auto inner    = new_tip->back;
   result.clear();
   result.resize(sites);
   std::string seq(sites, nt);

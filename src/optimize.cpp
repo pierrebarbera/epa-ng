@@ -12,7 +12,7 @@
 #include "constants.hpp"
 #include "logging.hpp"
 
-static void traverse_update_partials( pll_unode_t * tree, 
+static void traverse_update_partials( pll_unode_t * root, 
                                       pll_partition_t * partition, 
                                       pll_unode_t ** travbuffer, 
                                       double * branch_lengths, 
@@ -22,11 +22,11 @@ static void traverse_update_partials( pll_unode_t * tree,
   unsigned int num_matrices, num_ops;
   std::vector<unsigned int> param_indices(partition->rate_cats, 0);
   /* perform a full traversal*/
-  assert(tree->next != nullptr);
+  assert(root->next != nullptr);
   unsigned int traversal_size;
   // TODO this only needs to be done once, outside of this func. pass traversal size also
   // however this is practically nonexistent impact compared to clv comp
-  pll_utree_traverse( tree, 
+  pll_utree_traverse( root, 
                       PLL_TREE_TRAVERSE_POSTORDER,
                       cb_full_traversal, 
                       travbuffer, 
@@ -60,14 +60,15 @@ static void utree_derivative_func ( void * parameters,
                                     double *df, 
                                     double *ddf)
 {
-  pll_newton_tree_params_t * params = (pll_newton_tree_params_t *) parameters;
-  pll_compute_likelihood_derivatives (
-      params->partition,
-      params->tree->scaler_index,
-      params->tree->back->scaler_index,
-      proposal,
-      params->params_indices,
-      params->sumtable, df, ddf);
+  auto params = static_cast<pll_newton_tree_params_t*>(parameters);
+  pll_compute_likelihood_derivatives (params->partition,
+                                      params->tree->scaler_index,
+                                      params->tree->back->scaler_index,
+                                      proposal,
+                                      params->params_indices,
+                                      params->sumtable, 
+                                      df, 
+                                      ddf);
 }
 
 /**
@@ -92,27 +93,27 @@ static double opt_branch_lengths_pplacer( pll_partition_t * partition,
          xres;    /* optimal found branch length */
   std::vector<unsigned int> param_indices(partition->rate_cats, 0);
 
-  const auto score_node = inner;
-  const auto blo_node = inner->next->back;
+  const auto score_node   = inner;
+  const auto blo_node     = inner->next->back;
   const auto blo_antinode = inner->next->next->back;
 
   pll_operation_t toward_score;
-  toward_score.parent_clv_index = score_node->clv_index;
+  toward_score.parent_clv_index    = score_node->clv_index;
   toward_score.parent_scaler_index = score_node->scaler_index;
-  toward_score.child1_clv_index = blo_node->clv_index;
+  toward_score.child1_clv_index    = blo_node->clv_index;
   toward_score.child1_scaler_index = blo_node->scaler_index;
   toward_score.child1_matrix_index = blo_node->pmatrix_index;
-  toward_score.child2_clv_index = blo_antinode->clv_index;
+  toward_score.child2_clv_index    = blo_antinode->clv_index;
   toward_score.child2_scaler_index = blo_antinode->scaler_index;
   toward_score.child2_matrix_index = blo_antinode->pmatrix_index;
 
   pll_operation_t toward_blo_node;
-  toward_blo_node.parent_clv_index = blo_node->back->clv_index;
+  toward_blo_node.parent_clv_index    = blo_node->back->clv_index;
   toward_blo_node.parent_scaler_index = blo_node->back->scaler_index;
-  toward_blo_node.child1_clv_index = score_node->back->clv_index;
+  toward_blo_node.child1_clv_index    = score_node->back->clv_index;
   toward_blo_node.child1_scaler_index = score_node->back->scaler_index;
   toward_blo_node.child1_matrix_index = score_node->pmatrix_index;
-  toward_blo_node.child2_clv_index = blo_antinode->clv_index;
+  toward_blo_node.child2_clv_index    = blo_antinode->clv_index;
   toward_blo_node.child2_scaler_index = blo_antinode->scaler_index;
   toward_blo_node.child2_matrix_index = blo_antinode->pmatrix_index;
 
@@ -236,9 +237,11 @@ static double opt_branch_lengths_pplacer( pll_partition_t * partition,
       nr_params.tolerance         = xtol;
 
       // minimize newton for pendant length
-      xres = pllmod_opt_minimize_newton(xmin, xguess, xmax, xtol,
-                                  10, &nr_params,
-                                  utree_derivative_func);
+      xres = pllmod_opt_minimize_newton(xmin, 
+                                        xguess, xmax, xtol,
+                                        10, 
+                                        &nr_params,
+                                        utree_derivative_func);
       assert(xres >= 0.0);
 
       // update lengths and pmatrices for proximal/distal
@@ -293,11 +296,11 @@ static double opt_branch_lengths_pplacer( pll_partition_t * partition,
 }
 
 double optimize_branch_triplet( pll_partition_t * partition, 
-                                pll_unode_t * tree, 
+                                pll_unode_t * root, 
                                 const bool sliding)
 {
-  if (!tree->next) {
-    tree = tree->back;
+  if (!root->next) {
+    root = root->back;
   }
 
   std::vector<pll_unode_t*> travbuffer(4);
@@ -305,7 +308,7 @@ double optimize_branch_triplet( pll_partition_t * partition,
   std::vector<unsigned int> matrix_indices(3);
   std::vector<pll_operation_t> operations(4);
 
-  traverse_update_partials( tree, 
+  traverse_update_partials( root, 
                             partition, 
                             &travbuffer[0], 
                             &branch_lengths[0], 
@@ -319,13 +322,13 @@ double optimize_branch_triplet( pll_partition_t * partition,
 
   if (sliding) {
     cur_logl = -opt_branch_lengths_pplacer( partition, 
-                                            tree, 
+                                            root, 
                                             smoothings, 
                                             OPT_BRANCH_EPSILON);
   } else {
     cur_logl = -pllmod_opt_optimize_branch_lengths_local(
                                                 partition,
-                                                tree,
+                                                root,
                                                 &param_indices[0],
                                                 PLLMOD_OPT_MIN_BRANCH_LEN,
                                                 PLLMOD_OPT_MAX_BRANCH_LEN,
@@ -339,7 +342,7 @@ double optimize_branch_triplet( pll_partition_t * partition,
   return cur_logl;
 }
 
-static double optimize_branch_lengths(pll_unode_t * tree, 
+static double optimize_branch_lengths(pll_unode_t * root, 
                                       pll_partition_t * partition, 
                                       pll_optimize_options_t& params, 
                                       pll_unode_t ** travbuffer, 
@@ -347,11 +350,11 @@ static double optimize_branch_lengths(pll_unode_t * tree,
                                       double lnl_monitor, 
                                       int* smoothings)
 {
-  if (!tree->next) {
-    tree = tree->back;
+  if (!root->next) {
+    root = root->back;
   }
 
-  traverse_update_partials( tree, 
+  traverse_update_partials( root, 
                             partition, 
                             travbuffer, 
                             params.lk_params.branch_lengths, 
@@ -364,7 +367,7 @@ static double optimize_branch_lengths(pll_unode_t * tree,
 
   cur_logl = -1 * pllmod_opt_optimize_branch_lengths_iterative(
     partition,
-    tree,
+    root,
     &param_indices[0],
     PLLMOD_OPT_MIN_BRANCH_LEN,
     PLLMOD_OPT_MAX_BRANCH_LEN,
@@ -380,19 +383,27 @@ static double optimize_branch_lengths(pll_unode_t * tree,
   }
 
   // reupdate the indices as they may have changed
-  params.lk_params.where.unrooted_t.parent_clv_index = tree->clv_index;
-  params.lk_params.where.unrooted_t.parent_scaler_index = tree->scaler_index;
-  params.lk_params.where.unrooted_t.child_clv_index = tree->back->clv_index;
-  params.lk_params.where.unrooted_t.child_scaler_index = tree->back->scaler_index;
-  params.lk_params.where.unrooted_t.edge_pmatrix_index = tree->pmatrix_index;
+  params.lk_params.where.unrooted_t.parent_clv_index = root->clv_index;
+  params.lk_params.where.unrooted_t.parent_scaler_index = root->scaler_index;
+  params.lk_params.where.unrooted_t.child_clv_index = root->back->clv_index;
+  params.lk_params.where.unrooted_t.child_scaler_index = root->back->scaler_index;
+  params.lk_params.where.unrooted_t.edge_pmatrix_index = root->pmatrix_index;
 
-  traverse_update_partials(tree, partition, travbuffer, params.lk_params.branch_lengths,
-    params.lk_params.matrix_indices, params.lk_params.operations);
-    cur_logl = pll_compute_edge_loglikelihood (partition, tree->clv_index,
-                                                  tree->scaler_index,
-                                                  tree->back->clv_index,
-                                                  tree->back->scaler_index,
-                                                  tree->pmatrix_index, &param_indices[0], nullptr);
+  traverse_update_partials( root, 
+                            partition, 
+                            travbuffer, 
+                            params.lk_params.branch_lengths,
+                            params.lk_params.matrix_indices, 
+                            params.lk_params.operations);
+
+  cur_logl = pll_compute_edge_loglikelihood(partition, 
+                                            root->clv_index,
+                                            root->scaler_index,
+                                            root->back->clv_index,
+                                            root->back->scaler_index,
+                                            root->pmatrix_index, 
+                                            &param_indices[0], 
+                                            nullptr);
 
   return cur_logl;
 }
@@ -506,8 +517,13 @@ void optimize(Model& model,
 
       if (opt_branches) {
         smoothings = 2;
-        cur_logl = optimize_branch_lengths(branches[branch_index],
-          partition, params, &travbuffer[0], cur_logl, lnl_monitor, &smoothings);
+        cur_logl = optimize_branch_lengths( branches[branch_index],
+                                            partition, 
+                                            params, 
+                                            &travbuffer[0], 
+                                            cur_logl, 
+                                            lnl_monitor, 
+                                            &smoothings);
 
         // LOG_INFO << "after blo 1: " << to_string(cur_logl) << "\n";
 
@@ -518,8 +534,13 @@ void optimize(Model& model,
 
       if (opt_branches) {
         smoothings = 2;
-        cur_logl = optimize_branch_lengths(branches[branch_index],
-          partition, params, &travbuffer[0], cur_logl, lnl_monitor, &smoothings);
+        cur_logl = optimize_branch_lengths( branches[branch_index],
+                                            partition, 
+                                            params, 
+                                            &travbuffer[0], 
+                                            cur_logl, 
+                                            lnl_monitor, 
+                                            &smoothings);
 
         // LOG_INFO << "after blo 2: " << to_string(cur_logl) << "\n";
 
@@ -536,8 +557,13 @@ void optimize(Model& model,
 
     if (opt_branches) {
       smoothings = 3;
-      cur_logl = optimize_branch_lengths(branches[branch_index],
-        partition, params, &travbuffer[0], cur_logl, lnl_monitor, &smoothings);
+      cur_logl = optimize_branch_lengths( branches[branch_index],
+                                          partition, 
+                                          params, 
+                                          &travbuffer[0], 
+                                          cur_logl, 
+                                          lnl_monitor, 
+                                          &smoothings);
 
       // LOG_INFO << "after blo 3: " << to_string(cur_logl) << "\n";
 

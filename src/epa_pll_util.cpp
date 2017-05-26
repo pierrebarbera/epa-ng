@@ -10,8 +10,7 @@ void link_tree_msa( pll_utree_t * tree,
                     pll_partition_t * partition, 
                     Model& model, 
                     const MSA& msa, 
-                    const unsigned int num_tip_nodes, 
-                    std::vector<Range> &valid_map)
+                    const unsigned int num_tip_nodes)
 {
   // associate the sequences from the MSA file with the correct tips
   /* create a hash table of size num_tip_nodes */
@@ -42,8 +41,6 @@ void precompute_clvs( pll_utree_t const * const tree,
                       pll_partition_t * partition, 
                       const Tree_Numbers& nums)
 {
-  unsigned int num_matrices, num_ops;
-
   /* various buffers for creating a postorder traversal and operations structures */
   std::vector<unsigned int> param_indices(partition->rate_cats, 0);
   std::vector<pll_unode_t*> travbuffer(nums.nodes);
@@ -54,14 +51,20 @@ void precompute_clvs( pll_utree_t const * const tree,
   const auto root = get_root(tree);
 
   /* adjust clv indices such that every direction has its own */
-  set_unique_clv_indices(root, nums.tip_nodes);
+  // set_unique_clv_indices(root, nums.tip_nodes);
+
+  std::vector<std::vector<double>> persite(tree->tip_count);
+
+  utree_free_node_data(root);
 
   for (size_t i = 0; i < tree->tip_count; ++i) {
     const auto node = tree->nodes[i];
     /* perform a partial postorder traversal of the unrooted tree  starting at the current tip
       and returning every node whose clv in the direction of the tip hasn't been calculated yet*/
-    unsigned int traversal_size;
-    if (pll_utree_traverse( node->back, 
+    unsigned int traversal_size = 0;
+    unsigned int num_matrices = 0;
+    unsigned int num_ops = 0;
+    if (pll_utree_traverse( node->back,
                             PLL_TREE_TRAVERSE_POSTORDER,
                             cb_partial_traversal,
                             &travbuffer[0], 
