@@ -55,11 +55,9 @@ TEST(pll_util, set_unique_clv_indices)
   // buildup
   MSA msa = build_MSA_from_file(env->reference_file);
   Tree_Numbers nums = Tree_Numbers();
-  pll_partition_t * part;
-  pll_utree_t * tree;
 
-  tree = build_tree_from_file(env->tree_file, nums);
-  part = build_partition_from_file( env->model, nums, msa.num_sites());
+  auto tree = build_tree_from_file(env->tree_file, nums);
+  auto part = build_partition_from_file( env->model, nums, msa.num_sites());
 
   set_unique_clv_indices(get_root(tree), nums.tip_nodes);
 
@@ -117,8 +115,8 @@ TEST(pll_util, get_numbered_newick_string)
 
   tree = build_tree_from_file(env->tree_file, nums);
   part = build_partition_from_file( env->model, nums, msa.num_sites());
-  auto valid_map = vector<Range>(nums.tip_nodes);
-  link_tree_msa(tree, part, model, msa, nums.tip_nodes, valid_map);
+  // auto valid_map = vector<Range>(nums.tip_nodes);
+  link_tree_msa(tree, part, model, msa, nums.tip_nodes);
 
   // tests
   // valid output as returned by RAxML, with reset branch lengths, as we only want to test format

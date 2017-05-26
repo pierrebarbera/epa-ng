@@ -214,6 +214,7 @@ static void read_(Options options)
     read_tree.get_clv(&node);
     const auto scaler_size = pll_get_sites_number(read_part, stoc[i]);
     for (size_t j = 0; j < scaler_size; j++) {
+      // printf("%u v %u\n",part->scale_buffer[i][j], read_part->scale_buffer[i][j] );
       EXPECT_EQ(part->scale_buffer[i][j], read_part->scale_buffer[i][j]);
     }
   }

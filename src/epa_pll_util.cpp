@@ -35,9 +35,6 @@ void link_tree_msa( pll_utree_t * tree,
     auto clv_index = map_value->second;
     // associates the sequence with the tip by calculating the tips clv buffers
     pll_set_tip_states(partition, clv_index, model.char_map(), s.sequence().c_str());
-
-    // remember the valid-range of the sequence, indexed by tip clv index
-    valid_map[clv_index] = get_valid_range(s.sequence());
   }
 }
 

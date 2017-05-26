@@ -7,10 +7,12 @@
 #include "src/Tiny_Tree.hpp"
 #include "src/Tree.hpp"
 #include "src/Binary.hpp"
+#include "src/Sample.hpp"
 #include "src/MSA.hpp"
 #include "src/Range.hpp"
 #include "src/pll_util.hpp"
 #include "src/epa_pll_util.hpp"
+#include "src/set_manipulators.hpp"
 #include "src/Lookup_Store.hpp"
 
 #include <tuple>
@@ -48,19 +50,59 @@ TEST(Tiny_Tree, place)
   all_combinations(place_);
 }
 
+static void compare_samples(Sample& orig_samp, Sample& read_samp, bool verbose=false, unsigned int head=0)
+{
+  for (size_t seq_id = 0; seq_id < read_samp.size(); ++seq_id) {
+    auto& orig_pq = orig_samp[seq_id];
+    auto& read_pq = read_samp[seq_id];
+
+    ASSERT_EQ(orig_pq.size(), read_pq.size());
+
+    for (size_t branch_id = 0; branch_id < read_pq.size(); ++branch_id) {
+      auto& orig_p = orig_pq[branch_id];
+      auto& read_p = read_pq[branch_id];
+
+      if (verbose) {
+        auto limit = head ? head : 2000;
+        if (branch_id <= limit and seq_id < 1) {
+          printf("branch %u: %f vs branch %u: %f\n",orig_p.branch_id(), 
+                                                    orig_p.likelihood(),
+                                                    read_p.branch_id(),  
+                                                    read_p.likelihood());
+        }
+      }
+
+      EXPECT_DOUBLE_EQ(orig_p.likelihood(), read_p.likelihood());
+      EXPECT_DOUBLE_EQ(orig_p.pendant_length(), read_p.pendant_length());
+      EXPECT_DOUBLE_EQ(orig_p.distal_length(), read_p.distal_length());
+      EXPECT_DOUBLE_EQ(orig_p.lwr(), read_p.lwr());
+      EXPECT_EQ(orig_p.branch_id(), read_p.branch_id());
+
+    }
+  }
+}
+
 static void place_from_binary(const Options options)
 {
   // setup
   auto msa     = build_MSA_from_file(env->reference_file);
   auto queries = build_MSA_from_file(env->query_file);
+  // auto msa     = build_MSA_from_file(env->data_dir + "/lucas/1k_reference.fasta");
+  // auto queries = build_MSA_from_file(env->data_dir + "/lucas/1k_query_100.fasta");
+  
   Model model;
 
   Tree original_tree(env->tree_file, msa, model, options);
+  // Tree original_tree(env->data_dir + "/lucas/20k.newick", msa, model, options);
+
   dump_to_binary(original_tree, env->binary_file);
   Tree read_tree(env->binary_file, model, options);
   string invocation("./this --is -a test");
-  shared_ptr<Lookup_Store> lu_ptr(new Lookup_Store(
-      original_tree.nums().branches, original_tree.partition()->states));
+
+  auto orig_lup = std::make_shared<Lookup_Store>( original_tree.nums().branches, 
+                                                  original_tree.partition()->states);
+  auto read_lup = std::make_shared<Lookup_Store>( read_tree.nums().branches, 
+                                                  read_tree.partition()->states);
 
   if (options.repeats) {
     ASSERT_TRUE(original_tree.partition()->attributes &
@@ -72,32 +114,77 @@ static void place_from_binary(const Options options)
 
   vector<pll_unode_t *> original_branches(original_tree.nums().branches);
   vector<pll_unode_t *> read_branches(read_tree.nums().branches);
-  auto original_traversed =
-      utree_query_branches(original_tree.tree(), &original_branches[0]);
-  auto read_traversed =
-      utree_query_branches(read_tree.tree(), &read_branches[0]);
+
+  auto original_traversed = utree_query_branches( original_tree.tree(), 
+                                                  &original_branches[0]);
+  auto read_traversed = utree_query_branches( read_tree.tree(), 
+                                              &read_branches[0]);
 
   ASSERT_EQ(original_traversed, read_traversed);
   ASSERT_EQ(original_traversed, original_tree.nums().branches);
 
+  Sample orig_samp;
+  Sample read_samp;
+
   // test
   for (size_t i = 0; i < original_traversed; i++) {
-    Tiny_Tree original_tiny(
-        original_branches[i], 0, original_tree, false, options, lu_ptr);
-    Tiny_Tree read_tiny(read_branches[i], 0, read_tree, false, options, lu_ptr);
+
+    Tiny_Tree original_tiny(original_branches[i], 
+                            i, 
+                            original_tree, 
+                            !options.prescoring, 
+                            options, 
+                            orig_lup);
+    Tiny_Tree read_tiny(read_branches[i], 
+                        i, 
+                        read_tree, 
+                        !options.prescoring, 
+                        options, 
+                        read_lup);
+
+    size_t seq_id = 0;
     for (auto &seq : queries) {
-      auto original_place = original_tiny.place(seq);
+      auto orig_place = original_tiny.place(seq);
       auto read_place     = read_tiny.place(seq);
 
-      ASSERT_DOUBLE_EQ(original_place.likelihood(), read_place.likelihood());
-      // printf(
-      //     "%f vs %f\n", original_place.likelihood(), read_place.likelihood());
+      ASSERT_DOUBLE_EQ(orig_place.likelihood(), read_place.likelihood());
+
+      orig_samp.add_placement(seq_id, orig_place);
+      read_samp.add_placement(seq_id, read_place);
+      
+      ++seq_id;
     }
   }
+
+  ASSERT_EQ(orig_samp.size(), read_samp.size());
+
+  compare_samples(orig_samp, read_samp);
+
+  // effectively, do the candidate selection
+  compute_and_set_lwr(orig_samp);
+  compute_and_set_lwr(read_samp);
+  compare_samples(orig_samp, read_samp);
+
+  discard_by_accumulated_threshold(orig_samp, options.prescoring_threshold);
+  discard_by_accumulated_threshold(read_samp, options.prescoring_threshold);
+  compare_samples(orig_samp, read_samp);
+
+  Work read_work(read_samp);
+  Work orig_work(orig_samp);
+
+  // printf("%lu vs %lu\n", orig_work.size(), read_work.size());
+
+  EXPECT_EQ(orig_work.size(), read_work.size());
+
   // teardown
 }
 
 TEST(Tiny_Tree, place_from_binary)
 {
   all_combinations(place_from_binary);
+  // Options o;
+  // o.prescoring = true;
+  // o.opt_model = o.opt_branches = true;
+  // o.repeats = true;
+  // place_from_binary(o);
 }

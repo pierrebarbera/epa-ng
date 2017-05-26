@@ -47,6 +47,7 @@ public:
 extern Epatest* env;
 
 #include <cmath>
+// #include <cmath>
 
 #define COMPL_REPEATS       (1 << 0)
 #define COMPL_OPTIMIZE      (1 << 1)
@@ -78,7 +79,12 @@ void all_combinations(Func f, bool verbose=false)
   for (size_t i = 0; i < pow(2, 4); ++i) {
     auto o = get_options_config(i);
     if (verbose) {
-      printf("%lu\n", i);
+      printf("\nrepeats\toptim\tsliding\tprescore\n");
+      printf( "%d\t%d\t%d\t%d\t\n", 
+              o.repeats,
+              o.opt_model,
+              o.sliding_blo,
+              o.prescoring);
     }
     f(o);
   }
