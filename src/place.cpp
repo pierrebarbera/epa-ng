@@ -703,12 +703,21 @@ void tmp_pipeline_test( Tree& reference_tree,
     return VoidToken();
   };
 
-  auto h_p = make_pipeline(ingestion, prehook)
-    .push(preplacement)
-    .push(candidate_selection)
-    .push(thorough_placement)
-    .push(write_result);
-  h_p.process();
+  if (options.prescoring) {
+    auto pipe = make_pipeline(ingestion, prehook)
+      .push(preplacement)
+      .push(candidate_selection)
+      .push(thorough_placement)
+      .push(write_result);
+
+    pipe.process();
+  } else {
+    auto pipe = make_pipeline(ingestion, prehook)
+      .push(thorough_placement)
+      .push(write_result);
+
+    pipe.process();
+  }
 
   auto newick_string = get_numbered_newick_string(reference_tree.tree());
 
