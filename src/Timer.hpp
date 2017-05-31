@@ -15,6 +15,11 @@ public:
   using const_iterator  = typename std::vector<duration>::const_iterator;
   
   // Constructors/Destructors
+  Timer(duration& d)
+  {
+    ts_.push_back(d);
+  }
+
   Timer()   = default;
   ~Timer()  = default;
 
@@ -77,6 +82,11 @@ public:
       pause_total += p;
     }
     return pause_total;
+  }
+
+  duration avg_duration()
+  {
+    return this->sum()/ts_.size(); 
   }
 
   double average()

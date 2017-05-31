@@ -98,7 +98,7 @@ public:
     const auto foreman = schedule_[local_stage_][0];
     const auto num_stages = schedule_.size(); 
     // Step 0: get per node average
-    Timer<> per_node_avg({timer.average()});
+    Timer<> per_node_avg(timer.avg_duration());
     // Step 1: aggregate the runtime statistics, first at the lowest rank per stage
     LOG_DBG1 << "aggregate the runtime statistics...";
     Timer<> dummy;
