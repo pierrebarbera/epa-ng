@@ -232,7 +232,7 @@ private:
   stack_type stages_;
   hook_type per_loop_hook_;
   Intercom icom_;
-  Timer elapsed_time_;
+  Timer<> elapsed_time_;
 
   size_t next_rebalance_chunk_ = 3;
   size_t rebalance_delta_ = next_rebalance_chunk_;

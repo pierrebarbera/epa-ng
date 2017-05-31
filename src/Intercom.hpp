@@ -84,7 +84,7 @@ public:
    * @param timer local timing value used to calcuate the difficulty of a stage, and
    *              consequently the global schedule.
    */
-  void rebalance(Timer& timer) 
+  void rebalance(Timer<>& timer) 
   {
     MPI_BARRIER(MPI_COMM_WORLD);
     // if (local_rank == 0) 
@@ -98,10 +98,10 @@ public:
     const auto foreman = schedule_[local_stage_][0];
     const auto num_stages = schedule_.size(); 
     // Step 0: get per node average
-    Timer per_node_avg({timer.average()});
+    Timer<> per_node_avg({timer.average()});
     // Step 1: aggregate the runtime statistics, first at the lowest rank per stage
     LOG_DBG1 << "aggregate the runtime statistics...";
-    Timer dummy;
+    Timer<> dummy;
     epa_mpi_gather(per_node_avg, foreman, schedule_[local_stage_], local_rank_, dummy);
     LOG_DBG1 << "Runtime aggregate done!";
 
@@ -199,7 +199,7 @@ public:
   // auto& schedule(const size_t) { }
   // auto& previous_requests() { }
   bool stage_active(const size_t) const { return true; }
-  void rebalance(Timer&) { } 
+  void rebalance(Timer<>&) { } 
   void barrier() const { }
   int rank() { return 0; }
   

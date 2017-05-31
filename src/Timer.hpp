@@ -6,24 +6,15 @@
 #include <cereal/types/vector.hpp>
 #include <cereal/types/chrono.hpp>
 
-#define FACTOR 1000000
-
+template <class duration = std::chrono::microseconds>
 class Timer {
 public:
   // Typedefs
-  using duration        = std::chrono::microseconds;
   using clock           = std::chrono::high_resolution_clock;
-  using iterator        = std::vector<duration>::iterator;
-  using const_iterator  = std::vector<duration>::const_iterator;
+  using iterator        = typename std::vector<duration>::iterator;
+  using const_iterator  = typename std::vector<duration>::const_iterator;
   
   // Constructors/Destructors
-  Timer(std::vector<double> init_list) 
-  {
-    for (auto elem : init_list) {
-      duration fp_ms(static_cast<unsigned int>(elem*FACTOR));
-      ts_.push_back(fp_ms);
-    }
-  }
   Timer()   = default;
   ~Timer()  = default;
 
@@ -37,7 +28,9 @@ public:
 
   // Methods
   void insert(iterator position, const_iterator first, const_iterator last)
-  { ts_.insert(position, first, last); };
+  { 
+    ts_.insert(position, first, last); 
+  };
 
   void start() 
   {
@@ -59,8 +52,8 @@ public:
   void stop()
   {
     auto end = clock::now();
-    
-    duration pause_total(static_cast<unsigned int>(this->sum_pauses()*FACTOR)); 
+
+    duration pause_total(this->sum_pauses()); 
 
     auto runtime = std::chrono::duration_cast<duration>(end - start_) - pause_total;
 
@@ -68,27 +61,27 @@ public:
     pauses_.clear();
   }
 
-  double sum()
+  auto sum()
   {
     duration sum(0);
     for (auto p : ts_) {
       sum += p;
     }
-    return sum.count();
+    return sum;
   }
 
-  double sum_pauses()
+  auto sum_pauses()
   {
     duration pause_total(0);
     for (auto p : pauses_) {
       pause_total += p;
     }
-    return pause_total.count();
+    return pause_total;
   }
 
   double average()
   {
-    return this->sum()/ts_.size();
+    return this->sum().count()/ts_.size();
   }
 
   void clear() {ts_.clear();}

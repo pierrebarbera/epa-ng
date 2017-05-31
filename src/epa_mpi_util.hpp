@@ -85,7 +85,7 @@ void epa_mpi_send(T& obj, int dest_rank, MPI_Comm comm)
 }
 
 template <typename T>
-void epa_mpi_isend(T& obj, int dest_rank, MPI_Comm comm, request_tuple& prev_req, Timer& timer)
+void epa_mpi_isend(T& obj, int dest_rank, MPI_Comm comm, request_tuple& prev_req, Timer<>& timer)
 {
   // wait for completion of previous send
   if (prev_req.req)
@@ -115,7 +115,7 @@ void epa_mpi_isend(T& obj, int dest_rank, MPI_Comm comm, request_tuple& prev_req
 }
 
 template <typename T>
-void epa_mpi_receive(T& obj, int src_rank, MPI_Comm comm, Timer& timer)
+void epa_mpi_receive(T& obj, int src_rank, MPI_Comm comm, Timer<>& timer)
 {
   // probe to find out the message size
   MPI_Status status;
@@ -143,7 +143,7 @@ void epa_mpi_receive(T& obj, int src_rank, MPI_Comm comm, Timer& timer)
 }
 
 template <typename T>
-static inline void isend_all(std::vector<T>& parts, std::vector<int>& dest_ranks, MPI_Comm comm, previous_request_storage_t& prev_reqs, Timer& timer)
+static inline void isend_all(std::vector<T>& parts, std::vector<int>& dest_ranks, MPI_Comm comm, previous_request_storage_t& prev_reqs, Timer<>& timer)
 {
   for (size_t i = 0; i < parts.size(); ++i)
   {
@@ -153,7 +153,7 @@ static inline void isend_all(std::vector<T>& parts, std::vector<int>& dest_ranks
 }
 
 template <typename T>
-void epa_mpi_split_send(T& obj, std::vector<int>& dest_ranks, MPI_Comm comm, previous_request_storage_t& prev_reqs, Timer& timer)
+void epa_mpi_split_send(T& obj, std::vector<int>& dest_ranks, MPI_Comm comm, previous_request_storage_t& prev_reqs, Timer<>& timer)
 {
   LOG_DBG1 << "Sending...";
 
@@ -179,7 +179,7 @@ struct status_type
 };
 
 // template <typename T>
-// void epa_mpi_receive_merge(T& obj, std::vector<int>& src_ranks, MPI_Comm comm, Timer& timer)
+// void epa_mpi_receive_merge(T& obj, std::vector<int>& src_ranks, MPI_Comm comm, Timer<>& timer)
 // {
 //   const auto num_src_ranks = src_ranks.size();
 //   size_t num_received = 0;
@@ -225,7 +225,7 @@ struct status_type
 // }
 
 template <typename T>
-void epa_mpi_receive_merge(T& obj, std::vector<int>& src_ranks, MPI_Comm comm, Timer& timer)
+void epa_mpi_receive_merge(T& obj, std::vector<int>& src_ranks, MPI_Comm comm, Timer<>& timer)
 {
   for (auto rank : src_ranks)
   {
@@ -238,7 +238,7 @@ void epa_mpi_receive_merge(T& obj, std::vector<int>& src_ranks, MPI_Comm comm, T
 }
 
 template <typename T>
-void epa_mpi_gather(T& obj, int dest_rank, std::vector<int>& src_ranks, int local_rank, Timer& timer)
+void epa_mpi_gather(T& obj, int dest_rank, std::vector<int>& src_ranks, int local_rank, Timer<>& timer)
 {
   if (dest_rank != local_rank)
   {
@@ -259,7 +259,7 @@ void epa_mpi_gather(T& obj, int dest_rank, std::vector<int>& src_ranks, int loca
 }
 
 template <typename T>
-void epa_mpi_bcast(T& obj, int src_rank, std::vector<int>& dest_ranks, int local_rank, Timer& timer)
+void epa_mpi_bcast(T& obj, int src_rank, std::vector<int>& dest_ranks, int local_rank, Timer<>& timer)
 {
   if (src_rank == local_rank)
   {

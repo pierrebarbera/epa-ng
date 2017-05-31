@@ -16,7 +16,6 @@ void to_difficulty(std::vector<double>& perstage_avg)
   );
 }
 
-
 std::vector<unsigned int> solve(unsigned int stages, 
                                 unsigned int nodes, 
                                 const std::vector<double>& difficulty_per_stage)

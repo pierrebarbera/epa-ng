@@ -177,8 +177,8 @@ void process( Tree& reference_tree,
   }
   LOG_DBG << std::endl;
 
-  Timer timer;
-  Timer dummy;
+  Timer<> timer;
+  Timer<> dummy;
 
   const auto EPA_MPI_STAGE_LAST_AGGREGATE
     = options.prescoring ? EPA_MPI_STAGE_2_AGGREGATE : EPA_MPI_STAGE_1_AGGREGATE;
@@ -187,7 +187,7 @@ void process( Tree& reference_tree,
   previous_request_storage_t prev_requests;
 
 #endif // __MPI
-  Timer flight_time;
+  Timer<> flight_time;
   std::ofstream flight_file(outdir + "stat");
 
   std::string status_file_name(outdir + "pepa.status");
@@ -432,10 +432,10 @@ void process( Tree& reference_tree,
       LOG_DBG << "Rebalancing..." << std::endl;
       int foreman = schedule[local_stage][0];
       // Step 0: get per node average
-      Timer per_node_avg({timer.average()});
+      Timer<> per_node_avg({timer.average()});
       // Step 1: aggregate the runtime statistics, first at the lowest rank per stage
       LOG_DBG << "aggregate the runtime statistics..." << std::endl;
-      Timer dummy;
+      Timer<> dummy;
       epa_mpi_gather(per_node_avg, foreman, schedule[local_stage], local_rank, dummy);
       LOG_DBG << "Runtime aggregate done!" << std::endl;
 
@@ -561,7 +561,7 @@ void tmp_pipeline_test( Tree& reference_tree,
 
   LOG_INFO << "WARNING! THIS FUNCTION IS EXPERIMENTAL!" << std::endl;
 
-  // Timer flight_time;
+  // Timer<> flight_time;
   std::ofstream flight_file(outdir + "stat");
 
   std::string status_file_name(outdir + "pepa.status");

@@ -83,7 +83,7 @@ void merge(Work& dest, const Work& src)
   }
 }
 
-void merge(Timer& dest, const Timer& src)
+void merge(Timer<>& dest, const Timer<>& src)
 {
   dest.insert(dest.end(), src.begin(), src.end());
 }
