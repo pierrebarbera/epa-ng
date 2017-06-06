@@ -85,7 +85,11 @@ void epa_mpi_send(T& obj, int dest_rank, MPI_Comm comm)
 }
 
 template <typename T>
-void epa_mpi_isend(T& obj, int dest_rank, MPI_Comm comm, request_tuple& prev_req, Timer<>& timer)
+void epa_mpi_isend( T& obj, 
+                    int dest_rank, 
+                    MPI_Comm comm, 
+                    request_tuple& prev_req, 
+                    Timer<>& timer)
 {
   // wait for completion of previous send
   if (prev_req.req)
@@ -115,7 +119,10 @@ void epa_mpi_isend(T& obj, int dest_rank, MPI_Comm comm, request_tuple& prev_req
 }
 
 template <typename T>
-void epa_mpi_receive(T& obj, int src_rank, MPI_Comm comm, Timer<>& timer)
+void epa_mpi_receive( T& obj, 
+                      int src_rank, 
+                      MPI_Comm comm, 
+                      Timer<>& timer)
 {
   // probe to find out the message size
   MPI_Status status;
@@ -143,7 +150,11 @@ void epa_mpi_receive(T& obj, int src_rank, MPI_Comm comm, Timer<>& timer)
 }
 
 template <typename T>
-static inline void isend_all(std::vector<T>& parts, std::vector<int>& dest_ranks, MPI_Comm comm, previous_request_storage_t& prev_reqs, Timer<>& timer)
+static inline void isend_all( std::vector<T>& parts, 
+                              std::vector<int>& dest_ranks, 
+                              MPI_Comm comm, 
+                              previous_request_storage_t& prev_reqs, 
+                              Timer<>& timer)
 {
   for (size_t i = 0; i < parts.size(); ++i)
   {
@@ -153,7 +164,11 @@ static inline void isend_all(std::vector<T>& parts, std::vector<int>& dest_ranks
 }
 
 template <typename T>
-void epa_mpi_split_send(T& obj, std::vector<int>& dest_ranks, MPI_Comm comm, previous_request_storage_t& prev_reqs, Timer<>& timer)
+void epa_mpi_split_send(T& obj, 
+                        std::vector<int>& dest_ranks, 
+                        MPI_Comm comm, 
+                        previous_request_storage_t& prev_reqs, 
+                        Timer<>& timer)
 {
   LOG_DBG1 << "Sending...";
 

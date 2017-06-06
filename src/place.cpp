@@ -634,9 +634,13 @@ void tmp_pipeline_test( Tree& reference_tree,
     compute_and_set_lwr(sample);
 
     if (options.prescoring_by_percentage) {
-      discard_bottom_x_percent(sample, (1.0 - options.prescoring_threshold));
+      discard_bottom_x_percent(sample, 
+                              (1.0 - options.prescoring_threshold));
     } else {
-      discard_by_accumulated_threshold(sample, options.prescoring_threshold);
+      discard_by_accumulated_threshold(sample, 
+                                      options.prescoring_threshold,
+                                      options.filter_min,
+                                      options.filter_max);
     }
 
     return Work(sample);

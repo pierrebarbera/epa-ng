@@ -176,8 +176,10 @@ void discard_by_support_threshold(Sample& sample,
   }
 }
 
-void discard_by_accumulated_threshold(Sample& sample, const double thresh,
-                                  const unsigned int min, const unsigned int max)
+void discard_by_accumulated_threshold(Sample& sample, 
+                                      const double thresh,
+                                      const unsigned int min, 
+                                      const unsigned int max)
 {
   if (thresh < 0.0 || thresh > 1.0) {
     throw std::range_error{"thresh is not a valid likelihood weight ratio (outside of [0,1])"};
