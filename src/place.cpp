@@ -432,7 +432,7 @@ void process( Tree& reference_tree,
       LOG_DBG << "Rebalancing..." << std::endl;
       int foreman = schedule[local_stage][0];
       // Step 0: get per node average
-      Timer<> per_node_avg({timer.average()});
+      Timer<> per_node_avg(timer.avg_duration());
       // Step 1: aggregate the runtime statistics, first at the lowest rank per stage
       LOG_DBG << "aggregate the runtime statistics..." << std::endl;
       Timer<> dummy;

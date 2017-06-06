@@ -33,9 +33,7 @@ TEST(Timer, construct_from_avg)
 
   t.stop();
 
-  auto avg = t.avg_duration();
-
-  Timer<> tt(avg);
+  Timer<> tt(t.avg_duration());
 
   ASSERT_DOUBLE_EQ(tt.average(), t.average());
 

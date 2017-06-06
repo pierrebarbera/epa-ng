@@ -15,7 +15,7 @@ public:
   using const_iterator  = typename std::vector<duration>::const_iterator;
   
   // Constructors/Destructors
-  Timer(duration& d)
+  Timer(duration&& d)
   {
     ts_.push_back(d);
   }
