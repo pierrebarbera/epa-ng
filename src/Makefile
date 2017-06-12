@@ -24,7 +24,7 @@ DBG=-g
 
 INCLUDES=-I$(CEREAL) -I$(CXXOPTS) -I$(PLL_INC)
 LIB_PATHS=  -L$(PLL_LIB)
-LIBS=$(PLL_LIB)libpll_optimize.a $(PLL_LIB)libpll_msa.a $(PLL_LIB)libpll_binary.a $(PLL_LIB)libpll.a -lm -lpthread
+LIBS=$(PLL_LIB)libpll_optimize.a $(PLL_LIB)libpll_msa.a $(PLL_LIB)libpll_binary.a $(PLL_LIB)libpll_util.a $(PLL_LIB)libpll.a -lm -lpthread
 
 CFLAGS= $(WARNINGS) -std=c++14 -pthread $(DBG) $(INCLUDES) $(CF)
 LINKFLAGS=$(DBG) $(RPATHS) $(LIB_PATHS)

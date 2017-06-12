@@ -49,12 +49,12 @@ EPABIN=./bin/epa
 TEST=test/data/lucas
 TREE=$(TEST)/20k.newick
 REF=$(TEST)/1k_reference.fasta
-QRY=$(TEST)/1k_query.fasta
+QRY=$(TEST)/1k_query_100.fasta
 OUTDIR=/tmp/epa
 
-BINARY_WRITE= -t $(TREE) -s $(REF) -B -O -w $(OUTDIR) --repeats $(F)
-BINARY_READ=-b $(OUTDIR)/epa_binary_file -q $(QRY) -w $(OUTDIR) -g 0.99 --filter-min-lwr 0.0 --repeats $(F)
-NORM_TEST=-t $(TREE) -s $(REF) -q $(QRY) -w $(OUTDIR) -g 0.99 --chunk-size=100 --repeats $(F)
+BINARY_WRITE= -t $(TREE) -s $(REF) -B -w $(OUTDIR) $(F)
+BINARY_READ=-b $(OUTDIR)/epa_binary_file -q $(QRY) -w $(OUTDIR) -g 0.99 $(F)
+NORM_TEST=-t $(TREE) -s $(REF) -q $(QRY) -w $(OUTDIR) -g 0.99 --chunk-size=100 $(F)
 
 test: update
 	mkdir -p $(OUTDIR)
