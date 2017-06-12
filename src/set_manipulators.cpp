@@ -94,6 +94,8 @@ void compute_and_set_lwr(Sample& sample)
     double total = 0.0;
     double max=-std::numeric_limits<double>::infinity();
 
+    double entropy = 0.0;
+
     // find the maximum
     for (auto &p : pq) {
       if (p.likelihood() > max) {
@@ -108,15 +110,22 @@ void compute_and_set_lwr(Sample& sample)
 
     // normalize the distances
     for (auto &p : pq) {
-      p.lwr(exp(p.likelihood() - max) / total);
+      double lwr = exp(p.likelihood() - max) / total;
+      p.lwr(lwr);
+      // compute the shannon entropy of the query (in nats)
+      entropy -= (lwr * log(lwr));
     }
+
+    pq.entropy(entropy);
   }
 }
 
 static void sort_by_lwr(PQuery& pq)
 {
   sort(pq.begin(), pq.end(),
-    [](const Placement &p_a, const Placement &p_b) -> bool {return p_a.lwr() > p_b.lwr();}
+    [](const Placement &p_a, const Placement &p_b) -> bool {
+      return p_a.lwr() > p_b.lwr();
+    }
   );
 }
 

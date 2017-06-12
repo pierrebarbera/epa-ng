@@ -35,8 +35,7 @@ std::string pquery_to_jplace_string(const PQuery& pquery, const MSA& msa)
 {
   std::ostringstream output;
 
-  output << "    {\"p\":" << NEWL; // p for pquery
-  output << "      [" << NEWL; // opening bracket for pquery array
+  output << "    {\"p\": [" << NEWL; // p for pquery
 
   size_t i = 0;
   for (const auto& place : pquery)
@@ -49,8 +48,14 @@ std::string pquery_to_jplace_string(const PQuery& pquery, const MSA& msa)
     output << NEWL;
   } 
 
-  // closing bracket for pquery array, and start of name column
-  output << "      ]," << NEWL <<"    \"n\": [";
+  // closing bracket for pquery array
+  output << "      ]," << NEWL; 
+  
+  // start of entropy column
+  output << "    \"m\": {\"entropy\": " << std::to_string(pquery.entropy()) << "}," << NEWL;
+
+  // start of name column
+  output <<"    \"n\": [";
   // list of sequence headers
   i = 0;
   for (const auto& header : msa[pquery.sequence_id()].header_list() ) {

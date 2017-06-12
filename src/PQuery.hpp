@@ -37,6 +37,8 @@ public:
   // member access
   Placement& back() { return placements_.back(); }
   unsigned int sequence_id() const { return sequence_id_; }
+  double entropy() const { return entropy_; }
+  void entropy(const double e) { entropy_ = e; }
   unsigned int size() const { return placements_.size(); }
   void erase(iterator begin, iterator end) { placements_.erase(begin, end); }
 
@@ -62,4 +64,5 @@ public:
 private:
   unsigned int sequence_id_ = 0;
   std::vector<Placement> placements_;
+  double entropy_ = -1.0;
 };
