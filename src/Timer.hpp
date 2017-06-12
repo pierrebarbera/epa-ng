@@ -66,7 +66,12 @@ public:
     pauses_.clear();
   }
 
-  auto sum()
+  double sum() const
+  {
+    return this->sum_duration().count();
+  }
+
+  duration sum_duration() const
   {
     duration sum(0);
     for (auto p : ts_) {
@@ -75,7 +80,7 @@ public:
     return sum;
   }
 
-  auto sum_pauses()
+  duration sum_pauses() const
   {
     duration pause_total(0);
     for (auto p : pauses_) {
@@ -84,14 +89,14 @@ public:
     return pause_total;
   }
 
-  duration avg_duration()
+  duration avg_duration() const
   {
-    return this->sum()/ts_.size(); 
+    return this->sum_duration()/ts_.size(); 
   }
 
-  double average()
+  double average() const
   {
-    return this->sum().count()/ts_.size();
+    return this->sum()/ts_.size();
   }
 
   void clear() {ts_.clear();}

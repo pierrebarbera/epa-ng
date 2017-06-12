@@ -114,7 +114,7 @@ public:
 
     if (local_rank_ == foreman)
     {
-      auto total_stagetime = per_node_avg.sum();
+      double total_stagetime = per_node_avg.sum();
       // Step 3: make known to all other stage representatives (mpi_allgather)
       LOG_DBG1 << "Foremen allgather...";
       MPI_Allgather(&total_stagetime, 1, MPI_DOUBLE, &perstage_total[0], 1, MPI_DOUBLE, foreman_comm);
