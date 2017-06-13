@@ -581,7 +581,7 @@ void tmp_pipeline_test( Tree& reference_tree,
     throw std::runtime_error{"Traversing the utree went wrong during pipeline startup!"};
   }
 
-  unsigned int chunk_num = 1;
+  unsigned int chunk_num = 0;
   
   auto lookups = 
     std::make_shared<Lookup_Store>(num_branches, reference_tree.partition()->states);
@@ -592,14 +592,26 @@ void tmp_pipeline_test( Tree& reference_tree,
 
   size_t num_sequences = 0;
 
-  auto prehook = [&]() -> void {
+  // create output file
+  std::ofstream outfile;
+  
+  // ============ LAMBDAS ============================
+  
+  // only on one rank, only once at the beginning of pipeline
+  auto init_pipe_func = [&]() -> void {
+    outfile.open(outdir + "epa_result.jplace");
+    auto newick_string = get_numbered_newick_string(reference_tree.tree());
+    outfile << init_jplace_string(newick_string);
+  };
+
+  auto perloop_prehook = [&]() -> void {
     LOG_DBG << "INGESTING - READING" << std::endl;
     num_sequences = msa_stream.read_next(chunk, chunk_size);
+    ++chunk_num;
   };
 
   auto ingestion = [&](VoidToken&) -> Work {
     LOG_DBG << "INGESTING - CREATING WORK" << std::endl;
-    // auto num_sequences = msa_stream.read_next(chunk, chunk_size);
     if (num_sequences <= 0) {
       Work work;
       work.is_last(true);
@@ -684,31 +696,42 @@ void tmp_pipeline_test( Tree& reference_tree,
 
     // write results of current last stage aggregator node to a part file
     if (sample.size()) {
-      std::string part_file_name(outdir + "epa." + std::to_string(local_rank)
-        + "." + std::to_string(chunk_num) + ".part");
-      std::ofstream part_file(part_file_name);
-      part_file << sample_to_jplace_string(sample, chunk);
-      part_names.push_back(part_file_name);
-      part_file.close();
-
-      // TODO for MPI, somehow ensure this code is only run on the stage foreman
-
-      std::ofstream status_file(status_file_name, std::ofstream::app);
-      status_file << chunk_num << ":" << chunk_size << " [";
-      for (size_t i = 0; i < part_names.size(); ++i) {
-        status_file << part_names[i];
-        if (i < part_names.size() - 1) status_file << ",";  
+      if (chunk_num > 1) {
+        outfile << ",";
       }
-      status_file << "]" << std::endl;
-      part_names.clear();
-    }
-    
-    ++chunk_num;
+      outfile << sample_to_jplace_string(sample, chunk);
+      // std::string part_file_name(outdir + "epa." + std::to_string(local_rank)
+      //   + "." + std::to_string(chunk_num) + ".part");
+      // std::ofstream part_file(part_file_name);
+      // part_file << sample_to_jplace_string(sample, chunk);
+      // part_names.push_back(part_file_name);
+      // part_file.close();
+
+      // // TODO for MPI, somehow ensure this code is only run on the stage foreman
+
+      // std::ofstream status_file(status_file_name, std::ofstream::app);
+      // status_file << chunk_num << ":" << chunk_size << " [";
+      // for (size_t i = 0; i < part_names.size(); ++i) {
+      //   status_file << part_names[i];
+      //   if (i < part_names.size() - 1) status_file << ",";  
+      // }
+      // status_file << "]" << std::endl;
+      // part_names.clear();
+    } 
     return VoidToken();
   };
 
+  // only on one rank, only once at the end of the pipeline
+  auto finalize_pipe_func = [&]() -> void {
+    LOG_INFO << "Output file: " << outdir + "epa_result.jplace";
+    outfile << finalize_jplace_string(invocation);
+    outfile.close();
+  };
+
+
+
   if (options.prescoring) {
-    auto pipe = make_pipeline(ingestion, prehook)
+    auto pipe = make_pipeline(ingestion, perloop_prehook, init_pipe_func, finalize_pipe_func)
       .push(preplacement)
       .push(candidate_selection)
       .push(thorough_placement)
@@ -716,19 +739,17 @@ void tmp_pipeline_test( Tree& reference_tree,
 
     pipe.process();
   } else {
-    auto pipe = make_pipeline(ingestion, prehook)
+    auto pipe = make_pipeline(ingestion, perloop_prehook, init_pipe_func, finalize_pipe_func)
       .push(thorough_placement)
       .push(write_result);
 
     pipe.process();
   }
 
-  auto newick_string = get_numbered_newick_string(reference_tree.tree());
-
-  merge_write_results(status_file_name, 
-                      outdir, 
-                      newick_string,
-                      invocation);
+  // merge_write_results(status_file_name, 
+  //                     outdir, 
+  //                     newick_string,
+  //                     invocation);
 
 }
 

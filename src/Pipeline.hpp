@@ -46,9 +46,13 @@ public:
   using hook_type       = std::function<void()>;
 
   Pipeline( const stack_type& stages, 
-            const hook_type& per_loop_hook)
+            const hook_type& per_loop_hook,
+            const hook_type& init_hook,
+            const hook_type& final_hook)
     : stages_(stages)
     , per_loop_hook_(per_loop_hook)
+    , init_hook_(init_hook)
+    , final_hook_(final_hook)
     , icom_(std::tuple_size<stack_type>::value)
   { 
      init_pipeline_();
@@ -68,15 +72,22 @@ public:
     new_stack_type stage_tuple
       = std::tuple_cat(stages_, std::make_tuple(stage_type(f)));
     
-    return Pipeline<lambdas..., Function>(stage_tuple, per_loop_hook_);
+    return Pipeline<lambdas..., Function>(stage_tuple, per_loop_hook_, init_hook_, final_hook_);
   }
 
   void process()
   {
     token_set_type tokens;
-
     // "last" token that is still used on the particular MPI-Rank (or thread or...)
     Token const * last_token = nullptr;
+    
+    constexpr size_t dedicated_write = std::tuple_element_t<std::tuple_size<decltype(stages_)>::value - 1u
+                                              , decltype(stages_)>::id();
+    LOG_DBG1 << "dedicated_write: " << dedicated_write;
+
+    if (icom_.stage_active(dedicated_write)) {
+      init_hook_();
+    }
 
     size_t chunk_num = 1;
     do { 
@@ -138,6 +149,10 @@ public:
 
       ++chunk_num;
     } while (last_token->valid()); //returns valid if data token or default initialized
+
+    if (icom_.stage_active(dedicated_write)) {
+      final_hook_();
+    }
 
     icom_.barrier();
   }
@@ -231,6 +246,8 @@ private:
 
   stack_type stages_;
   hook_type per_loop_hook_;
+  hook_type init_hook_;
+  hook_type final_hook_;
   Intercom icom_;
   Timer<> elapsed_time_;
 
@@ -241,8 +258,12 @@ private:
 
 template <class stage_f>
 auto make_pipeline( const stage_f& first_stage, 
-                    const typename Pipeline<stage_f>::hook_type& per_loop_hook
-                      = [](){}) 
+                    const typename Pipeline<stage_f>::hook_type& per_loop_hook,
+                    const typename Pipeline<stage_f>::hook_type& init_hook,
+                    const typename Pipeline<stage_f>::hook_type& final_hook) 
 {
-  return Pipeline<stage_f>(std::make_tuple(Typed_Stage<0u, stage_f>(first_stage)), per_loop_hook);
+  return Pipeline<stage_f>( std::make_tuple(Typed_Stage<0u, stage_f>(first_stage)), 
+                            per_loop_hook, 
+                            init_hook, 
+                            final_hook);
 }
