@@ -415,9 +415,6 @@ void optimize(Model& model,
               const bool opt_branches, 
               const bool opt_model)
 {
-  // set_branch_lengths(tree, DEFAULT_BRANCH_LENGTH);
-  // compute_and_set_empirical_frequencies(partition, model);
-  
   
   if (not opt_branches and not opt_model) {
     return;
@@ -429,7 +426,7 @@ void optimize(Model& model,
     set_branch_lengths(tree, DEFAULT_BRANCH_LENGTH);
   }
 
-  // compute_and_set_empirical_frequencies(partition, model);
+  compute_and_set_empirical_frequencies(partition, model);
 
   auto symmetries = (&(model.symmetries())[0]);
   std::vector<unsigned int> param_indices(model.rate_cats(), 0);
