@@ -23,5 +23,5 @@ public:
   bool load_binary_mode         = false;
   unsigned int chunk_size       = 1000;
   unsigned int num_threads      = 0;
-  bool repeats                  = false;
+  bool repeats                  = true;
 };

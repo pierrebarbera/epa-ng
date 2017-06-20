@@ -36,7 +36,7 @@ static std::vector<std::string> split_by_delimiter(const std::string & text, con
 int main(int argc, char** argv)
 {
   genesis::utils::Logging::log_to_stdout();
-  genesis::utils::Logging::max_level(genesis::utils::Logging::kDebug1);
+  genesis::utils::Logging::max_level(genesis::utils::Logging::kInfo);
 
   MPI_INIT(&argc, &argv);
 
@@ -67,7 +67,8 @@ int main(int argc, char** argv)
 
   cli.add_options()
     ("help", "Display help.")
-    ("version", "Display version.")
+    ("v,version", "Display version.")
+    ("verbose", "Display debug information.")
     ;
   cli.add_options("Input")
     ("t,tree", "Path to Reference Tree file.", cxxopts::value<std::string>())
@@ -98,8 +99,8 @@ int main(int argc, char** argv)
     ("raxml-blo",
       "Employ old style of branch length optimization during thorough insertion as opposed to sliding approach. "
       "WARNING: may significantly slow down computation.")
-    ("repeats",
-      "Employ site repeats optimization. Can improve memory usage, depending on the data. ")
+    ("no-repeats",
+      "Do NOT employ site repeats optimization. (not recommended, will increase memory footprint without improving runtime or quality) ")
     ("g,dyn-heur",
       "Two-phase heuristic, determination of candidate edges using accumulative threshold.",
       cxxopts::value<double>()->implicit_value("0.99"))
@@ -142,6 +143,11 @@ int main(int argc, char** argv)
   {
     std::cout << cli.help({"", "Input", "Output", "Compute", "Pipeline"});
     exit(EXIT_SUCCESS);
+  }
+
+  if (cli.count("help"))
+  {
+    genesis::utils::Logging::max_level(genesis::utils::Logging::kDebug2);
   }
 
   // check for valid input combinations
@@ -199,7 +205,7 @@ int main(int argc, char** argv)
   }
   if (cli.count("opt-ref-tree")) options.opt_branches = options.opt_model = true;
   if (cli.count("raxml-blo")) options.sliding_blo = false;
-  if (cli.count("repeats")) options.repeats = true;
+  if (cli.count("no-repeats")) options.repeats = false;
   if (cli.count("dump-binary")) options.dump_binary_mode =  true;
   if (cli.count("model"))
   {

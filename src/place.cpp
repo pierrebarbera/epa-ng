@@ -556,9 +556,6 @@ void tmp_pipeline_test( Tree& reference_tree,
                         const Options& options,
                         const std::string& invocation)
 {
-
-  auto local_rank = 0;
-
   LOG_INFO << "WARNING! THIS FUNCTION IS EXPERIMENTAL!" << std::endl;
 
   // Timer<> flight_time;
@@ -717,7 +714,10 @@ void tmp_pipeline_test( Tree& reference_tree,
       // }
       // status_file << "]" << std::endl;
       // part_names.clear();
-    } 
+    }
+
+    LOG_INFO << chunk_num * chunk_size  << " Sequences done!"; 
+
     return VoidToken();
   };
 
