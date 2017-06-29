@@ -64,7 +64,6 @@ Tiny_Tree::Tiny_Tree( pll_unode_t * edge_node,
   : partition_(nullptr, tiny_partition_destroy)
   , tree_(nullptr, utree_destroy)
   , opt_branches_(opt_branches)
-  , ranged_computation_(options.ranged)
   , sliding_blo_(options.sliding_blo)
   , branch_id_(branch_id)
   , lookup_(lookup_store)

@@ -96,7 +96,7 @@ public:
       // per-loop pre-hook
       per_loop_hook_();
 
-      for_each(stages_, [&](auto& s) {
+      for_each(stages_, [&](const auto s) {
 
         if (s.exec()) {
 

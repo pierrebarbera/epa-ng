@@ -80,17 +80,17 @@ public:
   Typed_Stage()		= delete;
   ~Typed_Stage() 	= default;
 
-  inline void accept(in_type& arg)
+  inline void accept(in_type& arg) const
   {
     accept_(arg);
   }
 
-  inline out_type process(in_type& arg)
+  inline out_type process(in_type& arg) const
   {
     return process_(arg);
   }
 
-  inline void put(out_type& arg)
+  inline void put(out_type& arg) const
   {
     put_(arg);
   }
