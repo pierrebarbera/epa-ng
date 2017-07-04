@@ -9,22 +9,65 @@
 #include "MSA.hpp"
 #include "Work.hpp"
 
-void split( const Sample& src, 
-            std::vector<Sample>& parts, 
-            const unsigned int num_parts);
+
+/**
+ * special split function that Splits samples in buckets according to the global sequence ID
+ * of their PQueries. The goal is to have them split such that each aggregate node gets their
+ * correct set of sequence results (even if that part is empty, which constitutes a null-message)
+ * 
+ * @param
+ * @param
+ * @param
+ */
+template<class T>
+void split( const Sample<T>& src, 
+            std::vector<Sample<T>>& parts, 
+            const unsigned int num_parts)
+{
+  parts.clear();
+  // ensure that there are actually as many parts as specified. We want empty parts to enable null messages
+  parts.resize(num_parts);
+
+  for (auto& pq : src) {
+    const auto bucket = pq.sequence_id() % num_parts;
+    parts[bucket].push_back(pq);
+  }
+
+}
+
 void split( const Work& source, 
             std::vector<Work>& parts, 
             const unsigned int num_parts);
-void merge(Sample& dest, const Sample &src);
+
+/**
+  Merges a Sample <src> into a Sample <dest>. Leaves <src> intact.
+*/
+template<class T>
+void merge(Sample<T>& dest, const Sample<T>& src)
+{
+  // merge in every source pquery...
+  for (const auto& pquery : src) {
+    // ... by checking if its sequence already exists in destination
+    auto input_iter = find(dest.begin(), dest.end(), pquery);
+    // if not, create a record
+    if (input_iter == dest.end()) {
+      dest.emplace_back(pquery.sequence_id());
+      input_iter = --(dest.end());
+    }
+    // then concat their vectors
+    input_iter->insert(input_iter->end(), pquery.begin(), pquery.end());
+  }
+}
+
 void merge(Work& dest, const Work& src);
 void merge(Timer<>& dest, const Timer<>& src);
-void compute_and_set_lwr(Sample& sample);
-void discard_bottom_x_percent(Sample& sample, const double x);
-void discard_by_support_threshold(Sample& sample, 
+void compute_and_set_lwr(Sample<Placement>& sample);
+void discard_bottom_x_percent(Sample<Placement>& sample, const double x);
+void discard_by_support_threshold(Sample<Placement>& sample, 
                                   const double thresh, 
                                   const unsigned int min=1, 
                                   const unsigned int max=std::numeric_limits<unsigned int>::max());
-void discard_by_accumulated_threshold(Sample& sample, 
+void discard_by_accumulated_threshold(Sample<Placement>& sample, 
                                       const double thresh,
                                       const unsigned int min=1, 
                                       const unsigned int max=std::numeric_limits<unsigned int>::max());

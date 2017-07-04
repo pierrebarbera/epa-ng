@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <type_traits>
+
 #include <cereal/types/vector.hpp>
 #include <cereal/types/string.hpp>
 #include <cereal/types/base_class.hpp>
@@ -10,14 +12,30 @@
 #include "PQuery.hpp"
 #include "Token.hpp"
 
+template <class Placement_Type>
 class Sample : public Token {
 public:
-  using value_type      = PQuery;
-  using iterator        = std::vector<value_type>::iterator;
-  using const_iterator  = std::vector<value_type>::const_iterator;
+  using value_type      = PQuery<Placement_Type>;
+  using iterator        = typename std::vector<value_type>::iterator;
+  using const_iterator  = typename std::vector<value_type>::const_iterator;
 
   Sample() = default;
-  Sample(unsigned int size) 
+
+  template < typename T = Placement_Type,
+    typename = std::enable_if_t<
+      std::is_same<T, Placement>::value
+      >
+  >
+  Sample(const Sample<Slim_Placement>& other)
+    : pquerys_(other.size())
+    , newick_(other.newick())
+  {
+    const auto size = other.size();
+    for (size_t i = 0; i < size; ++i) {
+      pquerys_[i] = PQuery<Placement>(other.at(i));
+    }
+  }
+  Sample(const size_t size) 
     : pquerys_(size) 
   { }
   Sample(const std::string newick) 
@@ -26,13 +44,13 @@ public:
   ~Sample() = default;
 
   // member access
-  PQuery& back() { return pquerys_.back(); }
+  value_type& back() { return pquerys_.back(); }
   unsigned int size() const { return pquerys_.size(); }
   const std::string& newick() const { return newick_; }
   void clear() { pquerys_.clear(); }
-  void push_back(PQuery&& pq) { pquerys_.push_back(pq); }
-  void push_back(PQuery& pq) { pquerys_.push_back(pq); }
-  void push_back(const PQuery& pq) { pquerys_.push_back(pq); }
+  void push_back(value_type&& pq) { pquerys_.push_back(pq); }
+  void push_back(value_type& pq) { pquerys_.push_back(pq); }
+  void push_back(const value_type& pq) { pquerys_.push_back(pq); }
   void erase(iterator begin, iterator end) { pquerys_.erase(begin, end); }
 
   // needs to be in the header
@@ -46,7 +64,7 @@ public:
   {
     // if seq_id in pquerys_
     auto iter = std::end(pquerys_);
-    if ((iter = std::find(std::begin(pquerys_), std::end(pquerys_), PQuery(seq_id))) 
+    if ((iter = std::find(std::begin(pquerys_), std::end(pquerys_), value_type(seq_id))) 
       != std::end(pquerys_)) {
       iter->emplace_back(std::forward<Args>(args)...);
     } else {
@@ -64,7 +82,8 @@ public:
   const_iterator cend() { return pquerys_.cend(); }
 
   // Operator overloads
-  PQuery& operator[] (const unsigned int index) { return pquerys_[index]; }
+  value_type& operator[] (const size_t index) { return pquerys_[index]; }
+  const value_type& at (const size_t index) const { return pquerys_[index]; }
 
   // serialization
   template <class Archive>
@@ -72,6 +91,6 @@ public:
   { ar( *static_cast<Token*>( this ), pquerys_, newick_ ); }
 
 private:
-  std::vector<PQuery> pquerys_;
+  std::vector<value_type> pquerys_;
   std::string newick_;
 };

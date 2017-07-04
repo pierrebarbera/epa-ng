@@ -1,18 +1,36 @@
 #pragma once
 
 #include <vector>
+#include <type_traits>
+
 #include <cereal/types/vector.hpp>
 
 #include "Sequence.hpp"
 #include "Placement.hpp"
 
+template <class Placement_Type>
 class PQuery {
+
 public:
-  using value_type      = Placement;
-  using iterator        = std::vector<value_type>::iterator;
-  using const_iterator  = std::vector<value_type>::const_iterator;
+  using value_type      = Placement_Type;
+  using iterator        = typename std::vector<value_type>::iterator;
+  using const_iterator  = typename std::vector<value_type>::const_iterator;
 
   PQuery() = default;
+  template < typename T = Placement_Type,
+    typename = std::enable_if_t<
+      std::is_same<T, Placement>::value
+      >
+  >
+  PQuery(const PQuery<Slim_Placement>& other)
+    : sequence_id_(other.sequence_id())
+    , placements_(other.size())
+  {
+    const auto size = other.size();
+    for (size_t i = 0; i < size; ++i) {
+      placements_[i] = Placement(other.at(i));
+    }
+  }
   PQuery (const unsigned int seq_id, const unsigned int size)
     : sequence_id_(seq_id), placements_(size) 
   { }
@@ -35,7 +53,7 @@ public:
   }
 
   // member access
-  Placement& back() { return placements_.back(); }
+  value_type& back() { return placements_.back(); }
   unsigned int sequence_id() const { return sequence_id_; }
   double entropy() const { return entropy_; }
   void entropy(const double e) { entropy_ = e; }
@@ -54,7 +72,8 @@ public:
   const_iterator cend() { return placements_.cend(); }
 
   // Operator overloads
-  Placement& operator[] (const unsigned int index) { return placements_[index]; }
+  value_type& operator[] (const size_t index) { return placements_[index]; }
+  const value_type& at (const size_t index) const { return placements_[index]; }
   bool operator==(const PQuery&& other) { return sequence_id_ == other.sequence_id_; }
   bool operator==(const PQuery& other) { return sequence_id_ == other.sequence_id_; }
 
@@ -63,6 +82,6 @@ public:
   void serialize(Archive& ar) { ar( sequence_id_, placements_ ); }
 private:
   unsigned int sequence_id_ = 0;
-  std::vector<Placement> placements_;
+  std::vector<value_type> placements_;
   double entropy_ = -1.0;
 };

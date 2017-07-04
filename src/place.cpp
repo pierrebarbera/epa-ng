@@ -58,11 +58,12 @@ static std::string trim(const std::string &s, const char l, const char r)
   return (wsback<=wsfront ? std::string() : std::string(wsfront,wsback));
 }
 
+template <class T>
 static void place(const Work& to_place, 
                   MSA& msa, 
                   Tree& reference_tree, 
                   const std::vector<pll_unode_t *>& branches, 
-                  Sample& sample, 
+                  Sample<T>& sample, 
                   bool do_blo, 
                   const Options& options, 
                   std::shared_ptr<Lookup_Store>& lookup_store)
@@ -75,7 +76,7 @@ static void place(const Work& to_place,
 #endif
 
   // split the sample structure such that the parts are thread-local
-  std::vector<Sample> sample_parts(num_threads);
+  std::vector<Sample<T>> sample_parts(num_threads);
   std::vector<Work> work_parts;
   split(to_place, work_parts, num_threads);
 
@@ -216,6 +217,9 @@ void process( Tree& reference_tree,
   LOG_DBG << "smallest BL: " << lowest << std::endl;
 
   unsigned int chunk_num = 1;
+
+  using Sample = Sample<Placement>;
+
   Sample sample;
 
   std::shared_ptr<Lookup_Store> previously_calculated_lookups(
@@ -591,6 +595,9 @@ void tmp_pipeline_test( Tree& reference_tree,
 
   // create output file
   std::ofstream outfile;
+
+  using Slim_Sample = Sample<Slim_Placement>;
+  using Sample      = Sample<Placement>;
   
   // ============ LAMBDAS ============================
   
@@ -620,10 +627,10 @@ void tmp_pipeline_test( Tree& reference_tree,
     }
   };
 
-  auto preplacement = [&](Work& work) -> Sample {
+  auto preplacement = [&](Work& work) -> Slim_Sample {
     LOG_DBG << "PREPLACING" << std::endl;
 
-    Sample result;
+    Slim_Sample result;
 
     place(work,
           chunk,
@@ -637,8 +644,10 @@ void tmp_pipeline_test( Tree& reference_tree,
     return result;
   };
 
-  auto candidate_selection = [&](Sample& sample) -> Work {
+  auto candidate_selection = [&](Slim_Sample& slim) -> Work {
     LOG_DBG << "SELECTING CANDIDATES" << std::endl;
+
+    Sample sample(slim);
 
     compute_and_set_lwr(sample);
 

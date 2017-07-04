@@ -1,19 +1,23 @@
 #pragma once
 
+class Slim_Placement;
+
 class Placement {
 public:
   Placement() = default;
 
-  Placement(unsigned int branch_id, 
-            double likelihood, 
-            double pendant_length, 
-            double distal_length)
+  Placement(const unsigned int branch_id, 
+            const double likelihood, 
+            const double pendant_length, 
+            const double distal_length)
     : branch_id_(branch_id)
     , likelihood_(likelihood)
     , lwr_(0.0)
     , pendant_length_(pendant_length)
     , distal_length_(distal_length)
   { }
+
+  Placement(const Slim_Placement& other);
 
   Placement(Placement const& other) = default;
   Placement(Placement&& other)      = default;
@@ -25,10 +29,10 @@ public:
 
   // getters
   double lwr() const {return lwr_;};
-  double likelihood() const {return likelihood_;};
+  double likelihood() const {return likelihood_;}
   double pendant_length() const {return pendant_length_;};
   double distal_length() const {return distal_length_;};
-  unsigned int branch_id() const {return branch_id_;};
+  unsigned int branch_id() const {return branch_id_;}
 
   // setters
   void lwr(double value) {lwr_ = value;};
@@ -46,4 +50,33 @@ private:
   double lwr_;
   double pendant_length_;
   double distal_length_;
+};
+
+class Slim_Placement
+{
+public:
+  Slim_Placement() = default;
+
+  Slim_Placement( const unsigned int branch_id, 
+                  const double likelihood,
+                  const double, 
+                  const double)
+    : branch_id_(branch_id)
+    , likelihood_(likelihood)
+  { }
+  Slim_Placement(const Placement& other);
+
+  ~Slim_Placement() = default;
+
+  double likelihood() const {return likelihood_;}
+  unsigned int branch_id() const {return branch_id_;}
+
+  // serialization
+  template<class Archive>
+  void serialize(Archive& ar) { ar(branch_id_, likelihood_); }
+
+private:
+  unsigned int branch_id_;
+  double likelihood_;
+  
 };

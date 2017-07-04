@@ -37,12 +37,13 @@ public:
   /**
    * Create work object from a Sample: all entries are seen as placements to be recomputed
    */
-  Work(Sample& sample)
+  template<class T>
+  Work(Sample<T>& sample)
   {
-    for (auto & pq : sample)
+    for (auto& pq : sample)
     {
       auto seq_id = pq.sequence_id();
-      for (auto & placement : pq)
+      for (auto& placement : pq)
       {
         auto branch_id = placement.branch_id();
         work_set_[branch_id].push_back(seq_id);

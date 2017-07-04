@@ -5,29 +5,6 @@
 #include <algorithm>
 #include <iterator>
 
-/**
- * special split function that Splits samples in buckets according to the global sequence ID
- * of their PQueries. The goal is to have them split such that each aggregate node gets their
- * correct set of sequence results (even if that part is empty, which constitutes a null-message)
- * 
- * @param
- * @param
- * @param
- */
-void split( const Sample& src, 
-            std::vector<Sample>& parts, 
-            const unsigned int num_parts)
-{
-  parts.clear();
-  // ensure that there are actually as many parts as specified. We want empty parts to enable null messages
-  parts.resize(num_parts);
-
-  for (auto& pq : src) {
-    const auto bucket = pq.sequence_id() % num_parts;
-    parts[bucket].push_back(pq);
-  }
-
-}
 
 void split( const Work& src, 
             std::vector<Work>& parts, 
@@ -48,24 +25,6 @@ void split( const Work& src,
   }
 }
 
-/**
-  Merges a Sample <src> into a Sample <dest>. Leaves <src> intact.
-*/
-void merge(Sample& dest, const Sample& src)
-{
-  // merge in every source pquery...
-  for (const auto& pquery : src) {
-    // ... by checking if its sequence already exists in destination
-    auto input_iter = find(dest.begin(), dest.end(), pquery);
-    // if not, create a record
-    if (input_iter == dest.end()) {
-      dest.emplace_back(pquery.sequence_id());
-      input_iter = --(dest.end());
-    }
-    // then concat their vectors
-    input_iter->insert(input_iter->end(), pquery.begin(), pquery.end());
-  }
-}
 
 void merge(Work& dest, const Work& src)
 {
@@ -88,7 +47,7 @@ void merge(Timer<>& dest, const Timer<>& src)
   dest.insert(dest.end(), src.begin(), src.end());
 }
 
-void compute_and_set_lwr(Sample& sample)
+void compute_and_set_lwr(Sample<Placement>& sample)
 {
   for (auto &pq : sample) {
     double total = 0.0;
@@ -120,7 +79,7 @@ void compute_and_set_lwr(Sample& sample)
   }
 }
 
-static void sort_by_lwr(PQuery& pq)
+static void sort_by_lwr(PQuery<Placement>& pq)
 {
   sort(pq.begin(), pq.end(),
     [](const Placement &p_a, const Placement &p_b) -> bool {
@@ -129,7 +88,7 @@ static void sort_by_lwr(PQuery& pq)
   );
 }
 
-void discard_bottom_x_percent(Sample& sample, const double x)
+void discard_bottom_x_percent(Sample<Placement>& sample, const double x)
 {
   if (x < 0.0 || x > 1.0) {
     throw std::range_error{"x is not a percentage (outside of [0,1])"};
@@ -144,7 +103,7 @@ void discard_bottom_x_percent(Sample& sample, const double x)
   }
 }
 
-void discard_by_support_threshold(Sample& sample, 
+void discard_by_support_threshold(Sample<Placement>& sample, 
                                   const double thresh, 
                                   const unsigned int min, 
                                   const unsigned int max)
@@ -185,7 +144,7 @@ void discard_by_support_threshold(Sample& sample,
   }
 }
 
-void discard_by_accumulated_threshold(Sample& sample, 
+void discard_by_accumulated_threshold(Sample<Placement>& sample, 
                                       const double thresh,
                                       const unsigned int min, 
                                       const unsigned int max)

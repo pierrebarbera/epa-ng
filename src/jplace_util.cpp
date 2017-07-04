@@ -31,7 +31,7 @@ std::string placement_to_jplace_string(const Placement& p)
   return output.str();
 }
 
-std::string pquery_to_jplace_string(const PQuery& pquery, const MSA& msa)
+std::string pquery_to_jplace_string(const PQuery<Placement>& pquery, const MSA& msa)
 {
   std::ostringstream output;
 
@@ -104,7 +104,7 @@ std::string finalize_jplace_string(const std::string& invocation)
   return output.str();
 }
 
-std::string sample_to_jplace_string(const Sample& sample, const MSA& msa)
+std::string sample_to_jplace_string(const Sample<Placement>& sample, const MSA& msa)
 {
   std::ostringstream output;
 
@@ -119,7 +119,7 @@ std::string sample_to_jplace_string(const Sample& sample, const MSA& msa)
   return output.str();
 }
 
-std::string full_jplace_string(const Sample& sample, 
+std::string full_jplace_string(const Sample<Placement>& sample, 
                           const std::string& invocation, 
                           const MSA& msa)
 {
