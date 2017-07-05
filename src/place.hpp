@@ -18,3 +18,10 @@ void tmp_pipeline_test( Tree& tree,
                         const std::string& outdir, 
                         const Options& options,
                         const std::string& invocation);
+
+void simple_mpi(Tree& tree, 
+                const std::string& query_file, 
+                const std::string& outdir, 
+                const Options& options,
+                const std::string& invocation);
+

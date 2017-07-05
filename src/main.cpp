@@ -145,7 +145,7 @@ int main(int argc, char** argv)
     exit(EXIT_SUCCESS);
   }
 
-  if (cli.count("help"))
+  if (cli.count("verbose"))
   {
     genesis::utils::Logging::max_level(genesis::utils::Logging::kDebug2);
   }
@@ -328,7 +328,8 @@ int main(int argc, char** argv)
   // start the placement process and write to file
   auto start = std::chrono::high_resolution_clock::now();
   // process(tree, queries, work_dir, options, invocation);
-  tmp_pipeline_test(tree, queries, work_dir, options, invocation);
+  // tmp_pipeline_test(tree, queries, work_dir, options, invocation);
+  simple_mpi(tree, query_file, work_dir, options, invocation);
   auto end = std::chrono::high_resolution_clock::now();
   auto runtime = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
 

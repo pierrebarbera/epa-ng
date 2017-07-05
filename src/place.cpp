@@ -644,6 +644,34 @@ void tmp_pipeline_test( Tree& reference_tree,
     return result;
   };
 
+  // auto ingest_preplace = [&](VoidToken&) -> Slim_Sample {
+  //   LOG_DBG << "INGEST & PREPLACE" << std::endl;
+
+  //   Slim_Sample result;
+
+  //   if (num_sequences <= 0) {
+  //     result.is_last(true);
+  //     return result;
+  //   } else if (num_sequences < chunk_size) {
+  //     Work work(std::make_pair(0, num_branches), std::make_pair(0, num_sequences));
+  //     std::vector<Work> parts
+  //   } else {
+  //     return all_work;
+  //   }
+
+
+  //   place(work,
+  //         chunk,
+  //         reference_tree,
+  //         branches,
+  //         result,
+  //         false,
+  //         options,
+  //         lookups);
+
+  //   return result;
+  // };
+
   auto candidate_selection = [&](Slim_Sample& slim) -> Work {
     LOG_DBG << "SELECTING CANDIDATES" << std::endl;
 
@@ -759,6 +787,181 @@ void tmp_pipeline_test( Tree& reference_tree,
   //                     outdir, 
   //                     newick_string,
   //                     invocation);
+
+}
+
+#include "epa_mpi_util.hpp"
+
+void simple_mpi(Tree& reference_tree, 
+                const std::string& query_file, 
+                const std::string& outdir,
+                const Options& options,
+                const std::string& invocation)
+{
+  LOG_INFO << "WARNING! THIS FUNCTION IS EXPERIMENTAL!" << std::endl;
+
+  #ifdef __MPI
+
+  // Timer<> flight_time;
+  std::ofstream flight_file(outdir + "stat");
+
+  std::string status_file_name(outdir + "pepa.status");
+  std::ofstream trunc_status_file(status_file_name, std::ofstream::trunc);
+
+  std::vector<std::string> part_names;
+
+
+  const auto num_branches = reference_tree.nums().branches;
+
+  // get all edges
+  std::vector<pll_unode_t *> branches(num_branches);
+  auto num_traversed_branches = utree_query_branches(reference_tree.tree(), &branches[0]);
+  if (num_traversed_branches != num_branches) {
+    throw std::runtime_error{"Traversing the utree went wrong during pipeline startup!"};
+  }
+
+  auto lookups = 
+    std::make_shared<Lookup_Store>(num_branches, reference_tree.partition()->states);
+
+  // some MPI prep
+  int local_rank = 0;
+  int num_ranks = 0;
+  MPI_COMM_RANK(MPI_COMM_WORLD, &local_rank);
+  MPI_COMM_SIZE(MPI_COMM_WORLD, &num_ranks);
+
+  std::vector<int> other_ranks(num_ranks-1);
+  for (int i = 1; i < num_ranks-1; ++i) {
+    other_ranks[i] = i;
+  }
+
+  std::vector<unsigned long> offsets(num_ranks);
+  unsigned long chunk_size = 0;
+
+  // preparse the query file to attain offsets
+  if (local_rank == 0) {
+    LOG_DBG << "Calculating offsets.";
+    auto all_offs = get_offsets(query_file);
+    const unsigned long query_size = all_offs.size();
+    LOG_DBG1 << "query_size: " << query_size;
+    chunk_size = ceil(query_size / static_cast<double>(num_ranks));
+    LOG_DBG1 << "chunk_size: " << chunk_size;
+    size_t k = 0;
+    LOG_DBG1 << "offsets:";
+    all_offs[0] = 0;
+    for (unsigned long i = 0; i < query_size; ++i) {
+      if ((i % chunk_size) == 0) {
+        offsets[k] = all_offs[i];
+        LOG_DBG2 << all_offs[i];
+        k++;
+      }
+    }
+    LOG_DBG1 << "parts:     " << k;
+    LOG_DBG1 << "num_ranks: " << num_ranks;
+  }
+
+  MPI_Bcast(&chunk_size, 
+            1, 
+            MPI::UNSIGNED_LONG, 
+            0, 
+            MPI_COMM_WORLD);
+
+  MPI_Bcast(&offsets[0], 
+            offsets.size(), 
+            MPI::UNSIGNED_LONG, 
+            0, 
+            MPI_COMM_WORLD);
+
+  // read only the locally relevant part of the queries
+  auto chunk = build_MSA_from_file(query_file, offsets[local_rank], chunk_size);
+  const size_t actual_num_seq = chunk.size();
+
+  Work all_work(std::make_pair(0, num_branches), std::make_pair(0, actual_num_seq));
+
+  using Sample = Sample<Placement>;
+
+  Sample preplace;
+
+  LOG_DBG << "Preplacement." << std::endl;
+  place(all_work,
+        chunk,
+        reference_tree,
+        branches,
+        preplace,
+        false,
+        options,
+        lookups);
+
+  // Candidate Selection
+  LOG_DBG << "Selecting candidates." << std::endl;
+  compute_and_set_lwr(preplace);
+
+  if (options.prescoring_by_percentage) {
+    discard_bottom_x_percent(preplace, 
+                            (1.0 - options.prescoring_threshold));
+  } else {
+    discard_by_accumulated_threshold(preplace, 
+                                    options.prescoring_threshold,
+                                    options.filter_min,
+                                    options.filter_max);
+  }
+
+  Work blo_work(preplace);
+
+  Sample blo_sample;
+
+  // BLO placement
+  LOG_DBG << "BLO Placement." << std::endl;
+  place(blo_work,
+        chunk,
+        reference_tree,
+        branches,
+        blo_sample,
+        true,
+        options,
+        lookups);
+
+  // Output
+  compute_and_set_lwr(blo_sample);
+  if (options.acc_threshold) {
+    LOG_DBG << "Filtering by accumulated threshold: " << options.support_threshold << std::endl;
+    discard_by_accumulated_threshold( blo_sample, 
+                                      options.support_threshold,
+                                      options.filter_min,
+                                      options.filter_max);
+  } else {
+    LOG_DBG << "Filtering placements below threshold: " << options.support_threshold << std::endl;
+    discard_by_support_threshold( blo_sample,
+                                  options.support_threshold,
+                                  options.filter_min,
+                                  options.filter_max);
+  }
+
+  // send to output: on rank 0 
+  Timer<> dummy;
+  
+
+  epa_mpi_gather(blo_sample, 0, other_ranks, local_rank, dummy);
+
+  if (local_rank == 0) {
+    // create output file
+    LOG_INFO << "Output file: " << outdir + "epa_result.jplace";
+    std::ofstream outfile;
+    outfile.open(outdir + "epa_result.jplace");
+    outfile << init_jplace_string(
+      get_numbered_newick_string(reference_tree.tree()));
+    outfile << sample_to_jplace_string(blo_sample, chunk);
+    outfile << finalize_jplace_string(invocation);
+    outfile.close();
+  }
+
+  #else
+  (void) reference_tree;
+  (void) query_file;
+  (void) outdir;
+  (void) options;
+  (void) invocation;
+  assert(0);
+  #endif //__MPI
 
 }
 
