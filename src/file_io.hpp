@@ -6,6 +6,7 @@
 
 #include "Tree_Numbers.hpp"
 #include "Model.hpp"
+#include "MSA.hpp"
 #include "pllhead.hpp"
 #include "Tree.hpp"
 
@@ -21,5 +22,5 @@ pll_partition_t * build_partition_from_file(const Model& model,
                                             const int num_sites,
                                             const bool repeats = false);
 void file_check(const std::string& file_path);
-std::vector<size_t> get_offsets(const std::string& file);
+std::vector<size_t> get_offsets(const std::string& file, MSA& msa);
 int pll_fasta_fseek(pll_fasta_t* fd, const long int offset, const int whence);

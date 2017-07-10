@@ -831,25 +831,27 @@ void simple_mpi(Tree& reference_tree,
 
   std::vector<int> other_ranks(num_ranks-1);
   for (int i = 1; i < num_ranks; ++i) {
-    other_ranks[i] = i;
+    other_ranks[i-1] = i;
   }
 
   std::vector<unsigned long> offsets(num_ranks);
   unsigned long part_size = 0;
 
+  MSA header_list_msa;
+
   // preparse the query file to attain offsets
   if (local_rank == 0) {
     LOG_DBG << "Calculating offsets.";
-    auto all_offs = get_offsets(query_file);
+    auto all_offs = get_offsets(query_file, header_list_msa);
     const unsigned long query_size = all_offs.size();
     LOG_DBG1 << "query_size: " << query_size;
     part_size = ceil(query_size / static_cast<double>(num_ranks));
     LOG_DBG1 << "part_size: " << part_size;
-    size_t k = 0;
+    int k = 0;
     LOG_DBG1 << "offsets:";
     all_offs[0] = 0;
-    for (unsigned long i = 0; i < query_size; ++i) {
-      if ((i % part_size) == 0) {
+    for (unsigned long i = 0; i < query_size and k < num_ranks; ++i) {
+      if ((i % (part_size - 1)) == 0) {
         offsets[k] = all_offs[i];
         LOG_DBG2 << all_offs[i];
         k++;
@@ -878,9 +880,9 @@ void simple_mpi(Tree& reference_tree,
   // read only the locally relevant part of the queries
   // auto chunk = build_MSA_from_file(query_file, offsets[local_rank], chunk_size);
   MSA chunk;
-  MSA_Stream msa_stream(query_file, options.chunk_size, offsets[local_rank]);
+  MSA_Stream msa_stream(query_file, options.chunk_size, offsets[local_rank], part_size);
   size_t num_sequences = options.chunk_size;
-  size_t read_sequences = 0;
+  unsigned int sequences_left = part_size;
 
   using Sample = Sample<Placement>;
   Sample result;
@@ -889,8 +891,11 @@ void simple_mpi(Tree& reference_tree,
 
   size_t chunk_num = 1;
 
-  while ((num_sequences = msa_stream.read_next(chunk, options.chunk_size)) > 0
-          and (read_sequences += num_sequences) <= part_size) {
+  while ((num_sequences = msa_stream.read_next( chunk, options.chunk_size)) > 0) {
+
+    LOG_DBG << "num_sequences: " << num_sequences << std::endl;
+
+    sequences_left -= num_sequences;
 
     if (num_sequences < options.chunk_size) {
       all_work = Work(std::make_pair(0, num_branches), std::make_pair(0, num_sequences));
@@ -955,7 +960,7 @@ void simple_mpi(Tree& reference_tree,
 
     merge(result, blo_sample);
 
-    LOG_INFO << chunk_num * options.chunk_size  << " Sequences done!";
+    LOG_INFO << part_size - sequences_left  << " Sequences done!";
     ++chunk_num;
   }
 
@@ -970,7 +975,7 @@ void simple_mpi(Tree& reference_tree,
     outfile.open(outdir + "epa_result.jplace");
     outfile << init_jplace_string(
       get_numbered_newick_string(reference_tree.tree()));
-    outfile << sample_to_jplace_string(result, chunk);
+    outfile << sample_to_jplace_string(result, header_list_msa);
     outfile << finalize_jplace_string(invocation);
     outfile.close();
   }

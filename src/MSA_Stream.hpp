@@ -4,6 +4,7 @@
 #include <vector>
 #include <stdexcept>
 #include <memory>
+#include <limits>
 
 #ifdef __PREFETCH
 #include <thread>
@@ -21,7 +22,8 @@ public:
 
   MSA_Stream (const std::string& msa_file, 
               const size_t initial_size,
-              const size_t offset=0);
+              const size_t offset=0,
+              const size_t max_read=std::numeric_limits<size_t>::max());
   MSA_Stream() : fptr_(nullptr, fasta_close) { }
   ~MSA_Stream();
 
@@ -34,10 +36,14 @@ public:
   size_t read_next(container_type& result, const size_t number);
 
 private:
+
+  void read_chunk(const size_t number);
   file_type fptr_;
   // container_type active_chunk_;
   container_type prefetch_chunk_;
 #ifdef __PREFETCH
   std::thread prefetcher_;
 #endif
+  size_t num_read_ = 0;
+  size_t max_read_;
 };

@@ -1,16 +1,20 @@
 #include "MSA_Stream.hpp"
 #include "file_io.hpp"
 
-static void read_chunk( MSA_Stream::file_type::pointer fptr, 
-                        const size_t number, 
-                        MSA_Stream::container_type& prefetch_buffer)
+void MSA_Stream::read_chunk(const size_t number)
 {
-  if (!fptr) {
+  prefetch_chunk_.clear();
+  
+  if (!fptr_) {
     throw std::runtime_error{"fptr was invalid!"};
   }
 
   int sites = 0;
-  size_t number_left = number;
+  int number_left = std::min(number, max_read_ - num_read_);
+
+  if (number_left == 0) {
+    return;
+  }
 
   char * sequence = nullptr;
   char * header = nullptr;
@@ -18,9 +22,8 @@ static void read_chunk( MSA_Stream::file_type::pointer fptr,
   long header_length;
   long sequence_number;
 
-  prefetch_buffer.clear();
 
-  while (number_left and pll_fasta_getnext( fptr, 
+  while (number_left > 0 and pll_fasta_getnext( fptr_.get(), 
                                             &header, 
                                             &header_length, 
                                             &sequence, 
@@ -37,18 +40,22 @@ static void read_chunk( MSA_Stream::file_type::pointer fptr,
       sequence[i] = toupper(sequence[i]);
     }
     
-    prefetch_buffer.append(header, sequence);
+    prefetch_chunk_.append(header, sequence);
     free(sequence);
     free(header);
     sites = sequence_length;
     number_left--;
   }
+
+  num_read_ += prefetch_chunk_.size();
 }
 
 MSA_Stream::MSA_Stream( const std::string& msa_file, 
                         const size_t initial_size,
-                        const size_t offset)
+                        const size_t offset,
+                        const size_t max_read)
   : fptr_(nullptr, fasta_close)
+  , max_read_(max_read)
 {
   fptr_ = file_type(pll_fasta_open(msa_file.c_str(), pll_map_fasta),
                     fasta_close);
@@ -62,7 +69,7 @@ MSA_Stream::MSA_Stream( const std::string& msa_file,
     }
   }
 
-  read_chunk(fptr_.get(), initial_size, prefetch_chunk_);
+  read_chunk(initial_size);
 
   // prefetcher_ = std::thread(read_chunk, fptr_.get(), initial_size, std::ref(prefetch_chunk_));
 }
@@ -86,9 +93,9 @@ size_t MSA_Stream::read_next( MSA_Stream::container_type& result,
   
   // start request next chunk from prefetcher (async)
 #ifdef __PREFETCH
-  prefetcher_ = std::thread(read_chunk, fptr_.get(), number, std::ref(prefetch_chunk_));
+  prefetcher_ = std::thread(read_chunk, this, number);
 #else
-  read_chunk(fptr_.get(), number, prefetch_chunk_);
+  read_chunk(number);
 #endif
   // return size of current buffer
   return result.size();

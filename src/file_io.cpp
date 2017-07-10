@@ -127,7 +127,7 @@ static void epa_read_fasta( const std::string& msa_file,
 
 }
 
-std::vector<size_t> get_offsets(const std::string& msa_file)
+std::vector<size_t> get_offsets(const std::string& msa_file, MSA& msa)
 {
   std::vector<size_t> result;
 
@@ -135,6 +135,7 @@ std::vector<size_t> get_offsets(const std::string& msa_file)
     [&](auto& record){
       result.push_back(ftell(record.file->fp)
         - length_till_newl(record.file->line));
+      msa.append(record.header, "");
   });
 
   return result;
