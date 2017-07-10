@@ -22,3 +22,4 @@ pll_partition_t * build_partition_from_file(const Model& model,
                                             const bool repeats = false);
 void file_check(const std::string& file_path);
 std::vector<size_t> get_offsets(const std::string& file);
+int pll_fasta_fseek(pll_fasta_t* fd, const long int offset, const int whence);

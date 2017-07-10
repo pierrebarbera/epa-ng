@@ -1,4 +1,5 @@
 #include "MSA_Stream.hpp"
+#include "file_io.hpp"
 
 static void read_chunk( MSA_Stream::file_type::pointer fptr, 
                         const size_t number, 
@@ -45,13 +46,20 @@ static void read_chunk( MSA_Stream::file_type::pointer fptr,
 }
 
 MSA_Stream::MSA_Stream( const std::string& msa_file, 
-                        const size_t initial_size)
+                        const size_t initial_size,
+                        const size_t offset)
   : fptr_(nullptr, fasta_close)
 {
   fptr_ = file_type(pll_fasta_open(msa_file.c_str(), pll_map_fasta),
                     fasta_close);
   if (!fptr_) {
     throw std::runtime_error{std::string("Cannot open file: ") + msa_file};
+  }
+
+  if (offset) {
+    if (pll_fasta_fseek(fptr_.get(), offset, SEEK_SET)) {
+      throw std::runtime_error{"Unable to fseek on the fasta file."};
+    }
   }
 
   read_chunk(fptr_.get(), initial_size, prefetch_chunk_);

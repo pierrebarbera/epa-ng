@@ -27,7 +27,7 @@ static unsigned long length_till_newl(char* line)
 }
 
 
-static int pll_fasta_fseek(pll_fasta_t* fd, const long int offset, const int whence)
+int pll_fasta_fseek(pll_fasta_t* fd, const long int offset, const int whence)
 {
   auto status = fseek(fd->fp, offset, whence);
 
