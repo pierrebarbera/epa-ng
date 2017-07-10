@@ -880,16 +880,17 @@ void simple_mpi(Tree& reference_tree,
   MSA chunk;
   MSA_Stream msa_stream(query_file, options.chunk_size, offsets[local_rank]);
   size_t num_sequences = options.chunk_size;
-  size_t read_sequences = num_sequences;
+  size_t read_sequences = 0;
 
   using Sample = Sample<Placement>;
   Sample result;
 
   Work all_work(std::make_pair(0, num_branches), std::make_pair(0, num_sequences));
 
+  size_t chunk_num = 1;
 
   while ((num_sequences = msa_stream.read_next(chunk, options.chunk_size)) > 0
-          and (read_sequences += num_sequences) < part_size) {
+          and (read_sequences += num_sequences) <= part_size) {
 
     if (num_sequences < options.chunk_size) {
       all_work = Work(std::make_pair(0, num_branches), std::make_pair(0, num_sequences));
@@ -953,6 +954,9 @@ void simple_mpi(Tree& reference_tree,
     }
 
     merge(result, blo_sample);
+
+    LOG_INFO << chunk_num * options.chunk_size  << " Sequences done!";
+    ++chunk_num;
   }
 
   // send to output: on rank 0 
