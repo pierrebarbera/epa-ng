@@ -36,8 +36,6 @@ public:
   size_t read_next(container_type& result, const size_t number);
 
 private:
-
-  void read_chunk(const size_t number);
   file_type fptr_;
   // container_type active_chunk_;
   container_type prefetch_chunk_;

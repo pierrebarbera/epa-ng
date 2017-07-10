@@ -1,16 +1,20 @@
 #include "MSA_Stream.hpp"
 #include "file_io.hpp"
 
-void MSA_Stream::read_chunk(const size_t number)
+static void read_chunk( MSA_Stream::file_type::pointer fptr, 
+                        const size_t number, 
+                        MSA_Stream::container_type& prefetch_buffer,
+                        const size_t max_read,
+                        size_t& num_read)
 {
-  prefetch_chunk_.clear();
-  
-  if (!fptr_) {
+  prefetch_buffer.clear();
+
+  if (!fptr) {
     throw std::runtime_error{"fptr was invalid!"};
   }
 
   int sites = 0;
-  int number_left = std::min(number, max_read_ - num_read_);
+  int number_left = std::min(number, max_read - num_read);
 
   if (number_left == 0) {
     return;
@@ -23,7 +27,7 @@ void MSA_Stream::read_chunk(const size_t number)
   long sequence_number;
 
 
-  while (number_left > 0 and pll_fasta_getnext( fptr_.get(), 
+  while (number_left > 0 and pll_fasta_getnext( fptr, 
                                             &header, 
                                             &header_length, 
                                             &sequence, 
@@ -40,14 +44,14 @@ void MSA_Stream::read_chunk(const size_t number)
       sequence[i] = toupper(sequence[i]);
     }
     
-    prefetch_chunk_.append(header, sequence);
+    prefetch_buffer.append(header, sequence);
     free(sequence);
     free(header);
     sites = sequence_length;
     number_left--;
   }
 
-  num_read_ += prefetch_chunk_.size();
+  num_read += prefetch_buffer.size();
 }
 
 MSA_Stream::MSA_Stream( const std::string& msa_file, 
@@ -69,7 +73,7 @@ MSA_Stream::MSA_Stream( const std::string& msa_file,
     }
   }
 
-  read_chunk(initial_size);
+  read_chunk(fptr_.get(), initial_size, prefetch_chunk_, max_read_, num_read_);
 
   // prefetcher_ = std::thread(read_chunk, fptr_.get(), initial_size, std::ref(prefetch_chunk_));
 }
@@ -93,9 +97,14 @@ size_t MSA_Stream::read_next( MSA_Stream::container_type& result,
   
   // start request next chunk from prefetcher (async)
 #ifdef __PREFETCH
-  prefetcher_ = std::thread(read_chunk, this, number);
+  prefetcher_ = std::thread(read_chunk, 
+                            fptr_.get(), 
+                            number, 
+                            std::ref(prefetch_chunk_),
+                            max_read_,
+                            std::ref(num_read_));
 #else
-  read_chunk(number);
+  read_chunk(fptr_.get(), initial_size, prefetch_chunk_, max_read_, num_read_);
 #endif
   // return size of current buffer
   return result.size();
