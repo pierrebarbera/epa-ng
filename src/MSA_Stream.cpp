@@ -104,7 +104,7 @@ size_t MSA_Stream::read_next( MSA_Stream::container_type& result,
                             max_read_,
                             std::ref(num_read_));
 #else
-  read_chunk(fptr_.get(), initial_size, prefetch_chunk_, max_read_, num_read_);
+  read_chunk(fptr_.get(), number, prefetch_chunk_, max_read_, num_read_);
 #endif
   // return size of current buffer
   return result.size();
