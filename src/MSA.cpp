@@ -28,3 +28,8 @@ void MSA::append(const std::string& header, const std::string& sequence)
     num_sites_ = sequence.length();
   }
 }
+
+void std::swap(MSA& a, MSA& b)
+{
+  MSA::swap(a, b);
+}

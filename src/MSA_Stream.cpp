@@ -1,6 +1,8 @@
 #include "MSA_Stream.hpp"
 #include "file_io.hpp"
 
+#include <chrono>
+
 static void read_chunk( MSA_Stream::file_type::pointer fptr, 
                         const size_t number, 
                         MSA_Stream::container_type& prefetch_buffer,
@@ -16,7 +18,7 @@ static void read_chunk( MSA_Stream::file_type::pointer fptr,
   int sites = 0;
   int number_left = std::min(number, max_read - num_read);
 
-  if (number_left == 0) {
+  if (number_left <= 0) {
     return;
   }
 
@@ -84,8 +86,8 @@ size_t MSA_Stream::read_next( MSA_Stream::container_type& result,
 
 #ifdef __PREFETCH
   // join prefetching thread to ensure new chunk exists
-  if (prefetcher_.joinable()) {
-    prefetcher_.join();
+  if (prefetcher_.valid()) {
+    prefetcher_.wait();
   }
 #endif
   // perform pointer swap to data
@@ -97,7 +99,8 @@ size_t MSA_Stream::read_next( MSA_Stream::container_type& result,
   
   // start request next chunk from prefetcher (async)
 #ifdef __PREFETCH
-  prefetcher_ = std::thread(read_chunk, 
+  prefetcher_ = std::async( std::launch::async,
+                            read_chunk, 
                             fptr_.get(), 
                             number, 
                             std::ref(prefetch_chunk_),
@@ -114,8 +117,8 @@ MSA_Stream::~MSA_Stream()
 {
 #ifdef __PREFETCH
   // avoid dangling threads
-  if (prefetcher_.joinable()) {
-    prefetcher_.join();
+  if (prefetcher_.valid()) {
+    prefetcher_.wait();
   }
 #endif
 }

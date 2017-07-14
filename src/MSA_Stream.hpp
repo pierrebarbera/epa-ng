@@ -7,7 +7,7 @@
 #include <limits>
 
 #ifdef __PREFETCH
-#include <thread>
+#include <future>
 #endif
 
 #include "pllhead.hpp"
@@ -40,7 +40,7 @@ private:
   // container_type active_chunk_;
   container_type prefetch_chunk_;
 #ifdef __PREFETCH
-  std::thread prefetcher_;
+  std::future<void> prefetcher_;
 #endif
   size_t num_read_ = 0;
   size_t max_read_;
