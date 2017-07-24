@@ -1,5 +1,6 @@
 PLLMOD=libs/pll-modules
 PLL=${PLLMOD}/libs/libpll
+GENESIS=libs/genesis
 
 all: build/CMakeCache.txt run_make
 .PHONY: all
@@ -24,6 +25,20 @@ update:
 unittest: update
 	@./test/bin/epa_test
 .PHONY: test
+
+genesis:
+	mkdir -p bin
+	cd ${GENESIS} && $(MAKE)
+.PHONY: genesis
+
+genesis_update:
+	mkdir -p bin
+	cd ${GENESIS} && $(MAKE) update
+.PHONY: genesis
+
+genesis_clean:
+	cd ${GENESIS} && $(MAKE) clean
+.PHONY: genesis
 
 pll:
 	mkdir -p bin
@@ -52,9 +67,9 @@ REF=$(TEST)/1k_reference.fasta
 QRY=$(TEST)/1k_query_100.fasta
 OUTDIR=/tmp/epa
 
-BINARY_WRITE= -t $(TREE) -s $(REF) -B -w $(OUTDIR) $(F)
-BINARY_READ=-b $(OUTDIR)/epa_binary_file -q $(QRY) -w $(OUTDIR) -g 0.99 $(F)
-NORM_TEST=-t $(TREE) -s $(REF) -q $(QRY) -w $(OUTDIR) -g 0.99 --chunk-size=100 $(F)
+BINARY_WRITE= -t $(TREE) -s $(REF) -B -w $(OUTDIR) --verbose $(F)
+BINARY_READ=-b $(OUTDIR)/epa_binary_file -q $(QRY) -w $(OUTDIR) -g 0.99 --verbose $(F)
+NORM_TEST=-t $(TREE) -s $(REF) -q $(QRY) -w $(OUTDIR) -g 0.99 --chunk-size=10 --verbose $(F)
 
 test: update
 	mkdir -p $(OUTDIR)
@@ -72,5 +87,5 @@ bintest: update
 mpi_test: update
 	mkdir -p $(OUTDIR)
 	rm -f $(OUTDIR)/*
-	mpirun -n 32 $(EPABIN) $(NORM_TEST)
+	mpirun -n 4 $(EPABIN) $(NORM_TEST)
 .PHONY: mpi_test

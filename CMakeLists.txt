@@ -1,17 +1,19 @@
 cmake_minimum_required (VERSION 2.8.10 FATAL_ERROR)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/libs/seqan/util/cmake")
+
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 set(CMAKE_DISABLE_SOURCE_CHANGES  ON)
 
 set (ENABLE_MPI       OFF)
 set (ENABLE_OMP       OFF)
-set (ENABLE_PREFETCH  OFF)
+set (ENABLE_PREFETCH  ON)
 
 project (epa CXX)
 
 #check for minimum compiler versions
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-  set(EPA_COMPILER_TARGET_VERSION "4.9")
+  set(EPA_COMPILER_TARGET_VERSION "4.9.2")
   if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS EPA_COMPILER_TARGET_VERSION)
     message (FATAL_ERROR "${CMAKE_CXX_COMPILER_ID} compiler too old! Minimum required: ${EPA_COMPILER_TARGET_VERSION}")
   endif()
@@ -25,22 +27,26 @@ endif()
 # set (epa_VERSION_MAJOR 0)
 # set (epa_VERSION_MINOR 1)
 
-# set (CMAKE_BUILD_TYPE DEBUG)
 set (CMAKE_BUILD_TYPE RELEASE)
-# set (CMAKE_VERBOSE_MAKEFILE ON)
+
+if ( $ENV{EPA_DEBUG} )
+  set (CMAKE_BUILD_TYPE DEBUG)
+endif ()
 
 message (STATUS "Building ${CMAKE_BUILD_TYPE}")
 
 set (WARN_FLAGS               "-Wall -Wextra")
 set (CMAKE_CXX_FLAGS          "-std=c++14 ${WARN_FLAGS}")
 
-set (CMAKE_CXX_FLAGS_DEBUG    "-g")
+set (CMAKE_CXX_FLAGS_DEBUG    "-O0 -g -ggdb3 -DDEBUG -D_GLIBCXX_DEBUG")
 set (CMAKE_CXX_FLAGS_RELEASE  "-O3 -DNDEBUG")
 
 if(ENABLE_PREFETCH)
+set (CMAKE_THREAD_PREFER_PTHREAD ON)
+set (THREADS_PREFER_PTHREAD_FLAG ON)
 find_package (Threads)
 message(STATUS "Enabling Prefetching")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__PREFETCH")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__PREFETCH -DGENESIS_PTHREADS")
 endif()
 
 if(ENABLE_OMP)
@@ -77,10 +83,11 @@ endif()
 
 message(STATUS "Using flags: ${CMAKE_CXX_FLAGS}")
 
+# Add include directories.
 include_directories(${PROJECT_SOURCE_DIR}/libs/cereal/include)
 include_directories(${PROJECT_SOURCE_DIR}/libs/cxxopts/src)
 include_directories(${PROJECT_SOURCE_DIR}/libs/include/libpll)
-
+include_directories(${PROJECT_SOURCE_DIR}/libs/genesis/lib)
 
 set(pll_dir ${PROJECT_SOURCE_DIR}/libs/pll-modules/libs/libpll/src)
 set(pll_binary_dir ${PROJECT_SOURCE_DIR}/libs/pll-modules/src/binary)
