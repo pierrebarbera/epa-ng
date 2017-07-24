@@ -19,6 +19,7 @@ set (EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/test/bin)
 
 add_executable        (epa_test_module ${epa_test_sources})
 
+target_link_libraries (epa_test_module ${PROJECT_SOURCE_DIR}/libs/genesis/bin/libgenesis.so)
 target_link_libraries (epa_test_module ${PROJECT_SOURCE_DIR}/libs/lib/libpll_binary.a)
 target_link_libraries (epa_test_module ${PROJECT_SOURCE_DIR}/libs/lib/libpll_optimize.a)
 target_link_libraries (epa_test_module ${PROJECT_SOURCE_DIR}/libs/lib/libpll_msa.a)
@@ -26,7 +27,11 @@ target_link_libraries (epa_test_module ${PROJECT_SOURCE_DIR}/libs/lib/libpll_uti
 target_link_libraries (epa_test_module ${PROJECT_SOURCE_DIR}/libs/lib/libpll.a)
 target_link_libraries (epa_test_module m)
 
-target_link_libraries (epa_test_module ${GTEST_BOTH_LIBRARIES} -pthread)
+target_link_libraries (epa_test_module ${GTEST_BOTH_LIBRARIES})
+
+if(ENABLE_PREFETCH)
+target_link_libraries (epa_test_module ${CMAKE_THREAD_LIBS_INIT})
+endif()
 
 target_link_libraries (epa_test_module ${MPI_CXX_LIBRARIES})
 

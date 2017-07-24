@@ -11,7 +11,7 @@ using namespace std;
 
 TEST(set_manipulators, split_sample_equal)
 {
-  Sample sample_1;
+  Sample<> sample_1;
   unsigned int s_a = 0, s_b = 1, s_c = 2;
   sample_1.emplace_back(s_a, 0);
   sample_1.back().emplace_back(1,-10,0.9,0.9);
@@ -20,7 +20,7 @@ TEST(set_manipulators, split_sample_equal)
   sample_1.emplace_back(s_c, 0);
   sample_1.back().emplace_back(3,-10,0.9,0.9);
 
-  vector<Sample> parts;
+  vector<Sample<>> parts;
 
   split(sample_1, parts, 2);
 
@@ -37,8 +37,8 @@ TEST(set_manipulators, split_sample_equal)
 
 TEST(set_manipulators, split_sample_empty)
 {
-  Sample sample_1;
-  vector<Sample> parts;
+  Sample<> sample_1;
+  vector<Sample<>> parts;
 
   split(sample_1, parts, 2);
 
@@ -49,7 +49,7 @@ TEST(set_manipulators, split_sample_empty)
 
 TEST(set_manipulators, split_sample_globaly_mapped)
 {
-  Sample sample_1;
+  Sample<> sample_1;
   sample_1.emplace_back(1, 0);
   sample_1.back().emplace_back(1,-10,0.9,0.9);
   sample_1.emplace_back(2, 0);
@@ -59,7 +59,7 @@ TEST(set_manipulators, split_sample_globaly_mapped)
   sample_1.emplace_back(9, 0);
   sample_1.back().emplace_back(3,-10,0.9,0.9);
 
-  vector<Sample> parts;
+  vector<Sample<>> parts;
 
   split(sample_1, parts, 5);
 
@@ -76,7 +76,7 @@ TEST(set_manipulators, split_sample_globaly_mapped)
 
 TEST(set_manipulators, split_work_equal)
 {
-  Sample sample_1;
+  Sample<> sample_1;
   unsigned int s_a = 0, s_b = 1, s_c = 2;
   sample_1.emplace_back(s_a);
   sample_1.back().emplace_back(1,-10,0.9,0.9);
@@ -212,7 +212,7 @@ TEST(set_manipulators, split_work_null_parts)
 
 TEST(set_manipulators, merge_work)
 {
-  Sample sample;
+  Sample<> sample;
   unsigned int s_a = 0, s_b = 1, s_c = 2;
   sample.emplace_back(s_a);
   sample.back().emplace_back(1,-10,0.9,0.9);
@@ -273,8 +273,8 @@ TEST(set_manipulators, merge_work)
 TEST(set_manipulators, merge_sample)
 {
   // setup
-  Sample sample_1;
-  Sample sample_2;
+  Sample<> sample_1;
+  Sample<> sample_2;
   unsigned int s_a = 0, s_b = 1, s_c = 2, s_d = 3;
   sample_1.emplace_back(s_a, 0);
   sample_1.back().emplace_back(1,-10,0.9,0.9);
@@ -359,7 +359,7 @@ TEST(set_manipulators, get_valid_range)
 TEST(set_manipulators, discard_bottom_x_percent)
 {
   // setup
-  Sample sample;
+  Sample<> sample;
   unsigned int s_a = 0, s_b = 1, s_c = 2;
   sample.emplace_back(s_a, 0);
   vector<double> weights_a({0.001,0.23,0.05,0.02,0.4,0.009,0.2,0.09});
@@ -395,7 +395,7 @@ TEST(set_manipulators, discard_bottom_x_percent)
 TEST(set_manipulators, discard_by_accumulated_threshold)
 {
   // setup
-  Sample sample;
+  Sample<> sample;
   unsigned int s_a = 0, s_b = 1, s_c = 2;
   sample.emplace_back(s_a, 0);
   vector<double> weights_a({0.001,0.23,0.05,0.02,0.4,0.009,0.2,0.09});
@@ -431,7 +431,7 @@ TEST(set_manipulators, discard_by_accumulated_threshold)
 TEST(set_manipulators, discard_by_support_threshold)
 {
   // setup
-  Sample sample;
+  Sample<> sample;
   unsigned int s_a = 0, s_b = 1, s_c = 2;
   sample.emplace_back(s_a, 0);
   vector<double> weights_a{0.001,0.23,0.05,0.02,0.4,0.009,0.2,0.09};

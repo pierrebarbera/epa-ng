@@ -50,7 +50,7 @@ TEST(Tiny_Tree, place)
   all_combinations(place_);
 }
 
-static void compare_samples(Sample& orig_samp, Sample& read_samp, bool verbose=false, unsigned int head=0)
+static void compare_samples(Sample<>& orig_samp, Sample<>& read_samp, bool verbose=false, unsigned int head=0)
 {
   for (size_t seq_id = 0; seq_id < read_samp.size(); ++seq_id) {
     auto& orig_pq = orig_samp[seq_id];
@@ -127,8 +127,8 @@ static void place_from_binary(const Options options)
   ASSERT_EQ(original_traversed, read_traversed);
   ASSERT_EQ(original_traversed, original_tree.nums().branches);
 
-  Sample orig_samp;
-  Sample read_samp;
+  Sample<> orig_samp;
+  Sample<> read_samp;
 
   // test
   for (size_t i = 0; i < original_traversed; i++) {
