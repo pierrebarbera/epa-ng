@@ -4,6 +4,8 @@
 #include "src/file_io.hpp"
 #include "src/MSA.hpp"
 
+#include "genesis/utils/core/options.hpp"
+
 static void compare_msas(const MSA& lhs, const MSA& rhs)
 {
   ASSERT_EQ(lhs.size(), rhs.size());
@@ -16,6 +18,8 @@ static void compare_msas(const MSA& lhs, const MSA& rhs)
 
 TEST(Binary_Fasta, 4bit_store_and_load)
 {
+  genesis::utils::Options::get().allow_file_overwriting(true);
+
   Binary_Fasta conv;
 
   auto msa = build_MSA_from_file(env->query_file);
