@@ -72,12 +72,17 @@ public:
   }
   ~FourBit() = default;
 
-  // conversion functions
-  std::basic_string<uchar> to_fourbit(const std::string& s)
+  inline size_t packed_size(const size_t size)
   {
-    const size_t packed_size = std::ceil(s.size() / 2.0);
-    std::basic_string<uchar> res;
-    res.reserve(packed_size);
+    return std::ceil(size / 2.0);
+  }
+
+  // conversion functions
+  inline std::basic_string<char> to_fourbit(const std::string& s)
+  {
+    const size_t p_size = packed_size(s.size());
+    std::basic_string<char> res;
+    res.reserve(p_size);
 
     size_t i = 0;
     for (; i + 1 < s.size(); i += 2) {
@@ -92,7 +97,7 @@ public:
     return res;
   }
 
-  std::string from_fourbit(const std::basic_string<uchar>& s, const size_t n)
+  std::string from_fourbit(const std::basic_string<char>& s, const size_t n)
   {
     // prepare the result string
     std::string res;
@@ -114,5 +119,5 @@ public:
   }
   
 private:
-  Matrix<uchar> to_fourbit_; 
+  Matrix<char> to_fourbit_; 
 };
