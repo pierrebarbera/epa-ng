@@ -20,10 +20,10 @@ private:
     return (lhs << 4) | rhs;
   }
 
-  std::pair<uchar, uchar> unpack_(const uchar c)
+  static inline std::pair<uchar, uchar> unpack_(const uchar c)
   {
-    const uchar upper_mask = 0b11110000;
-    const uchar lower_mask = 0b00001111;
+    static const uchar upper_mask = 0b11110000;
+    static const uchar lower_mask = 0b00001111;
     return {(c & upper_mask) >> 4, c & lower_mask};
   }
 
@@ -101,19 +101,30 @@ public:
   {
     // prepare the result string
     std::string res;
-    res.reserve(n);
+    res.resize(n);
 
     // determine wether the packed string has padding
     const bool padded = (s.size() < n);
 
     // unpack
-    for (size_t i = 0; i < s.size(); ++i) {
+    size_t i = 0;
+    for (; i < s.size() - 1u; ++i) {
       auto char_pair = unpack_(s[i]);
-      res.push_back(NT_MAP[char_pair.first]);
-      if ((i < s.size() - 1u) or not padded) {
-        res.push_back(NT_MAP[char_pair.second]);
-      }
+      res[i*2] = NT_MAP[char_pair.first];
+      res[i*2+1] = NT_MAP[char_pair.second];
     }
+
+    // last element is special
+    auto char_pair = unpack_(s.back());
+    res[i*2] = NT_MAP[char_pair.first];
+
+    if (not padded) {
+      res[i*2+1] = NT_MAP[char_pair.second];
+    } else {
+      assert(char_pair.second == NONE_CHAR);
+    }
+
+    assert(res.size() == n);
 
     return res;
   }
