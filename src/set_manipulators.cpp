@@ -4,6 +4,7 @@
 #include <limits>
 #include <algorithm>
 #include <iterator>
+#include <cmath>
 
 
 void split( const Work& src, 
@@ -64,15 +65,15 @@ void compute_and_set_lwr(Sample<Placement>& sample)
 
     // sum up the distances to the max
     for (auto &p : pq) {
-      total += exp(p.likelihood() - max);
+      total += std::exp(p.likelihood() - max);
     }
 
     // normalize the distances
     for (auto &p : pq) {
-      double lwr = exp(p.likelihood() - max) / total;
+      double lwr = std::exp(p.likelihood() - max) / total;
       p.lwr(lwr);
       // compute the shannon entropy of the query (in nats)
-      entropy -= (lwr * log(lwr));
+      entropy -= (lwr * std::log(lwr));
     }
 
     pq.entropy(entropy);
@@ -95,7 +96,7 @@ void discard_bottom_x_percent(Sample<Placement>& sample, const double x)
   }
 
   for (auto &pq : sample) {
-    auto num_keep = (int)ceil((1.0 - x) * static_cast<double>(pq.size()));
+    auto num_keep = static_cast<int>(ceil((1.0 - x) * static_cast<double>(pq.size())));
     sort_by_lwr(pq);
     auto erase_iter = pq.begin();
     advance(erase_iter, num_keep);
