@@ -3,8 +3,6 @@
 #include <string>
 #include <vector>
 
-#include "pllhead.hpp"
-
 class Sequence
 {
 public:

@@ -69,7 +69,9 @@ void epa_mpi_waitall(previous_request_storage_t& reqs)
 }
 
 template <typename T>
-void epa_mpi_send(T& obj, int dest_rank, MPI_Comm comm)
+void epa_mpi_send(T& obj,
+                  int dest_rank,
+                  MPI_Comm comm)
 {
   // serialize the obj
   std::stringstream ss;
