@@ -6,6 +6,9 @@
 #include "function_traits.hpp"
 #include "seventeen.hpp"
 
+template <size_t S, class T>
+constexpr size_t array_size(T (&)[S]) noexcept {return S;}
+
 template < typename T , typename... Ts >
 auto head( std::tuple<T,Ts...> t )
 {

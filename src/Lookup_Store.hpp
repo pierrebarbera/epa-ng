@@ -7,18 +7,7 @@
 #include <limits>
 
 #include "Matrix.hpp"
-
-constexpr unsigned char NT_MAP[] = 
-  {'A', 'C', 'G', 'T', '-', 'Y', 'R', 'W', 'S', 'K', 'M', 'D', 'V', 'H', 'B', 'X'};
-constexpr unsigned char AA_MAP[] = 
-  { 'A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 
-    'T', 'V', 'W', 'Y', '-', 'X', 'B', 'Z', 'J'};
-
-template <size_t S, class T>
-constexpr size_t array_size(T (&)[S]) noexcept {return S;}
-
-constexpr size_t NT_MAP_SIZE = array_size(NT_MAP);
-constexpr size_t AA_MAP_SIZE = array_size(AA_MAP);
+#include "maps.hpp"
 
 constexpr size_t INVALID = std::numeric_limits<size_t>::max();
 
@@ -39,6 +28,7 @@ public:
     // build reverse map from char to ID in the charmap
     for (size_t i = 0; i < char_map_size_; ++i) {
       char_to_posish_[char_map_[i]] = i;
+      char_to_posish_[std::tolower(char_map_[i])] = i;
     }
   }
 
@@ -89,12 +79,11 @@ public:
 
   size_t char_position(unsigned char c) const
   {
+
     auto pos = char_to_posish_[c];
 
     if (pos == INVALID) {
-      throw std::runtime_error{
-        std::string("char is invalid! char =") + std::to_string(c)
-      };
+      throw std::runtime_error{std::string("char is invalid! char = ") + std::to_string(c)};
     }
 
     return pos;
