@@ -12,7 +12,7 @@
 #include "PQuery.hpp"
 #include "Token.hpp"
 
-template <class Placement_Type>
+template <class Placement_Type = Placement>
 class Sample : public Token {
 public:
   using value_type      = PQuery<Placement_Type>;
