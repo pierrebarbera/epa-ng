@@ -7,12 +7,14 @@
 #include "Matrix.hpp"
 #include "maps.hpp"
 
+
+
 class FourBit
 {
   // shorthand
   using uchar = unsigned char;
 private:
-  static constexpr uchar NONE_CHAR = 'Z';
+  static constexpr uchar NONE_CHAR = '-';
 
   uchar pack_(const uchar lhs, const uchar rhs)
   {
@@ -68,7 +70,15 @@ public:
       row = std::tolower(NT_MAP[i]);
       to_fourbit_.at(row, col) = packed_char;
     }
-      
+
+    // make the reverse lookup
+    for (size_t i = 0; i < from_fourbit_.max_size() * 2; i+=2) {
+      auto pair = unpack_(i/2);
+      reinterpret_cast<uchar*>(from_fourbit_.data())[i] = 
+        NT_MAP[pair.first];
+      reinterpret_cast<uchar*>(from_fourbit_.data())[i+1u] = 
+        NT_MAP[pair.second];
+    }
   }
   ~FourBit() = default;
 
@@ -109,19 +119,18 @@ public:
     // unpack
     size_t i = 0;
     for (; i < s.size() - 1u; ++i) {
-      auto char_pair = unpack_(s[i]);
-      res[i*2] = NT_MAP[char_pair.first];
-      res[i*2+1] = NT_MAP[char_pair.second];
+      reinterpret_cast<char16_t*>(&res[0])[i] 
+        = from_fourbit_[static_cast<uchar>(s[i])];
     }
 
     // last element is special
-    auto char_pair = unpack_(s.back());
+    auto char_pair = unpack_(static_cast<uchar>(s.back()));
     res[i*2] = NT_MAP[char_pair.first];
 
     if (not padded) {
       res[i*2+1] = NT_MAP[char_pair.second];
     } else {
-      assert(char_pair.second == NONE_CHAR);
+      assert(NT_MAP[char_pair.second] == NONE_CHAR);
     }
 
     assert(res.size() == n);
@@ -130,5 +139,6 @@ public:
   }
   
 private:
-  Matrix<char> to_fourbit_; 
+  Matrix<char> to_fourbit_;
+  std::array<char16_t, 256> from_fourbit_;
 };
