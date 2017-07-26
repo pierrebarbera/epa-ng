@@ -20,15 +20,13 @@ TEST(Binary_Fasta, 4bit_store_and_load)
 {
   genesis::utils::Options::get().allow_file_overwriting(true);
 
-  Binary_Fasta conv;
-
   auto msa = build_MSA_from_file(env->query_file);
 
   std::string binfile_name = env->query_file + ".bin";
 
-  conv.save(msa, binfile_name);
+  Binary_Fasta::save(msa, binfile_name);
 
-  auto read_msa = conv.load(binfile_name);
+  auto read_msa = Binary_Fasta::load(binfile_name);
 
   compare_msas(msa, read_msa);
 }
