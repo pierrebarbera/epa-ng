@@ -114,7 +114,7 @@ public:
     res.resize(n);
 
     // determine wether the packed string has padding
-    const bool padded = (s.size() < n);
+    const bool padded = (s.size() * 2 < n);
 
     // unpack
     size_t i = 0;
@@ -124,7 +124,7 @@ public:
     }
 
     // last element is special
-    auto char_pair = unpack_(static_cast<uchar>(s.back()));
+    auto char_pair = unpack_(static_cast<uchar>(s[i]));
     res[i*2] = NT_MAP[char_pair.first];
 
     if (not padded) {
