@@ -27,6 +27,7 @@
 #include "MSA.hpp"
 #include "Work.hpp"
 #include "Sample.hpp"
+#include "Binary_Fasta.hpp"
 
 #ifdef __MPI
 #include "epa_mpi_util.hpp"
@@ -798,7 +799,7 @@ void simple_mpi(Tree& reference_tree,
                 const Options& options,
                 const std::string& invocation)
 {
-  LOG_INFO << "WARNING! THIS FUNCTION IS EXPERIMENTAL!" << std::endl;
+  LOG_INFO << "WARNING! THIS FUNCTION IS EXPERIMENTAL and PRODUCES GARBAGE OUTPUT!" << std::endl;
 
   #ifdef __MPI
 
@@ -829,73 +830,43 @@ void simple_mpi(Tree& reference_tree,
   MPI_COMM_RANK(MPI_COMM_WORLD, &local_rank);
   MPI_COMM_SIZE(MPI_COMM_WORLD, &num_ranks);
 
-  std::vector<int> other_ranks(num_ranks-1);
-  for (int i = 1; i < num_ranks; ++i) {
-    other_ranks[i-1] = i;
+  LOG_DBG << "Number of ranks: " << num_ranks;
+
+  const int designated_writer = num_ranks - 1;
+
+  std::vector<int> all_ranks(num_ranks);
+  for (int i = 0; i < num_ranks; ++i) {
+    all_ranks[i] = i;
   }
 
-  std::vector<unsigned long> offsets(num_ranks);
-  unsigned long part_size = 0;
+  Binary_Fasta_Reader reader(query_file);
 
-  MSA header_list_msa;
-
-  // preparse the query file to attain offsets
-  if (local_rank == 0) {
-    LOG_DBG << "Calculating offsets.";
-    auto all_offs = get_offsets(query_file, header_list_msa);
-    const unsigned long query_size = all_offs.size();
-    LOG_DBG1 << "query_size: " << query_size;
-    part_size = ceil(query_size / static_cast<double>(num_ranks));
-    LOG_DBG1 << "part_size: " << part_size;
-    int k = 0;
-    LOG_DBG1 << "offsets:";
-    all_offs[0] = 0;
-    for (unsigned long i = 0; i < query_size and k < num_ranks; ++i) {
-      if ((i % (part_size - 1)) == 0) {
-        offsets[k] = all_offs[i];
-        LOG_DBG2 << all_offs[i];
-        k++;
-      }
-    }
-    LOG_DBG1 << "parts:     " << k;
-    LOG_DBG1 << "num_ranks: " << num_ranks;
-  }
-
-  MPI_Bcast(&part_size, 
-            1, 
-            MPI::UNSIGNED_LONG, 
-            0, 
-            MPI_COMM_WORLD);
-
-  LOG_DBG1 << "Received part_size: " << part_size;
-
-  MPI_Bcast(&offsets[0], 
-            offsets.size(), 
-            MPI::UNSIGNED_LONG, 
-            0, 
-            MPI_COMM_WORLD);
-
-  LOG_DBG1 << "My Offset: " << offsets[local_rank];
+  // how many should each rank read?
+  const size_t part_size = ceil(reader.num_sequences() / static_cast<double>(num_ranks));
+  LOG_DBG << "Number of sequences per rank: " << part_size;
 
   // read only the locally relevant part of the queries
-  // auto chunk = build_MSA_from_file(query_file, offsets[local_rank], chunk_size);
-  MSA chunk;
-  MSA_Stream msa_stream(query_file, options.chunk_size, offsets[local_rank], part_size);
+  // ... by skipping the appropriate amount
+  // reader.skip_to_sequence(part_size * local_rank);
+  // and limiting the reading to the given window
+  // reader.constrain(part_size);
+
   size_t num_sequences = options.chunk_size;
-  unsigned int sequences_left = part_size;
-
-  using Sample = Sample<Placement>;
-  Sample result;
-
   Work all_work(std::make_pair(0, num_branches), std::make_pair(0, num_sequences));
 
   size_t chunk_num = 1;
 
-  while ((num_sequences = msa_stream.read_next( chunk, options.chunk_size)) > 0) {
+  using Sample = Sample<Placement>;
+  Sample result;
+  MSA chunk;
+  size_t sequences_done = 0;
+  while ( (num_sequences = reader.read_next(chunk, options.chunk_size) ) > 0) {
+
+    assert(chunk.size() == num_sequences);
 
     LOG_DBG << "num_sequences: " << num_sequences << std::endl;
 
-    sequences_left -= num_sequences;
+    sequences_done += num_sequences;
 
     if (num_sequences < options.chunk_size) {
       all_work = Work(std::make_pair(0, num_branches), std::make_pair(0, num_sequences));
@@ -921,10 +892,10 @@ void simple_mpi(Tree& reference_tree,
       discard_bottom_x_percent(preplace, 
                               (1.0 - options.prescoring_threshold));
     } else {
-      discard_by_accumulated_threshold(preplace, 
-                                      options.prescoring_threshold,
-                                      options.filter_min,
-                                      options.filter_max);
+      discard_by_accumulated_threshold( preplace, 
+                                        options.prescoring_threshold,
+                                        options.filter_min,
+                                        options.filter_max);
     }
 
     Work blo_work(preplace);
@@ -960,22 +931,22 @@ void simple_mpi(Tree& reference_tree,
 
     merge(result, blo_sample);
 
-    LOG_INFO << part_size - sequences_left  << " Sequences done!";
+    LOG_INFO << sequences_done  << " Sequences done!";
     ++chunk_num;
   }
 
-  // send to output: on rank 0 
+  // send to output: on rank <designated_writer> 
   Timer<> dummy;
-  epa_mpi_gather(result, 0, other_ranks, local_rank, dummy);
+  epa_mpi_gather(result, designated_writer, all_ranks, local_rank, dummy);
 
-  if (local_rank == 0) {
+  if (local_rank == designated_writer) {
     // create output file
     LOG_INFO << "Output file: " << outdir + "epa_result.jplace";
     std::ofstream outfile;
     outfile.open(outdir + "epa_result.jplace");
     outfile << init_jplace_string(
       get_numbered_newick_string(reference_tree.tree()));
-    outfile << sample_to_jplace_string(result, header_list_msa);
+    outfile << sample_to_jplace_string(result, chunk);
     outfile << finalize_jplace_string(invocation);
     outfile.close();
   }
