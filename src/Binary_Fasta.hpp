@@ -140,12 +140,11 @@ static void skip_sequences( utils::Deserializer& des,
   }
   
   // skip ahead to correct file offset
-  // subtract the offset created by the header as skip is
-  // essentially a seek from the current position,
-  // but the offsets are absolute
-  des.skip( offset[skip] 
-          - data_section_offset(num_sequences) 
-          - offset[cursor]);
+  // subtract where we want to be from where we are
+  const size_t bytes_to_skip =  offset[cursor + skip] 
+                              - offset[cursor];
+
+  des.skip( bytes_to_skip );
 }
 
 static MSA read_sequences(utils::Deserializer& des,
