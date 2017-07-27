@@ -35,6 +35,14 @@ int main(int argc, char** argv)
   (void) sysret; //quenching a warning
   env->binary_file = env->out_dir + "persisted.bin";
 
+  std::string filter("--gtest_filter=");
+  if (argc > 1) {
+    if ( not ( filter.compare(0, filter.size(), argv[1]) == 0 ) ) {
+      filter += argv[1];
+      argv[1] = &filter[0];
+    }
+  }
+
   ::testing::InitGoogleTest(&argc, argv);
   MPI_INIT(&argc, &argv);
   ::testing::AddGlobalTestEnvironment(env);
