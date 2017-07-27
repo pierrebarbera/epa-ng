@@ -60,7 +60,9 @@ public:
   void insert(InputIt first, InputIt last) {pquerys_.insert(pquerys_.end(), first, last);}
 
   template <typename ...Args>
-  void add_placement(unsigned int seq_id, Args&& ...args)
+  void add_placement( const size_t seq_id,
+                      const std::string& label,
+                      Args&& ...args)
   {
     // if seq_id in pquerys_
     auto iter = std::end(pquerys_);
@@ -68,7 +70,7 @@ public:
       != std::end(pquerys_)) {
       iter->emplace_back(std::forward<Args>(args)...);
     } else {
-      pquerys_.push_back(seq_id);
+      pquerys_.emplace_back(seq_id, label);
       pquerys_.back().emplace_back(std::forward<Args>(args)...);
     }
   }

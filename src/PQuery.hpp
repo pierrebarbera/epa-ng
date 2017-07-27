@@ -17,6 +17,7 @@ public:
   using const_iterator  = typename std::vector<value_type>::const_iterator;
 
   PQuery() = default;
+
   template < typename T = Placement_Type,
     typename = std::enable_if_t<
       std::is_same<T, Placement>::value
@@ -31,10 +32,12 @@ public:
       placements_[i] = Placement(other.at(i));
     }
   }
-  PQuery (const unsigned int seq_id, const unsigned int size)
-    : sequence_id_(seq_id), placements_(size) 
+  PQuery (const size_t seq_id,
+          const std::string& header)
+    : sequence_id_(seq_id)
+    , header_(header)
   { }
-  PQuery (const unsigned int seq_id)
+  PQuery (const size_t seq_id)
     : sequence_id_(seq_id) 
   { }
   ~PQuery() = default;
@@ -55,6 +58,7 @@ public:
   // member access
   value_type& back() { return placements_.back(); }
   unsigned int sequence_id() const { return sequence_id_; }
+  std::string header() const { return header_; }
   double entropy() const { return entropy_; }
   void entropy(const double e) { entropy_ = e; }
   unsigned int size() const { return placements_.size(); }
@@ -79,9 +83,10 @@ public:
 
   // serialization
   template<class Archive>
-  void serialize(Archive& ar) { ar( sequence_id_, placements_ ); }
+  void serialize(Archive& ar) { ar( sequence_id_, header_, placements_ ); }
 private:
   unsigned int sequence_id_ = 0;
+  std::string header_;
   std::vector<value_type> placements_;
   double entropy_ = -1.0;
 };

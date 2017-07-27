@@ -13,11 +13,11 @@ TEST(set_manipulators, split_sample_equal)
 {
   Sample<> sample_1;
   unsigned int s_a = 0, s_b = 1, s_c = 2;
-  sample_1.emplace_back(s_a, 0);
+  sample_1.emplace_back(s_a);
   sample_1.back().emplace_back(1,-10,0.9,0.9);
-  sample_1.emplace_back(s_b, 0);
+  sample_1.emplace_back(s_b);
   sample_1.back().emplace_back(2,-10,0.9,0.9);
-  sample_1.emplace_back(s_c, 0);
+  sample_1.emplace_back(s_c);
   sample_1.back().emplace_back(3,-10,0.9,0.9);
 
   vector<Sample<>> parts;
@@ -50,13 +50,13 @@ TEST(set_manipulators, split_sample_empty)
 TEST(set_manipulators, split_sample_globaly_mapped)
 {
   Sample<> sample_1;
-  sample_1.emplace_back(1, 0);
+  sample_1.emplace_back(1);
   sample_1.back().emplace_back(1,-10,0.9,0.9);
-  sample_1.emplace_back(2, 0);
+  sample_1.emplace_back(2);
   sample_1.back().emplace_back(2,-10,0.9,0.9);
-  sample_1.emplace_back(3, 0);
+  sample_1.emplace_back(3);
   sample_1.back().emplace_back(3,-10,0.9,0.9);
-  sample_1.emplace_back(9, 0);
+  sample_1.emplace_back(9);
   sample_1.back().emplace_back(3,-10,0.9,0.9);
 
   vector<Sample<>> parts;
@@ -276,11 +276,11 @@ TEST(set_manipulators, merge_sample)
   Sample<> sample_1;
   Sample<> sample_2;
   unsigned int s_a = 0, s_b = 1, s_c = 2, s_d = 3;
-  sample_1.emplace_back(s_a, 0);
+  sample_1.emplace_back(s_a);
   sample_1.back().emplace_back(1,-10,0.9,0.9);
-  sample_1.emplace_back(s_b, 0);
+  sample_1.emplace_back(s_b);
   sample_1.back().emplace_back(2,-10,0.9,0.9);
-  sample_1.emplace_back(s_c, 0);
+  sample_1.emplace_back(s_c);
   sample_1.back().emplace_back(3,-10,0.9,0.9);
 
   assert(sample_1.size() == 3);
@@ -288,11 +288,11 @@ TEST(set_manipulators, merge_sample)
   assert(sample_1[1].size() == 1);
   assert(sample_1[2].size() == 1);
 
-  sample_2.emplace_back(s_c, 0);
+  sample_2.emplace_back(s_c);
   sample_2.back().emplace_back(1,-10,0.9,0.9);
-  sample_2.emplace_back(s_b, 0);
+  sample_2.emplace_back(s_b);
   sample_2.back().emplace_back(0,-10,0.9,0.9);
-  sample_2.emplace_back(s_d, 0);
+  sample_2.emplace_back(s_d);
   sample_2.back().emplace_back(3,-10,0.9,0.9);
 
   assert(sample_2.size() == 3);
@@ -361,7 +361,7 @@ TEST(set_manipulators, discard_bottom_x_percent)
   // setup
   Sample<> sample;
   unsigned int s_a = 0, s_b = 1, s_c = 2;
-  sample.emplace_back(s_a, 0);
+  sample.emplace_back(s_a);
   vector<double> weights_a({0.001,0.23,0.05,0.02,0.4,0.009,0.2,0.09});
   vector<double> weights_b({0.01,0.02,0.005,0.002,0.94,0.003,0.02});
   unsigned int num_expected[3] = {4,4,1};
@@ -370,12 +370,12 @@ TEST(set_manipulators, discard_bottom_x_percent)
     sample.back().emplace_back(1,-10,0.9,0.9);
     sample.back().back().lwr(n);
   }
-  sample.emplace_back(s_b, 0);
+  sample.emplace_back(s_b);
   for (auto n : weights_b) {
     sample.back().emplace_back(1,-10,0.9,0.9);
     sample.back().back().lwr(n);
   }
-  sample.emplace_back(s_c, 0);
+  sample.emplace_back(s_c);
   sample.back().emplace_back(1,-10,0.9,0.9);
   sample.back().back().lwr(1.0);
 
@@ -397,7 +397,7 @@ TEST(set_manipulators, discard_by_accumulated_threshold)
   // setup
   Sample<> sample;
   unsigned int s_a = 0, s_b = 1, s_c = 2;
-  sample.emplace_back(s_a, 0);
+  sample.emplace_back(s_a);
   vector<double> weights_a({0.001,0.23,0.05,0.02,0.4,0.009,0.2,0.09});
   vector<double> weights_b({0.01,0.02,0.005,0.002,0.94,0.003,0.02});
   unsigned int num_expected[3] = {5,2,1};
@@ -406,12 +406,12 @@ TEST(set_manipulators, discard_by_accumulated_threshold)
     sample.back().emplace_back(1,-10,0.9,0.9);
     sample.back().back().lwr(n);
   }
-  sample.emplace_back(s_b, 0);
+  sample.emplace_back(s_b);
   for (auto n : weights_b) {
     sample.back().emplace_back(1,-10,0.9,0.9);
     sample.back().back().lwr(n);
   }
-  sample.emplace_back(s_c, 0);
+  sample.emplace_back(s_c);
   sample.back().emplace_back(1,-10,0.9,0.9);
   sample.back().back().lwr(1.0);
 
@@ -433,7 +433,7 @@ TEST(set_manipulators, discard_by_support_threshold)
   // setup
   Sample<> sample;
   unsigned int s_a = 0, s_b = 1, s_c = 2;
-  sample.emplace_back(s_a, 0);
+  sample.emplace_back(s_a);
   vector<double> weights_a{0.001,0.23,0.05,0.02,0.4,0.009,0.2,0.09};
   vector<double> weights_b{0.01,0.02,0.005,0.002,0.94,0.003,0.02};
   unsigned int num_expected[3] = {6,3,1};
@@ -442,12 +442,12 @@ TEST(set_manipulators, discard_by_support_threshold)
     sample.back().emplace_back(1,-10,0.9,0.9);
     sample.back().back().lwr(n);
   }
-  sample.emplace_back(s_b, 0);
+  sample.emplace_back(s_b);
   for (auto n : weights_b) {
     sample.back().emplace_back(1,-10,0.9,0.9);
     sample.back().back().lwr(n);
   }
-  sample.emplace_back(s_c, 0);
+  sample.emplace_back(s_c);
   sample.back().emplace_back(1,-10,0.9,0.9);
   sample.back().back().lwr(1.0);
 

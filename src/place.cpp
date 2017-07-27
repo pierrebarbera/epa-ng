@@ -67,7 +67,8 @@ static void place(const Work& to_place,
                   Sample<T>& sample, 
                   bool do_blo, 
                   const Options& options, 
-                  std::shared_ptr<Lookup_Store>& lookup_store)
+                  std::shared_ptr<Lookup_Store>& lookup_store,
+                  const size_t seq_id_offset=0)
 {
 
 #ifdef __OMP
@@ -91,8 +92,8 @@ static void place(const Work& to_place,
     std::shared_ptr<Tiny_Tree> branch(nullptr);
 
     for (auto it : work_parts[i]) {
-      auto branch_id = it.branch_id;
-      auto seq_id = it.sequence_id;
+      const auto branch_id = it.branch_id;
+      const auto seq_id = it.sequence_id;
 
       if ((branch_id != prev_branch_id) or not branch) {
         branch = std::make_shared<Tiny_Tree>(branches[branch_id],
@@ -103,7 +104,9 @@ static void place(const Work& to_place,
                                              lookup_store);
       }
 
-      sample_parts[i].add_placement(seq_id, branch->place(msa[seq_id]));
+      sample_parts[i].add_placement(seq_id_offset + seq_id,
+                                    msa[seq_id].header(),
+                                    branch->place(msa[seq_id]));
 
       prev_branch_id = branch_id;
     }
@@ -278,7 +281,14 @@ void process( Tree& reference_tree,
     first_placement_work = all_work;
 #endif //__MPI
 
-    place(first_placement_work, chunk, reference_tree, branches, sample, !options.prescoring, options, previously_calculated_lookups);
+    place(first_placement_work,
+          chunk,
+          reference_tree,
+          branches,
+          sample,
+          !options.prescoring,
+          options,
+          previously_calculated_lookups);
 
 #ifdef __MPI
     timer.stop();
@@ -386,7 +396,7 @@ void process( Tree& reference_tree,
     std::string part_file_name(outdir + "epa." + std::to_string(local_rank)
       + "." + std::to_string(chunk_num) + ".part");
     std::ofstream part_file(part_file_name);
-    part_file << sample_to_jplace_string(sample, chunk);
+    part_file << sample_to_jplace_string(sample);
     part_names.push_back(part_file_name);
     part_file.close();
 
@@ -734,7 +744,7 @@ void tmp_pipeline_test( Tree& reference_tree,
       if (chunk_num > 1) {
         outfile << ",";
       }
-      outfile << sample_to_jplace_string(sample, chunk);
+      outfile << sample_to_jplace_string(sample);
       // std::string part_file_name(outdir + "epa." + std::to_string(local_rank)
       //   + "." + std::to_string(chunk_num) + ".part");
       // std::ofstream part_file(part_file_name);
@@ -799,7 +809,7 @@ void simple_mpi(Tree& reference_tree,
                 const Options& options,
                 const std::string& invocation)
 {
-  LOG_INFO << "WARNING! THIS FUNCTION IS EXPERIMENTAL and PRODUCES GARBAGE OUTPUT!" << std::endl;
+  LOG_INFO << "WARNING! THIS FUNCTION IS EXPERIMENTAL!" << std::endl;
 
   #ifdef __MPI
 
@@ -847,9 +857,10 @@ void simple_mpi(Tree& reference_tree,
 
   // read only the locally relevant part of the queries
   // ... by skipping the appropriate amount
-  // reader.skip_to_sequence(part_size * local_rank);
+  const size_t local_rank_seq_offset = part_size * local_rank;
+  reader.skip_to_sequence( local_rank_seq_offset );
   // and limiting the reading to the given window
-  // reader.constrain(part_size);
+  reader.constrain(part_size);
 
   size_t num_sequences = options.chunk_size;
   Work all_work(std::make_pair(0, num_branches), std::make_pair(0, num_sequences));
@@ -859,14 +870,14 @@ void simple_mpi(Tree& reference_tree,
   using Sample = Sample<Placement>;
   Sample result;
   MSA chunk;
-  size_t sequences_done = 0;
-  while ( (num_sequences = reader.read_next(chunk, options.chunk_size) ) > 0) {
+  size_t sequences_done = 0; // not just for info output!
+  while ( (num_sequences = reader.read_next(chunk, options.chunk_size) ) ) {
 
     assert(chunk.size() == num_sequences);
 
     LOG_DBG << "num_sequences: " << num_sequences << std::endl;
 
-    sequences_done += num_sequences;
+    const size_t seq_id_offset = sequences_done + local_rank_seq_offset;
 
     if (num_sequences < options.chunk_size) {
       all_work = Work(std::make_pair(0, num_branches), std::make_pair(0, num_sequences));
@@ -911,7 +922,8 @@ void simple_mpi(Tree& reference_tree,
           blo_sample,
           true,
           options,
-          lookups);
+          lookups,
+          seq_id_offset);
 
     // Output
     compute_and_set_lwr(blo_sample);
@@ -931,6 +943,7 @@ void simple_mpi(Tree& reference_tree,
 
     merge(result, blo_sample);
 
+    sequences_done += num_sequences;
     LOG_INFO << sequences_done  << " Sequences done!";
     ++chunk_num;
   }
@@ -946,7 +959,7 @@ void simple_mpi(Tree& reference_tree,
     outfile.open(outdir + "epa_result.jplace");
     outfile << init_jplace_string(
       get_numbered_newick_string(reference_tree.tree()));
-    outfile << sample_to_jplace_string(result, chunk);
+    outfile << sample_to_jplace_string(result);
     outfile << finalize_jplace_string(invocation);
     outfile.close();
   }

@@ -51,7 +51,7 @@ void merge(Sample<T>& dest, const Sample<T>& src)
     auto input_iter = find(dest.begin(), dest.end(), pquery);
     // if not, create a record
     if (input_iter == dest.end()) {
-      dest.emplace_back(pquery.sequence_id());
+      dest.emplace_back(pquery.sequence_id(), pquery.header());
       input_iter = --(dest.end());
     }
     // then concat their vectors

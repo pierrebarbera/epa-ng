@@ -153,8 +153,8 @@ static void place_from_binary(const Options options)
 
       ASSERT_DOUBLE_EQ(orig_place.likelihood(), read_place.likelihood());
 
-      orig_samp.add_placement(seq_id, orig_place);
-      read_samp.add_placement(seq_id, read_place);
+      orig_samp.add_placement(seq_id, "", orig_place);
+      read_samp.add_placement(seq_id, "",read_place);
       
       ++seq_id;
     }

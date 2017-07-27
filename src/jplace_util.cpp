@@ -31,7 +31,7 @@ std::string placement_to_jplace_string(const Placement& p)
   return output.str();
 }
 
-std::string pquery_to_jplace_string(const PQuery<Placement>& pquery, const MSA& msa)
+std::string pquery_to_jplace_string(const PQuery<Placement>& pquery)
 {
   std::ostringstream output;
 
@@ -56,14 +56,11 @@ std::string pquery_to_jplace_string(const PQuery<Placement>& pquery, const MSA& 
 
   // start of name column
   output <<"    \"n\": [";
-  // list of sequence headers
-  i = 0;
-  for (const auto& header : msa[pquery.sequence_id()].header_list() ) {
-    output << "\"" << header.c_str() << "\"";
-    if (++i < msa[pquery.sequence_id()].header_list().size()) {
-      output << ",";  
-    }
-  }
+  
+  // sequence header
+  const auto header = pquery.header();
+  output << "\"" << header.c_str() << "\"";
+ 
 
   output << "]" << NEWL; // close name bracket
 
@@ -104,13 +101,13 @@ std::string finalize_jplace_string(const std::string& invocation)
   return output.str();
 }
 
-std::string sample_to_jplace_string(const Sample<Placement>& sample, const MSA& msa)
+std::string sample_to_jplace_string(const Sample<Placement>& sample)
 {
   std::ostringstream output;
 
   size_t i = 0;
   for (const auto& p : sample) {
-    output << pquery_to_jplace_string(p, msa); 
+    output << pquery_to_jplace_string(p); 
     if (++i < sample.size()) {
       output << ",";
     }
@@ -119,9 +116,8 @@ std::string sample_to_jplace_string(const Sample<Placement>& sample, const MSA& 
   return output.str();
 }
 
-std::string full_jplace_string(const Sample<Placement>& sample, 
-                          const std::string& invocation, 
-                          const MSA& msa)
+std::string full_jplace_string( const Sample<Placement>& sample,
+                                const std::string& invocation)
 {
   std::ostringstream output;
 
@@ -129,7 +125,7 @@ std::string full_jplace_string(const Sample<Placement>& sample,
   output << init_jplace_string(sample.newick());
 
   // actual placements
-  output << sample_to_jplace_string(sample, msa);
+  output << sample_to_jplace_string(sample);
 
   // metadata std::string
   output << finalize_jplace_string(invocation);

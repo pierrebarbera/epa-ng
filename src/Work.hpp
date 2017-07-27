@@ -42,10 +42,10 @@ public:
   {
     for (auto& pq : sample)
     {
-      auto seq_id = pq.sequence_id();
+      const auto seq_id = pq.sequence_id();
       for (auto& placement : pq)
       {
-        auto branch_id = placement.branch_id();
+        const auto branch_id = placement.branch_id();
         work_set_[branch_id].push_back(seq_id);
       }
     }

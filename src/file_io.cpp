@@ -64,8 +64,6 @@ static void epa_read_fasta( const std::string& msa_file,
     throw std::runtime_error{"Unable to fseek on the fasta file."};
   }
 
-  LOG_DBG << record.file->line;
-
   long sequence_length;
   long header_length;
   long sequence_number;
