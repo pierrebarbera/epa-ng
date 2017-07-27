@@ -11,6 +11,9 @@ TEST(encoding, 4bit)
 
   auto unpacked = converter.from_fourbit(packed, input.size());
 
+  // from_fourbit does not return a null terminated string!
+  unpacked.push_back('\0');
+
   EXPECT_STRCASEEQ(input.c_str(), unpacked.c_str());
   // printf("%s\n", input.c_str());
   // printf("%s\n", unpacked.c_str());

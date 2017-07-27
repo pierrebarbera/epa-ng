@@ -20,13 +20,49 @@ TEST(Binary_Fasta, 4bit_store_and_load)
 {
   genesis::utils::Options::get().allow_file_overwriting(true);
 
-  auto msa = build_MSA_from_file(env->query_file);
+  const std::string orig_file(env->combined_file);
+  const std::string binfile_name(orig_file + ".bin");
 
-  std::string binfile_name = env->query_file + ".bin";
+  auto msa = build_MSA_from_file(orig_file);
 
   Binary_Fasta::save(msa, binfile_name);
 
   auto read_msa = Binary_Fasta::load(binfile_name);
 
   compare_msas(msa, read_msa);
+}
+
+TEST(Binary_Fasta, reader)
+{
+  genesis::utils::Options::get().allow_file_overwriting(true);
+
+  const std::string orig_file(env->combined_file);
+  const std::string binfile_name(orig_file + ".bin");
+
+  auto msa = build_MSA_from_file(orig_file);
+
+  Binary_Fasta::save(msa, binfile_name);
+
+  Binary_Fasta_Reader reader(binfile_name);
+
+  const size_t skip = 3;
+
+  reader.skip_to_sequence(skip);
+
+  MSA read_msa;
+  size_t i = skip;
+  const size_t chunksize = 5;
+  size_t num_sequences = 0;
+  while ( (num_sequences = reader.read_next(read_msa, chunksize)) ) {
+
+    ASSERT_EQ(num_sequences, read_msa.size()) << "bad size at i=" << i;
+  
+    for (size_t k = 0; k < num_sequences; ++k) {
+      EXPECT_STREQ(msa[i+k].header().c_str(), read_msa[k].header().c_str());
+      EXPECT_STREQ(msa[i+k].sequence().c_str(), read_msa[k].sequence().c_str());
+    }
+
+    i+=num_sequences;
+
+  }
 }
