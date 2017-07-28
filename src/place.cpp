@@ -845,7 +845,7 @@ void simple_mpi(Tree& reference_tree,
 
   LOG_DBG << "Number of ranks: " << num_ranks;
 
-  const int designated_writer = num_ranks - 1;
+  const int designated_writer = 0;
 
   std::vector<int> all_ranks(num_ranks);
   for (int i = 0; i < num_ranks; ++i) {
@@ -952,6 +952,7 @@ void simple_mpi(Tree& reference_tree,
   }
 
   // send to output: on rank <designated_writer> 
+  LOG_DBG << "Gathering results on Rank " << designated_writer;
   Timer<> dummy;
   epa_mpi_gather(result, designated_writer, all_ranks, local_rank, dummy);
 
@@ -966,6 +967,8 @@ void simple_mpi(Tree& reference_tree,
     outfile << finalize_jplace_string(invocation);
     outfile.close();
   }
+
+  MPI_Barrier(MPI_COMM_WORLD);
 
   #else
   (void) reference_tree;
