@@ -72,9 +72,12 @@ static void place(const Work& to_place,
 {
 
 #ifdef __OMP
-  unsigned int num_threads = options.num_threads ? options.num_threads : omp_get_max_threads();
+  const unsigned int num_threads = options.num_threads ? options.num_threads : omp_get_max_threads();
+  omp_set_num_threads(num_threads);
+  LOG_DBG << "Using threads: " << num_threads;
+  LOG_DBG << "Max threads: " << omp_get_max_threads();
 #else
-  unsigned int num_threads = 1;
+  const unsigned int num_threads = 1;
 #endif
 
   // split the sample structure such that the parts are thread-local
