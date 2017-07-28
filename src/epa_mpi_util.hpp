@@ -3,7 +3,6 @@
 #ifdef __MPI
 
 #include "mpihead.hpp"
-#include "Sample.hpp"
 #include "Timer.hpp"
 #include "logging.hpp"
 
@@ -21,12 +20,11 @@ typedef struct
   char*       buf = nullptr;
 } request_tuple;
 
-typedef typename std::unordered_map<int, request_tuple>  previous_request_storage_t;
+using previous_request_storage_t = typename std::unordered_map<int, request_tuple>;
 
 static void err_check(int errval)
 {
-  if (errval != MPI_SUCCESS)
-  {
+  if (errval != MPI_SUCCESS) {
     std::stringstream msg;
     msg << "Failed MPI call: ";
     switch (errval) {
@@ -55,11 +53,9 @@ static void err_check(int errval)
 
 void epa_mpi_waitall(previous_request_storage_t& reqs)
 {
-  for (auto& pair : reqs)
-  {
+  for (auto& pair : reqs) {
     auto& r = pair.second;
-    if (r.req)
-    {
+    if (r.req) {
       MPI_Status status;
       err_check(MPI_Wait(&r.req, &status));
       delete[] r.buf;
@@ -70,8 +66,8 @@ void epa_mpi_waitall(previous_request_storage_t& reqs)
 
 template <typename T>
 void epa_mpi_send(T& obj,
-                  int dest_rank,
-                  MPI_Comm comm)
+                  const int dest_rank,
+                  const MPI_Comm comm)
 {
   // serialize the obj
   std::stringstream ss;
@@ -82,20 +78,25 @@ void epa_mpi_send(T& obj,
   std::string data = ss.str();
   auto buffer = new char[data.size()];
   memcpy(buffer, data.c_str(), data.size() * sizeof(char));
-  err_check(MPI_Send(buffer, data.size(), MPI_CHAR, dest_rank, 0, comm));
+  err_check( MPI_Send(buffer,
+                      data.size(),
+                      MPI_CHAR,
+                      dest_rank,
+                      0,
+                      comm));
   delete[] buffer;
 }
 
 template <typename T>
-void epa_mpi_isend( T& obj, 
-                    int dest_rank, 
-                    MPI_Comm comm, 
-                    request_tuple& prev_req, 
+void epa_mpi_isend( T& obj,
+                    const int dest_rank,
+                    const MPI_Comm comm,
+                    request_tuple& prev_req,
                     Timer<>& timer)
 {
   // wait for completion of previous send
-  if (prev_req.req)
-  {
+  if (prev_req.req) {
+
     MPI_Status status;
     timer.pause();
     LOG_DBG2 << "previous request detected, calling wait...";
@@ -115,30 +116,46 @@ void epa_mpi_isend( T& obj,
   std::string data = ss.str();
   auto buffer = new char[data.size()];
   memcpy(buffer, data.c_str(), data.size() * sizeof(char));
-  err_check(MPI_Issend(buffer, data.size(), MPI_CHAR, dest_rank, 0, comm, &prev_req.req));
+  err_check( MPI_Issend(buffer,
+                        data.size(),
+                        MPI_CHAR,
+                        dest_rank,
+                        0,
+                        comm,
+                        &prev_req.req));
   
   prev_req.buf = buffer;
 }
 
 template <typename T>
-void epa_mpi_receive( T& obj, 
-                      int src_rank, 
-                      MPI_Comm comm, 
+void epa_mpi_receive( T& obj,
+                      const int src_rank,
+                      const MPI_Comm comm,
                       Timer<>& timer)
 {
   // probe to find out the message size
   MPI_Status status;
-  int size;
+  int size = 0;
   timer.pause();
-  err_check(MPI_Probe(src_rank, 0, comm, &status));
+  err_check( MPI_Probe( src_rank,
+                        MPI_ANY_TAG,
+                        comm,
+                        &status) );
   timer.resume();
+
   MPI_Get_count(&status, MPI_CHAR, &size);
 
   // prepare buffer
   auto buffer = new char[size];
 
   //  get the actual payload
-  err_check(MPI_Recv(buffer, size, MPI_CHAR, src_rank, 0, comm, &status));
+  err_check( MPI_Recv(buffer,
+                      size,
+                      MPI_CHAR,
+                      status.MPI_SOURCE,
+                      status.MPI_TAG,
+                      comm,
+                      &status) );
 
   // deserialization
   std::stringstream ss;
@@ -152,24 +169,27 @@ void epa_mpi_receive( T& obj,
 }
 
 template <typename T>
-static inline void isend_all( std::vector<T>& parts, 
-                              std::vector<int>& dest_ranks, 
-                              MPI_Comm comm, 
-                              previous_request_storage_t& prev_reqs, 
+static inline void isend_all( const std::vector<T>& parts,
+                              const std::vector<int>& dest_ranks,
+                              const MPI_Comm comm,
+                              previous_request_storage_t& prev_reqs,
                               Timer<>& timer)
 {
-  for (size_t i = 0; i < parts.size(); ++i)
-  {
+  for (size_t i = 0; i < parts.size(); ++i) {
     auto dest = dest_ranks[i];
-    epa_mpi_isend(parts[i], dest, comm, prev_reqs[dest], timer);
+    epa_mpi_isend(parts[i],
+                  dest,
+                  comm,
+                  prev_reqs[dest],
+                  timer);
   }
 }
 
 template <typename T>
-void epa_mpi_split_send(T& obj, 
-                        std::vector<int>& dest_ranks, 
-                        MPI_Comm comm, 
-                        previous_request_storage_t& prev_reqs, 
+void epa_mpi_split_send(T& obj,
+                        const std::vector<int>& dest_ranks,
+                        const MPI_Comm comm,
+                        previous_request_storage_t& prev_reqs,
                         Timer<>& timer)
 {
   LOG_DBG1 << "Sending...";
@@ -187,111 +207,63 @@ void epa_mpi_split_send(T& obj,
   LOG_DBG1 << "Done!";
 }
 
-enum class receive_status {WAITING, READY, DONE};
-
-struct status_type
-{
-  int rank;
-  receive_status status;
-};
-
-// template <typename T>
-// void epa_mpi_receive_merge(T& obj, std::vector<int>& src_ranks, MPI_Comm comm, Timer<>& timer)
-// {
-//   const auto num_src_ranks = src_ranks.size();
-//   size_t num_received = 0;
-
-//   std::vector<status_type> status_list(num_src_ranks);
-//   size_t i = 0;
-//   for (auto& rank : src_ranks)
-//   {
-//     status_list[i].rank   = rank;
-//     status_list[i].status = receive_status::WAITING;
-//     ++i;
-//   }
-  
-//     to avoid waits as much as possible: build a list that tells us for which src ranks
-//     there are currently messages waiting to be received, then receive those.
-//     Repeat this procedure of nonblocking check and blocking receive until all source ranks
-//     have been visited ONCE (as we still want per chunk synchronicity)
-   
-//   do
-//   {
-//     // nonblocking probe to check which are ready
-//     for (auto& s : status_list)
-//     {
-//       MPI_Status stat;
-//       int message_available = false;
-//       err_check(MPI_Iprobe(s.rank, 0, comm, &message_available, &stat));
-//       if (message_available) s.status = receive_status::READY;
-//     }
-
-//     // blocking receive of all that are ready
-//     for (auto& s : status_list)
-//     {
-//       if (s.status == receive_status::READY)
-//       {
-//         T remote_obj;
-//         epa_mpi_receive(remote_obj, s.rank, comm, timer);
-//         merge(obj, remote_obj);
-//         ++num_received;
-//         s.status = receive_status::DONE;
-//       }
-//     }
-//   } while (num_received < num_src_ranks);
-// }
-
 template <typename T>
-void epa_mpi_receive_merge(T& obj, std::vector<int>& src_ranks, MPI_Comm comm, Timer<>& timer)
+void epa_mpi_receive_merge( T& obj,
+                            const std::vector<int>& src_ranks,
+                            const MPI_Comm comm,
+                            Timer<>& timer)
 {
-  for (auto rank : src_ranks)
-  {
+  for (const auto rank : src_ranks) {
     T remote_obj;
     epa_mpi_receive(remote_obj, rank, comm, timer);
     merge(obj, remote_obj);
+
     // TODO only relevant if T conforms with Token
     obj.status(remote_obj.status());
   }
 }
 
 template <typename T>
-void epa_mpi_gather(T& obj, int dest_rank, std::vector<int>& src_ranks, int local_rank, Timer<>& timer)
+void epa_mpi_gather(T& obj,
+                    const int dest_rank,
+                    const std::vector<int>& src_ranks,
+                    const int local_rank,
+                    Timer<>& timer)
 {
-  if (dest_rank != local_rank)
-  {
-    epa_mpi_send(obj, dest_rank, MPI_COMM_WORLD);
-  }
-  else
-  {
-    for (auto src_rank : src_ranks)
-    {
+  if (local_rank == dest_rank) {
+    for (const auto src_rank : src_ranks) {
       if (local_rank == src_rank) {
         continue;
       }
       T remote_obj;
-      epa_mpi_receive(remote_obj, src_rank, MPI_COMM_WORLD, timer);
+      epa_mpi_receive(remote_obj,
+                      MPI_ANY_SOURCE,
+                      MPI_COMM_WORLD,
+                      timer);
       merge(obj, remote_obj);
     }
+  } else {
+    epa_mpi_send(obj, dest_rank, MPI_COMM_WORLD);
   }
 }
 
 template <typename T>
-void epa_mpi_bcast(T& obj, int src_rank, std::vector<int>& dest_ranks, int local_rank, Timer<>& timer)
+void epa_mpi_bcast( T& obj,
+                    const int src_rank,
+                    const std::vector<int>& dest_ranks,
+                    const int local_rank,
+                    Timer<>& timer)
 {
-  if (src_rank == local_rank)
-  {
-    for (auto dest_rank : dest_ranks)
-    {
-      if (local_rank == dest_rank)
+  if (src_rank == local_rank) {
+    for (auto dest_rank : dest_ranks) {
+      if (local_rank == dest_rank) {
         continue;
+      }
       epa_mpi_send(obj, dest_rank, MPI_COMM_WORLD);
     }
-  }
-  else
-  {
+  } else {
     epa_mpi_receive(obj, src_rank, MPI_COMM_WORLD, timer);
   }
 }
 
 #endif
-
