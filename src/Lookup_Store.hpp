@@ -5,6 +5,7 @@
 #include <map>
 #include <utility>
 #include <limits>
+#include <cassert>
 
 #include "Matrix.hpp"
 #include "maps.hpp"
@@ -79,7 +80,6 @@ public:
 
   size_t char_position(unsigned char c) const
   {
-
     auto pos = char_to_posish_[c];
 
     if (pos == INVALID) {
@@ -91,15 +91,41 @@ public:
 
   double sum_precomputed_sitelk(const size_t branch_id, const std::string& seq) const
   {
-    #ifndef NDEBUG
     assert(seq.length() == store_[branch_id].rows());
-    #endif
     
     double sum = 0;
-    for (size_t i = 0; i < seq.length(); ++i)
-    {
-      auto position = this->char_position(seq[i]);
-      sum += store_[branch_id](i, position);
+    const auto& lookup_matrix = store_[branch_id];
+    const auto& lookup = lookup_matrix.get_array();
+
+    // unrolled loop
+    size_t site = 0;
+    for (; site + 7u < seq.length(); site+=8) {
+      double sum_one =
+      lookup[lookup_matrix.coord(site, char_to_posish_[seq[site]])]
+      + lookup[lookup_matrix.coord(site, char_to_posish_[seq[site+1u]])];
+      
+      double sum_two =
+      lookup[lookup_matrix.coord(site, char_to_posish_[seq[site+2u]])]
+      + lookup[lookup_matrix.coord(site, char_to_posish_[seq[site+3u]])];
+
+      double sum_three =
+      lookup[lookup_matrix.coord(site, char_to_posish_[seq[site]])]
+      + lookup[lookup_matrix.coord(site, char_to_posish_[seq[site+1u]])];
+
+      double sum_four =
+      lookup[lookup_matrix.coord(site, char_to_posish_[seq[site+2u]])]
+      + lookup[lookup_matrix.coord(site, char_to_posish_[seq[site+3u]])];
+
+      sum_one += sum_two;
+      sum_three += sum_four;
+
+      sum+= sum_one + sum_three;
+    }
+
+    // rest of the horizontal add
+    while (site < seq.length()) {
+      sum += lookup[lookup_matrix.coord(site, char_to_posish_[seq[site]])];
+      ++site;
     }
     return sum;
   }

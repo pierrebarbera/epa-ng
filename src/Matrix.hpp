@@ -127,6 +127,11 @@ public:
     //     Element Access
     // -------------------------------------------------------------
 
+    inline size_t coord(const size_t row, const size_t col) const
+    {
+        return row * cols_ + col;
+    }
+
     T& at (const size_t row, const size_t col)
     {
         if (row >= rows_ || col >= cols_) {
@@ -148,9 +153,14 @@ public:
         return data_[row * cols_ + col];
     }
 
-    const T operator () (const size_t row, const size_t col) const
+    inline const T operator () (const size_t row, const size_t col) const
     {
         return data_[row * cols_ + col];
+    }
+
+    const std::vector<T>& get_array() const
+    {
+        return data_;
     }
 
     // -------------------------------------------------------------
