@@ -8,6 +8,7 @@
 #include "mpihead.hpp"
 #include "logging.hpp"
 #include "epa.hpp"
+#include "Binary_Fasta.hpp"
 
 static void ensure_dir_has_slash(std::string& dir)
 {
@@ -33,6 +34,12 @@ static std::vector<std::string> split_by_delimiter(const std::string & text, con
   return parts;
 }
 
+void exit_epa(int ret=EXIT_SUCCESS)
+{
+  MPI_FINALIZE();
+  std::exit(ret);
+}
+
 int main(int argc, char** argv)
 {
   genesis::utils::Logging::log_to_stdout();
@@ -45,8 +52,8 @@ int main(int argc, char** argv)
   std::string model_id("GTR");
   std::string sub_matrix("");
   Options options;
-  for (int i = 0; i < argc; ++i)
-  {
+
+  for (int i = 0; i < argc; ++i) {
     invocation += argv[i];
     invocation += " ";
   }
@@ -81,6 +88,8 @@ int main(int argc, char** argv)
       cxxopts::value<std::string>()->default_value("./"))
     ("B,dump-binary",
       "Binary Dump mode: write ref. tree in binary format then exit.")
+    ("c,bfast",
+      "Convert the given fasta file to bfast format needed for running EPA-ng with MPI")
     ("filter-acc-lwr",
       "Accumulated likelihood weight after which further placements are discarded.",
       cxxopts::value<double>()->default_value("0.9999"))
@@ -139,25 +148,31 @@ int main(int argc, char** argv)
 
   cli.parse(argc, argv);
 
-  if (cli.count("help"))
-  {
+  if (cli.count("help")) {
     std::cout << cli.help({"", "Input", "Output", "Compute", "Pipeline"});
-    exit(EXIT_SUCCESS);
+    exit_epa();
   }
 
-  if (cli.count("verbose"))
-  {
+  if (cli.count("verbose")) {
     genesis::utils::Logging::max_level(genesis::utils::Logging::kDebug2);
+  }
+
+  if (cli.count("bfast")) {
+    LOG_INFO << "Converting given FASTA file to BFAST format.";
+    auto fasta = cli["bfast"].as<std::string>();
+    LOG_INFO << "Started " << genesis::utils::current_time();
+    Binary_Fasta::fasta_to_bfast(fasta);
+    LOG_INFO << "Finished " << genesis::utils::current_time();
+    exit_epa();
   }
 
   // check for valid input combinations
   if (not(
         ( cli.count("tree") and cli.count("ref-msa") )
     or  ( cli.count("binary") and (cli.count("query") or cli.count("ref-msa")) )
-    ))
-  {
+    )) {
     LOG_INFO << "Must supply reference tree/msa either directly or as precomputed binary.";
-    exit(EXIT_FAILURE);
+    exit_epa(EXIT_FAILURE);
   }
 
   if (cli.count("query")) query_file = cli["query"].as<std::string>();
@@ -260,7 +275,7 @@ int main(int argc, char** argv)
 
   } catch (const cxxopts::OptionException& e) {
     std::cout << "error parsing options: " << e.what() << std::endl;
-    exit(EXIT_FAILURE);
+    exit_epa(EXIT_FAILURE);
   }
 
   //================================================================
