@@ -99,28 +99,19 @@ public:
 
     // unrolled loop
     size_t site = 0;
-    for (; site + 7u < seq.length(); site+=8) {
+    const size_t stride = 4;
+    for (; site + stride-1u < seq.length(); site+=stride) {
       double sum_one =
       lookup[lookup_matrix.coord(site, char_to_posish_[seq[site]])]
-      + lookup[lookup_matrix.coord(site, char_to_posish_[seq[site+1u]])];
+      + lookup[lookup_matrix.coord(site+1u, char_to_posish_[seq[site+1u]])];
       
       double sum_two =
-      lookup[lookup_matrix.coord(site, char_to_posish_[seq[site+2u]])]
-      + lookup[lookup_matrix.coord(site, char_to_posish_[seq[site+3u]])];
+      lookup[lookup_matrix.coord(site+2u, char_to_posish_[seq[site+2u]])]
+      + lookup[lookup_matrix.coord(site+3u, char_to_posish_[seq[site+3u]])];
 
       sum_one += sum_two;
 
-      double sum_three =
-      lookup[lookup_matrix.coord(site, char_to_posish_[seq[site+4u]])]
-      + lookup[lookup_matrix.coord(site, char_to_posish_[seq[site+5u]])];
-      
-      double sum_four =
-      lookup[lookup_matrix.coord(site, char_to_posish_[seq[site+6u]])]
-      + lookup[lookup_matrix.coord(site, char_to_posish_[seq[site+7u]])];
-
-      sum_three += sum_four;
-
-      sum += sum_one + sum_three;
+      sum += sum_one;
     }
 
     // rest of the horizontal add
