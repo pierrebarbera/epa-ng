@@ -108,7 +108,19 @@ public:
       lookup[lookup_matrix.coord(site, char_to_posish_[seq[site+2u]])]
       + lookup[lookup_matrix.coord(site, char_to_posish_[seq[site+3u]])];
 
-      sum += sum_one + sum_two;
+      sum_one += sum_two;
+
+      double sum_three =
+      lookup[lookup_matrix.coord(site, char_to_posish_[seq[site+4u]])]
+      + lookup[lookup_matrix.coord(site, char_to_posish_[seq[site+5u]])];
+      
+      double sum_four =
+      lookup[lookup_matrix.coord(site, char_to_posish_[seq[site+6u]])]
+      + lookup[lookup_matrix.coord(site, char_to_posish_[seq[site+7u]])];
+
+      sum_three += sum_four;
+
+      sum += sum_one + sum_three;
     }
 
     // rest of the horizontal add
