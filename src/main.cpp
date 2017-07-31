@@ -89,7 +89,8 @@ int main(int argc, char** argv)
     ("B,dump-binary",
       "Binary Dump mode: write ref. tree in binary format then exit.")
     ("c,bfast",
-      "Convert the given fasta file to bfast format needed for running EPA-ng with MPI")
+      "Convert the given fasta file to bfast format needed for running EPA-ng with MPI",
+      cxxopts::value<std::string>())
     ("filter-acc-lwr",
       "Accumulated likelihood weight after which further placements are discarded.",
       cxxopts::value<double>()->default_value("0.9999"))
