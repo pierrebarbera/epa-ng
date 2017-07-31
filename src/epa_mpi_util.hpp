@@ -143,7 +143,13 @@ void epa_mpi_receive( T& obj,
                         &status) );
   timer.resume();
 
+  LOG_DBG1 << "Receiving data from rank "
+          << status.MPI_SOURCE;
+
   MPI_Get_count(&status, MPI_CHAR, &size);
+
+  LOG_DBG1 << "of size: "
+          << size << " bytes";
 
   // prepare buffer
   auto buffer = new char[size];
@@ -157,13 +163,16 @@ void epa_mpi_receive( T& obj,
                       comm,
                       &status) );
 
+  LOG_DBG1 << "Done!";
+
   // deserialization
+  LOG_DBG1 << "Deserializing...";
   std::stringstream ss;
   ss.write(buffer, size);
   cereal::BinaryInputArchive in_archive(ss);
-
   // build the object
   in_archive(obj);
+  LOG_DBG1 << "Done!";
 
   delete[] buffer;
 }
@@ -240,8 +249,10 @@ void epa_mpi_gather(T& obj,
                       MPI_ANY_SOURCE,
                       MPI_COMM_WORLD,
                       timer);
-      merge(obj, remote_obj);
+      merge(obj, std::move(remote_obj));
     }
+    // check for equal entries and collapse them into one
+    collapse(obj);
   } else {
     epa_mpi_send(obj, dest_rank, MPI_COMM_WORLD);
   }

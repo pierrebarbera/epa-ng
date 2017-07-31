@@ -57,15 +57,28 @@ public:
 
   // member access
   value_type& back() { return placements_.back(); }
-  unsigned int sequence_id() const { return sequence_id_; }
+  inline unsigned int sequence_id() const { return sequence_id_; }
+  inline void sequence_id(const size_t seq_id) { sequence_id_ = seq_id; }
   std::string header() const { return header_; }
   double entropy() const { return entropy_; }
   void entropy(const double e) { entropy_ = e; }
   unsigned int size() const { return placements_.size(); }
   void erase(iterator begin, iterator end) { placements_.erase(begin, end); }
 
-  void insert(iterator this_first, const_iterator begin, const_iterator end)
-  { placements_.insert(this_first, begin, end); }
+  inline void insert(iterator this_first, const_iterator begin, const_iterator end)
+  {
+    placements_.insert(this_first, begin, end);
+  }
+
+  inline void append(const_iterator begin, const_iterator end)
+  {
+    placements_.insert(placements_.end(), begin, end); 
+  }
+
+  inline std::vector<value_type>& data()
+  {
+    return placements_;
+  }
 
   // Iterator Compatibility
   iterator begin() { return placements_.begin(); }

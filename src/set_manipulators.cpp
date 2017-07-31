@@ -106,8 +106,8 @@ void discard_bottom_x_percent(Sample<Placement>& sample, const double x)
 
 void discard_by_support_threshold(Sample<Placement>& sample, 
                                   const double thresh, 
-                                  const unsigned int min, 
-                                  const unsigned int max)
+                                  const size_t min, 
+                                  const size_t max)
 {
   if (thresh < 0.0 || thresh > 1.0){
     throw std::range_error{"thresh is not a valid likelihood weight ratio (outside of [0,1])"};
@@ -147,8 +147,8 @@ void discard_by_support_threshold(Sample<Placement>& sample,
 
 void discard_by_accumulated_threshold(Sample<Placement>& sample, 
                                       const double thresh,
-                                      const unsigned int min, 
-                                      const unsigned int max)
+                                      const size_t min, 
+                                      const size_t max)
 {
   if (thresh < 0.0 || thresh > 1.0) {
     throw std::range_error{"thresh is not a valid likelihood weight ratio (outside of [0,1])"};
@@ -209,8 +209,8 @@ Range superset(Range a, Range b)
  */
 Range get_valid_range(std::string sequence)
 {
-  unsigned int lower = 0;
-  unsigned int upper = sequence.length();
+  size_t lower = 0;
+  size_t upper = sequence.length();
 
   while(sequence.c_str()[lower] == '-') {
     lower++;

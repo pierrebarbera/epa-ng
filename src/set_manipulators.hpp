@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <unordered_map>
 #include <limits>
 
 #include "Sample.hpp"
@@ -9,6 +10,57 @@
 #include "MSA.hpp"
 #include "Work.hpp"
 
+
+/**
+ * collapses PQuerys with the same ID inside a Sample into one
+ */
+template<class T>
+void collapse(Sample<T>& sample)
+{
+  const auto invalid = std::numeric_limits<size_t>::max();
+
+  std::unordered_map< size_t, std::vector<size_t> > collapse_set;
+
+  // build map of all pqueries
+  for (size_t i = 0; i < sample.size(); ++i) {
+    const auto& pq = sample[i];
+    collapse_set[pq.sequence_id()].emplace_back(i);
+  }
+
+  // find all cases of puplicate entries and merge hem
+  for (auto& pair : collapse_set) {
+    auto pqlist = pair.second;
+    // duplicate!
+    if (pqlist.size() > 1) {
+      // move entries from duplicate to original
+      auto& dest = sample[pqlist[0]].data();
+      for (size_t i = 1; i < pqlist.size(); ++i) {
+        auto& src = sample[pqlist[i]].data();
+        dest.reserve(dest.size() + src.size());
+        std::move(std::begin(src), std::end(src), std::back_inserter(dest));
+        // mark invalid in original sample
+        sample[pqlist[i]].sequence_id(invalid);
+      }
+    }
+  }
+
+  // clear the original sample of invalid pqueries
+  sample.erase(
+    std::remove_if( std::begin(sample),
+                    std::end(sample),
+                    [invalid = invalid](auto& e){
+                      return e.sequence_id() == invalid;}),
+    std::end(sample) );
+
+}
+
+/**
+ * dummy collapse function for default case of objects where
+ * collapsing doesnt make sense
+ */
+template<class T>
+void collapse(T&)
+{ }
 
 /**
  * special split function that Splits samples in buckets according to the global sequence ID
@@ -34,46 +86,6 @@ void split( const Sample<T>& src,
   }
 
 }
-
-void split( const Work& source, 
-            std::vector<Work>& parts, 
-            const unsigned int num_parts);
-
-/**
-  Merges a Sample <src> into a Sample <dest>. Leaves <src> intact.
-*/
-template<class T>
-void merge(Sample<T>& dest, const Sample<T>& src)
-{
-  // merge in every source pquery...
-  for (const auto& pquery : src) {
-    // ... by checking if its sequence already exists in destination
-    auto input_iter = find(dest.begin(), dest.end(), pquery);
-    // if not, create a record
-    if (input_iter == dest.end()) {
-      dest.emplace_back(pquery.sequence_id(), pquery.header());
-      input_iter = --(dest.end());
-    }
-    // then concat their vectors
-    input_iter->insert(input_iter->end(), pquery.begin(), pquery.end());
-  }
-}
-
-void merge(Work& dest, const Work& src);
-void merge(Timer<>& dest, const Timer<>& src);
-void compute_and_set_lwr(Sample<Placement>& sample);
-void discard_bottom_x_percent(Sample<Placement>& sample, const double x);
-void discard_by_support_threshold(Sample<Placement>& sample, 
-                                  const double thresh, 
-                                  const unsigned int min=1, 
-                                  const unsigned int max=std::numeric_limits<unsigned int>::max());
-void discard_by_accumulated_threshold(Sample<Placement>& sample, 
-                                      const double thresh,
-                                      const unsigned int min=1, 
-                                      const unsigned int max=std::numeric_limits<unsigned int>::max());
-Range superset(Range a, Range b);
-Range get_valid_range(std::string sequence);
-void find_collapse_equal_sequences(MSA& msa);
 
 /**
  * Splits a <src> into <num_parts> number of equally sized <parts>.
@@ -105,6 +117,43 @@ void split( const T& src,
   }
 }
 
+void split( const Work& source, 
+            std::vector<Work>& parts, 
+            const unsigned int num_parts);
+
+/**
+  Merges a Sample <src> into a Sample <dest>. Leaves <src> intact.
+*/
+template<class T>
+void merge(Sample<T>& dest, const Sample<T>& src)
+{
+  // merge in every source pquery...
+  for (const auto& pquery : src) {
+    // ... by checking if its sequence already exists in destination
+    auto input_iter = find(dest.begin(), dest.end(), pquery);
+    // if not, create a record
+    if (input_iter == dest.end()) {
+      dest.emplace_back(pquery.sequence_id(), pquery.header());
+      input_iter = --(dest.end());
+    }
+    // then concat their vectors
+    input_iter->insert(input_iter->end(), pquery.begin(), pquery.end());
+  }
+}
+
+/**
+  Merges a Sample <src> into a Sample <dest>. src here is an rvalue,
+  and thus the elements are moved instead of copied
+*/
+template<class T>
+void merge(Sample<T>& dest, Sample<T>&& src)
+{
+  for (auto& pquery : src) {
+    // create new record
+    dest.emplace_back(std::move(pquery));
+  }
+}
+
 template <class T>
 void merge(T& dest, std::vector<T>& parts)
 {
@@ -118,3 +167,21 @@ void merge(std::vector<T>& dest, const std::vector<T>& parts)
 {
   dest.insert( std::end(dest), std::begin(parts), std::end(parts) );
 }
+
+void merge(Work& dest, const Work& src);
+void merge(Timer<>& dest, const Timer<>& src);
+
+void compute_and_set_lwr(Sample<Placement>& sample);
+void discard_bottom_x_percent(Sample<Placement>& sample, const double x);
+void discard_by_support_threshold(Sample<Placement>& sample, 
+                                  const double thresh, 
+                                  const size_t min=1, 
+                                  const size_t max=std::numeric_limits<size_t>::max());
+void discard_by_accumulated_threshold(Sample<Placement>& sample, 
+                                      const double thresh,
+                                      const size_t min=1, 
+                                      const size_t max=std::numeric_limits<size_t>::max());
+Range superset(Range a, Range b);
+Range get_valid_range(std::string sequence);
+void find_collapse_equal_sequences(MSA& msa);
+
