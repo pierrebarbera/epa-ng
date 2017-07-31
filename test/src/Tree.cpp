@@ -4,6 +4,7 @@
 #include "src/Tree.hpp"
 #include "src/MSA.hpp"
 #include "src/place.hpp"
+#include "src/Binary_Fasta.hpp"
 
 #include <string>
 #include <vector>
@@ -13,10 +14,10 @@ using namespace std;
 
 TEST(Tree, process_from_binary)
 {
-  #ifndef __MPI
   // setup
   auto msa = build_MSA_from_file(env->reference_file);
-  auto queries = MSA_Stream(env->query_file, 1);
+  Binary_Fasta::fasta_to_bfast(env->query_file);
+  auto queries = env->query_file + ".bin";
   Model model;
   Options options;
   Tree original_tree(env->tree_file, msa, model, options);
@@ -28,18 +29,17 @@ TEST(Tree, process_from_binary)
   // test
   string invocation("./this --is -a test");
 
-  process(read_tree, queries, env->out_dir, options, invocation);
+  simple_mpi(read_tree, queries, env->out_dir, options, invocation);
 
   options.prescoring = true;
-  process(read_tree, queries, env->out_dir, options, invocation);
+  simple_mpi(read_tree, queries, env->out_dir, options, invocation);
 
   Tree mvstree;
   mvstree = Tree(env->binary_file, model, options);
 
-  process(mvstree, queries, env->out_dir, options, invocation);
+  simple_mpi(mvstree, queries, env->out_dir, options, invocation);
 
   // teardown
-  #endif
 }
 
 TEST(Tree, combined_input_file)
