@@ -175,7 +175,7 @@ void compute_and_set_lwr(Sample<Placement>& sample);
 void discard_bottom_x_percent(Sample<Placement>& sample, const double x);
 void discard_by_support_threshold(Sample<Placement>& sample, 
                                   const double thresh, 
-                                  const size_t min=1, 
+                                  const size_t min=1,
                                   const size_t max=std::numeric_limits<size_t>::max());
 void discard_by_accumulated_threshold(Sample<Placement>& sample, 
                                       const double thresh,

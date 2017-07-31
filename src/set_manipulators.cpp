@@ -106,23 +106,16 @@ void discard_bottom_x_percent(Sample<Placement>& sample, const double x)
 
 void discard_by_support_threshold(Sample<Placement>& sample, 
                                   const double thresh, 
-                                  const size_t min, 
+                                  const size_t min,
                                   const size_t max)
 {
-  if (thresh < 0.0 || thresh > 1.0){
+  if (thresh < 0.0 or thresh > 1.0){
     throw std::range_error{"thresh is not a valid likelihood weight ratio (outside of [0,1])"};
   }
 
   if (min < 1) {
     throw std::range_error{"Filter min cannot be smaller than 1!"};
   }
-
-  if (min > max) {
-    throw std::range_error{"Filter min cannot be smaller than max!"};
-  }
-
-  // static_assert(std::is_array<PQuery>::value,
-  //                 "PQuery not array type");
 
   for (auto &pq : sample) {
     auto erase_iter = partition(
@@ -133,11 +126,13 @@ void discard_by_support_threshold(Sample<Placement>& sample,
       }
     );
 
-    if ( distance(erase_iter, (pq.begin() + min - 1)) > 0 ) {
+    const auto num_kept = static_cast<size_t>(distance(pq.begin(), erase_iter));
+
+    if ( num_kept < min ) {
       erase_iter = pq.begin() + min - 1;
     }
 
-    if ( pq.size() <= max && distance((pq.begin() + max - 1), erase_iter) > 0 ) {
+    if ( num_kept > max ) {
       erase_iter = pq.begin() + max - 1;
     }
 
@@ -171,9 +166,10 @@ void discard_by_accumulated_threshold(Sample<Placement>& sample,
   for (auto &pq : sample) {
     double sum = 0.0;
 
+    size_t num_summed = 0;
+
     auto pq_iter = pq.begin();
-    const auto max_iter = ( distance(pq_iter + max - 1, pq.end()) > 0 ) ? pq_iter + max - 1 : pq.end();
-    for (pq_iter = pq.begin(); pq_iter != max_iter && sum < thresh; ++pq_iter) {
+    for (pq_iter = pq.begin(); num_summed < max and sum < thresh; ++pq_iter, ++num_summed) {
       // sum up until threshold is passed. if we abort before it is passed, we would have the possibility of
       // empty lists
       sum += pq_iter->lwr();
