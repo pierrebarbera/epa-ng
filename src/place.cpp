@@ -68,7 +68,7 @@ static void place(const Work& to_place,
 
     std::shared_ptr<Tiny_Tree> branch(nullptr);
 
-    for (auto it : work_parts[i]) {
+    for (const auto& it : work_parts[i]) {
       const auto branch_id = it.branch_id;
       const auto seq_id = it.sequence_id;
 
@@ -460,7 +460,7 @@ void simple_mpi(Tree& reference_tree,
                                     options.filter_max);
     }
 
-    merge(result, blo_sample);
+    merge(result, std::move(blo_sample));
 
     sequences_done += num_sequences;
     LOG_INFO << sequences_done  << " Sequences done!";
