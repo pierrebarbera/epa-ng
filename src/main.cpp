@@ -155,6 +155,7 @@ int main(int argc, char** argv)
   }
 
   if (cli.count("verbose")) {
+    LOG_INFO << "Selected: verbose (debug) output";
     genesis::utils::Logging::max_level(genesis::utils::Logging::kDebug2);
   }
 
@@ -176,55 +177,100 @@ int main(int argc, char** argv)
     exit_epa(EXIT_FAILURE);
   }
 
-  if (cli.count("query")) query_file = cli["query"].as<std::string>();
-  if (cli.count("outdir")) work_dir = cli["outdir"].as<std::string>();
-  if (cli.count("tree")) tree_file = cli["tree"].as<std::string>();
-  if (cli.count("ref-msa")) reference_file = cli["ref-msa"].as<std::string>();
-  if (cli.count("binary"))
-  {
+  if (cli.count("query")) {
+    query_file = cli["query"].as<std::string>();
+    LOG_INFO << "Selected: Query file: " << query_file;
+  }
+
+  if (cli.count("outdir")) {
+    work_dir = cli["outdir"].as<std::string>();
+    LOG_INFO << "Selected: Output dir: " << work_dir;
+  }
+
+  if (cli.count("tree")) {
+    tree_file = cli["tree"].as<std::string>();
+    LOG_INFO << "Selected: Tree file: " << tree_file;
+  }
+
+  if (cli.count("ref-msa")) {
+    reference_file = cli["ref-msa"].as<std::string>();
+    LOG_INFO << "Selected: Reference MSA: " << reference_file;
+  }
+
+  if (cli.count("binary")) {
     binary_file = cli["binary"].as<std::string>();
     options.load_binary_mode = true;
+    LOG_INFO << "Selected: Binary CLV store: " << binary_file;
   }
+
   if (cli.count("filter-acc-lwr"))
   {
     options.support_threshold = cli["filter-acc-lwr"].as<double>();
     options.acc_threshold = true;
+    LOG_INFO << "Selected: Filtering by accumulated threshold: " << options.support_threshold;
   }
-  if (cli.count("filter-min-lwr")) 
-  {
+
+  if (cli.count("filter-min-lwr")) {
     options.support_threshold = cli["filter-min-lwr"].as<double>();
     options.acc_threshold = false;
+    LOG_INFO << "Selected: Filtering by minimum threshold: " << options.support_threshold;
   }
-  if (cli.count("filter-min")) 
-  {
+
+  if (cli.count("filter-min")) {
     options.filter_min = cli["filter-min"].as<unsigned int>();
+    LOG_INFO << "Selected: Minimum number of placements per query: " << options.filter_min;
   }
-  if (cli.count("filter-max")) 
-  {
+
+  if (cli.count("filter-max")) {
     options.filter_max = cli["filter-max"].as<unsigned int>();
+    LOG_INFO << "Selected: Maximum number of placements per query: " << options.filter_max;
   }
-  if (options.filter_min > options.filter_max)
+
+  if (options.filter_min > options.filter_max) {
     throw std::runtime_error{"filter-min must not exceed filter-max!"};
-  if (cli.count("fix-heur"))
-  {
+  }
+
+  if (cli.count("fix-heur")) {
     options.prescoring_threshold = cli["fix-heur"].as<double>();
     options.prescoring = options.prescoring_by_percentage = true;
+    LOG_INFO << "Selected: Prescoring by percentage of branches: " << options.prescoring_threshold;
   }
-  if (cli.count("dyn-heur"))
-  {
+
+  if (cli.count("dyn-heur")) {
     options.prescoring_threshold = cli["dyn-heur"].as<double>();
     if (options.prescoring)  {
       LOG_INFO << "Cannot use -G and -g concurrently! Running with -g " << options.prescoring_threshold ;
     }
     options.prescoring = true;
     options.prescoring_by_percentage = false;
+    LOG_INFO << "Selected: Prescoring by accumulated LWR threshold: " << options.prescoring_threshold;
   }
-  if (cli.count("opt-ref-tree")) options.opt_branches = options.opt_model = true;
-  if (cli.count("raxml-blo")) options.sliding_blo = false;
-  if (cli.count("no-repeats")) options.repeats = false;
-  if (cli.count("dump-binary")) options.dump_binary_mode =  true;
-  if (cli.count("model"))
-  {
+
+  if (cli.count("opt-ref-tree")) {
+    options.opt_branches = options.opt_model = true;
+    LOG_INFO << "Selected: Optimizing the reference tree branch lengths and model parameters";
+    if (options.load_binary_mode) {
+      LOG_INFO << "\tWARNING: this option is ignored as a binary CLV store was supplied!";
+    }
+  }
+
+  if (cli.count("raxml-blo")) {
+    options.sliding_blo = false;
+    LOG_INFO << "Selected: On query insertion, optimize branch lengths the way RAxML-EPA did it";
+  }
+
+  if (cli.count("no-repeats")) {
+    options.repeats = false;
+    LOG_INFO << "Selected: Using the non-repeats version of libpll/modules";
+  }
+
+  if (cli.count("dump-binary")) {
+    options.dump_binary_mode =  true;
+    LOG_INFO << "Selected: Build reference tree and write it out as a binary CLV store (for MPI)";
+    LOG_INFO << "\tWARNING: this mode means that no placement will take place in this run";
+  }
+
+  if (cli.count("model")) {
     auto parts = split_by_delimiter(cli["model"].as<std::string>(), "-");
     auto s = parts.size();
     if (s > 3) {
@@ -243,36 +289,43 @@ int main(int argc, char** argv)
       LOG_DBG << "Model descriptor: " << sequence_type << " "
       << model_id << " " << sub_matrix << " ";
     }
+    LOG_INFO << "Selected: Specified model: " << sequence_type << " "
+      << model_id << " " << sub_matrix;
   }
 
   model = Model(sequence_type, model_id, sub_matrix);
 
-  if (!options.opt_model)
-  {
-    if (cli.count("base-freqs"))
-    {
+  if (!options.opt_model) {
+    if (cli.count("base-freqs")) {
       auto freq_strings = split_by_delimiter(cli["base-freqs"].as<std::string>(), ":");
       std::vector<double> freqs;
       for (auto& s : freq_strings)
         freqs.push_back(std::stod(s));
       model.base_frequencies(freqs);
     }
-    if (cli.count("sub-rates"))
-    {
+
+    if (cli.count("sub-rates")) {
       auto rate_strings = split_by_delimiter(cli["sub-rates"].as<std::string>(), ":");
       std::vector<double> rates;
       for (auto& s : rate_strings)
         rates.push_back(std::stod(s));
       model.substitution_rates(rates);
     }
-    if (cli.count("alpha")) 
-    {
+
+    if (cli.count("alpha")) {
       model.alpha(cli["alpha"].as<double>());
     }
   }
 
-  if (cli.count("chunk-size")) options.chunk_size = cli["chunk-size"].as<unsigned int>();
-  if (cli.count("threads")) options.num_threads = cli["threads"].as<unsigned int>();
+  if (cli.count("chunk-size")) {
+    options.chunk_size = cli["chunk-size"].as<unsigned int>();
+    LOG_INFO << "Selected: Reading queries in chunks of: " << options.chunk_size;
+  }
+
+  if (cli.count("threads")) {
+    options.num_threads = cli["threads"].as<unsigned int>();
+    LOG_INFO << "Selected: Using threads: " << options.num_threads;
+  }
 
   } catch (const cxxopts::OptionException& e) {
     std::cout << "error parsing options: " << e.what() << std::endl;
@@ -331,14 +384,12 @@ int main(int argc, char** argv)
       // split_combined_msa(ref_msa, tmp, tree);
       
     }
-  }
-  // dump to binary if specified
-  if (options.dump_binary_mode) {
+  } else {
+    // dump to binary if specified
     LOG_INFO << "Writing to binary";
     std::string dump_file(work_dir + "epa_binary_file");
     dump_to_binary(tree, dump_file);
-    MPI_FINALIZE();
-  	return EXIT_SUCCESS;
+    exit_epa();
   }
 
   // start the placement process and write to file
