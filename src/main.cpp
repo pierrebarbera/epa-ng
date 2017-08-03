@@ -42,10 +42,18 @@ void exit_epa(int ret=EXIT_SUCCESS)
 
 int main(int argc, char** argv)
 {
-  genesis::utils::Logging::log_to_stdout();
+#ifdef __MPI
+  MPI_INIT(&argc, &argv);
+  int local_rank = 0;
+  MPI_Comm_rank(MPI_COMM_WORLD, &local_rank);
+  if (local_rank != 0) {
+    genesis::utils::Logging::log_to_stdout(false);  
+  } else {
+    genesis::utils::Logging::log_to_stdout();
+  }
+#endif
   genesis::utils::Logging::max_level(genesis::utils::Logging::kInfo);
 
-  MPI_INIT(&argc, &argv);
 
   std::string invocation("");
   std::string sequence_type("DNA");
@@ -339,11 +347,6 @@ int main(int argc, char** argv)
   ensure_dir_has_slash(work_dir);
 
   #ifdef __MPI
-  int local_rank = 0;
-  MPI_Comm_rank(MPI_COMM_WORLD, &local_rank);
-  if (local_rank != 0) {
-    genesis::utils::Logging::log_to_stdout(false);  
-  }
   genesis::utils::Logging::log_to_file(work_dir + std::to_string(local_rank) + ".epa_info.log");
   #else
   genesis::utils::Logging::log_to_file(work_dir + "epa_info.log");
