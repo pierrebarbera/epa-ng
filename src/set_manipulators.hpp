@@ -10,14 +10,14 @@
 #include "MSA.hpp"
 #include "Work.hpp"
 
-
 /**
  * collapses PQuerys with the same ID inside a Sample into one
  */
 template<class T>
 void collapse(Sample<T>& sample)
 {
-  const auto invalid = std::numeric_limits<size_t>::max();
+  const auto invalid = std::numeric_limits<
+    typename PQuery<T>::seqid_type>::max();
 
   std::unordered_map< size_t, std::vector<size_t> > collapse_set;
 
@@ -151,6 +151,14 @@ void merge(Sample<T>& dest, Sample<T>&& src)
   for (auto& pquery : src) {
     // create new record
     dest.emplace_back(std::move(pquery));
+  }
+}
+
+template<class T>
+void merge(T& dest, std::vector<T>&& parts)
+{
+  for (auto& p : parts) {
+    merge(dest, std::move(p));
   }
 }
 

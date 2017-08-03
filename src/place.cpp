@@ -34,13 +34,13 @@
 #endif
 
 template <class T>
-static void place(const Work& to_place, 
-                  MSA& msa, 
-                  Tree& reference_tree, 
-                  const std::vector<pll_unode_t *>& branches, 
-                  Sample<T>& sample, 
-                  bool do_blo, 
-                  const Options& options, 
+static void place(const Work& to_place,
+                  MSA& msa,
+                  Tree& reference_tree,
+                  const std::vector<pll_unode_t *>& branches,
+                  Sample<T>& sample,
+                  bool do_blo,
+                  const Options& options,
                   std::shared_ptr<Lookup_Store>& lookup_store,
                   const size_t seq_id_offset=0)
 {
@@ -89,7 +89,8 @@ static void place(const Work& to_place,
     }
   }
   // merge samples back
-  merge(sample, sample_parts);
+  merge(sample, std::move(sample_parts));
+  collapse(sample);
 }
 
 void pipeline_place(Tree& reference_tree,
