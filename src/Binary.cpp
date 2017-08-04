@@ -11,8 +11,8 @@ int safe_fclose(FILE* fptr) { return fptr ? fclose(fptr) : 0; }
 Binary::Binary(Binary && other) 
   : bin_fptr_(nullptr, safe_fclose)
 {
-  bin_fptr_ = std::move(other.bin_fptr_);
-  map_ = std::move(other.map_);
+  std::swap(bin_fptr_, other.bin_fptr_);
+  std::swap(map_, other.map_);
 }
 
 Binary& Binary::operator=(Binary && other)
@@ -73,10 +73,9 @@ static long int get_offset(std::vector<pll_block_map_t>& map, const int block_id
   return item->block_offset;
 }
 
-void Binary::load_clv(pll_partition_t * partition, 
+void Binary::load_clv(pll_partition_t * partition,
                       const unsigned int clv_index)
 {
-  std::lock_guard<std::mutex> lock(file_mutex_);
   assert(bin_fptr_);
   assert(clv_index < partition->clv_buffers + partition->tips);
   if (partition->attributes & PLL_ATTRIB_PATTERN_TIP) {
@@ -92,45 +91,53 @@ void Binary::load_clv(pll_partition_t * partition,
     }
   }
 
-  unsigned int attributes;
-  auto err = pllmod_binary_clv_load(bin_fptr_.get(),
+  {
+    unsigned int attributes;
+    std::lock_guard<std::mutex> lock(file_mutex_);
+    auto err = pllmod_binary_clv_load(bin_fptr_.get(),
                                     0,
                                     partition,
                                     clv_index,
                                     &attributes,
                                     get_offset(map_, clv_index));
-
-  if (err != PLL_SUCCESS) {
-    throw std::runtime_error{std::string("Loading CLV failed: ") 
-                            + pll_errmsg 
-                            + std::string(". CLV index: ") 
-                            + std::to_string(clv_index)};
+    if (err != PLL_SUCCESS) {
+      throw std::runtime_error{std::string("Loading CLV failed: ") 
+                              + pll_errmsg 
+                              + std::string(". CLV index: ") 
+                              + std::to_string(clv_index)};
+    }
   }
-
 }
 
-void Binary::load_tipchars(pll_partition_t * partition, const unsigned int tipchars_index)
+void Binary::load_tipchars( pll_partition_t * partition,
+                            const unsigned int tipchars_index)
 {
-  std::lock_guard<std::mutex> lock(file_mutex_);
   assert(bin_fptr_);
   assert(tipchars_index < partition->tips);
   assert(partition->attributes & PLL_ATTRIB_PATTERN_TIP);
 
-  unsigned int type, attributes;
-  size_t size;
+  unsigned int type = 0;
+  unsigned int attributes = 0;
+  size_t size = 0;
 
-  auto ptr = pllmod_binary_custom_load(bin_fptr_.get(), 0, &size, &type, &attributes, get_offset(map_, tipchars_index));
-  if (!ptr) {
-    throw std::runtime_error{std::string("Loading tipchar failed: ") + pll_errmsg};
+  {
+    std::lock_guard<std::mutex> lock(file_mutex_);
+    auto ptr = pllmod_binary_custom_load( bin_fptr_.get(),
+                                          0,
+                                          &size,
+                                          &type,
+                                          &attributes,
+                                          get_offset(map_, tipchars_index));
+    if (!ptr) {
+      throw std::runtime_error{std::string("Loading tipchar failed: ") + pll_errmsg};
+    }
+    partition->tipchars[tipchars_index] = static_cast<unsigned char*>(ptr);
   }
-
-  partition->tipchars[tipchars_index] = static_cast<unsigned char*>(ptr);
 }
 
 void Binary::load_scaler( pll_partition_t * partition, 
                           const unsigned int scaler_index)
 {
-  std::lock_guard<std::mutex> lock(file_mutex_);
   assert(bin_fptr_);
   assert(scaler_index < partition->scale_buffers);
 
@@ -139,17 +146,20 @@ void Binary::load_scaler( pll_partition_t * partition,
   unsigned int type, attributes;
   size_t size;
 
-  auto ptr = pllmod_binary_custom_load( bin_fptr_.get(), 
-                                        0,
-                                        &size, 
-                                        &type, 
-                                        &attributes, 
-                                        get_offset(map_, block_offset + scaler_index));
-  if (!ptr) {
-    throw std::runtime_error{std::string("Loading scaler failed: ") + pll_errmsg};
+  {
+    std::lock_guard<std::mutex> lock(file_mutex_);
+    auto ptr = pllmod_binary_custom_load( bin_fptr_.get(), 
+                                          0,
+                                          &size, 
+                                          &type, 
+                                          &attributes, 
+                                          get_offset(map_, block_offset + scaler_index));
+    if (!ptr) {
+      throw std::runtime_error{std::string("Loading scaler failed: ") + pll_errmsg};
+    }
+  
+    partition->scale_buffer[scaler_index] = static_cast<unsigned int*>(ptr);
   }
-
-  partition->scale_buffer[scaler_index] = static_cast<unsigned int*>(ptr);
 }
 
 pll_partition_t* Binary::load_partition()
