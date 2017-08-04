@@ -50,14 +50,18 @@ static void place(const Work& to_place,
   omp_set_num_threads(num_threads);
   LOG_DBG << "Using threads: " << num_threads;
   LOG_DBG << "Max threads: " << omp_get_max_threads();
+  const unsigned int multiplicity = 8;
 #else
   const unsigned int num_threads = 1;
+  const unsigned int multiplicity = 1;
 #endif
 
   // split the sample structure such that the parts are thread-local
-  std::vector<Sample<T>> sample_parts(num_threads);
+  std::vector<Sample<T>> sample_parts(num_threads
+                                      * multiplicity);
   std::vector<Work> work_parts;
-  split(to_place, work_parts, num_threads);
+  split(to_place, work_parts, num_threads
+                              * multiplicity);
 
   // work seperately
 #ifdef __OMP
