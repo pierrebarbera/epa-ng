@@ -7,6 +7,7 @@ LOGDIR=../test/log
 OUTDIR=/tmp/epa
 CEREAL=../libs/cereal/include/
 CXXOPTS=../libs/cxxopts/src/
+GENESIS=$(realpath ../libs/genesis)
 PLL_INC=../libs/include/libpll/
 PLL_LIB=../libs/lib/
 
@@ -16,17 +17,20 @@ BINARY_WRITE= -t $(TREE) -s $(REF) -B -w $(OUTDIR) $(F)
 BINARY_READ=-b $(OUTDIR)/epa_binary_file -q $(QRY) -w $(OUTDIR) -g 0.99 --filter-min-lwr 0.0 $(F)
 NORM_TEST=-t $(TREE) -s $(REF) -q $(QRY) -w $(OUTDIR) -g 0.99 $(F)
 
+SKIN=skin --mpp=mpi --thread=omp:ancestry --nopomp
+NOEXTRA=-pomp --thread=omp --opari=--omp-tpd:--c++:--omp-tpd-mangling='gnu'
+
 #CC=clang++
 CC=g++
 DEFS=
 WARNINGS= -Wall -Wextra
-DBG=-g
+DBG=-g -O3 -DNDEBUG -D__AVX
 
-INCLUDES=-I$(CEREAL) -I$(CXXOPTS) -I$(PLL_INC)
-LIB_PATHS=  -L$(PLL_LIB)
-LIBS=$(PLL_LIB)libpll_optimize.a $(PLL_LIB)libpll_msa.a $(PLL_LIB)libpll_binary.a $(PLL_LIB)libpll_util.a $(PLL_LIB)libpll.a -lm -lpthread
+INCLUDES=-I$(CEREAL) -I$(CXXOPTS) -I$(PLL_INC) -I$(GENESIS)/lib
+LIB_PATHS=  -L$(PLL_LIB) -L$(GENESIS)/bin
+LIBS=$(PLL_LIB)libpll_optimize.a $(PLL_LIB)libpll_msa.a $(PLL_LIB)libpll_binary.a $(PLL_LIB)libpll_util.a $(PLL_LIB)libpll.a $(GENESIS)/bin/libgenesis.so -lm -Wl,-rpath,$(GENESIS)/bin
 
-CFLAGS= $(WARNINGS) -std=c++14 -pthread $(DBG) $(INCLUDES) $(CF)
+CFLAGS= $(WARNINGS) -std=c++14 $(DBG) $(INCLUDES) $(CF)
 LINKFLAGS=$(DBG) $(RPATHS) $(LIB_PATHS)
 
 TARGET=$(BIN)/epamk
@@ -42,8 +46,11 @@ omp: DBG=
 omp: LIBS+=-lgomp
 omp: CFLAGS+=-fopenmp -D__OMP
 ranged_test: BINARY_WRITE= -t $(TEST)/ref.tre -s $(TEST)/range_combined.fasta -r -w $(OUTDIR) $(F)
-mpi: CC=skin mpicxx
+mpi: CC=mpicxx
 mpi: CFLAGS+=-D__MPI
+skin: CC=$(SKIN) mpicxx
+skin: LIBS+=-lgomp
+skin: CFLAGS+=-D__MPI -fopenmp -D__OMP -DGENESIS_PTHREADS
 aa_test: BINARY_WRITE=-t $(TEST)/ref.tre -s $(TEST)/AA_aln.fasta -B -w $(OUTDIR) -m AA-GTR-DAYHOFF $(F)
 aa_test: BINARY_READ=-b $(OUTDIR)/epa_binary_file -q $(TEST)/AA_query.fasta -w $(OUTDIR) -m AA-GTR-DAYHOFF --filter-min-lwr 0.0 $(F)
 aa_test: NORM_TEST=-t $(TEST)/ref.tre -s $(TEST)/AA_aln.fasta -q $(TEST)/AA_query.fasta -w $(OUTDIR) -m AA-GTR-DAYHOFF $(F)
@@ -53,6 +60,8 @@ all:  $(TARGET)
 omp:  $(TARGET)
 
 mpi: $(TARGET)
+
+skin: $(TARGET)
 
 test: $(TARGET)
 	mkdir -p $(OUTDIR)
