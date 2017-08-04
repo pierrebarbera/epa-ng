@@ -12,21 +12,22 @@
 #include "Range.hpp"
 #include "Binary.hpp"
 #include "pll_util.hpp"
-#include "Mutex.hpp"
 
 /* Encapsulates the pll data structures for ML computation */
 class Tree
 {
 public:
+  using Scoped_Mutex  = std::lock_guard<std::mutex>;
+  using Mutex_List    = std::vector<std::mutex>;
   using partition_ptr = std::unique_ptr<pll_partition_t, partition_deleter>;
   using utree_ptr     = std::unique_ptr<pll_utree_t, utree_deleter>;
 
-  Tree( const std::string& tree_file, 
-        const MSA& msa, 
-        Model& model, 
+  Tree( const std::string& tree_file,
+        const MSA& msa,
+        Model& model,
         const Options& options);
-  Tree( const std::string& bin_file, 
-        Model &model, 
+  Tree( const std::string& bin_file,
+        Model &model,
         const Options& options);
   Tree()  = default;
   ~Tree() = default;
@@ -50,7 +51,7 @@ public:
 
 private:
   // pll structures
-   
+
   partition_ptr partition_{nullptr, pll_partition_destroy};
   utree_ptr     tree_{nullptr, utree_destroy}; // must be top level node as parsed in newick! (for jplace)
 
