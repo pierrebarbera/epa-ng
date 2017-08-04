@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.8.10 FATAL_ERROR)
+cmake_minimum_required (VERSION 2.8.7 FATAL_ERROR)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/libs/seqan/util/cmake")
 
@@ -10,6 +10,14 @@ set (ENABLE_OMP       OFF)
 set (ENABLE_PREFETCH  ON)
 
 project (epa CXX)
+
+set (epa_VERSION_MAJOR 0)
+set (epa_VERSION_MINOR 1)
+set (epa_VERSION_PATCH 0)
+
+set (epa_PROJECT_VERSION "${epa_VERSION_MAJOR}")
+set (epa_PROJECT_VERSION "${epa_PROJECT_VERSION}.${epa_VERSION_MINOR}")
+set (epa_PROJECT_VERSION "${epa_PROJECT_VERSION}.${epa_VERSION_PATCH}")
 
 #check for minimum compiler versions
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
@@ -24,8 +32,7 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   endif()
 endif()
 
-# set (epa_VERSION_MAJOR 0)
-# set (epa_VERSION_MINOR 1)
+message(STATUS "EPA-ng version: ${epa_PROJECT_VERSION}")
 
 set (CMAKE_BUILD_TYPE RELEASE)
 
@@ -42,23 +49,23 @@ set (CMAKE_CXX_FLAGS_DEBUG    "-O0 -g -ggdb3 -DDEBUG -D_GLIBCXX_DEBUG")
 set (CMAKE_CXX_FLAGS_RELEASE  "-O3 -DNDEBUG")
 
 if(ENABLE_PREFETCH)
-set (CMAKE_THREAD_PREFER_PTHREAD ON)
-set (THREADS_PREFER_PTHREAD_FLAG ON)
-find_package (Threads)
-message(STATUS "Enabling Prefetching")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__PREFETCH -DGENESIS_PTHREADS")
+  set (CMAKE_THREAD_PREFER_PTHREAD ON)
+  set (THREADS_PREFER_PTHREAD_FLAG ON)
+  find_package (Threads)
+  message(STATUS "Enabling Prefetching")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__PREFETCH")
 endif()
 
 if(ENABLE_OMP)
-message(STATUS "Checking for OpenMP")
-find_package( OpenMP QUIET )
-if(OPENMP_FOUND)
-message(STATUS "Checking for OpenMP -- found")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS} -D__OMP")
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
-else()
-message(STATUS "Checking for OpenMP -- NOT FOUND")
-endif()
+  message(STATUS "Checking for OpenMP")
+  find_package( OpenMP QUIET )
+  if(OPENMP_FOUND)
+    message(STATUS "Checking for OpenMP -- found")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS} -D__OMP")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+  else()
+    message(STATUS "Checking for OpenMP -- NOT FOUND")
+  endif()
 endif()
 
 include(CheckCXXCompilerFlag)
@@ -71,15 +78,33 @@ elseif(HAS_SSE3)
 endif()
 
 if(ENABLE_MPI)
-find_package(MPI)
-if(MPI_CXX_FOUND)
-set( ENV{OMPI_CXX} ${CMAKE_CXX_COMPILER} PARENT_SCOPE )
-#set( CMAKE_CXX_COMPILER       "mpicxx")
-include_directories(${MPI_CXX_INCLUDE_PATH})
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MPI_CXX_COMPILER_FLAGS} -D__MPI")
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${MPI_CXX_LINK_FLAGS}")
+  find_package(MPI)
+  if(MPI_CXX_FOUND)
+    set( ENV{OMPI_CXX} ${CMAKE_CXX_COMPILER} PARENT_SCOPE )
+    #set( CMAKE_CXX_COMPILER       "mpicxx")
+    include_directories(${MPI_CXX_INCLUDE_PATH})
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MPI_CXX_COMPILER_FLAGS} -D__MPI")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${MPI_CXX_LINK_FLAGS}")
+  endif()
 endif()
+
+# pass special info to genesis
+if(ENABLE_PREFETCH)
+  set(GENESIS_USE_THREADS ON CACHE BOOL "Passing GENESIS_USE_THREADS=ON to genesis")
+else()
+  set(GENESIS_USE_THREADS OFF CACHE BOOL "Passing GENESIS_USE_THREADS=OFF to genesis")
 endif()
+
+set(GENESIS_USE_OPENMP OFF CACHE BOOL "Passing GENESIS_USE_OPENMP=OFF to genesis")
+
+# Add Genesis as dependency
+add_subdirectory(${PROJECT_SOURCE_DIR}/libs/genesis)
+
+# Use everything that Genesis exports, just to be sure that we use the same setup.
+add_definitions( ${GENESIS_DEFINITIONS} )
+include_directories( ${GENESIS_INCLUDE_DIR} )
+set( CMAKE_CXX_FLAGS        "${CMAKE_CXX_FLAGS} ${GENESIS_CXX_FLAGS}" )
+set( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GENESIS_EXE_LINKER_FLAGS}" )
 
 message(STATUS "Using flags: ${CMAKE_CXX_FLAGS}")
 
@@ -87,7 +112,6 @@ message(STATUS "Using flags: ${CMAKE_CXX_FLAGS}")
 include_directories(${PROJECT_SOURCE_DIR}/libs/cereal/include)
 include_directories(${PROJECT_SOURCE_DIR}/libs/cxxopts/src)
 include_directories(${PROJECT_SOURCE_DIR}/libs/include/libpll)
-include_directories(${PROJECT_SOURCE_DIR}/libs/genesis/lib)
 
 set(pll_dir ${PROJECT_SOURCE_DIR}/libs/pll-modules/libs/libpll/src)
 set(pll_binary_dir ${PROJECT_SOURCE_DIR}/libs/pll-modules/src/binary)
