@@ -224,10 +224,10 @@ static void read_(Options options)
   const auto read_rep = read_part->repeats;
   if (rep) {
     for (size_t i = 0; i < part->scale_buffers; ++i) {
-      EXPECT_EQ(rep->perscale_max_id[i], read_rep->perscale_max_id[i]);
+      EXPECT_EQ(rep->perscale_ids[i], read_rep->perscale_ids[i]);
     }
     for (size_t i = 0; i < part->clv_buffers + part->tips; ++i) {
-      EXPECT_EQ(rep->pernode_max_id[i], read_rep->pernode_max_id[i]);
+      EXPECT_EQ(rep->pernode_ids[i], read_rep->pernode_ids[i]);
       EXPECT_EQ(rep->pernode_allocated_clvs[i],
                 read_rep->pernode_allocated_clvs[i]);
 

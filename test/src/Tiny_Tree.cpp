@@ -110,8 +110,8 @@ static void place_from_binary(const Options options)
 
   if (options.repeats) {
     ASSERT_TRUE(original_tree.partition()->attributes &
-                PLL_ATTRIB_SITES_REPEATS);
-    ASSERT_TRUE(read_tree.partition()->attributes & PLL_ATTRIB_SITES_REPEATS);
+                PLL_ATTRIB_SITE_REPEATS);
+    ASSERT_TRUE(read_tree.partition()->attributes & PLL_ATTRIB_SITE_REPEATS);
   }
 
   ASSERT_EQ(original_tree.nums().branches, read_tree.nums().branches);

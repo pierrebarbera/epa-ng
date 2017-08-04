@@ -54,16 +54,16 @@ static void deep_copy_repeats(pll_partition_t* dest_part,
 {
   // copy size info
   if (src_node->scaler_index != PLL_SCALE_BUFFER_NONE) {
-    dest_part->repeats->perscale_max_id[dest_node->scaler_index]
-      = src_part->repeats->perscale_max_id[src_node->scaler_index];
+    dest_part->repeats->perscale_ids[dest_node->scaler_index]
+      = src_part->repeats->perscale_ids[src_node->scaler_index];
   }
   
-  dest_part->repeats->pernode_max_id[dest_node->clv_index]
-    = src_part->repeats->pernode_max_id[src_node->clv_index];
+  dest_part->repeats->pernode_ids[dest_node->clv_index]
+    = src_part->repeats->pernode_ids[src_node->clv_index];
   dest_part->repeats->pernode_allocated_clvs[dest_node->clv_index]
     = src_part->repeats->pernode_allocated_clvs[src_node->clv_index];
 
-  if (src_part->repeats->pernode_max_id[src_node->clv_index]) {
+  if (src_part->repeats->pernode_ids[src_node->clv_index]) {
     const auto size = 
     pll_get_sites_number( const_cast<pll_partition_t*>(src_part), 
                           src_node->clv_index);

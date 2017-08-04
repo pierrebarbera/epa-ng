@@ -167,7 +167,7 @@ pll_partition_t* Binary::load_partition()
     throw std::runtime_error{std::string("Error loading partition: ") + pll_errmsg};
   }
 
-  if (partition->attributes & PLL_ATTRIB_SITES_REPEATS) {
+  if (partition->attributes & PLL_ATTRIB_SITE_REPEATS) {
     unsigned int repeats_attribs = 0;
     if (pllmod_binary_repeats_load( bin_fptr_.get(), 
                                     0, 
@@ -248,7 +248,7 @@ void dump_to_binary(Tree& tree, const std::string& file)
   const auto max_clv_index = num_clvs + num_tips;
   
   const bool use_tipchars = tree.partition()->attributes & PLL_ATTRIB_PATTERN_TIP;
-  const bool use_repeats = tree.partition()->attributes & PLL_ATTRIB_SITES_REPEATS;
+  const bool use_repeats = tree.partition()->attributes & PLL_ATTRIB_SITE_REPEATS;
 
   int block_id = use_repeats ? -3 : -2;
 

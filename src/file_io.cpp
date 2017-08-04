@@ -200,7 +200,7 @@ pll_partition_t *  build_partition_from_file( const Model& model,
 #endif
 
   if (repeats) {
-    attributes |= PLL_ATTRIB_SITES_REPEATS;
+    attributes |= PLL_ATTRIB_SITE_REPEATS;
   } else {
     attributes |= PLL_ATTRIB_PATTERN_TIP;
   }
