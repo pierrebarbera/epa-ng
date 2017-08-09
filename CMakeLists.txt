@@ -5,9 +5,22 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/libs/seqan/util/
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 set(CMAKE_DISABLE_SOURCE_CHANGES  ON)
 
+# main compile alternators and their defaults
 set (ENABLE_MPI       OFF)
-set (ENABLE_OMP       OFF)
+set (ENABLE_OMP       ON)
 set (ENABLE_PREFETCH  ON)
+
+if ( $ENV{EPA_HYBRID} )
+	set (ENABLE_MPI       ON)
+	set (ENABLE_OMP       ON)
+	set (ENABLE_PREFETCH  ON)
+endif ()
+
+if ( $ENV{EPA_SERIAL} )
+    set (ENABLE_MPI       OFF)
+    set (ENABLE_OMP       OFF)
+    set (ENABLE_PREFETCH  OFF)
+endif ()
 
 project (epa CXX)
 
