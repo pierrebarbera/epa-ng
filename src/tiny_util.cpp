@@ -209,8 +209,8 @@ pll_partition_t * make_tiny_partition(Tree& reference_tree,
                       distal,
                       old_partition,
                       old_distal);
-    
-    // pll_resize_repeats_lookup(tiny, ( REPEATS_LOOKUP_SIZE ) * 10);
+
+    pll_resize_repeats_lookup(tiny, tiny->sites);
   }
 
   return tiny;
@@ -232,7 +232,7 @@ void tiny_partition_destroy(pll_partition_t * partition)
 
     partition->clv[proximal_clv_index] = nullptr;
 
-    const bool distal_is_tip = partition->clv_buffers == 3 ? false : true;
+    const bool distal_is_tip    = partition->clv_buffers == 3 ? false : true;
     const bool pattern_tip_mode = partition->attributes & PLL_ATTRIB_PATTERN_TIP;
 
     if (distal_is_tip) {
