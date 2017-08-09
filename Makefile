@@ -64,11 +64,12 @@ EPABIN=./bin/epa
 TEST=test/data/lucas
 TREE=$(TEST)/20k.newick
 REF=$(TEST)/1k_reference.fasta
-QRY=$(TEST)/1k_query_100.fasta
+QRY=$(TEST)/1k_query_100.fasta.bin
+BINFILE=$(TEST)/epa_binary_file
 OUTDIR=/tmp/epa
 
 BINARY_WRITE= -t $(TREE) -s $(REF) -B -w $(OUTDIR) --verbose $(F)
-BINARY_READ=-b $(OUTDIR)/epa_binary_file -q $(QRY) -w $(OUTDIR) -g 0.99 --verbose $(F)
+BINARY_READ=-b $(BINFILE) -q $(QRY) -w $(OUTDIR) -g 0.99 --verbose $(F)
 NORM_TEST=-t $(TREE) -s $(REF) -q $(QRY) -w $(OUTDIR) -g 0.99 --chunk-size=10 --verbose $(F)
 
 test: update
@@ -87,5 +88,5 @@ bintest: update
 mpi_test: update
 	mkdir -p $(OUTDIR)
 	rm -f $(OUTDIR)/*
-	mpirun -n 4 $(EPABIN) $(NORM_TEST)
+	mpirun -n 4 $(EPABIN) $(BINARY_READ)
 .PHONY: mpi_test
