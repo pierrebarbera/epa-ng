@@ -42,14 +42,14 @@ void exit_epa(int ret=EXIT_SUCCESS)
 
 int main(int argc, char** argv)
 {
+  genesis::utils::Logging::log_to_stdout();
+
 #ifdef __MPI
   MPI_INIT(&argc, &argv);
   int local_rank = 0;
   MPI_Comm_rank(MPI_COMM_WORLD, &local_rank);
   if (local_rank != 0) {
     genesis::utils::Logging::log_to_stdout(false);  
-  } else {
-    genesis::utils::Logging::log_to_stdout();
   }
 #endif
   genesis::utils::Logging::max_level(genesis::utils::Logging::kInfo);
@@ -75,6 +75,8 @@ int main(int argc, char** argv)
   std::string banner;
 
   Model model;
+
+  const bool empty = argc == 1;
 
   try
   {
@@ -157,7 +159,7 @@ int main(int argc, char** argv)
 
   cli.parse(argc, argv);
 
-  if (cli.count("help")) {
+  if (cli.count("help") or empty) {
     std::cout << cli.help({"", "Input", "Output", "Compute", "Pipeline"});
     exit_epa();
   }

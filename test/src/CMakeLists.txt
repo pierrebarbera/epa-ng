@@ -29,9 +29,9 @@ target_link_libraries (epa_test_module m)
 
 target_link_libraries (epa_test_module ${GTEST_BOTH_LIBRARIES})
 
-if(ENABLE_PREFETCH)
+# if(ENABLE_PREFETCH)
 target_link_libraries (epa_test_module ${CMAKE_THREAD_LIBS_INIT})
-endif()
+# endif()
 
 if(ENABLE_MPI)
   if(MPI_CXX_FOUND)
