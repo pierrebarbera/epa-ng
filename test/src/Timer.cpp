@@ -3,7 +3,7 @@
 #include <chrono>
 #include <thread>
 
-#include "src/Timer.hpp"
+#include "util/Timer.hpp"
 
 TEST(Timer, pause)
 {

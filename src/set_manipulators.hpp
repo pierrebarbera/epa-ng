@@ -4,11 +4,10 @@
 #include <unordered_map>
 #include <limits>
 
-#include "Sample.hpp"
-#include "Timer.hpp"
-#include "Range.hpp"
-#include "MSA.hpp"
-#include "Work.hpp"
+#include "sample/Sample.hpp"
+#include "util/Timer.hpp"
+#include "seq/MSA.hpp"
+#include "core/Work.hpp"
 
 /**
  * collapses PQuerys with the same ID inside a Sample into one
@@ -189,7 +188,5 @@ void discard_by_accumulated_threshold(Sample<Placement>& sample,
                                       const double thresh,
                                       const size_t min=1, 
                                       const size_t max=std::numeric_limits<size_t>::max());
-Range superset(Range a, Range b);
-Range get_valid_range(std::string sequence);
 void find_collapse_equal_sequences(MSA& msa);
 

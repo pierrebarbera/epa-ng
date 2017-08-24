@@ -1,16 +1,15 @@
 #include "Epatest.hpp"
 
-#include "src/pllhead.hpp"
-#include "src/epa_pll_util.hpp"
-#include "src/pll_util.hpp"
-#include "src/file_io.hpp"
-#include "src/Tree_Numbers.hpp"
-#include "src/Model.hpp"
-#include "src/Options.hpp"
-#include "src/Tree.hpp"
-#include "src/MSA.hpp"
-#include "src/Range.hpp"
-#include "src/optimize.hpp"
+#include "core/pll/pllhead.hpp"
+#include "core/pll/epa_pll_util.hpp"
+#include "core/pll/pll_util.hpp"
+#include "core/pll/optimize.hpp"
+#include "io/file_io.hpp"
+#include "tree/Tree_Numbers.hpp"
+#include "tree/Tree.hpp"
+#include "core/Model.hpp"
+#include "util/Options.hpp"
+#include "seq/MSA.hpp"
 
 #include <string>
 

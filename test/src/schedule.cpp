@@ -1,6 +1,6 @@
 #include "Epatest.hpp"
 
-#include "src/schedule.hpp"
+#include "pipeline/schedule.hpp"
 
 #include <vector>
 #include <numeric>

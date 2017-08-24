@@ -1,3 +1,5 @@
+include_directories (${PROJECT_SOURCE_DIR}/src)
+
 file (GLOB_RECURSE epa_sources ${PROJECT_SOURCE_DIR}/src/*.cpp)
 
 set (EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)

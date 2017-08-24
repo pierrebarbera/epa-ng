@@ -2,12 +2,12 @@
 
 #include <vector>
 
-#include "src/optimize.hpp"
-#include "src/file_io.hpp"
-#include "src/epa_pll_util.hpp"
-#include "src/Tree.hpp"
-#include "src/Options.hpp"
-#include "src/Tree_Numbers.hpp"
+#include "core/pll/optimize.hpp"
+#include "core/pll/epa_pll_util.hpp"
+#include "io/file_io.hpp"
+#include "util/Options.hpp"
+#include "tree/Tree.hpp"
+#include "tree/Tree_Numbers.hpp"
 
 TEST(optimize, repeats)
 {

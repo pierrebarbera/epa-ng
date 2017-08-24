@@ -1,10 +1,10 @@
 #include "Epatest.hpp"
 
-#include "src/file_io.hpp"
-#include "src/Tree.hpp"
-#include "src/MSA.hpp"
-#include "src/place.hpp"
-#include "src/Binary_Fasta.hpp"
+#include "io/file_io.hpp"
+#include "io/Binary_Fasta.hpp"
+#include "tree/Tree.hpp"
+#include "seq/MSA.hpp"
+#include "core/place.hpp"
 
 #include <string>
 #include <vector>

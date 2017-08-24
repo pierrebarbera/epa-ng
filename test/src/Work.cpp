@@ -1,7 +1,7 @@
 #include "Epatest.hpp"
 
-#include "src/Work.hpp"
-#include "src/Sample.hpp"
+#include "core/Work.hpp"
+#include "sample/Sample.hpp"
 
 using namespace std;
 

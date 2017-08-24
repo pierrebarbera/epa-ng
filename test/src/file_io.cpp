@@ -1,10 +1,10 @@
 #include "Epatest.hpp"
 
-#include "src/pllhead.hpp"
-#include "src/file_io.hpp"
-#include "src/Tree_Numbers.hpp"
-#include "src/Model.hpp"
-#include "src/MSA.hpp"
+#include "core/pll/pllhead.hpp"
+#include "core/Model.hpp"
+#include "io/file_io.hpp"
+#include "tree/Tree_Numbers.hpp"
+#include "seq/MSA.hpp"
 
 #include <string>
 #include <tuple>

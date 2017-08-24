@@ -2,11 +2,11 @@
 
 #include <vector>
 
-#include "src/Tree.hpp"
-#include "src/Binary.hpp"
-#include "src/Options.hpp"
-#include "src/Model.hpp"
-#include "src/file_io.hpp"
+#include "tree/Tree.hpp"
+#include "io/Binary.hpp"
+#include "io/file_io.hpp"
+#include "util/Options.hpp"
+#include "core/Model.hpp"
 
 using namespace std;
 

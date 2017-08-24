@@ -1,8 +1,8 @@
 #include "Epatest.hpp"
 
-#include "src/MSA_Stream.hpp"
-#include "src/MSA.hpp"
-#include "src/file_io.hpp"
+#include "seq/MSA_Stream.hpp"
+#include "seq/MSA.hpp"
+#include "io/file_io.hpp"
 
 #include <string>
 

@@ -1,8 +1,7 @@
 #include "Epatest.hpp"
 
-#include "src/set_manipulators.hpp"
-#include "src/jplace_util.hpp"
-#include "src/Range.hpp"
+#include "set_manipulators.hpp"
+#include "io/jplace_util.hpp"
 
 #include <vector>
 #include <iostream>
@@ -336,25 +335,25 @@ TEST(set_manipulators, find_collapse_equal_sequences)
   EXPECT_EQ(2, msa[3].header_list().size());
 }
 
-TEST(set_manipulators, get_valid_range)
-{
-  string s1("---------GGGCCCGTAT-------");//(9,19)
-  string s2("GGGCCCGTAT-------");         //(0,10)
-  string s3("-GGGC---CCG-TAT");           //(1,15)
+// TEST(set_manipulators, get_valid_range)
+// {
+//   string s1("---------GGGCCCGTAT-------");//(9,19)
+//   string s2("GGGCCCGTAT-------");         //(0,10)
+//   string s3("-GGGC---CCG-TAT");           //(1,15)
 
-  Range r;
-  r = get_valid_range(s1);
-  EXPECT_EQ(9, r.begin);
-  EXPECT_EQ(10, r.span);
+//   Range r;
+//   r = get_valid_range(s1);
+//   EXPECT_EQ(9, r.begin);
+//   EXPECT_EQ(10, r.span);
 
-  r = get_valid_range(s2);
-  EXPECT_EQ(0, r.begin);
-  EXPECT_EQ(10, r.span);
+//   r = get_valid_range(s2);
+//   EXPECT_EQ(0, r.begin);
+//   EXPECT_EQ(10, r.span);
 
-  r = get_valid_range(s3);
-  EXPECT_EQ(1, r.begin);
-  EXPECT_EQ(14, r.span);
-}
+//   r = get_valid_range(s3);
+//   EXPECT_EQ(1, r.begin);
+//   EXPECT_EQ(14, r.span);
+// }
 
 TEST(set_manipulators, discard_bottom_x_percent)
 {

@@ -2,8 +2,8 @@
 
 #include <gtest/gtest.h>
 
-#include "src/Model.hpp"
-#include "src/Options.hpp"
+#include "core/Model.hpp"
+#include "util/Options.hpp"
 
 // The testing environment
 class Epatest : public ::testing::Environment {

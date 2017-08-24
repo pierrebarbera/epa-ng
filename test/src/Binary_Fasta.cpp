@@ -1,8 +1,8 @@
 #include "Epatest.hpp"
 
-#include "src/Binary_Fasta.hpp"
-#include "src/file_io.hpp"
-#include "src/MSA.hpp"
+#include "io/Binary_Fasta.hpp"
+#include "io/file_io.hpp"
+#include "seq/MSA.hpp"
 
 #include "genesis/utils/core/options.hpp"
 

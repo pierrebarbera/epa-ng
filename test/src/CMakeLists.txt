@@ -8,6 +8,8 @@ endif()
 
 message (STATUS "Building tests")
 
+include_directories (${PROJECT_SOURCE_DIR}/src)
+
 file (GLOB_RECURSE epa_test_sources ${PROJECT_SOURCE_DIR}/test/src/*.cpp ${PROJECT_SOURCE_DIR}/src/*.cpp)
 
 # sources list now has 2 Main.cpp, old has to be removed

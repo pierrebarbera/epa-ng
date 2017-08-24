@@ -1,6 +1,6 @@
 #include "Epatest.hpp"
 
-#include "src/encoding.hpp"
+#include "io/encoding.hpp"
 
 TEST(encoding, 4bit)
 {

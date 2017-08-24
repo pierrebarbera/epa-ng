@@ -5,10 +5,17 @@
 
 #include <cxxopts.hpp>
 
-#include "mpihead.hpp"
-#include "logging.hpp"
-#include "epa.hpp"
-#include "Binary_Fasta.hpp"
+#include "net/mpihead.hpp"
+#include "util/logging.hpp"
+#include "util/Options.hpp"
+#include "io/Binary_Fasta.hpp"
+#include "io/Binary.hpp"
+#include "io/file_io.hpp"
+#include "tree/Tree.hpp"
+#include "core/Model.hpp"
+#include "core/place.hpp"
+#include "seq/MSA_Stream.hpp"
+#include "seq/MSA.hpp"
 
 static void ensure_dir_has_slash(std::string& dir)
 {

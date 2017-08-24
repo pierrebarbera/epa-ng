@@ -3,7 +3,7 @@
 #include <iostream>
 
 #include "Epatest.hpp"
-#include "src/mpihead.hpp"
+#include "net/mpihead.hpp"
 
 Epatest* env;
 
