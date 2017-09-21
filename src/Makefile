@@ -6,7 +6,7 @@ QRY=$(TEST)/1k_query.fasta
 LOGDIR=../test/log
 OUTDIR=/tmp/epa
 CEREAL=../libs/cereal/include/
-CXXOPTS=../libs/cxxopts/src/
+CXXOPTS=../libs/cxxopts/include/
 GENESIS=$(realpath ../libs/genesis)
 PLL_INC=../libs/include/libpll/
 PLL_LIB=../libs/lib/
@@ -26,17 +26,17 @@ DEFS=
 WARNINGS= -Wall -Wextra
 DBG=-g -O3 -DNDEBUG -D__AVX
 
-INCLUDES=-I$(CEREAL) -I$(CXXOPTS) -I$(PLL_INC) -I$(GENESIS)/lib
+INCLUDES=-I$(CEREAL) -I$(CXXOPTS) -I$(PLL_INC) -I$(GENESIS)/lib -I.
 LIB_PATHS=  -L$(PLL_LIB) -L$(GENESIS)/bin
-LIBS=$(PLL_LIB)libpll_optimize.a $(PLL_LIB)libpll_msa.a $(PLL_LIB)libpll_binary.a $(PLL_LIB)libpll_util.a $(PLL_LIB)libpll.a $(GENESIS)/bin/libgenesis.so -lm -Wl,-rpath,$(GENESIS)/bin
+LIBS=$(PLL_LIB)libpll_optimize.a $(PLL_LIB)libpll_msa.a $(PLL_LIB)libpll_binary.a $(PLL_LIB)libpll_util.a $(PLL_LIB)libpll.a $(GENESIS)/bin/libgenesis.a -lm -Wl,-rpath,$(GENESIS)/bin
 
 CFLAGS= $(WARNINGS) -std=c++14 $(DBG) $(INCLUDES) $(CF)
 LINKFLAGS=$(DBG) $(RPATHS) $(LIB_PATHS)
 
 TARGET=$(BIN)/epamk
 
-CPP=$(wildcard *.cpp)
-OBJS=$(notdir $(CPP:.cpp=.o))
+CPP=$(shell find . -name "*.cpp")
+OBJS=$(CPP:.cpp=.o)
 OUT_OBJS=$(addprefix $(BIN)/,$(OBJS))
 
 callgrind: CFLAGS= $(WARNINGS) -std=c++14 -O2
@@ -114,9 +114,10 @@ gdb: $(TARGET)
 	gdb --args $(TARGET) $(NORM_TEST)
 
 $(TARGET): $(OUT_OBJS)
-	$(CC) $(LINKFLAGS) -o $@ $+ $(LIBS)
+	$(CC) $(LINKFLAGS) -o $@ $+ $(LIBS) -L../bin/
 
 $(OUT_OBJS): $(BIN)/%.o: %.cpp $(DEPS)
+	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 .PHONY: clean, mpi, omp, all, test, ranged_test, valgrind, callgrind, gdb
