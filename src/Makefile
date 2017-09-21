@@ -1,4 +1,5 @@
 BIN=../bin
+BUILD=./.build
 TEST=../test/data/lucas
 TREE=$(TEST)/20k.newick
 REF=$(TEST)/1k_reference.fasta
@@ -37,7 +38,7 @@ TARGET=$(BIN)/epamk
 
 CPP=$(shell find . -name "*.cpp")
 OBJS=$(CPP:.cpp=.o)
-OUT_OBJS=$(addprefix $(BIN)/,$(OBJS))
+OUT_OBJS=$(addprefix $(BUILD)/,$(OBJS))
 
 callgrind: CFLAGS= $(WARNINGS) -std=c++14 -O2
 profile: CFLAGS= $(WARNINGS) -std=c++14 -O2
@@ -116,12 +117,12 @@ gdb: $(TARGET)
 $(TARGET): $(OUT_OBJS)
 	$(CC) $(LINKFLAGS) -o $@ $+ $(LIBS) -L../bin/
 
-$(OUT_OBJS): $(BIN)/%.o: %.cpp $(DEPS)
+$(OUT_OBJS): $(BUILD)/%.o: %.cpp $(DEPS)
 	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 .PHONY: clean, mpi, omp, all, test, ranged_test, valgrind, callgrind, gdb
 
 clean:
-	-rm -f $(BIN)/*.o
+	-rm -rf $(BUILD)
 	-rm -f $(TARGET)
