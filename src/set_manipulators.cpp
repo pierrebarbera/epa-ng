@@ -50,7 +50,11 @@ void merge(Timer<>& dest, const Timer<>& src)
 
 void compute_and_set_lwr(Sample<Placement>& sample)
 {
-  for (auto &pq : sample) {
+  #ifdef __OMP
+  #pragma omp parallel for schedule(dynamic)
+  #endif
+  for (size_t i = 0; i < sample.size(); ++i) {
+    auto &pq = sample[i];
     double total = 0.0;
     double max=-std::numeric_limits<double>::infinity();
 
@@ -95,7 +99,11 @@ void discard_bottom_x_percent(Sample<Placement>& sample, const double x)
     throw std::range_error{"x is not a percentage (outside of [0,1])"};
   }
 
-  for (auto &pq : sample) {
+  #ifdef __OMP
+  #pragma omp parallel for schedule(dynamic)
+  #endif
+  for (size_t i = 0; i < sample.size(); ++i) {
+    auto &pq = sample[i];
     auto num_keep = static_cast<int>(ceil((1.0 - x) * static_cast<double>(pq.size())));
     sort_by_lwr(pq);
     auto erase_iter = pq.begin();
@@ -117,7 +125,11 @@ void discard_by_support_threshold(Sample<Placement>& sample,
     throw std::range_error{"Filter min cannot be smaller than 1!"};
   }
 
-  for (auto &pq : sample) {
+  #ifdef __OMP
+  #pragma omp parallel for schedule(dynamic)
+  #endif
+  for (size_t i = 0; i < sample.size(); ++i) {
+    auto &pq = sample[i];
     auto erase_iter = partition(
       pq.begin(), 
       pq.end(),
@@ -157,13 +169,13 @@ void discard_by_accumulated_threshold(Sample<Placement>& sample,
     throw std::range_error{"Filter min cannot be smaller than max!"};
   }
 
-  // sorting phase
-  for (auto &pq : sample) {
-    sort_by_lwr(pq);
-  }
-
   // accumulation and erasure phase
-  for (auto &pq : sample) {
+  #ifdef __OMP
+  #pragma omp parallel for schedule(dynamic)
+  #endif
+  for (size_t i = 0; i < sample.size(); ++i) {
+    auto &pq = sample[i];
+    sort_by_lwr(pq);
     double sum = 0.0;
 
     size_t num_summed = 0;
