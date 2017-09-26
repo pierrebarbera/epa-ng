@@ -8,7 +8,7 @@ public:
   Options()  = default;
   ~Options() = default;
 
-  bool prescoring               = false;
+  bool prescoring               = true;
   bool opt_model                = false;
   bool opt_branches             = false;
   bool sliding_blo              = true;
@@ -21,7 +21,7 @@ public:
   bool ranged                   = false;
   bool dump_binary_mode         = false;
   bool load_binary_mode         = false;
-  unsigned int chunk_size       = 1000;
+  unsigned int chunk_size       = 5000;
   unsigned int num_threads      = 0;
   bool repeats                  = true;
 };

@@ -129,8 +129,10 @@ int main(int argc, char** argv)
     ("no-repeats",
       "Do NOT employ site repeats optimization. (not recommended, will increase memory footprint without improving runtime or quality) ")
     ("g,dyn-heur",
-      "Two-phase heuristic, determination of candidate edges using accumulative threshold.",
-      cxxopts::value<double>()->implicit_value("0.99"))
+      "Two-phase heuristic, determination of candidate edges using accumulative threshold. Enabled by default! See --no-heur for disabling it",
+      cxxopts::value<double>()->default_value("0.99")->implicit_value("0.99"))
+    ("no-heur",
+      "Disables heuristic preplacement completely. Overrides all other heuristic flags.")
     ("G,fix-heur",
       "Two-phase heuristic, determination of candidate edges by specified percentage of total edges.",
       cxxopts::value<double>()->implicit_value("0.1"))
@@ -155,7 +157,7 @@ int main(int argc, char** argv)
   cli.add_options("Pipeline")
     ("chunk-size",
       "Number of query sequences to be read in at a time. May influence performance.",
-      cxxopts::value<unsigned int>()->default_value("1000"))
+      cxxopts::value<unsigned int>()->default_value("5000"))
     #ifdef __OMP
     ("T,threads",
       "Number of threads to use. If 0 is passed as argument, program will run with the maximum number "
@@ -248,19 +250,27 @@ int main(int argc, char** argv)
   }
 
   if (cli.count("fix-heur")) {
-    options.prescoring_threshold = cli["fix-heur"].as<double>();
-    options.prescoring = options.prescoring_by_percentage = true;
-    LOG_INFO << "Selected: Prescoring by percentage of branches: " << options.prescoring_threshold;
+    if (cli.count("no-heur")) {
+      LOG_WARN << "WARNING: ignoring --fix-heur/-G as it conflicts with: --no-heur";
+    } else {
+      options.prescoring_threshold = cli["fix-heur"].as<double>();
+      options.prescoring = options.prescoring_by_percentage = true;
+      LOG_INFO << "Selected: Prescoring by percentage of branches: " << options.prescoring_threshold;
+    }
   }
 
   if (cli.count("dyn-heur")) {
-    options.prescoring_threshold = cli["dyn-heur"].as<double>();
-    if (options.prescoring)  {
-      LOG_INFO << "Cannot use -G and -g concurrently! Running with -g " << options.prescoring_threshold ;
+    if (cli.count("no-heur")) {
+      LOG_WARN << "WARNING: ignoring --dyn-heur/-g as it conflicts with: --no-heur";
+    } else {
+      options.prescoring_threshold = cli["dyn-heur"].as<double>();
+      if (cli.count("fix-heur"))  {
+        LOG_INFO << "Cannot use -G and -g concurrently! Running with -g " << options.prescoring_threshold ;
+      }
+      options.prescoring = true;
+      options.prescoring_by_percentage = false;
+      LOG_INFO << "Selected: Prescoring by accumulated LWR threshold: " << options.prescoring_threshold;
     }
-    options.prescoring = true;
-    options.prescoring_by_percentage = false;
-    LOG_INFO << "Selected: Prescoring by accumulated LWR threshold: " << options.prescoring_threshold;
   }
 
   if (cli.count("opt-ref-tree")) {
@@ -279,6 +289,11 @@ int main(int argc, char** argv)
   if (cli.count("no-repeats")) {
     options.repeats = false;
     LOG_INFO << "Selected: Using the non-repeats version of libpll/modules";
+  }
+
+  if (cli.count("no-heur")) {
+    options.prescoring = false;
+    LOG_INFO << "Selected: Disabling the prescoring heuristics.";
   }
 
   if (cli.count("dump-binary")) {
@@ -361,14 +376,14 @@ int main(int argc, char** argv)
   genesis::utils::Logging::log_to_file(work_dir + "epa_info.log");
   #endif
 
-  banner +=   " _____        ______ _____        ";
-  banner += "\n|  __ \\      |  ____|  __ \\ /\\    ";
-  banner += "\n| |__) |_____| |__  | |__) /  \\   ";
-  banner += "\n|  ___/______|  __| |  ___/ /\\ \\  ";
-  banner += "\n| |          | |____| |  / ____ \\";
-  banner += "\n|_|          |______|_| /_/    \\_\\ \n";
+  banner += "    ______ ____   ___           _   __ ______\n";
+  banner += "   / ____// __ \\ /   |         / | / // ____/\n";
+  banner += "  / __/  / /_/ // /| | ______ /  |/ // / __  \n";
+  banner += " / /___ / ____// ___ |/_____// /|  // /_/ /  \n";
+  banner += "/_____//_/    /_/  |_|      /_/ |_/ \\____/   \n";
+  banner += " \n";
 
-  LOG_INFO << banner;
+  LOG_INFO << banner << std::endl;
 
   MSA ref_msa;
   if (reference_file.size()) {
