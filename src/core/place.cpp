@@ -46,7 +46,9 @@ static void place(const Work& to_place,
 {
 
 #ifdef __OMP
-  const unsigned int num_threads = options.num_threads ? options.num_threads : omp_get_max_threads();
+  const unsigned int num_threads  = options.num_threads
+                                  ? options.num_threads
+                                  : omp_get_max_threads();
   omp_set_num_threads(num_threads);
   LOG_DBG << "Using threads: " << num_threads;
   LOG_DBG << "Max threads: " << omp_get_max_threads();
@@ -57,8 +59,8 @@ static void place(const Work& to_place,
 #endif
 
   // split the sample structure such that the parts are thread-local
-  std::vector<Sample<T>> sample_parts(num_threads
-                                      * multiplicity);
+  std::vector<Sample<T>> sample_parts(num_threads);
+
   std::vector<Work> work_parts;
   split(to_place, work_parts, num_threads
                               * multiplicity);
@@ -70,11 +72,17 @@ static void place(const Work& to_place,
   for (size_t i = 0; i < work_parts.size(); ++i) {
     auto prev_branch_id = std::numeric_limits<size_t>::max();
 
+#ifdef __OMP
+    const auto tid = omp_get_thread_num();
+#else
+    const auto tid = 0;
+#endif
     std::shared_ptr<Tiny_Tree> branch(nullptr);
 
     for (const auto& it : work_parts[i]) {
       const auto branch_id = it.branch_id;
       const auto seq_id = it.sequence_id;
+      const auto seq = msa[seq_id];
 
       if ((branch_id != prev_branch_id) or not branch) {
         branch = std::make_shared<Tiny_Tree>(branches[branch_id],
@@ -85,9 +93,9 @@ static void place(const Work& to_place,
                                              lookup_store);
       }
 
-      sample_parts[i].add_placement(seq_id_offset + seq_id,
-                                    msa[seq_id].header(),
-                                    branch->place(msa[seq_id]));
+      sample_parts[tid].add_placement(seq_id_offset + seq_id,
+                                      seq.header(),
+                                      branch->place(seq));
 
       prev_branch_id = branch_id;
     }
