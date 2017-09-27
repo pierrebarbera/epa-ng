@@ -13,7 +13,7 @@ TEST(optimize, repeats)
 {
   Options options;
   Tree_Numbers nums;
-  Model model;
+  raxml::Model model;
 
   // auto tree_file = env->data_dir + "lucas/20k.newick";
   // auto reference_file = env->data_dir + "lucas/1k_reference.fasta";

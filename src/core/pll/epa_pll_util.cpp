@@ -8,7 +8,7 @@
 
 void link_tree_msa( pll_utree_t * tree, 
                     pll_partition_t * partition, 
-                    Model& model, 
+                    raxml::Model& model, 
                     const MSA& msa, 
                     const unsigned int num_tip_nodes)
 {
@@ -33,7 +33,7 @@ void link_tree_msa( pll_utree_t * tree,
 
     auto clv_index = map_value->second;
     // associates the sequence with the tip by calculating the tips clv buffers
-    pll_set_tip_states(partition, clv_index, model.char_map(), s.sequence().c_str());
+    pll_set_tip_states(partition, clv_index, model.charmap(), s.sequence().c_str());
   }
 }
 
@@ -124,23 +124,23 @@ bool operator==(const Sequence& s, const pll_unode_t * node)
   return operator==(node, s);
 }
 
-Model get_model(pll_partition_t* partition)
+raxml::Model get_model(pll_partition_t* partition)
 {
-  std::string seq_type;
+  using namespace raxml;
+
+  DataType seqtype = DataType::autodetect;
 
   if (partition->states == 4) {
-    seq_type = "DNA";
+    seqtype = DataType::dna;
   } else if (partition->states == 20) {
-    seq_type = "AA";
+    seqtype = DataType::protein;
   } else {
     throw std::runtime_error{"Couldn't determine sequence type from partition"};
   }
 
-  Model model(seq_type, "GTR", "");
+  Model model(seqtype);
 
-  model.base_frequencies(partition->frequencies[0], partition->states);
-  model.substitution_rates(partition->subst_params[0], 6);
-  // model.symmetries(partition->subst_params, 6);
+  assign(model, partition);
 
   return model;
 }

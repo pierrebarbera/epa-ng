@@ -342,8 +342,6 @@ void simple_mpi(Tree& reference_tree,
                 const Options& options,
                 const std::string& invocation)
 {
-  LOG_INFO << "WARNING! THIS FUNCTION IS EXPERIMENTAL!" << std::endl;
-
   // Timer<> flight_time;
   std::ofstream flight_file(outdir + "stat");
 

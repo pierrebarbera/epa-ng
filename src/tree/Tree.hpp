@@ -6,7 +6,7 @@
 
 #include "core/pll/pllhead.hpp"
 #include "seq/MSA.hpp"
-#include "core/Model.hpp"
+#include "core/raxml/Model.hpp"
 #include "tree/Tree_Numbers.hpp"
 #include "util/Options.hpp"
 #include "io/Binary.hpp"
@@ -23,10 +23,10 @@ public:
 
   Tree( const std::string& tree_file,
         const MSA& msa,
-        Model& model,
+        raxml::Model& model,
         const Options& options);
   Tree( const std::string& bin_file,
-        Model &model,
+        raxml::Model &model,
         const Options& options);
   Tree()  = default;
   ~Tree() = default;
@@ -39,7 +39,7 @@ public:
 
   // member access
   Tree_Numbers& nums() { return nums_; }
-  Model& model() { return model_; }
+  raxml::Model& model() { return model_; }
   Options& options() { return options_; }
   auto partition() { return partition_.get(); }
   auto tree() { return tree_.get(); }
@@ -59,7 +59,7 @@ private:
 
   // epa related classes
   MSA ref_msa_;
-  Model model_;
+  raxml::Model model_;
   Options options_;
   Binary binary_;
 

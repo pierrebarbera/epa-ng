@@ -5,7 +5,7 @@
 #include "core/pll/epa_pll_util.hpp"
 #include "io/file_io.hpp"
 #include "tree/Tree_Numbers.hpp"
-#include "core/Model.hpp"
+#include "core/raxml/Model.hpp"
 #include "seq/MSA.hpp"
 
 #include <string>
@@ -110,7 +110,7 @@ TEST(pll_util, get_numbered_newick_string)
   Tree_Numbers nums = Tree_Numbers();
   pll_partition_t * part;
   pll_utree_t * tree;
-  Model model;
+  raxml::Model model;
 
   tree = build_tree_from_file(env->tree_file, nums);
   part = build_partition_from_file( env->model, nums, msa.num_sites());

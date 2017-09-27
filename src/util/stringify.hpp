@@ -5,7 +5,7 @@
 #include <sstream>
 #include <vector>
 
-#include "core/Model.hpp"
+#include "core/raxml/Model.hpp"
 
 constexpr char NEWL = '\n';
 
@@ -26,7 +26,7 @@ static std::string stringify_vec_impl( const std::vector<T>& vec,
   return output.str();
 }
 
-std::string stringify(Model& model);
+std::string stringify(raxml::Model& model);
 
 template <class T>
 std::string stringify(const std::vector<T>& vec)

@@ -11,7 +11,7 @@
 #include "sample/Sample.hpp"
 #include "seq/MSA.hpp"
 #include "set_manipulators.hpp"
-#include "core/Model.hpp"
+#include "core/raxml/Model.hpp"
 #include "core/Lookup_Store.hpp"
 
 #include <tuple>
@@ -93,7 +93,7 @@ static void place_from_binary(const Options options)
   // auto msa     = build_MSA_from_file(env->data_dir + "/lucas/1k_reference.fasta");
   // auto queries = build_MSA_from_file(env->data_dir + "/lucas/1k_query_100.fasta");
   
-  Model model;
+  raxml::Model model;
 
   Tree original_tree(tree_file, msa, model, options);
   // Tree original_tree(env->data_dir + "/lucas/20k.newick", msa, model, options);

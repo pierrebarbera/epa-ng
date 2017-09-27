@@ -7,7 +7,7 @@
 #include "io/file_io.hpp"
 #include "tree/Tree_Numbers.hpp"
 #include "tree/Tree.hpp"
-#include "core/Model.hpp"
+#include "core/raxml/Model.hpp"
 #include "util/Options.hpp"
 #include "seq/MSA.hpp"
 
@@ -22,7 +22,7 @@ TEST(epa_pll_util, link_tree_msa)
   Tree_Numbers nums = Tree_Numbers();
   pll_partition_t * part;
   pll_utree_t * tree;
-  Model model;
+  raxml::Model model;
 
   tree = build_tree_from_file(env->tree_file, nums);
   part = build_partition_from_file( env->model, nums, msa.num_sites());
@@ -58,7 +58,7 @@ static void precompute_clvs_test(Options o)
   // buildup
   auto msa = build_MSA_from_file(reference_file);
   Tree_Numbers nums;
-  Model model;
+  raxml::Model model;
 
 
   auto tree = build_tree_from_file( tree_file, nums);
@@ -153,7 +153,7 @@ TEST(epa_pll_util, split_combined_msa)
 {
   // buildup
   auto combined_msa = build_MSA_from_file(env->combined_file);
-  Model model;
+  raxml::Model model;
   Options options;
 
   Tree tree(env->tree_file, combined_msa, model, options);

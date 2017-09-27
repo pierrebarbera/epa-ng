@@ -6,7 +6,7 @@
 #include "io/Binary.hpp"
 #include "io/file_io.hpp"
 #include "util/Options.hpp"
-#include "core/Model.hpp"
+#include "core/raxml/Model.hpp"
 
 using namespace std;
 
@@ -35,7 +35,7 @@ static void write_(const Options options)
 {
   // setup
   auto msa = build_MSA_from_file(env->reference_file);
-  Model model;
+  raxml::Model model;
 
   Tree tree(env->tree_file, msa, model, options);
 
@@ -92,7 +92,7 @@ static void read_(Options options)
 {
   // setup
   auto msa = build_MSA_from_file(env->reference_file);
-  Model model;
+  raxml::Model model;
   // double freqs[4] = {0.1,0.2,0.3,0.4};
   // double alpha = 42.42;
   // double subs[6] = {0.1,0.2,0.3,0.4,0.5,0.6};

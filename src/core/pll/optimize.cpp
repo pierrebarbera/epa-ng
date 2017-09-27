@@ -408,7 +408,7 @@ static double optimize_branch_lengths(pll_unode_t * root,
   return cur_logl;
 }
 
-void optimize(Model& model, 
+void optimize(raxml::Model& model, 
               pll_utree_t * const tree, 
               pll_partition_t * partition, 
               const Tree_Numbers& nums, 
@@ -428,8 +428,8 @@ void optimize(Model& model,
 
   compute_and_set_empirical_frequencies(partition, model);
 
-  auto symmetries = (&(model.symmetries())[0]);
-  std::vector<unsigned int> param_indices(model.rate_cats(), 0);
+  std::vector<int> symmetries = model.submodel(0).rate_sym();
+  std::vector<unsigned int> param_indices(model.num_ratecats(), 0);
 
   // sadly we explicitly need these buffers here and in the params structure
   std::vector<pll_unode_t*> travbuffer(nums.nodes);
@@ -476,7 +476,7 @@ void optimize(Model& model,
 
   /* optimization parameters */
   params.params_index = 0;
-  params.subst_params_symmetries = symmetries;
+  params.subst_params_symmetries = &symmetries[0];
   params.factr = OPT_FACTR;
   params.pgtol = OPT_PARAM_EPSILON;
 
@@ -498,7 +498,7 @@ void optimize(Model& model,
                                         &smoothings);
   }
 
-  const size_t rates_size = model.substitution_rates().size();
+  const auto rates_size = model.subst_rates(0).size();
 
   std::vector<double> min_rates(rates_size, OPT_RATE_MIN);
   std::vector<double> max_rates(rates_size, OPT_RATE_MAX);
@@ -573,17 +573,15 @@ void optimize(Model& model,
 
   if (opt_model) {
     // update epa model object as well
-    model.alpha(params.lk_params.alpha_value);
-    model.substitution_rates(partition->subst_params[0], rates_size);
-    model.base_frequencies(partition->frequencies[params.params_index], partition->states);
+    raxml::assign(model, partition);
   }
 }
 
-void compute_and_set_empirical_frequencies(pll_partition_t * partition, Model& model)
+void compute_and_set_empirical_frequencies(pll_partition_t * partition, raxml::Model& model)
 {
   auto empirical_freqs = pllmod_msa_empirical_frequencies(partition);
 
   pll_set_frequencies (partition, 0, empirical_freqs);
-  model.base_frequencies(partition->frequencies[0], partition->states);
+  raxml::assign(model, partition);
   free (empirical_freqs);
 }

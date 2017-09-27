@@ -2,7 +2,7 @@
 
 #include <gtest/gtest.h>
 
-#include "core/Model.hpp"
+#include "core/raxml/Model.hpp"
 #include "util/Options.hpp"
 
 // The testing environment
@@ -39,7 +39,7 @@ public:
   std::string combined_file;
   std::string query_file;
   std::string binary_file;
-  Model model = Model("DNA","GTR","");
+  raxml::Model model = raxml::Model("GTR+G");
   Options options;
 
 };
@@ -54,7 +54,7 @@ extern Epatest* env;
 #define COMPL_SLIDING_BLO   (1 << 2)
 #define COMPL_PRESCORING    (1 << 3)
 
-static Options get_options_config(const unsigned int d)
+static inline Options get_options_config(const unsigned int d)
 {
   Options o;
   if (d & COMPL_REPEATS) {

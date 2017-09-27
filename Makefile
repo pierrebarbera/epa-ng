@@ -72,7 +72,7 @@ BINARY_WRITE= -t $(TREE) -s $(REF) -B -w $(OUTDIR) --verbose $(F)
 BINARY_READ=-b $(BINFILE) -q $(QRY) -w $(OUTDIR) -g 0.99 --verbose $(F)
 NORM_TEST=-t $(TREE) -s $(REF) -q $(QRY) -w $(OUTDIR) -g 0.99 --chunk-size=10 --verbose $(F)
 
-test: update
+test: #update
 	mkdir -p $(OUTDIR)
 	rm -f $(OUTDIR)/*
 	$(EPABIN) $(NORM_TEST) #--threads 4

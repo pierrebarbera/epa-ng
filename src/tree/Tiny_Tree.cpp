@@ -10,7 +10,7 @@
 #include "tree/tiny_util.hpp"
 #include "core/pll/pll_util.hpp"
 #include "core/pll/optimize.hpp"
-#include "core/Model.hpp"
+#include "core/raxml/Model.hpp"
 #include "tree/Tree_Numbers.hpp"
 #include "set_manipulators.hpp"
 #include "util/logging.hpp"

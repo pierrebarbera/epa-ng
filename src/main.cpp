@@ -12,7 +12,7 @@
 #include "io/Binary.hpp"
 #include "io/file_io.hpp"
 #include "tree/Tree.hpp"
-#include "core/Model.hpp"
+#include "core/raxml/Model.hpp"
 #include "core/place.hpp"
 #include "seq/MSA_Stream.hpp"
 #include "seq/MSA.hpp"
@@ -63,9 +63,7 @@ int main(int argc, char** argv)
 
 
   std::string invocation("");
-  std::string sequence_type("DNA");
-  std::string model_id("GTR");
-  std::string sub_matrix("");
+  std::string model_desc("GTR+G");
   Options options;
 
   for (int i = 0; i < argc; ++i) {
@@ -81,7 +79,7 @@ int main(int argc, char** argv)
 
   std::string banner;
 
-  Model model;
+  raxml::Model model;
 
   const bool empty = argc == 1;
 
@@ -136,10 +134,10 @@ int main(int argc, char** argv)
     ("G,fix-heur",
       "Two-phase heuristic, determination of candidate edges by specified percentage of total edges.",
       cxxopts::value<double>()->implicit_value("0.1"))
-    ("m,model",
-      "Description string of the model to be used. Format: "
-      "<type>-<symmetries>-<rate/frequency model> Examples: -m DNA-GTR-EMPIRICAL, -m AA-GTR-BLOSUM62",
-      cxxopts::value<std::string>()->default_value("DNA-GTR-EMPIRICAL"))
+    // ("m,model",
+    //   "Description string of the model to be used. Format: "
+    //   "<type>-<symmetries>-<rate/frequency model> Examples: -m DNA-GTR-EMPIRICAL, -m AA-GTR-BLOSUM62",
+    //   cxxopts::value<std::string>()->default_value("DNA-GTR-EMPIRICAL"))
     ("base-freqs",
       "Base frequencies to be used. Must match alphabet size. Overwritten by -O. Example: "
       "--base-freqs 0.2:0.3:0.25:0.25",
@@ -302,46 +300,30 @@ int main(int argc, char** argv)
     LOG_INFO << "\tWARNING: this mode means that no placement will take place in this run";
   }
 
-  if (cli.count("model")) {
-    auto parts = split_by_delimiter(cli["model"].as<std::string>(), "-");
-    auto s = parts.size();
-    if (s > 3) {
-      throw std::runtime_error{"Supplied too many model arguments! Must be 3 or less."};
-    } else {
-      if (s >=1) {
-        sequence_type = parts[0];
-      }
-      if (s >= 2) {
-        model_id = parts[1];
-      }
-      if (s >= 3) {
-        sub_matrix = parts[2];
-      }
+  // if (cli.count("model")) {
+  //   model_desc = cli["model"].as<std::string>();
+  //   LOG_INFO << "Selected: Specified model: " << model_desc;
+  // }
 
-      LOG_DBG << "Model descriptor: " << sequence_type << " "
-      << model_id << " " << sub_matrix << " ";
-    }
-    LOG_INFO << "Selected: Specified model: " << sequence_type << " "
-      << model_id << " " << sub_matrix;
-  }
-
-  model = Model(sequence_type, model_id, sub_matrix);
+  model = raxml::Model(model_desc);
 
   if (!options.opt_model) {
     if (cli.count("base-freqs")) {
       auto freq_strings = split_by_delimiter(cli["base-freqs"].as<std::string>(), ":");
       std::vector<double> freqs;
-      for (auto& s : freq_strings)
+      for (auto& s : freq_strings) {
         freqs.push_back(std::stod(s));
-      model.base_frequencies(freqs);
+      }
+      model.base_freqs(freqs);
     }
 
     if (cli.count("sub-rates")) {
       auto rate_strings = split_by_delimiter(cli["sub-rates"].as<std::string>(), ":");
       std::vector<double> rates;
-      for (auto& s : rate_strings)
+      for (auto& s : rate_strings) {
         rates.push_back(std::stod(s));
-      model.substitution_rates(rates);
+      }
+      model.subst_rates(rates);
     }
 
     if (cli.count("alpha")) {

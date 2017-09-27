@@ -1,17 +1,17 @@
 #include "util/stringify.hpp"
 
-std::string stringify(Model& model)
+std::string stringify(raxml::Model& model)
 {
   std::ostringstream output;
 
   output << "Substitution Matrix Symmetries: " << NEWL;
-  output << stringify(model.symmetries()) << NEWL;
+  output << stringify(model.submodel(0).rate_sym()) << NEWL;
 
   output << "Base Frequencies: " << NEWL;
-  output << stringify(model.base_frequencies()) << NEWL;
+  output << stringify(model.base_freqs(0)) << NEWL;
 
   output << "Substitution Rates: " << NEWL;
-  output << stringify(model.substitution_rates()) << NEWL;
+  output << stringify(model.subst_rates(0)) << NEWL;
 
   output << "Alpha: " << model.alpha() << NEWL;
 

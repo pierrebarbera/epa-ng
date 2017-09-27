@@ -14,7 +14,7 @@
 
 Tree::Tree( const std::string &tree_file, 
             const MSA &msa,
-            Model &model, 
+            raxml::Model &model, 
             const Options& options)
   : ref_msa_(msa)
   , model_(model)
@@ -48,7 +48,7 @@ Tree::Tree( const std::string &tree_file,
             options_.opt_branches, 
             options_.opt_model);
 
-  LOG_DBG << stringify(model_);
+  LOG_DBG << model_;
 
   LOG_DBG << "Tree length: " << sum_branch_lengths(tree_.get());
 
@@ -63,7 +63,7 @@ Tree::Tree( const std::string &tree_file,
   Constructs the structures from binary file.
 */
 Tree::Tree( const std::string& bin_file, 
-            Model& model, 
+            raxml::Model& model, 
             const Options& options)
   : model_(model)
   , options_(options)

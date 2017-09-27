@@ -185,7 +185,7 @@ pll_utree_s * build_tree_from_file(const std::string& tree_file, Tree_Numbers& n
   return tree;
 }
 
-pll_partition_t *  build_partition_from_file( const Model& model, 
+pll_partition_t *  build_partition_from_file( const raxml::Model& model, 
                                               Tree_Numbers& nums, 
                                               const int num_sites,
                                               const bool repeats)
@@ -207,11 +207,11 @@ pll_partition_t *  build_partition_from_file( const Model& model,
 
   auto partition = pll_partition_create(nums.tip_nodes,
            nums.inner_nodes * 3, //number of extra clv buffers: 3 for every direction on the node
-           model.states(),
+           model.num_states(),
            num_sites,
            1,
            nums.branches,
-           model.rate_cats(),
+           model.num_ratecats(),
            (nums.inner_nodes * 3) + nums.tip_nodes, /* number of scaler buffers */
            attributes);
 
@@ -219,20 +219,20 @@ pll_partition_t *  build_partition_from_file( const Model& model,
     throw std::runtime_error{std::string("Could not create partition (build_partition_from_file). pll_errmsg: ") + pll_errmsg};
   }
 
-  std::vector<double> rate_cats(model.rate_cats(), 0.0);
+  std::vector<double> rate_cats(model.num_ratecats(), 0.0);
 
   /* compute the discretized category rates from a gamma distribution
      with alpha shape */
   pll_compute_gamma_cats( model.alpha(), 
-                          model.rate_cats(), 
+                          model.num_ratecats(), 
                           &rate_cats[0],
                           PLL_GAMMA_RATES_MEAN);
   pll_set_frequencies(partition, 
                       0, 
-                      &(model.base_frequencies()[0]));
+                      &(model.base_freqs(0)[0]));
   pll_set_subst_params( partition, 
                         0, 
-                        &(model.substitution_rates()[0]));
+                        &(model.subst_rates(0)[0]));
   pll_set_category_rates( partition, 
                           &rate_cats[0]);
 

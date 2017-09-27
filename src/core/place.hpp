@@ -3,7 +3,7 @@
 #include "seq/MSA_Stream.hpp"
 #include "util/Options.hpp"
 #include "tree/Tree.hpp"
-#include "core/Model.hpp"
+#include "core/raxml/Model.hpp"
 
 #include <string>
 

@@ -1,7 +1,7 @@
 #include "Epatest.hpp"
 
 #include "core/pll/pllhead.hpp"
-#include "core/Model.hpp"
+#include "core/raxml/Model.hpp"
 #include "io/file_io.hpp"
 #include "tree/Tree_Numbers.hpp"
 #include "seq/MSA.hpp"
