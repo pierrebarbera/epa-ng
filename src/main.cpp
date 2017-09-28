@@ -375,8 +375,6 @@ int main(int argc, char** argv)
     tree = Tree(tree_file, ref_msa, model, options);
   }
 
-  // build the query stream
-  MSA_Stream queries;
   if (not options.dump_binary_mode) {
     if (query_file.size() == 0) {
       throw std::runtime_error{"Must supply query file! Combined MSA files not currently supported, please split them and specify using -s and -q."};

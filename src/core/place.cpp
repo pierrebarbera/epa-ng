@@ -394,6 +394,7 @@ void simple_mpi(Tree& reference_tree,
 
   size_t num_sequences = options.chunk_size;
   Work all_work(std::make_pair(0, num_branches), std::make_pair(0, num_sequences));
+  Work blo_work;
 
   size_t chunk_num = 1;
 
@@ -413,33 +414,39 @@ void simple_mpi(Tree& reference_tree,
       all_work = Work(std::make_pair(0, num_branches), std::make_pair(0, num_sequences));
     }
 
-    Sample preplace;
+    if (options.prescoring) {
 
-    LOG_DBG << "Preplacement." << std::endl;
-    place(all_work,
-          chunk,
-          reference_tree,
-          branches,
-          preplace,
-          false,
-          options,
-          lookups);
+      Sample preplace;
 
-    // Candidate Selection
-    LOG_DBG << "Selecting candidates." << std::endl;
-    compute_and_set_lwr(preplace);
+      LOG_DBG << "Preplacement." << std::endl;
+      place(all_work,
+            chunk,
+            reference_tree,
+            branches,
+            preplace,
+            false,
+            options,
+            lookups);
 
-    if (options.prescoring_by_percentage) {
-      discard_bottom_x_percent(preplace, 
-                              (1.0 - options.prescoring_threshold));
+      // Candidate Selection
+      LOG_DBG << "Selecting candidates." << std::endl;
+      compute_and_set_lwr(preplace);
+
+      if (options.prescoring_by_percentage) {
+        discard_bottom_x_percent(preplace, 
+                                (1.0 - options.prescoring_threshold));
+      } else {
+        discard_by_accumulated_threshold( preplace, 
+                                          options.prescoring_threshold,
+                                          options.filter_min,
+                                          options.filter_max);
+      }
+
+      blo_work = Work(preplace);
+
     } else {
-      discard_by_accumulated_threshold( preplace, 
-                                        options.prescoring_threshold,
-                                        options.filter_min,
-                                        options.filter_max);
+      blo_work = all_work;
     }
-
-    Work blo_work(preplace);
 
     Sample blo_sample;
 
