@@ -8,6 +8,7 @@
 #include "net/mpihead.hpp"
 #include "util/logging.hpp"
 #include "util/Options.hpp"
+#include "util/stringify.hpp"
 #include "io/Binary_Fasta.hpp"
 #include "io/Binary.hpp"
 #include "io/file_io.hpp"
@@ -22,23 +23,6 @@ static void ensure_dir_has_slash(std::string& dir)
   if (dir.length() > 0 && dir.back() != '/') {
     dir += "/";
   }
-}
-
-static std::vector<std::string> split_by_delimiter(const std::string & text, const std::string delim)
-{
-  std::vector<std::string> parts;
-  size_t start = 0;
-  size_t end = 0;
-
-  do
-  {
-    end = text.find(delim, start);
-    end = (end != std::string::npos) ? end : text.length();
-    parts.emplace_back(text.substr(start, end - start));
-    start = end + delim.length();
-  } while (end != std::string::npos and start <= text.length());
-
-  return parts;
 }
 
 void exit_epa(int ret=EXIT_SUCCESS)
@@ -71,7 +55,7 @@ int main(int argc, char** argv)
   }
 
   std::string query_file("");
-  std::string work_dir("");
+  std::string work_dir(".");
   std::string tree_file("");
   std::string reference_file("");
   std::string binary_file("");
@@ -169,21 +153,28 @@ int main(int argc, char** argv)
 
   cli.parse(argc, argv);
 
-  if (cli.count("help") or empty) {
-    std::cout << cli.help({"", "Input", "Output", "Compute", "Pipeline"});
-    exit_epa();
-  }
-
   if (cli.count("verbose")) {
     LOG_INFO << "Selected: verbose (debug) output";
     genesis::utils::Logging::max_level(genesis::utils::Logging::kDebug2);
   }
 
+  if (cli.count("help") or empty) {
+    std::cout << cli.help({"", "Input", "Output", "Compute", "Pipeline"});
+    exit_epa();
+  }
+
+  if (cli.count("outdir")) {
+    work_dir = cli["outdir"].as<std::string>();
+    LOG_INFO << "Selected: Output dir: " << work_dir;
+  }
+
+  ensure_dir_has_slash(work_dir);
+
   if (cli.count("bfast")) {
     LOG_INFO << "Converting given FASTA file to BFAST format.";
     auto fasta = cli["bfast"].as<std::string>();
     LOG_INFO << "Started " << genesis::utils::current_time();
-    Binary_Fasta::fasta_to_bfast(fasta);
+    Binary_Fasta::fasta_to_bfast(fasta, work_dir);
     LOG_INFO << "Finished " << genesis::utils::current_time();
     exit_epa();
   }
@@ -200,11 +191,6 @@ int main(int argc, char** argv)
   if (cli.count("query")) {
     query_file = cli["query"].as<std::string>();
     LOG_INFO << "Selected: Query file: " << query_file;
-  }
-
-  if (cli.count("outdir")) {
-    work_dir = cli["outdir"].as<std::string>();
-    LOG_INFO << "Selected: Output dir: " << work_dir;
   }
 
   if (cli.count("tree")) {
@@ -358,8 +344,6 @@ int main(int argc, char** argv)
   //================================================================
   //============    EPA    =========================================
   //================================================================
-
-  ensure_dir_has_slash(work_dir);
 
   #ifdef __MPI
   genesis::utils::Logging::log_to_file(work_dir + std::to_string(local_rank) + ".epa_info.log");

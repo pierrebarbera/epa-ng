@@ -43,3 +43,5 @@ std::string stringify(const std::vector<std::vector<T>>& vec)
     return elem.size();
   });
 }
+
+std::vector<std::string> split_by_delimiter(const std::string & text, const std::string delim);

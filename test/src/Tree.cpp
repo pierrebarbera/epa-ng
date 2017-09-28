@@ -16,7 +16,7 @@ TEST(Tree, process_from_binary)
 {
   // setup
   auto msa = build_MSA_from_file(env->reference_file);
-  Binary_Fasta::fasta_to_bfast(env->query_file);
+  Binary_Fasta::fasta_to_bfast(env->query_file, env->out_dir);
   auto queries = env->query_file + ".bin";
   raxml::Model model;
   Options options;

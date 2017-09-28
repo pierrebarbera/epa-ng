@@ -7,6 +7,7 @@
 #include "seq/MSA.hpp"
 #include "io/encoding.hpp"
 #include "util/template_magic.hpp"
+#include "util/stringify.hpp"
 
 #include "genesis/utils/io/serializer.hpp"
 #include "genesis/sequence/formats/fasta_input_iterator.hpp"
@@ -205,11 +206,11 @@ public:
   }
 
   static void fasta_to_bfast( const std::string& fasta_file,
-                              std::string bfast_file = std::string(""))
+                              std::string out_dir)
   {
-    if (!bfast_file.size()) {
-      bfast_file = fasta_file + ".bin";
-    }
+    auto parts = split_by_delimiter(fasta_file, "/");
+
+    out_dir += parts.back() + ".bin";
 
     // detect number of sequences in fasta file
     utils::InputStream instr( std::make_unique< utils::FileInputSource >( fasta_file ));
@@ -225,7 +226,7 @@ public:
     }
 
     // write the header
-    utils::Serializer ser(bfast_file);
+    utils::Serializer ser(out_dir);
     write_header(ser, entry_sizes);
 
     // write the data

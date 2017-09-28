@@ -17,3 +17,20 @@ std::string stringify(raxml::Model& model)
 
   return output.str();
 }
+
+std::vector<std::string> split_by_delimiter(const std::string & text, const std::string delim)
+{
+  std::vector<std::string> parts;
+  size_t start = 0;
+  size_t end = 0;
+
+  do
+  {
+    end = text.find(delim, start);
+    end = (end != std::string::npos) ? end : text.length();
+    parts.emplace_back(text.substr(start, end - start));
+    start = end + delim.length();
+  } while (end != std::string::npos and start <= text.length());
+
+  return parts;
+}
