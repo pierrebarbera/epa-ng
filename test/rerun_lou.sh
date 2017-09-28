@@ -1,7 +1,7 @@
 #!/bin/bash
 
 OUT="lou/rerun"
-EPA="../bin/epa"
+EPA="../bin/epa-ng"
 LUCAS="data/lucas"
 BASEDIR=$(dirname $0)
 

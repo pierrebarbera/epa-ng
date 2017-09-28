@@ -11,7 +11,7 @@ echo "RUNNING RAXML"
 ../../standard-RAxML/raxmlHPC -f v -s $MSA -t $TREE -n 20k -m GTRGAMMA -w $OUT
 
 echo "RUNNING EPA"
-../bin/epa -t $TREE -s $MSA -O -w $OUT
+../bin/epa-ng -t $TREE -s $MSA -O -w $OUT
 
 echo "RUNNING JPLACE_COMPARE"
 ./jplace_compare.py -v $OUT/RAxML_portableTree.20k.jplace $OUT/epa_result.jplace

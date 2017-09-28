@@ -46,6 +46,6 @@ mkdir -p $OUT
 rm -rf $OUT/*
 touch $LOG
 
-#mpiexec ../bin/epa -t $TREE -s $REF_MSA -q $QRY_MSA -B -w $OUT
-mpiexec ../bin/epa -b $ABSPATH/binfile -q $QRY_MSA -w $OUT #-g 0.99
+#mpiexec ../bin/epa-ng -t $TREE -s $REF_MSA -q $QRY_MSA -B -w $OUT
+mpiexec ../bin/epa-ng -b $ABSPATH/binfile -q $QRY_MSA -w $OUT #-g 0.99
 

@@ -60,7 +60,7 @@ clean:
 #======================================
 #===		Test commands follow				===
 #======================================
-EPABIN=./bin/epa
+EPABIN=./bin/epa-ng
 TEST=test/data/lucas
 TREE=$(TEST)/20k.newick
 REF=$(TEST)/1k_reference.fasta
@@ -70,7 +70,7 @@ OUTDIR=/tmp/epa
 
 BINARY_WRITE= -t $(TREE) -s $(REF) -B -w $(OUTDIR) --verbose $(F)
 BINARY_READ=-b $(BINFILE) -q $(QRY) -w $(OUTDIR) -g 0.99 --verbose $(F)
-NORM_TEST=-t $(TREE) -s $(REF) -q $(QRY) -w $(OUTDIR) -g 0.99 --chunk-size=10 --verbose $(F)
+NORM_TEST=-t $(TREE) -s $(REF) -q $(QRY) -w $(OUTDIR) -g 0.99 --chunk-size=100 --verbose $(F)
 
 test: #update
 	mkdir -p $(OUTDIR)

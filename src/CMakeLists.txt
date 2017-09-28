@@ -34,5 +34,5 @@ if(ENABLE_MPI)
   endif()
 endif()
 
-set_target_properties (epa_module PROPERTIES OUTPUT_NAME epa)
+set_target_properties (epa_module PROPERTIES OUTPUT_NAME epa-ng)
 set_target_properties (epa_module PROPERTIES PREFIX "")

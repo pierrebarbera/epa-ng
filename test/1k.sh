@@ -15,14 +15,14 @@ touch $LOG
 #(time ../../standard-RAxML/raxmlHPC-SSE3 -f v -H -s $MSA -t $TREE -n 1k -m GTRGAMMA -w $OUT) &>> $LOG
 
 #echo "RUNNING EPA - DUMPING BINARY" >> $LOG
-#(time ../bin/epa -t $TREE -s $REF_MSA -OB -w $OUT) &>> $LOG
+#(time ../bin/epa-ng -t $TREE -s $REF_MSA -OB -w $OUT) &>> $LOG
 
 #echo "RUNNING EPA - FROM BINARY" >> $LOG
-#(time ../bin/epa -b $OUT/epa_binary_file -q $QRY_MSA -O -w $OUT) &>> $LOG
+#(time ../bin/epa-ng -b $OUT/epa_binary_file -q $QRY_MSA -O -w $OUT) &>> $LOG
 
 echo "RUNNING EPA" >> $LOG
 export OMP_NUM_THREADS=4
-valgrind --tool=helgrind ../bin/epa -t $TREE -s $REF_MSA -q $QRY_MSA -g 0.95 -w $OUT
+valgrind --tool=helgrind ../bin/epa-ng -t $TREE -s $REF_MSA -q $QRY_MSA -g 0.95 -w $OUT
 
 #echo "RUNNING PPLACER" >> $LOG
 #(time ./pplacer -t data/lucas/20k.newick -s 1k/RAxML_info.1k --out-dir $OUT data/lucas/1k.fasta) &>> $LOG
