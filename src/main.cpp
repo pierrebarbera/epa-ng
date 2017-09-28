@@ -61,7 +61,6 @@ int main(int argc, char** argv)
 #endif
   genesis::utils::Logging::max_level(genesis::utils::Logging::kInfo);
 
-
   std::string invocation("");
   std::string model_desc("GTR+G");
   Options options;
@@ -82,6 +81,7 @@ int main(int argc, char** argv)
   raxml::Model model;
 
   const bool empty = argc == 1;
+  bool pipeline = false;
 
   try
   {
@@ -153,6 +153,9 @@ int main(int argc, char** argv)
       cxxopts::value<double>())
     ;
   cli.add_options("Pipeline")
+    ("pipeline",
+      "Type of distributed parallelism to use. If specified, pieline mode is used. This mode was built to handle "
+      "input reference data that is too large to fit into memory of one node. Less efficient than the standard mode.")
     ("chunk-size",
       "Number of query sequences to be read in at a time. May influence performance.",
       cxxopts::value<unsigned int>()->default_value("5000"))
@@ -289,6 +292,11 @@ int main(int argc, char** argv)
     LOG_INFO << "Selected: Using the non-repeats version of libpll/modules";
   }
 
+  if (cli.count("pipeline")) {
+    pipeline = true;
+    LOG_INFO << "Selected: Using the pipeline distributed parallel scheme.";
+  }
+
   if (cli.count("no-heur")) {
     options.prescoring = false;
     LOG_INFO << "Selected: Disabling the prescoring heuristics.";
@@ -346,6 +354,7 @@ int main(int argc, char** argv)
     exit_epa(EXIT_FAILURE);
   }
 
+
   //================================================================
   //============    EPA    =========================================
   //================================================================
@@ -385,13 +394,8 @@ int main(int argc, char** argv)
   // build the query stream
   MSA_Stream queries;
   if (not options.dump_binary_mode) {
-    if (query_file.size() != 0) {
-      queries = MSA_Stream(query_file, options.chunk_size);
-    } else { // attempt to split msa if it is intermingled with (supposed) query sequences
-      throw std::runtime_error{"Combined MSA files not currently supported, please split them and specify using -s and -q."};
-      // MSA tmp;
-      // split_combined_msa(ref_msa, tmp, tree);
-      
+    if (query_file.size() == 0) {
+      throw std::runtime_error{"Must supply query file! Combined MSA files not currently supported, please split them and specify using -s and -q."};
     }
   } else {
     // dump to binary if specified
@@ -403,9 +407,11 @@ int main(int argc, char** argv)
 
   // start the placement process and write to file
   auto start = std::chrono::high_resolution_clock::now();
-  // process(tree, queries, work_dir, options, invocation);
-  // tmp_pipeline_test(tree, queries, work_dir, options, invocation);
-  simple_mpi(tree, query_file, work_dir, options, invocation);
+  if (pipeline) {
+    pipeline_place(tree, query_file, work_dir, options, invocation);
+  } else {
+    simple_mpi(tree, query_file, work_dir, options, invocation);
+  }
   auto end = std::chrono::high_resolution_clock::now();
   auto runtime = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
 
