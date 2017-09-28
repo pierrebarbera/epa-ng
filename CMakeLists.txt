@@ -91,7 +91,7 @@ elseif(HAS_SSE3)
 endif()
 
 if(ENABLE_MPI)
-  find_package(MPI)
+  find_package(MPI REQUIRED)
   if(MPI_CXX_FOUND)
     set( ENV{OMPI_CXX} ${CMAKE_CXX_COMPILER} PARENT_SCOPE )
     #set( CMAKE_CXX_COMPILER       "mpicxx")
