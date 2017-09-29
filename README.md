@@ -25,13 +25,14 @@ This tool is still in an active, *beta* phase of development. Suggestions, bug r
 
 - do phylogenetic placement using the **GTR+GAMMA ML model only** (for now)
 - take as input **separated reference and query alignment files**, in the **fasta** format (for now)
-- handle **DNA** or **Protein** data (enable protein mode with the `--prot` flag)
+- handle **DNA** data (protein data coming VERY soon)
 - distribute the work to the **cluster**, with the choice of two different modes:
   - normal: assumes the input tree and alignment's memory footprint is small enough to fit into the memory of each compute node
   - pipeline: for large input trees and alignments: distributes the memory footprint across the compute nodes, at the expense of parallel efficiency (about 20% lower)
 - **prepare inputs** for the cluster:
   - precompute reference tree and alignment and save it to a *binary file* that allows random access by the different compute nodes
   - convert query fasta file into a random access, binary encoded file called a `bfast`-file
+  - these two precomputations are simple, and reccomended in general! Use them!
 - output the placement results in the [jplace format](http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0031009) ready for downstream analysis by frameworks such as [genesis](https://github.com/lczech/genesis)
 
 ## Build Instructions
@@ -147,8 +148,6 @@ Overview of advanced features:
 #### Reference Tree Optimization
 
 When supplying the `-O` (or `--opt-ref-tree`) flag to `EPA-ng`, an initial round of model parameter and tree branch length optimization is performed.
-The best way to circumvent having to do this, is to supply the model parameters, under which the tree was found, directly.
-To this end we support parsing the model file emitted during a successful run of [RAxML-ng]() via the `--model` flag.
 
 #### Configuring the Heuristic Preplacement
 

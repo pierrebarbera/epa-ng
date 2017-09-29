@@ -370,9 +370,7 @@ void simple_mpi(Tree& reference_tree,
   MPI_COMM_RANK(MPI_COMM_WORLD, &local_rank);
   MPI_COMM_SIZE(MPI_COMM_WORLD, &num_ranks);
 
-
-  LOG_DBG << "Number of ranks: " << num_ranks;
-
+  LOG_INFO << "Number of ranks: " << num_ranks;
 
   std::vector<int> all_ranks(num_ranks);
   for (int i = 0; i < num_ranks; ++i) {
@@ -383,7 +381,7 @@ void simple_mpi(Tree& reference_tree,
 
   // how many should each rank read?
   const size_t part_size = ceil(reader.num_sequences() / static_cast<double>(num_ranks));
-  LOG_DBG << "Number of sequences per rank: " << part_size;
+  LOG_INFO << "Number of sequences per rank: " << part_size;
 
   // read only the locally relevant part of the queries
   // ... by skipping the appropriate amount
