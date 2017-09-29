@@ -205,7 +205,7 @@ public:
     return read_sequences(des, number);
   }
 
-  static void fasta_to_bfast( const std::string& fasta_file,
+  static std::string fasta_to_bfast( const std::string& fasta_file,
                               std::string out_dir)
   {
     auto parts = split_by_delimiter(fasta_file, "/");
@@ -237,6 +237,7 @@ public:
       put_encoded(ser, it_again->sites());
       ++it_again;
     }
+    return out_dir;
   }
 
 };

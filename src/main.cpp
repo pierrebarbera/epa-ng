@@ -174,8 +174,9 @@ int main(int argc, char** argv)
     LOG_INFO << "Converting given FASTA file to BFAST format.";
     auto fasta = cli["bfast"].as<std::string>();
     LOG_INFO << "Started " << genesis::utils::current_time();
-    Binary_Fasta::fasta_to_bfast(fasta, work_dir);
+    auto resultfile = Binary_Fasta::fasta_to_bfast(fasta, work_dir);
     LOG_INFO << "Finished " << genesis::utils::current_time();
+    LOG_INFO << "Resulting bfast file was written to: " << resultfile;
     exit_epa();
   }
 
@@ -191,6 +192,11 @@ int main(int argc, char** argv)
   if (cli.count("query")) {
     query_file = cli["query"].as<std::string>();
     LOG_INFO << "Selected: Query file: " << query_file;
+    if (split_by_delimiter(query_file, ".").back() != "bin") {
+      LOG_INFO << "This appears to be a non-binary fasta file. Converting!";
+      query_file = Binary_Fasta::fasta_to_bfast(query_file, work_dir);
+      LOG_INFO << "Updated Query file: " << query_file;
+    }
   }
 
   if (cli.count("tree")) {

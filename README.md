@@ -31,7 +31,7 @@ This tool is still in an active, *beta* phase of development. Suggestions, bug r
   - pipeline: for large input trees and alignments: distributes the memory footprint across the compute nodes, at the expense of parallel efficiency (about 20% lower)
 - **prepare inputs** for the cluster:
   - precompute reference tree and alignment and save it to a *binary file* that allows random access by the different compute nodes
-  - convert query fasta file into a random access, binary encoded, order-randomized file called a `bfast`-file
+  - convert query fasta file into a random access, binary encoded file called a `bfast`-file
 - output the placement results in the [jplace format](http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0031009) ready for downstream analysis by frameworks such as [genesis](https://github.com/lczech/genesis)
 
 ## Build Instructions
@@ -110,7 +110,7 @@ Here is a list of the most basic arguments you will use:
 
 | Flag | Meaning |
 | - | - |
-| -s | reference MSA (fasta)  |
+| -s | reference MSA (fasta or [bfast](#converting-the-query-file))  |
 | -t  | reference Tree (newick)  |
 | -q | query sequences (fasta) |
 | -w | output directory (default: current directory) |
@@ -127,6 +127,8 @@ epa-ng -s reference_msa.fasta -t reference_tree.newick -q query.fasta -w /tmp/
 Note that this will use as many threads as specified by the environment variable `OMP_NUM_THREADS`. 
 Usually this defaults to the number of cores.
 Note however, that no speedup is to be expected from hyperthreads, meaning the number of threads should be set to the number of physical cores.
+
+**NOTE** also, that currently, if you supply a query file in the fasta format, `EPA-ng` will automatically convert the file to the bfast format and write this file to the output directory.
 
 ### Advanced
 
@@ -186,7 +188,7 @@ In subequent runs, instead of `-s ... -t ...` you may then simply supply the bin
 #### Converting the query file
 
 You may also explicitly convert the input query fasta file to our internal fasta format.
-This format is binary encoded (reducing the size by half), random access, and randomly shuffled (improves load balance).
+This format is binary encoded (reducing the size by half) and randomly accessible.
 Again, using this format is highly reccomended, and required to use the MPI version.
 
 To convert the fasta file, simply run the program with the query file specified thusly:
