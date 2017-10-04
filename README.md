@@ -17,6 +17,8 @@ git clone --recursive https://github.com/Pbdas/epa.git
 
 This tool is still in an active, *beta* phase of development. Suggestions, bug reports and constructive comments are more than encuraged! Please do so in the [issues section](https://github.com/Pbdas/epa/issues).
 
+For general discussion of the algorithm and its usage please head to [the RAxML Google Group](https://groups.google.com/forum/#!forum/raxml).
+
 ## Introduction
 
 `EPA-ng` is a complete rewrite of the [Evolutionary Placement Algorithm (EPA)](https://academic.oup.com/sysbio/article/60/3/291/1667010/Performance-Accuracy-and-Web-Server-for), previously implemented in [RAxML](https://github.com/stamatak/standard-RAxML). It uses [libpll](https://github.com/xflouris/libpll) to perform maximum likelihood-based phylogenetic placement of genetic sequences on a user-supplied reference tree and alignment.
@@ -109,20 +111,22 @@ ln -s ../epa-ng/bin/epa-ng
 
 Here is a list of the most basic arguments you will use:
 
-| Flag | Meaning |
-| - | - |
-| -s | reference MSA (fasta or [bfast](#converting-the-query-file))  |
-| -t  | reference Tree (newick)  |
-| -q | query sequences (fasta) |
-| -w | output directory (default: current directory) |
-| -T | number of threads to use |
+| Flag | Long Flag | Meaning |
+| - | - | - |
+| -s | --ref-msa | reference MSA (fasta or [bfast](#converting-the-query-file))  |
+| -t | --tree | reference Tree (newick)  |
+| -q | --query | query sequences (fasta) |
+| -w | --out-dir | output directory (default: current directory) |
+| -T | --threads | number of threads to use |
+
+For a full overview of command line options either run `EPA-ng` with no input, or with the flag `-h` (or `--help`).
 
 ### Basic
 
 On a single computer, an example execution might look like this:
 
 ```
-epa-ng -s reference_msa.fasta -t reference_tree.newick -q query.fasta -w /tmp/
+epa-ng -s reference_msa.fasta -t reference_tree.newick -q query.fasta -w /some/output/dir/
 ```
 
 Note that this will use as many threads as specified by the environment variable `OMP_NUM_THREADS`. 
@@ -135,14 +139,17 @@ Note however, that no speedup is to be expected from hyperthreads, meaning the n
 
 Overview of advanced features:
 
-| Flag | Meaning |
-| - | - |
-| -O | [optimize the reference tree](#reference-tree-optimization)  |
-| -g/-G/--no-heur | [heuristic configuration](#configuring-the-heuristic-preplacement)  |
-| -B | [produce binary tree file](#precomputing-the-binary-reference-tree) |
-| -c | [convert query fasta to binary format](#converting-the-query-file) |
-|  | [basic cluster usage](#running-on-the-cluster) |
-| --pipeline | [use pipeline mode](#pipeline-parallelism) |
+| Flag | Long Flag | Meaning |
+| - | - | - |
+| -O | --opt-ref-tree | [optimize the reference tree](#reference-tree-optimization)  |
+| -g | --dyn-heur | use dynamic [heuristic](#configuring-the-heuristic-preplacement) (default)  |
+| -G | --fix-heur | use fixed [heuristic](#configuring-the-heuristic-preplacement) |
+|  | --no-heur | use no [heuristic](#configuring-the-heuristic-preplacement) |
+| -B | --dump-binary | [produce binary tree file](#precomputing-the-binary-reference-tree) |
+| -c | --bfast | [convert query fasta to binary format](#converting-the-query-file) |
+|  | --pipeline | [use pipeline mode](#pipeline-parallelism) |
+
+[The description of basic cluster usage starts here](#running-on-the-cluster)
 
 
 #### Reference Tree Optimization
