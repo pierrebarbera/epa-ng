@@ -12,6 +12,7 @@
 
 #include "io/file_io.hpp"
 #include "io/jplace_util.hpp"
+#include "io/msa_reader.hpp"
 #include "util/stringify.hpp"
 #include "set_manipulators.hpp"
 #include "util/logging.hpp"
@@ -377,18 +378,23 @@ void simple_mpi(Tree& reference_tree,
     all_ranks[i] = i;
   }
 
-  Binary_Fasta_Reader reader(query_file);
+  // Binary_Fasta_Reader reader(query_file);
+  auto reader = make_msa_reader(query_file, options);
 
-  // how many should each rank read?
-  const size_t part_size = ceil(reader.num_sequences() / static_cast<double>(num_ranks));
-  LOG_INFO << "Number of sequences per rank: " << part_size;
+  size_t local_rank_seq_offset = 0;
 
-  // read only the locally relevant part of the queries
-  // ... by skipping the appropriate amount
-  const size_t local_rank_seq_offset = part_size * local_rank;
-  reader.skip_to_sequence( local_rank_seq_offset );
-  // and limiting the reading to the given window
-  reader.constrain(part_size);
+  if (num_ranks > 1) {
+    // how many should each rank read?
+    const size_t part_size = ceil(reader->num_sequences() / static_cast<double>(num_ranks));
+    LOG_INFO << "Number of sequences per rank: " << part_size;
+
+    // read only the locally relevant part of the queries
+    // ... by skipping the appropriate amount
+    local_rank_seq_offset = part_size * local_rank;
+    reader->skip_to_sequence( local_rank_seq_offset );
+    // and limiting the reading to the given window
+    reader->constrain(part_size);
+  }
 
   size_t num_sequences = options.chunk_size;
   Work all_work(std::make_pair(0, num_branches), std::make_pair(0, num_sequences));
@@ -400,7 +406,7 @@ void simple_mpi(Tree& reference_tree,
   Sample result;
   MSA chunk;
   size_t sequences_done = 0; // not just for info output!
-  while ( (num_sequences = reader.read_next(chunk, options.chunk_size) ) ) {
+  while ( (num_sequences = reader->read_next(chunk, options.chunk_size)) ) {
 
     assert(chunk.size() == num_sequences);
 

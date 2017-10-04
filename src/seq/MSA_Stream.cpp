@@ -28,7 +28,6 @@ static void read_chunk( MSA_Stream::file_type::pointer fptr,
   long header_length;
   long sequence_number;
 
-
   while (number_left > 0 and pll_fasta_getnext( fptr, 
                                             &header, 
                                             &header_length, 
@@ -62,6 +61,8 @@ MSA_Stream::MSA_Stream( const std::string& msa_file,
                         const size_t max_read)
   : fptr_(nullptr, fasta_close)
   , max_read_(max_read)
+  , filename_(msa_file)
+  , initial_size_(initial_size)
 {
   fptr_ = file_type(pll_fasta_open(msa_file.c_str(), pll_map_fasta),
                     fasta_close);
@@ -121,4 +122,74 @@ MSA_Stream::~MSA_Stream()
     prefetcher_.wait();
   }
 #endif
+}
+
+void MSA_Stream::constrain(const size_t max_read)
+{
+  max_read_ = max_read;
+}
+
+void MSA_Stream::skip_to_sequence(const size_t n)
+{
+ #ifdef __PREFETCH
+  // join prefetching thread to ensure new chunk exists
+  if (prefetcher_.valid()) {
+    prefetcher_.wait();
+  }
+#endif 
+  // ensure we have the offsets
+  if ( offsets_.size()  == 0
+    or num_sequences_   == 0 ) {
+    num_sequences_ = num_sequences();
+  }
+
+  if (n >= offsets_.size()) {
+    throw std::runtime_error{"Trying to skip out of bounds!"};
+  }
+  auto offset = offsets_[n];
+
+  // seek the fileptr
+  if (offset) {
+    if (pll_fasta_fseek(fptr_.get(), offset, SEEK_SET)) {
+      throw std::runtime_error{"Unable to fseek on the fasta file."};
+    }
+  }
+
+  if (num_read_ == initial_size_) {
+    num_read_ = 0;
+  }
+
+  // kick off reading a chunk
+  prefetcher_ = std::async( std::launch::async,
+                            read_chunk, 
+                            fptr_.get(), 
+                            initial_size_, 
+                            std::ref(prefetch_chunk_),
+                            max_read_,
+                            std::ref(num_read_));
+}
+
+#include <fstream>
+
+size_t MSA_Stream::num_sequences()
+{
+  assert(filename_.size());
+  size_t ret = num_sequences_;
+
+  if (ret == 0) {
+    // go through entire file, count sequences ('>' character)
+    std::ifstream stream(filename_);
+    
+    for (size_t pos = 0; stream.peek() != EOF; ++pos) {
+      char c;
+      stream.get(c);
+      // TODO not good enough, need lots of escaping. use existing fasta parser, calculate the offset
+      if (c == '>') {
+        offsets_.push_back(pos);
+      }
+    }
+    ret = offsets_.size();
+  }
+
+  return ret;
 }

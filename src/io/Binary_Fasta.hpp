@@ -242,7 +242,9 @@ public:
 
 };
 
-class Binary_Fasta_Reader
+#include "io/msa_reader_interface.hpp"
+
+class Binary_Fasta_Reader : public msa_reader
 {
 public:
   Binary_Fasta_Reader(const std::string& file_name,
@@ -256,12 +258,12 @@ public:
   }
   ~Binary_Fasta_Reader() = default;
 
-  void constrain(const size_t max_read)
+  virtual void constrain(const size_t max_read) override
   {
     max_read_ = max_read;
   }
 
-  void skip_to_sequence(const size_t n)
+  virtual void skip_to_sequence(const size_t n) override
   {
     if (n == 0) {
       return;
@@ -278,7 +280,7 @@ public:
     cursor_ += skip;
   }
 
-  size_t read_next(MSA& result, const size_t number)
+  virtual size_t read_next(MSA& result, const size_t number) override
   {
     const auto to_read =
       std::min(number, max_read_ - num_read_);
@@ -291,7 +293,7 @@ public:
     return result.size();
   }
 
-  size_t num_sequences() const
+  virtual size_t num_sequences() override
   {
     return seq_offsets_.size();
   }

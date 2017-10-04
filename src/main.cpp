@@ -192,11 +192,11 @@ int main(int argc, char** argv)
   if (cli.count("query")) {
     query_file = cli["query"].as<std::string>();
     LOG_INFO << "Selected: Query file: " << query_file;
-    if (split_by_delimiter(query_file, ".").back() != "bin") {
-      LOG_INFO << "This appears to be a non-binary fasta file. Converting!";
-      query_file = Binary_Fasta::fasta_to_bfast(query_file, work_dir);
-      LOG_INFO << "Updated Query file: " << query_file;
-    }
+    // if (split_by_delimiter(query_file, ".").back() != "bin") {
+    //   LOG_INFO << "This appears to be a non-binary fasta file. Converting!";
+    //   query_file = Binary_Fasta::fasta_to_bfast(query_file, work_dir);
+    //   LOG_INFO << "Updated Query file: " << query_file;
+    // }
   }
 
   if (cli.count("tree")) {
