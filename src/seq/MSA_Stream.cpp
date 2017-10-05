@@ -160,6 +160,7 @@ void MSA_Stream::skip_to_sequence(const size_t n)
   }
 
   // kick off reading a chunk
+#ifdef __PREFETCH
   prefetcher_ = std::async( std::launch::async,
                             read_chunk, 
                             fptr_.get(), 
@@ -167,6 +168,9 @@ void MSA_Stream::skip_to_sequence(const size_t n)
                             std::ref(prefetch_chunk_),
                             max_read_,
                             std::ref(num_read_));
+#else
+  read_chunk(fptr_.get(), number, prefetch_chunk_, max_read_, num_read_);
+#endif
 }
 
 #include <fstream>
