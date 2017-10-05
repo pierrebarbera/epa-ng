@@ -22,7 +22,7 @@ if ( $ENV{EPA_SERIAL} )
     set (ENABLE_PREFETCH  OFF)
 endif ()
 
-project (epa C CXX)
+project ( epa CXX C )
 
 set (epa_VERSION_MAJOR 0)
 set (epa_VERSION_MINOR 1)
