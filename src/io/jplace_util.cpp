@@ -58,7 +58,7 @@ std::string pquery_to_jplace_string(const PQuery<Placement>& pquery)
   output <<"    \"n\": [";
   
   // sequence header
-  const auto header = pquery.header();
+  const auto& header = pquery.header();
   output << "\"" << header.c_str() << "\"";
  
 

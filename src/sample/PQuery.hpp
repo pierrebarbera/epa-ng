@@ -60,7 +60,7 @@ public:
   value_type& back() { return placements_.back(); }
   inline seqid_type sequence_id() const { return sequence_id_; }
   inline void sequence_id(const seqid_type seq_id) { sequence_id_ = seq_id; }
-  std::string header() const { return header_; }
+  const std::string& header() const { return header_; }
   double entropy() const { return entropy_; }
   void entropy(const double e) { entropy_ = e; }
   unsigned int size() const { return placements_.size(); }

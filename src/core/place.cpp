@@ -83,7 +83,7 @@ static void place(const Work& to_place,
     for (const auto& it : work_parts[i]) {
       const auto branch_id = it.branch_id;
       const auto seq_id = it.sequence_id;
-      const auto seq = msa[seq_id];
+      const auto& seq = msa[seq_id];
 
       if ((branch_id != prev_branch_id) or not branch) {
         branch = std::make_shared<Tiny_Tree>(branches[branch_id],
