@@ -113,9 +113,9 @@ Here is a list of the most basic arguments you will use:
 
 | Flag | Long Flag | Meaning |
 | - | - | - |
-| -s | --ref-msa | reference MSA (fasta or [bfast](#converting-the-query-file))  |
+| -s | --ref-msa | reference MSA (fasta)  |
 | -t | --tree | reference Tree (newick)  |
-| -q | --query | query sequences (fasta) |
+| -q | --query | query sequences (fasta or [bfast](#converting-the-query-file)) |
 | -w | --outdir | output directory (default: current directory) |
 | -T | --threads | number of threads to use |
 
