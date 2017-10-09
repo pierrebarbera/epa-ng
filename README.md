@@ -116,7 +116,7 @@ Here is a list of the most basic arguments you will use:
 | -s | --ref-msa | reference MSA (fasta or [bfast](#converting-the-query-file))  |
 | -t | --tree | reference Tree (newick)  |
 | -q | --query | query sequences (fasta) |
-| -w | --out-dir | output directory (default: current directory) |
+| -w | --outdir | output directory (default: current directory) |
 | -T | --threads | number of threads to use |
 
 For a full overview of command line options either run `EPA-ng` with no input, or with the flag `-h` (or `--help`).
@@ -165,7 +165,7 @@ By default, `EPA-ng` performs placement of a sequence in two stages: first selec
 The default is the *accumulated threshold* method, in which branches are added to the set of candidates until the sum of their LWR exceed a user specified threshold.
 The flag controlling this mode is `-g` (or `--dyn-heur`), with a default setting of `0.99`, corresponding to a covered likelihood weight of 99%.
 
-There is also a second mode, which functions identical to the candidate selection mode in the original implementation of the `EPA` in `RAxML`.
+There is also a second mode, which functions identically to the candidate selection mode in the original implementation of the `EPA` in `RAxML`.
 Here again the branches are sorted by the LWR of the placement of a sequence.
 Then, the top x% of the total number of branches are selected into the set of candidates.
 Like in `RAxML`, this behavior is controlled via the `-G` (or `--fix-heur`) flag.
