@@ -186,7 +186,7 @@ Internally, when calling `EPA-ng` with `-s reference_msa.fasta -t reference_tree
 Additionally, if the `-O` (or `--opt-ref-tree`) flag was supplied, a likelihood model parameter, and branch length, optimization is performed.
 Then, every possible partial likelihood vector (CLV) on the tree is computed and stored, such that all CLV needed to perform phylogenetic placement exist.
 
-To avoid having to repeat these steps between multiple runs using the same reference data, this precomputed tree can be emitted using the `-B` (or `--binary-dump`) flag.
+To avoid having to repeat these steps between multiple runs using the same reference data, this precomputed tree can be emitted using the `-B` (or `--dump-binary`) flag.
 When this flag is supplied, the program will produce a file called `epa_binary_file` in the output directory, and then terminate.
 
 In subequent runs, instead of `-s ... -t ...` you may then simply supply the binary tree file: `-b epa_binary_file`
