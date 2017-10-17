@@ -169,7 +169,7 @@ void MSA_Stream::skip_to_sequence(const size_t n)
                             max_read_,
                             std::ref(num_read_));
 #else
-  read_chunk(fptr_.get(), number, prefetch_chunk_, max_read_, num_read_);
+  read_chunk(fptr_.get(), n, prefetch_chunk_, max_read_, num_read_);
 #endif
 }
 
