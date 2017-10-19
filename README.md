@@ -42,7 +42,7 @@ For general discussion of the algorithm and its usage please head to [the RAxML 
 After cloning with the above command, ensure the following packages are installed or otherwise available (relevant modules loaded on your cluster):
 
 ```
-sudo apt-get install autotools-dev libtool flex bison cmake
+sudo apt-get install autotools-dev libtool flex bison cmake automake autoconf
 ```
 
 Once these dependencies are available, you need to ensure that your compiler is recent enough, as EPA-ng is built using C++14 features. The minimum required versions are as follows:
