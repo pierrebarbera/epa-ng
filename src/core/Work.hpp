@@ -94,8 +94,10 @@ public:
   // void insert(InputIt first, InputIt last) {work_set_.insert(first, last);}
 
   // Iterator Compatibility
-  // iterator begin() { return work_set_.begin(); }
-  // iterator end() { return work_set_.end(); }
+  auto bin_begin() { return work_set_.begin(); }
+  auto bin_end() { return work_set_.end(); }
+  auto bin_cbegin() const { return work_set_.begin(); }
+  auto bin_cend() const { return work_set_.end(); }
   const_iterator begin() const;
   const_iterator end() const;
   // const_iterator cbegin() { return work_set_.cbegin(); }

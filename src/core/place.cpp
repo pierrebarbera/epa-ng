@@ -66,6 +66,9 @@ static void place(const Work& to_place,
   split(to_place, work_parts, num_threads
                               * multiplicity);
 
+  // Map from sequence indices to indices in the pquery vector.
+  auto seq_lookup_vec = std::vector<std::unordered_map<size_t, size_t>>(num_threads);
+
   // work seperately
 #ifdef __OMP
   #pragma omp parallel for schedule(dynamic)
@@ -79,11 +82,15 @@ static void place(const Work& to_place,
     const auto tid = 0;
 #endif
     std::shared_ptr<Tiny_Tree> branch(nullptr);
+    auto& local_sample = sample_parts[tid];
+
+    auto& seq_lookup = seq_lookup_vec[tid];
 
     for (const auto& it : work_parts[i]) {
       const auto branch_id = it.branch_id;
       const auto seq_id = it.sequence_id;
       const auto& seq = msa[seq_id];
+
 
       if ((branch_id != prev_branch_id) or not branch) {
         branch = std::make_shared<Tiny_Tree>(branches[branch_id],
@@ -94,9 +101,104 @@ static void place(const Work& to_place,
                                              lookup_store);
       }
 
-      sample_parts[tid].add_placement(seq_id_offset + seq_id,
-                                      seq.header(),
-                                      branch->place(seq));
+      // sample_parts[tid].add_placement(seq_id_offset + seq_id,
+      //                                 seq.header(),
+      //                                 branch->place(seq));
+
+      if (seq_lookup.count( seq_id ) == 0)
+      {
+        auto const new_idx = local_sample.add_pquery( seq_id_offset + seq_id, seq.header() );
+        seq_lookup[ seq_id ] = new_idx;
+      }
+      assert( seq_lookup.count( seq_id ) > 0 );
+      local_sample[ seq_lookup[ seq_id ] ].emplace_back( branch->place(seq) );
+
+      prev_branch_id = branch_id;
+    }
+  }
+  // merge samples back
+  merge(sample, std::move(sample_parts));
+  collapse(sample);
+}
+
+template <class T>
+static void place_thorough(const Work& to_place,
+                  MSA& msa,
+                  Tree& reference_tree,
+                  const std::vector<pll_unode_t *>& branches,
+                  Sample<T>& sample,
+                  bool do_blo,
+                  const Options& options,
+                  std::shared_ptr<Lookup_Store>& lookup_store,
+                  const size_t seq_id_offset=0)
+{
+
+#ifdef __OMP
+  const unsigned int num_threads  = options.num_threads
+                                  ? options.num_threads
+                                  : omp_get_max_threads();
+  omp_set_num_threads(num_threads);
+  LOG_DBG << "Using threads: " << num_threads;
+  LOG_DBG << "Max threads: " << omp_get_max_threads();
+  const unsigned int multiplicity = 8;
+#else
+  const unsigned int num_threads = 1;
+  const unsigned int multiplicity = 1;
+#endif
+
+  // split the sample structure such that the parts are thread-local
+  std::vector<Sample<T>> sample_parts(num_threads);
+
+  std::vector<Work> work_parts;
+  split(to_place, work_parts, num_threads
+                              * multiplicity);
+
+  // Map from sequence indices to indices in the pquery vector.
+  auto seq_lookup_vec = std::vector<std::unordered_map<size_t, size_t>>(num_threads);
+
+  // work seperately
+#ifdef __OMP
+  #pragma omp parallel for schedule(dynamic)
+#endif
+  for (size_t i = 0; i < work_parts.size(); ++i) {
+    auto prev_branch_id = std::numeric_limits<size_t>::max();
+
+#ifdef __OMP
+    const auto tid = omp_get_thread_num();
+#else
+    const auto tid = 0;
+#endif
+    std::shared_ptr<Tiny_Tree> branch(nullptr);
+    auto& local_sample = sample_parts[tid];
+
+    auto& seq_lookup = seq_lookup_vec[tid];
+
+    for (const auto& it : work_parts[i]) {
+      const auto branch_id = it.branch_id;
+      const auto seq_id = it.sequence_id;
+      const auto& seq = msa[seq_id];
+
+
+      if ((branch_id != prev_branch_id) or not branch) {
+        branch = std::make_shared<Tiny_Tree>(branches[branch_id],
+                                             branch_id,
+                                             reference_tree,
+                                             do_blo,
+                                             options,
+                                             lookup_store);
+      }
+
+      // sample_parts[tid].add_placement(seq_id_offset + seq_id,
+      //                                 seq.header(),
+      //                                 branch->place(seq));
+
+      if (seq_lookup.count( seq_id ) == 0)
+      {
+        auto const new_idx = local_sample.add_pquery( seq_id_offset + seq_id, seq.header() );
+        seq_lookup[ seq_id ] = new_idx;
+      }
+      assert( seq_lookup.count( seq_id ) > 0 );
+      local_sample[ seq_lookup[ seq_id ] ].emplace_back( branch->place(seq) );
 
       prev_branch_id = branch_id;
     }
@@ -398,6 +500,7 @@ void simple_mpi(Tree& reference_tree,
 
   size_t num_sequences = options.chunk_size;
   Work all_work(std::make_pair(0, num_branches), std::make_pair(0, num_sequences));
+
   Work blo_work;
 
   size_t chunk_num = 1;
@@ -456,7 +559,7 @@ void simple_mpi(Tree& reference_tree,
 
     // BLO placement
     LOG_DBG << "BLO Placement." << std::endl;
-    place(blo_work,
+    place_thorough(blo_work,
           chunk,
           reference_tree,
           branches,
