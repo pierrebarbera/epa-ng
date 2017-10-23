@@ -118,15 +118,32 @@ static double opt_branch_lengths_pplacer( pll_partition_t * partition,
   toward_blo_node.child2_matrix_index = blo_antinode->pmatrix_index;
 
   const auto original_length = blo_node->length * 2;
-  bool opt_proximal = (blo_node->length > PLLMOD_OPT_MIN_BRANCH_LEN);
+  bool opt_proximal = false;
 
-  double lengths[3] = {blo_node->length, blo_antinode->length, score_node->length};
-  unsigned int p_indices[3] = {blo_node->pmatrix_index, blo_antinode->pmatrix_index, score_node->pmatrix_index};
+  double lengths[3] = {
+    blo_node->length,
+    blo_antinode->length,
+    score_node->length};
 
-  if(!opt_proximal && original_length > PLLMOD_OPT_MIN_BRANCH_LEN) {
-    blo_node->length = PLLMOD_OPT_MIN_BRANCH_LEN;
-    blo_antinode->length = original_length - PLLMOD_OPT_MIN_BRANCH_LEN;
-    pll_update_prob_matrices(partition, &param_indices[0], p_indices, lengths, 1);
+  unsigned int p_indices[3] = {
+    blo_node->pmatrix_index,
+    blo_antinode->pmatrix_index,
+    score_node->pmatrix_index};
+
+  if(   (blo_node->length <= PLLMOD_OPT_MIN_BRANCH_LEN)
+    and (original_length > PLLMOD_OPT_MIN_BRANCH_LEN)   ) {
+
+    lengths[0] = blo_node->length = blo_node->back->length
+      = PLLMOD_OPT_MIN_BRANCH_LEN;
+    lengths[1] = blo_antinode->length = blo_antinode->back->length
+      = original_length - PLLMOD_OPT_MIN_BRANCH_LEN;
+
+    pll_update_prob_matrices( partition,
+                              &param_indices[0],
+                              p_indices,
+                              lengths,
+                              1);
+
     pll_update_partials(partition, &toward_score, 1);
     opt_proximal = true;
   }
@@ -168,19 +185,20 @@ static double opt_branch_lengths_pplacer( pll_partition_t * partition,
   }
 
   while (smoothings) {
-    auto old_blonode_length = blo_node->length;
-    auto old_pendant_length = score_node->length;
+    const auto old_blonode_length = blo_node->length;
+    const auto old_pendant_length = score_node->length;
 
     /*=============================================================
             NR for Pendant
      =============================================================*/
 
-    xmin = OPT_BRLEN_MIN;
+    xmin = PLLMOD_OPT_MIN_BRANCH_LEN;
     xmax = PLLMOD_OPT_MAX_BRANCH_LEN;
     xtol = xmin/10.0;
     xguess = score_node->length;
-    // if (xguess < xmin || xguess > xmax)
-    //   xguess = PLLMOD_OPT_DEFAULT_BRANCH_LEN;
+    if ( (xguess < xmin) or( xguess > xmax) ) {
+      xguess = PLLMOD_OPT_DEFAULT_BRANCH_LEN;
+    }
 
     /* prepare sumtable for current branch */
     pll_update_sumtable(partition,
@@ -197,9 +215,13 @@ static double opt_branch_lengths_pplacer( pll_partition_t * partition,
     nr_params.tolerance         = xtol;
 
     // minimize newton for pendant length
-    xres = pllmod_opt_minimize_newton(xmin, xguess, xmax, xtol,
-                                10, &nr_params,
-                                utree_derivative_func);
+    xres = pllmod_opt_minimize_newton(xmin,
+                                      xguess,
+                                      xmax,
+                                      xtol,
+                                      10,
+                                      &nr_params,
+                                      utree_derivative_func);
     assert(xres >= 0.0);
 
     // update length and pmatrix for pendant
@@ -216,11 +238,12 @@ static double opt_branch_lengths_pplacer( pll_partition_t * partition,
 
       /* set N-R parameters */
       xguess = blo_node->length;
-      xmin = OPT_BRLEN_MIN;
+      xmin = PLLMOD_OPT_MIN_BRANCH_LEN;
       xmax = original_length;
       xtol = xmin/10.0;
-      if (xguess < xmin || xguess > xmax)
+      if ( (xguess < xmin) or (xguess > xmax) ) {
         xguess = original_length / 2.0;
+      }
 
       /* prepare sumtable for current branch */
       pll_update_sumtable(partition,
@@ -243,6 +266,7 @@ static double opt_branch_lengths_pplacer( pll_partition_t * partition,
                                         &nr_params,
                                         utree_derivative_func);
       assert(xres >= 0.0);
+      assert(xres <= original_length);
 
       // update lengths and pmatrices for proximal/distal
       lengths[0] = blo_node->length     = blo_node->back->length      = xres;
