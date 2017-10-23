@@ -200,11 +200,11 @@ Placement Tiny_Tree::place(const Sequence &s)
 
     // rescale the distal length, as it has likely changed during optimization
     // done as in raxml
-    double new_total_branch_length = distal_length + proximal->length;
-    distal_length = (original_branch_length_ / new_total_branch_length) * distal_length;
+    const double new_total_branch_length = distal->length + proximal->length;
+    distal_length = (original_branch_length_ / new_total_branch_length) * distal->length;
     pendant_length = inner->length;
 
-    reset_triplet_lengths(inner, 
+    reset_triplet_lengths(inner,
                           partition_.get(), 
                           original_branch_length_);
     
