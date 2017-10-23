@@ -238,7 +238,8 @@ static double opt_branch_lengths_pplacer( pll_partition_t * partition,
 
       /* set N-R parameters */
       xguess = blo_node->length;
-      xmin = PLLMOD_OPT_MIN_BRANCH_LEN;
+      // min has to be half the ususal because original length might already be min
+      xmin = PLLMOD_OPT_MIN_BRANCH_LEN / 2.0;
       xmax = original_length;
       xtol = xmin/10.0;
       if ( (xguess < xmin) or (xguess > xmax) ) {
