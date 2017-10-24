@@ -118,7 +118,8 @@ static double opt_branch_lengths_pplacer( pll_partition_t * partition,
   toward_blo_node.child2_matrix_index = blo_antinode->pmatrix_index;
 
   const auto original_length = blo_node->length * 2;
-  bool opt_proximal = false;
+
+  bool opt_proximal = true;
 
   double lengths[3] = {
     blo_node->length,
@@ -129,24 +130,6 @@ static double opt_branch_lengths_pplacer( pll_partition_t * partition,
     blo_node->pmatrix_index,
     blo_antinode->pmatrix_index,
     score_node->pmatrix_index};
-
-  if(   (blo_node->length <= PLLMOD_OPT_MIN_BRANCH_LEN)
-    and (original_length > PLLMOD_OPT_MIN_BRANCH_LEN)   ) {
-
-    lengths[0] = blo_node->length = blo_node->back->length
-      = PLLMOD_OPT_MIN_BRANCH_LEN;
-    lengths[1] = blo_antinode->length = blo_antinode->back->length
-      = original_length - PLLMOD_OPT_MIN_BRANCH_LEN;
-
-    pll_update_prob_matrices( partition,
-                              &param_indices[0],
-                              p_indices,
-                              lengths,
-                              1);
-
-    pll_update_partials(partition, &toward_score, 1);
-    opt_proximal = true;
-  }
 
   /* set parameters for N-R optimization */
   pll_newton_tree_params_t nr_params;
@@ -239,8 +222,9 @@ static double opt_branch_lengths_pplacer( pll_partition_t * partition,
       /* set N-R parameters */
       xguess = blo_node->length;
       // min has to be half the ususal because original length might already be min
-      xmin = PLLMOD_OPT_MIN_BRANCH_LEN / 2.0;
       xmax = original_length;
+      xmin = std::min(PLLMOD_OPT_MIN_BRANCH_LEN / 2.0,
+                      xmax / 2.0);
       xtol = xmin/10.0;
       if ( (xguess < xmin) or (xguess > xmax) ) {
         xguess = original_length / 2.0;

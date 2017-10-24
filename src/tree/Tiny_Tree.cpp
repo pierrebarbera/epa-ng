@@ -67,9 +67,8 @@ Tiny_Tree::Tiny_Tree( pll_unode_t * edge_node,
   , branch_id_(branch_id)
   , lookup_(lookup_store)
 {
-  original_branch_length_ = (edge_node->length < 2*PLLMOD_OPT_MIN_BRANCH_LEN) ?
-    2*PLLMOD_OPT_MIN_BRANCH_LEN : edge_node->length;
   assert(edge_node);
+  original_branch_length_ = edge_node->length;
 
   auto old_proximal = edge_node->back;
   auto old_distal = edge_node;
