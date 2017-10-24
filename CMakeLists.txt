@@ -26,7 +26,7 @@ project ( epa CXX C )
 
 set (epa_VERSION_MAJOR 0)
 set (epa_VERSION_MINOR 1)
-set (epa_VERSION_PATCH 0)
+set (epa_VERSION_PATCH 1)
 
 set (epa_PROJECT_VERSION "${epa_VERSION_MAJOR}")
 set (epa_PROJECT_VERSION "${epa_PROJECT_VERSION}.${epa_VERSION_MINOR}")

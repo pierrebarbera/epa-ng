@@ -37,9 +37,13 @@ static void place_(const Options options)
   for (auto const &x : queries)
   {
     auto place = tt.place(x);
+    auto brlen = root->length;
     EXPECT_NE(place.likelihood(), 0.0);
-    EXPECT_NE(place.distal_length(), 0.0);
-    EXPECT_NE(place.pendant_length(), 0.0);
+    EXPECT_NE(place.likelihood(), std::numeric_limits<double>::infinity());
+    EXPECT_NE(place.likelihood(), -std::numeric_limits<double>::infinity());
+    EXPECT_GT(place.distal_length(), 0.0);
+    EXPECT_GT(brlen, place.distal_length());
+    EXPECT_GT(place.pendant_length(), 0.0);
   }
   // teardown
 }
