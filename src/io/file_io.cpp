@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 #include <fstream>
+#include <functional>
 
 #include "core/pll/pllhead.hpp"
 #include "seq/MSA.hpp"
