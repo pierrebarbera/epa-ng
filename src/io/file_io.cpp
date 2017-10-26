@@ -185,6 +185,18 @@ pll_utree_s * build_tree_from_file(const std::string& tree_file, Tree_Numbers& n
   return tree;
 }
 
+static unsigned int simd_autodetect()
+{
+  if (PLL_STAT(avx2_present))
+    return PLL_ATTRIB_ARCH_AVX2;
+  else if (PLL_STAT(avx_present))
+    return PLL_ATTRIB_ARCH_AVX;
+  else if (PLL_STAT(sse3_present))
+    return PLL_ATTRIB_ARCH_SSE;
+  else
+    return PLL_ATTRIB_ARCH_CPU;
+}
+
 pll_partition_t *  build_partition_from_file( const raxml::Model& model, 
                                               Tree_Numbers& nums, 
                                               const int num_sites,
@@ -192,12 +204,7 @@ pll_partition_t *  build_partition_from_file( const raxml::Model& model,
 {
   assert(nums.tip_nodes); // nums must have been initialized correctly
 
-  auto attributes = PLL_ATTRIB_ARCH_CPU;
-#ifdef __AVX
-  attributes = PLL_ATTRIB_ARCH_AVX;
-#elif __SSE3
-  attributes = PLL_ATTRIB_ARCH_SSE;
-#endif
+  auto attributes = simd_autodetect();
 
   if (repeats) {
     attributes |= PLL_ATTRIB_SITE_REPEATS;

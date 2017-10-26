@@ -1,7 +1,5 @@
 cmake_minimum_required (VERSION 2.8.7 FATAL_ERROR)
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/libs/seqan/util/cmake")
-
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 set(CMAKE_DISABLE_SOURCE_CHANGES  ON)
 
@@ -79,15 +77,6 @@ if(ENABLE_OMP)
   else()
     message(STATUS "Checking for OpenMP -- NOT FOUND")
   endif()
-endif()
-
-include(CheckCXXCompilerFlag)
-CHECK_CXX_COMPILER_FLAG(-mavx HAS_AVX)
-CHECK_CXX_COMPILER_FLAG(-msse3 HAS_SSE3)
-if(HAS_AVX)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mavx -D__AVX")
-elseif(HAS_SSE3)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse3 -D__SSE3")
 endif()
 
 if(ENABLE_MPI)

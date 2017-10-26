@@ -25,7 +25,7 @@ NOEXTRA=-pomp --thread=omp --opari=--omp-tpd:--c++:--omp-tpd-mangling='gnu'
 CC=g++
 DEFS=
 WARNINGS= -Wall -Wextra
-DBG=-g -O3 -DNDEBUG -D__AVX
+DBG=-g -O3 -DNDEBUG
 
 INCLUDES=-I$(CEREAL) -I$(CXXOPTS) -I$(PLL_INC) -I$(GENESIS)/lib -I.
 LIB_PATHS=  -L$(PLL_LIB) -L$(GENESIS)/bin
