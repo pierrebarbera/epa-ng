@@ -377,7 +377,7 @@ void simple_mpi(Tree& reference_tree,
     all_ranks[i] = i;
   }
 
-  Binary_Fasta_Reader reader(query_file);
+  Binary_Fasta_Reader reader(query_file, reference_tree.partition()->sites);
 
   // how many should each rank read?
   const size_t part_size = ceil(reader.num_sequences() / static_cast<double>(num_ranks));

@@ -19,7 +19,7 @@ const Sequence& MSA::operator[](const size_t i) const
 void MSA::append(const std::string& header, const std::string& sequence)
 {
   if(num_sites_ && sequence.length() != num_sites_) {
-    throw std::runtime_error{std::string("Tried to insert sequence to MSA of unequal length: ") + sequence};
+    throw std::runtime_error{std::string("Tried to insert sequence to MSA of unequal length: ") + header};
   }
 
   sequence_list_.emplace_back(header, sequence);
