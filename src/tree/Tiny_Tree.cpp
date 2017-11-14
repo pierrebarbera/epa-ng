@@ -163,6 +163,10 @@ Placement Tiny_Tree::place(const Sequence &s)
   double logl = 0.0;
   std::vector<unsigned int> param_indices(partition_->rate_cats, 0);
 
+  if ( s.sequence().size() != partition_->sites ) {
+    throw std::runtime_error{"Query sequence length not same as reference alignment!"};
+  }
+
   if (opt_branches_) {
 
     /* differentiate between the normal case and the tip tip case:

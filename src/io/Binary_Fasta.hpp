@@ -149,9 +149,10 @@ static void skip_sequences( utils::Deserializer& des,
 }
 
 static MSA read_sequences(utils::Deserializer& des,
-                          const size_t number)
+                          const size_t number,
+                          const size_t sites=0)
 {
-  MSA msa;
+  MSA msa(sites);
 
   for (size_t i = 0; i < number and not des.finished(); ++i) {
     auto label = des.get_string();
@@ -248,11 +249,13 @@ class Binary_Fasta_Reader : public msa_reader
 {
 public:
   Binary_Fasta_Reader(const std::string& file_name,
+                      const size_t enforced_sites=0,
                       const size_t max_read=std::numeric_limits<size_t>::max())
     : des_(file_name)
     , cursor_(0)
     , num_read_(0)
     , max_read_(max_read)
+    , enforced_sites_(enforced_sites)
   {
     seq_offsets_ = read_header(des_);
   }
@@ -285,7 +288,7 @@ public:
     const auto to_read =
       std::min(number, max_read_ - num_read_);
 
-    result = read_sequences(des_, to_read);
+    result = read_sequences(des_, to_read, enforced_sites_);
 
     num_read_ += result.size();
     cursor_ += result.size();
@@ -304,4 +307,5 @@ private:
   size_t cursor_ = 0;
   size_t num_read_ = 0;
   size_t max_read_ = std::numeric_limits<size_t>::max();
+  size_t enforced_sites_ = 0;
 };

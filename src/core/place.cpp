@@ -480,8 +480,7 @@ void simple_mpi(Tree& reference_tree,
     all_ranks[i] = i;
   }
 
-  // Binary_Fasta_Reader reader(query_file);
-  auto reader = make_msa_reader(query_file, options);
+  auto reader = make_msa_reader(query_file, options, reference_tree.partition()->sites);
 
   size_t local_rank_seq_offset = 0;
 

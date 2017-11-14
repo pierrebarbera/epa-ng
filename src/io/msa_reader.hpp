@@ -11,7 +11,8 @@
 #include "io/msa_reader_interface.hpp"
 
 auto make_msa_reader( const std::string& file_name,
-                      const Options& options)
+                      const Options& options,
+                      const size_t sites = 0)
 {
   std::unique_ptr<msa_reader> result(nullptr);
 
