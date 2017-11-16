@@ -18,6 +18,12 @@
 #include "seq/MSA_Stream.hpp"
 #include "seq/MSA.hpp"
 
+static bool is_file(const std::string& name)
+{
+    std::ifstream infile(fileName);
+    return infile.good();
+}
+
 static void ensure_dir_has_slash(std::string& dir)
 {
   if (dir.length() > 0 && dir.back() != '/') {
@@ -118,10 +124,10 @@ int main(int argc, char** argv)
     ("G,fix-heur",
       "Two-phase heuristic, determination of candidate edges by specified percentage of total edges.",
       cxxopts::value<double>()->implicit_value("0.1"))
-    // ("m,model",
-    //   "Description string of the model to be used. Format: "
-    //   "<type>-<symmetries>-<rate/frequency model> Examples: -m DNA-GTR-EMPIRICAL, -m AA-GTR-BLOSUM62",
-    //   cxxopts::value<std::string>()->default_value("DNA-GTR-EMPIRICAL"))
+    ("m,model",
+      "Description string of the model to be used. --model STRING"
+      "See: https://github.com/amkozlov/raxml-ng/wiki/Input-data#evolutionary-model",
+      cxxopts::value<std::string>()->default_value("DNA-GTR-EMPIRICAL"))
     ("base-freqs",
       "Base frequencies to be used. Must match alphabet size. Overwritten by -O. Example: "
       "--base-freqs 0.2:0.3:0.25:0.25",
@@ -300,10 +306,15 @@ int main(int argc, char** argv)
     LOG_INFO << "\tWARNING: this mode means that no placement will take place in this run";
   }
 
-  // if (cli.count("model")) {
-  //   model_desc = cli["model"].as<std::string>();
-  //   LOG_INFO << "Selected: Specified model: " << model_desc;
-  // }
+  if (cli.count("model")) {
+    model_desc = cli["model"].as<std::string>();
+
+    // if (is_file(model_desc)) {
+    //   LOG_INFO << "Selected: Specified model file: " << model_desc;
+    // } else {
+    // }
+    LOG_INFO << "Selected: Specified model: " << model_desc;
+  }
 
   model = raxml::Model(model_desc);
 
