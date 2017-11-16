@@ -59,38 +59,24 @@ public:
   template <class InputIt>
   void insert(InputIt first, InputIt last) {pquerys_.insert(pquerys_.end(), first, last);}
 
-  // template <typename ...Args>
-  // void add_placement( const size_t seq_id,
-  //                     const std::string& label,
-  //                     Args&& ...args)
-  // {
-  //   // if seq_id in pquerys_
-  //   auto iter = std::end(pquerys_);
-  //   if ((iter = std::find(std::begin(pquerys_), std::end(pquerys_), value_type(seq_id))) 
-  //     != std::end(pquerys_)) {
-  //     iter->emplace_back(std::forward<Args>(args)...);
-  //   } else {
-  //     pquerys_.emplace_back(seq_id, label);
-  //     pquerys_.back().emplace_back(std::forward<Args>(args)...);
-  //   }
-  // }
-
-  // void __attribute__((noinline)) add_placement( const size_t seq_id,
-  //                     const std::string& label,
-  //                     Placement&& p)
-  // {
-  //   // if seq_id in pquerys_
-  //   auto iter = std::find(std::begin(pquerys_), std::end(pquerys_), value_type(seq_id));
-  //   if (iter != std::end(pquerys_)) {
-  //     iter->emplace_back(std::move(p));
-  //   } else {
-  //     pquerys_.emplace_back(seq_id, label);
-  //     pquerys_.back().emplace_back(std::move(p));
-  //   }
-  // }
+  template <typename ...Args>
+  void add_placement( const size_t seq_id,
+                      const std::string& label,
+                      Args&& ...args)
+  {
+    // if seq_id in pquerys_
+    auto iter = std::end(pquerys_);
+    if ((iter = std::find(std::begin(pquerys_), std::end(pquerys_), value_type(seq_id)))
+      != std::end(pquerys_)) {
+      iter->emplace_back(std::forward<Args>(args)...);
+    } else {
+      pquerys_.emplace_back(seq_id, label);
+      pquerys_.back().emplace_back(std::forward<Args>(args)...);
+    }
+  }
   
-  size_t add_pquery( const size_t seq_id,
-                      const std::string& label)
+  size_t add_pquery(const size_t seq_id,
+                    const std::string& label)
   {
       // Create a new pquery and return its id in the vector.
       pquerys_.emplace_back(seq_id, label);
