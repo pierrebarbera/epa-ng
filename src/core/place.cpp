@@ -5,7 +5,6 @@
 #include <memory>
 #include <functional>
 #include <limits>
-#include <future>
 
 #ifdef __OMP
 #include <omp.h>
@@ -14,22 +13,23 @@
 #include "io/file_io.hpp"
 #include "io/jplace_util.hpp"
 #include "io/msa_reader.hpp"
+#include "io/Binary_Fasta.hpp"
+#include "io/jplace_writer.hpp"
 #include "util/stringify.hpp"
-#include "set_manipulators.hpp"
 #include "util/logging.hpp"
+#include "util/Timer.hpp"
 #include "tree/Tiny_Tree.hpp"
 #include "net/mpihead.hpp"
-#include "core/pll/pll_util.hpp"
-#include "core/pll/epa_pll_util.hpp"
-#include "util/Timer.hpp"
-#include "core/Work.hpp"
 #include "pipeline/schedule.hpp"
-#include "core/Lookup_Store.hpp"
 #include "pipeline/Pipeline.hpp"
 #include "seq/MSA.hpp"
+#include "core/pll/pll_util.hpp"
+#include "core/pll/epa_pll_util.hpp"
+#include "core/Work.hpp"
+#include "core/Lookup_Store.hpp"
 #include "core/Work.hpp"
 #include "sample/Sample.hpp"
-#include "io/Binary_Fasta.hpp"
+#include "set_manipulators.hpp"
 
 #ifdef __MPI
 #include "net/epa_mpi_util.hpp"
@@ -430,19 +430,18 @@ void simple_mpi(Tree& reference_tree,
   size_t chunk_num = 1;
 
   using Sample = Sample<Placement>;
-  std::vector<Sample> result;
-  // Sample gatherbuf;
   std::future<void> prev_gather;
   MSA chunk;
   size_t sequences_done = 0; // not just for info output!
 
   // prepare output file
-  std::ofstream result_file;
+  Jplace_writer jplace;
+
   if (local_rank == 0) {
     LOG_INFO << "Output file: " << outdir + "epa_result.jplace";
-    result_file.open(outdir + "epa_result.jplace");
-    result_file << init_jplace_string(
-      get_numbered_newick_string(reference_tree.tree()));
+    jplace = Jplace_writer( outdir + "epa_result.jplace",
+                            get_numbered_newick_string(reference_tree.tree()),
+                            invocation);
   }
 
   while ( (num_sequences = reader->read_next(chunk, options.chunk_size)) ) {
@@ -495,15 +494,15 @@ void simple_mpi(Tree& reference_tree,
 
     // BLO placement
     LOG_DBG << "BLO Placement." << std::endl;
-    place_thorough(blo_work,
-          chunk,
-          reference_tree,
-          branches,
-          blo_sample,
-          true,
-          options,
-          lookups,
-          seq_id_offset);
+    place_thorough( blo_work,
+                    chunk,
+                    reference_tree,
+                    branches,
+                    blo_sample,
+                    true,
+                    options,
+                    lookups,
+                    seq_id_offset);
 
     // Output
     compute_and_set_lwr(blo_sample);
@@ -521,43 +520,12 @@ void simple_mpi(Tree& reference_tree,
                                     options.filter_max);
     }
 
-    // merge in the previous chunk result
-    // block until previous chunk data (still referred to by gatherbuf) was successfully aggregated
-    #ifdef __MPI
-    if (prev_gather.valid()) {
-      prev_gather.get();
-    }
-    #endif //__MPI
-    // save the current result in the gatherbuf
-    // std::swap(gatherbuf, blo_sample);
-
-    #ifdef __MPI
-    // gather result of the chunk on rank 0, ansynchronusly
-    // LOG_DBG << "Gathering results on Rank " << 0;
-    prev_gather = std::async(std::launch::async,
-    [blo_sample, &all_ranks, local_rank, &result_file]() mutable -> void{
-      Timer<> dummy;
-      epa_mpi_gather(blo_sample, 0, all_ranks, local_rank, dummy);
-      if (local_rank == 0) {
-        result_file << sample_to_jplace_string(blo_sample) << ",\n";
-      }
-    });
-    #endif //__MPI
+    // pass the result chunk to the writer
+    jplace.gather_write(blo_sample);
 
     sequences_done += num_sequences;
     LOG_INFO << sequences_done  << " Sequences done!";
     ++chunk_num;
-  }
-
-  // ensure the last asynch gather has completed successfully
-  #ifdef __MPI
-  prev_gather.get();
-  #endif //__MPI
-
-  // finalize the output
-  if (local_rank == 0) {
-    result_file << finalize_jplace_string(invocation);
-    result_file.close();
   }
 
   MPI_BARRIER(MPI_COMM_WORLD);
