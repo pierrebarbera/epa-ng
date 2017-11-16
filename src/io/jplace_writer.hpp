@@ -2,6 +2,7 @@
 
 #include <string>
 #include <future>
+#include <memory>
 
 #include "sample/Sample.hpp"
 #include "util/logging.hpp"
@@ -19,8 +20,9 @@ public:
                 const std::string& invocation_string)
     : invocation_(invocation_string)
   {
-    file_.open(file_name);
-    file_ << init_jplace_string(tree_string);
+    file_ = std::make_shared<std::ofstream>();
+    file_->open(file_name);
+    *file_ << init_jplace_string(tree_string);
   }
 
   ~Jplace_writer()
@@ -34,8 +36,8 @@ public:
       #endif
 
       // finalize and close
-      file_ << finalize_jplace_string(invocation_);
-      file_.close();
+      *file_ << finalize_jplace_string(invocation_);
+      file_->close();
     }
   }
 
@@ -43,6 +45,7 @@ public:
   {
     this->invocation_ = std::move(other.invocation_);
     this->file_ = std::move(other.file_);
+    other.file_ = nullptr;
     this->prev_gather_ = std::move(other.prev_gather_);
     return *this;
   }
@@ -73,22 +76,26 @@ private:
   void write_( Sample<>& chunk)
   {
     if (file_) {
-      file_ << sample_to_jplace_string(chunk) << ",\n";
+      *file_ << sample_to_jplace_string(chunk) << ",\n";
     }
   }
 
   void gather_( Sample<>& chunk,
-                    const std::vector<int>& all_ranks,
-                    const int local_rank)
+                const std::vector<int>& all_ranks,
+                const int local_rank)
   {
     #ifdef __MPI
     Timer<> dummy;
     epa_mpi_gather(chunk, 0, all_ranks, local_rank, dummy);
+    #else
+    (void) chunk;
+    (void) all_ranks;
+    (void) local_rank;
     #endif //__MPI
   }
 
   std::string invocation_;
-  std::ofstream file_;
+  std::shared_ptr<std::ofstream> file_ = nullptr;
   std::future<void> prev_gather_;
 };
  
