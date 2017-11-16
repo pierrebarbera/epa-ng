@@ -18,12 +18,6 @@
 #include "seq/MSA_Stream.hpp"
 #include "seq/MSA.hpp"
 
-static bool is_file(const std::string& name)
-{
-    std::ifstream infile(fileName);
-    return infile.good();
-}
-
 static void ensure_dir_has_slash(std::string& dir)
 {
   if (dir.length() > 0 && dir.back() != '/') {
