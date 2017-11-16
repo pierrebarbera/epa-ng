@@ -294,7 +294,7 @@ void pipeline_place(Tree& reference_tree,
     LOG_DBG << "WRITING" << std::endl;
 
     compute_and_set_lwr(sample);
-    filter(blo_sample, options);
+    filter(sample, options);
 
     // write results of current last stage aggregator node to a part file
     if (sample.size()) {
@@ -357,7 +357,7 @@ void simple_mpi(Tree& reference_tree,
                 const std::string& outdir,
                 const Options& options,
                 const std::string& invocation)
-{}
+{
   const auto num_branches = reference_tree.nums().branches;
 
   // get all edges
