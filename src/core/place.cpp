@@ -5,6 +5,7 @@
 #include <memory>
 #include <functional>
 #include <limits>
+#include <future>
 
 #ifdef __OMP
 #include <omp.h>
@@ -81,7 +82,7 @@ static void place(const Work& to_place,
 #else
     const auto tid = 0;
 #endif
-    std::shared_ptr<Tiny_Tree> branch(nullptr);
+    std::unique_ptr<Tiny_Tree> branch(nullptr);
     auto& local_sample = sample_parts[tid];
 
     auto& seq_lookup = seq_lookup_vec[tid];
@@ -91,9 +92,12 @@ static void place(const Work& to_place,
       const auto seq_id = it.sequence_id;
       const auto& seq = msa[seq_id];
 
-
+      // get a tiny tree representing the current branch,
+      // IF the branch has changed. Overwriting the old variable ensures
+      // the now unused previous tiny tree is deallocated
       if ((branch_id != prev_branch_id) or not branch) {
-        branch = std::make_shared<Tiny_Tree>(branches[branch_id],
+        // as make_unique produces an rvalue, this is a move assignment and thus legal
+        branch = std::make_unique<Tiny_Tree>(branches[branch_id],
                                              branch_id,
                                              reference_tree,
                                              do_blo,
@@ -101,12 +105,7 @@ static void place(const Work& to_place,
                                              lookup_store);
       }
 
-      // sample_parts[tid].add_placement(seq_id_offset + seq_id,
-      //                                 seq.header(),
-      //                                 branch->place(seq));
-
-      if (seq_lookup.count( seq_id ) == 0)
-      {
+      if (seq_lookup.count( seq_id ) == 0) {
         auto const new_idx = local_sample.add_pquery( seq_id_offset + seq_id, seq.header() );
         seq_lookup[ seq_id ] = new_idx;
       }
@@ -127,85 +126,12 @@ static void place_thorough(const Work& to_place,
                   Tree& reference_tree,
                   const std::vector<pll_unode_t *>& branches,
                   Sample<T>& sample,
-                  bool do_blo,
+                  bool,
                   const Options& options,
                   std::shared_ptr<Lookup_Store>& lookup_store,
                   const size_t seq_id_offset=0)
 {
-
-#ifdef __OMP
-  const unsigned int num_threads  = options.num_threads
-                                  ? options.num_threads
-                                  : omp_get_max_threads();
-  omp_set_num_threads(num_threads);
-  LOG_DBG << "Using threads: " << num_threads;
-  LOG_DBG << "Max threads: " << omp_get_max_threads();
-  const unsigned int multiplicity = 8;
-#else
-  const unsigned int num_threads = 1;
-  const unsigned int multiplicity = 1;
-#endif
-
-  // split the sample structure such that the parts are thread-local
-  std::vector<Sample<T>> sample_parts(num_threads);
-
-  std::vector<Work> work_parts;
-  split(to_place, work_parts, num_threads
-                              * multiplicity);
-
-  // Map from sequence indices to indices in the pquery vector.
-  auto seq_lookup_vec = std::vector<std::unordered_map<size_t, size_t>>(num_threads);
-
-  // work seperately
-#ifdef __OMP
-  #pragma omp parallel for schedule(dynamic)
-#endif
-  for (size_t i = 0; i < work_parts.size(); ++i) {
-    auto prev_branch_id = std::numeric_limits<size_t>::max();
-
-#ifdef __OMP
-    const auto tid = omp_get_thread_num();
-#else
-    const auto tid = 0;
-#endif
-    std::shared_ptr<Tiny_Tree> branch(nullptr);
-    auto& local_sample = sample_parts[tid];
-
-    auto& seq_lookup = seq_lookup_vec[tid];
-
-    for (const auto& it : work_parts[i]) {
-      const auto branch_id = it.branch_id;
-      const auto seq_id = it.sequence_id;
-      const auto& seq = msa[seq_id];
-
-
-      if ((branch_id != prev_branch_id) or not branch) {
-        branch = std::make_shared<Tiny_Tree>(branches[branch_id],
-                                             branch_id,
-                                             reference_tree,
-                                             do_blo,
-                                             options,
-                                             lookup_store);
-      }
-
-      // sample_parts[tid].add_placement(seq_id_offset + seq_id,
-      //                                 seq.header(),
-      //                                 branch->place(seq));
-
-      if (seq_lookup.count( seq_id ) == 0)
-      {
-        auto const new_idx = local_sample.add_pquery( seq_id_offset + seq_id, seq.header() );
-        seq_lookup[ seq_id ] = new_idx;
-      }
-      assert( seq_lookup.count( seq_id ) > 0 );
-      local_sample[ seq_lookup[ seq_id ] ].emplace_back( branch->place(seq) );
-
-      prev_branch_id = branch_id;
-    }
-  }
-  // merge samples back
-  merge(sample, std::move(sample_parts));
-  collapse(sample);
+  place(to_place, msa, reference_tree, branches, sample, true, options, lookup_store, seq_id_offset);
 }
 
 void pipeline_place(Tree& reference_tree,
@@ -446,13 +372,12 @@ void simple_mpi(Tree& reference_tree,
                 const std::string& invocation)
 {
   // Timer<> flight_time;
-  std::ofstream flight_file(outdir + "stat");
+  // std::ofstream flight_file(outdir + "stat");
 
-  std::string status_file_name(outdir + "pepa.status");
-  std::ofstream trunc_status_file(status_file_name, std::ofstream::trunc);
+  // std::string status_file_name(outdir + "pepa.status");
+  // std::ofstream trunc_status_file(status_file_name, std::ofstream::trunc);
 
-  std::vector<std::string> part_names;
-
+  // std::vector<std::string> part_names;
 
   const auto num_branches = reference_tree.nums().branches;
 
@@ -505,9 +430,21 @@ void simple_mpi(Tree& reference_tree,
   size_t chunk_num = 1;
 
   using Sample = Sample<Placement>;
-  Sample result;
+  std::vector<Sample> result;
+  // Sample gatherbuf;
+  std::future<void> prev_gather;
   MSA chunk;
   size_t sequences_done = 0; // not just for info output!
+
+  // prepare output file
+  std::ofstream result_file;
+  if (local_rank == 0) {
+    LOG_INFO << "Output file: " << outdir + "epa_result.jplace";
+    result_file.open(outdir + "epa_result.jplace");
+    result_file << init_jplace_string(
+      get_numbered_newick_string(reference_tree.tree()));
+  }
+
   while ( (num_sequences = reader->read_next(chunk, options.chunk_size)) ) {
 
     assert(chunk.size() == num_sequences);
@@ -584,30 +521,43 @@ void simple_mpi(Tree& reference_tree,
                                     options.filter_max);
     }
 
-    merge(result, std::move(blo_sample));
+    // merge in the previous chunk result
+    // block until previous chunk data (still referred to by gatherbuf) was successfully aggregated
+    #ifdef __MPI
+    if (prev_gather.valid()) {
+      prev_gather.get();
+    }
+    #endif //__MPI
+    // save the current result in the gatherbuf
+    // std::swap(gatherbuf, blo_sample);
+
+    #ifdef __MPI
+    // gather result of the chunk on rank 0, ansynchronusly
+    // LOG_DBG << "Gathering results on Rank " << 0;
+    prev_gather = std::async(std::launch::async,
+    [blo_sample, &all_ranks, local_rank, &result_file]() mutable -> void{
+      Timer<> dummy;
+      epa_mpi_gather(blo_sample, 0, all_ranks, local_rank, dummy);
+      if (local_rank == 0) {
+        result_file << sample_to_jplace_string(blo_sample) << ",\n";
+      }
+    });
+    #endif //__MPI
 
     sequences_done += num_sequences;
     LOG_INFO << sequences_done  << " Sequences done!";
     ++chunk_num;
   }
 
-#ifdef __MPI
-  // send to output: on rank <designated_writer> 
-  LOG_DBG << "Gathering results on Rank " << 0;
-  Timer<> dummy;
-  epa_mpi_gather(result, 0, all_ranks, local_rank, dummy);
-#endif //__MPI
+  // ensure the last asynch gather has completed successfully
+  #ifdef __MPI
+  prev_gather.get();
+  #endif //__MPI
 
+  // finalize the output
   if (local_rank == 0) {
-    // create output file
-    LOG_INFO << "Output file: " << outdir + "epa_result.jplace";
-    std::ofstream outfile;
-    outfile.open(outdir + "epa_result.jplace");
-    outfile << init_jplace_string(
-      get_numbered_newick_string(reference_tree.tree()));
-    outfile << sample_to_jplace_string(result);
-    outfile << finalize_jplace_string(invocation);
-    outfile.close();
+    result_file << finalize_jplace_string(invocation);
+    result_file.close();
   }
 
   MPI_BARRIER(MPI_COMM_WORLD);
