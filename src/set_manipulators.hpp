@@ -6,6 +6,8 @@
 
 #include "sample/Sample.hpp"
 #include "util/Timer.hpp"
+#include "util/Options.hpp"
+#include "util/logging.hpp"
 #include "seq/MSA.hpp"
 #include "core/Work.hpp"
 
@@ -188,5 +190,6 @@ void discard_by_accumulated_threshold(Sample<Placement>& sample,
                                       const double thresh,
                                       const size_t min=1, 
                                       const size_t max=std::numeric_limits<size_t>::max());
+void filter(Sample<Placement>& sample, const Options& options);
 void find_collapse_equal_sequences(MSA& msa);
 

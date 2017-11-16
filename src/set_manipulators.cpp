@@ -196,6 +196,23 @@ void discard_by_accumulated_threshold(Sample<Placement>& sample,
   }
 }
 
+void filter(Sample<Placement>& sample, const Options& options)
+{
+    if (options.acc_threshold) {
+      LOG_DBG << "Filtering output by accumulated threshold: " << options.support_threshold << std::endl;
+      discard_by_accumulated_threshold( sample, 
+                                        options.support_threshold,
+                                        options.filter_min,
+                                        options.filter_max);
+    } else {
+      LOG_DBG << "Filtering output placements below threshold: " << options.support_threshold << std::endl;
+      discard_by_support_threshold( sample,
+                                    options.support_threshold,
+                                    options.filter_min,
+                                    options.filter_max);
+    }
+}
+
 /* Find duplicate sequences in a MSA and collapse them into one entry that
   holds all respective headers */
 void find_collapse_equal_sequences(MSA& msa)

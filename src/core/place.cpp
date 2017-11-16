@@ -294,20 +294,7 @@ void pipeline_place(Tree& reference_tree,
     LOG_DBG << "WRITING" << std::endl;
 
     compute_and_set_lwr(sample);
-    if (options.acc_threshold) {
-      LOG_DBG << "Filtering by accumulated threshold: " << options.support_threshold << std::endl;
-      discard_by_accumulated_threshold( sample, 
-                                        options.support_threshold,
-                                        options.filter_min,
-                                        options.filter_max);
-    } else {
-      LOG_DBG << "Filtering placements below threshold: " << options.support_threshold << std::endl;
-      discard_by_support_threshold( sample,
-                                    options.support_threshold,
-                                    options.filter_min,
-                                    options.filter_max);
-    }
-
+    filter(blo_sample, options);
 
     // write results of current last stage aggregator node to a part file
     if (sample.size()) {
@@ -370,15 +357,7 @@ void simple_mpi(Tree& reference_tree,
                 const std::string& outdir,
                 const Options& options,
                 const std::string& invocation)
-{
-  // Timer<> flight_time;
-  // std::ofstream flight_file(outdir + "stat");
-
-  // std::string status_file_name(outdir + "pepa.status");
-  // std::ofstream trunc_status_file(status_file_name, std::ofstream::trunc);
-
-  // std::vector<std::string> part_names;
-
+{}
   const auto num_branches = reference_tree.nums().branches;
 
   // get all edges
@@ -506,19 +485,7 @@ void simple_mpi(Tree& reference_tree,
 
     // Output
     compute_and_set_lwr(blo_sample);
-    if (options.acc_threshold) {
-      LOG_DBG << "Filtering by accumulated threshold: " << options.support_threshold << std::endl;
-      discard_by_accumulated_threshold( blo_sample, 
-                                        options.support_threshold,
-                                        options.filter_min,
-                                        options.filter_max);
-    } else {
-      LOG_DBG << "Filtering placements below threshold: " << options.support_threshold << std::endl;
-      discard_by_support_threshold( blo_sample,
-                                    options.support_threshold,
-                                    options.filter_min,
-                                    options.filter_max);
-    }
+    filter(blo_sample, options);
 
     // pass the result chunk to the writer
     jplace.gather_write(blo_sample);
