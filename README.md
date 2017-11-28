@@ -11,7 +11,11 @@ The by far easiest way to clone this repository is to use the following command
 git clone --recursive https://github.com/Pbdas/epa.git
 ```
 
-(unless you are brave enough to deal with `git submodules` directly)
+If that is not an option (perhaps you downloaded the zip file), you can fix the submodules by running
+
+```
+git submodule update --init --recursive
+```
 
 ### DISCLAIMER
 
