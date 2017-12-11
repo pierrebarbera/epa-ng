@@ -6,7 +6,7 @@
 #include <cereal/types/vector.hpp>
 #include <cereal/types/chrono.hpp>
 
-template <class duration = std::chrono::microseconds>
+template <class duration = std::chrono::seconds>
 class Timer {
 public:
   // Typedefs

@@ -18,7 +18,7 @@ BINARY_WRITE= -t $(TREE) -s $(REF) -B -w $(OUTDIR) $(F)
 BINARY_READ=-b $(OUTDIR)/epa_binary_file -q $(QRY) -w $(OUTDIR) -g 0.99 --filter-min-lwr 0.0 $(F)
 NORM_TEST=-t $(TREE) -s $(REF) -q $(QRY) -w $(OUTDIR) -g 0.99 $(F)
 
-SKIN=skin --mpp=mpi --thread=omp:ancestry --nopomp
+SKIN=skin --static --mpp=mpi --thread=omp:ancestry --nopomp
 NOEXTRA=-pomp --thread=omp --opari=--omp-tpd:--c++:--omp-tpd-mangling='gnu'
 
 #CC=clang++
@@ -51,7 +51,7 @@ mpi: CC=mpicxx
 mpi: CFLAGS+=-D__MPI
 skin: CC=$(SKIN) mpicxx
 skin: LIBS+=-lgomp
-skin: CFLAGS+=-D__MPI -fopenmp -D__OMP -DGENESIS_PTHREADS
+skin: CFLAGS+=-fopenmp -D__OMP -D__MPI
 aa_test: BINARY_WRITE=-t $(TEST)/ref.tre -s $(TEST)/AA_aln.fasta -B -w $(OUTDIR) -m AA-GTR-DAYHOFF $(F)
 aa_test: BINARY_READ=-b $(OUTDIR)/epa_binary_file -q $(TEST)/AA_query.fasta -w $(OUTDIR) -m AA-GTR-DAYHOFF --filter-min-lwr 0.0 $(F)
 aa_test: NORM_TEST=-t $(TEST)/ref.tre -s $(TEST)/AA_aln.fasta -q $(TEST)/AA_query.fasta -w $(OUTDIR) -m AA-GTR-DAYHOFF $(F)

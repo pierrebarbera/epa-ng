@@ -9,9 +9,9 @@ void MSA::move_sequences(MSA::iterator begin, MSA::iterator end)
 
 const Sequence& MSA::operator[](const size_t i) const
 {
-  if((size_t) i >= sequence_list_.size()) {
-    throw std::runtime_error{std::string("Trying to access MSA entry out of bounds. i = ") + std::to_string(i) };
-  }
+  //if((size_t) i >= sequence_list_.size()) {
+  //  throw std::runtime_error{std::string("Trying to access MSA entry out of bounds. i = ") + std::to_string(i) };
+  //}
 
   return sequence_list_[i];
 }

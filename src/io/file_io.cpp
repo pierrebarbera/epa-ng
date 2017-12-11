@@ -231,17 +231,17 @@ pll_partition_t *  build_partition_from_file( const raxml::Model& model,
 
   /* compute the discretized category rates from a gamma distribution
      with alpha shape */
-  pll_compute_gamma_cats( model.alpha(), 
-                          model.num_ratecats(), 
+  pll_compute_gamma_cats( model.alpha(),
+                          model.num_ratecats(),
                           &rate_cats[0],
                           PLL_GAMMA_RATES_MEAN);
-  pll_set_frequencies(partition, 
-                      0, 
+  pll_set_frequencies(partition,
+                      0,
                       &(model.base_freqs(0)[0]));
-  pll_set_subst_params( partition, 
-                        0, 
+  pll_set_subst_params( partition,
+                        0,
                         &(model.subst_rates(0)[0]));
-  pll_set_category_rates( partition, 
+  pll_set_category_rates( partition,
                           &rate_cats[0]);
 
   // if (repeats) {

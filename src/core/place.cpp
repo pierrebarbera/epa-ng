@@ -44,7 +44,8 @@ static void place(const Work& to_place,
                   bool do_blo,
                   const Options& options,
                   std::shared_ptr<Lookup_Store>& lookup_store,
-                  const size_t seq_id_offset=0)
+                  const size_t seq_id_offset=0,
+                  Timer<>* time=nullptr)
 {
 
 #ifdef __OMP
@@ -54,66 +55,70 @@ static void place(const Work& to_place,
   omp_set_num_threads(num_threads);
   LOG_DBG << "Using threads: " << num_threads;
   LOG_DBG << "Max threads: " << omp_get_max_threads();
-  const unsigned int multiplicity = 8;
 #else
   const unsigned int num_threads = 1;
-  const unsigned int multiplicity = 1;
 #endif
 
   // split the sample structure such that the parts are thread-local
   std::vector<Sample<T>> sample_parts(num_threads);
 
-  std::vector<Work> work_parts;
-  split(to_place, work_parts, num_threads
-                              * multiplicity);
+  // build vector of elements
+  std::vector<Work::Work_Pair> id;
+  for(auto it = to_place.begin(); it != to_place.end(); ++it) {
+    id.push_back(*it);
+  }
 
   // Map from sequence indices to indices in the pquery vector.
   auto seq_lookup_vec = std::vector<std::unordered_map<size_t, size_t>>(num_threads);
 
+  std::vector<std::unique_ptr<Tiny_Tree>> branch_ptrs(num_threads);
+  auto prev_branch_id = std::numeric_limits<size_t>::max();
+  
   // work seperately
+  if (time){
+    time->start();
+  }
 #ifdef __OMP
-  #pragma omp parallel for schedule(dynamic)
+  #pragma omp parallel for schedule(guided, 5000), firstprivate(prev_branch_id)
 #endif
-  for (size_t i = 0; i < work_parts.size(); ++i) {
-    auto prev_branch_id = std::numeric_limits<size_t>::max();
+  for (size_t i = 0; i < id.size(); ++i) {
 
 #ifdef __OMP
     const auto tid = omp_get_thread_num();
 #else
     const auto tid = 0;
 #endif
-    std::unique_ptr<Tiny_Tree> branch(nullptr);
     auto& local_sample = sample_parts[tid];
-
     auto& seq_lookup = seq_lookup_vec[tid];
 
-    for (const auto& it : work_parts[i]) {
-      const auto branch_id = it.branch_id;
-      const auto seq_id = it.sequence_id;
-      const auto& seq = msa[seq_id];
+    const auto branch_id = id[i].branch_id;
+    const auto seq_id = id[i].sequence_id;
+    const auto& seq = msa[seq_id];
 
-      // get a tiny tree representing the current branch,
-      // IF the branch has changed. Overwriting the old variable ensures
-      // the now unused previous tiny tree is deallocated
-      if ((branch_id != prev_branch_id) or not branch) {
-        // as make_unique produces an rvalue, this is a move assignment and thus legal
-        branch = std::make_unique<Tiny_Tree>(branches[branch_id],
-                                             branch_id,
-                                             reference_tree,
-                                             do_blo,
-                                             options,
-                                             lookup_store);
-      }
-
-      if (seq_lookup.count( seq_id ) == 0) {
-        auto const new_idx = local_sample.add_pquery( seq_id_offset + seq_id, seq.header() );
-        seq_lookup[ seq_id ] = new_idx;
-      }
-      assert( seq_lookup.count( seq_id ) > 0 );
-      local_sample[ seq_lookup[ seq_id ] ].emplace_back( branch->place(seq) );
-
-      prev_branch_id = branch_id;
+    // get a tiny tree representing the current branch,
+    // IF the branch has changed. Overwriting the old variable ensures
+    // the now unused previous tiny tree is deallocated
+    if ((branch_id != prev_branch_id) or not branch_ptrs[tid]) {
+      // as make_unique produces an rvalue, this is a move assignment and thus legal
+      branch_ptrs[tid] = std::make_unique<Tiny_Tree>(branches[branch_id],
+                                           branch_id,
+                                           reference_tree,
+                                           do_blo,
+                                           options,
+                                           lookup_store);
     }
+
+    if (seq_lookup.count( seq_id ) == 0) {
+      auto const new_idx = local_sample.add_pquery( seq_id_offset + seq_id, seq.header() );
+      seq_lookup[ seq_id ] = new_idx;
+    }
+    assert( seq_lookup.count( seq_id ) > 0 );
+    local_sample[ seq_lookup[ seq_id ] ].emplace_back( branch_ptrs[tid]->place(seq) );
+
+    prev_branch_id = branch_id;
+  }
+  if (time){
+    time->stop();
   }
   // merge samples back
   merge(sample, std::move(sample_parts));
@@ -129,9 +134,85 @@ static void place_thorough(const Work& to_place,
                   bool,
                   const Options& options,
                   std::shared_ptr<Lookup_Store>& lookup_store,
-                  const size_t seq_id_offset=0)
+                  const size_t seq_id_offset=0,
+                  Timer<>* time=nullptr)
 {
-  place(to_place, msa, reference_tree, branches, sample, true, options, lookup_store, seq_id_offset);
+  
+#ifdef __OMP
+  const unsigned int num_threads  = options.num_threads
+                                  ? options.num_threads
+                                  : omp_get_max_threads();
+  omp_set_num_threads(num_threads);
+  LOG_DBG << "Using threads: " << num_threads;
+  LOG_DBG << "Max threads: " << omp_get_max_threads();
+#else
+  const unsigned int num_threads = 1;
+#endif
+
+  // split the sample structure such that the parts are thread-local
+  std::vector<Sample<T>> sample_parts(num_threads);
+
+  // build vector of elements
+  std::vector<Work::Work_Pair> id;
+  for(auto it = to_place.begin(); it != to_place.end(); ++it) {
+    id.push_back(*it);
+  }
+
+  // Map from sequence indices to indices in the pquery vector.
+  auto seq_lookup_vec = std::vector<std::unordered_map<size_t, size_t>>(num_threads);
+
+  std::vector<std::unique_ptr<Tiny_Tree>> branch_ptrs(num_threads);
+  auto prev_branch_id = std::numeric_limits<size_t>::max();
+  
+  // work seperately
+  if (time){
+    time->start();
+  }
+#ifdef __OMP
+  #pragma omp parallel for schedule(dynamic), firstprivate(prev_branch_id)
+#endif
+  for (size_t i = 0; i < id.size(); ++i) {
+
+#ifdef __OMP
+    const auto tid = omp_get_thread_num();
+#else
+    const auto tid = 0;
+#endif
+    auto& local_sample = sample_parts[tid];
+    auto& seq_lookup = seq_lookup_vec[tid];
+
+    const auto branch_id = id[i].branch_id;
+    const auto seq_id = id[i].sequence_id;
+    const auto& seq = msa[seq_id];
+
+    // get a tiny tree representing the current branch,
+    // IF the branch has changed. Overwriting the old variable ensures
+    // the now unused previous tiny tree is deallocated
+    if ((branch_id != prev_branch_id) or not branch_ptrs[tid]) {
+      // as make_unique produces an rvalue, this is a move assignment and thus legal
+      branch_ptrs[tid] = std::make_unique<Tiny_Tree>(branches[branch_id],
+                                           branch_id,
+                                           reference_tree,
+                                           true,
+                                           options,
+                                           lookup_store);
+    }
+
+    if (seq_lookup.count( seq_id ) == 0) {
+      auto const new_idx = local_sample.add_pquery( seq_id_offset + seq_id, seq.header() );
+      seq_lookup[ seq_id ] = new_idx;
+    }
+    assert( seq_lookup.count( seq_id ) > 0 );
+    local_sample[ seq_lookup[ seq_id ] ].emplace_back( branch_ptrs[tid]->place(seq) );
+
+    prev_branch_id = branch_id;
+  }
+  if (time){
+    time->stop();
+  }
+  // merge samples back
+  merge(sample, std::move(sample_parts));
+  collapse(sample);
 }
 
 void pipeline_place(Tree& reference_tree,
@@ -358,6 +439,11 @@ void simple_mpi(Tree& reference_tree,
                 const Options& options,
                 const std::string& invocation)
 {
+  // Timer<> preplacement_timer;
+  // Timer<> preplacement_core_timer;
+  // Timer<> thorough_timer;
+  // Timer<> thorough_core_timer;
+
   const auto num_branches = reference_tree.nums().branches;
 
   // get all edges
@@ -440,6 +526,7 @@ void simple_mpi(Tree& reference_tree,
       Sample preplace;
 
       LOG_DBG << "Preplacement." << std::endl;
+      // preplacement_timer.start();
       place(all_work,
             chunk,
             reference_tree,
@@ -447,7 +534,9 @@ void simple_mpi(Tree& reference_tree,
             preplace,
             false,
             options,
-            lookups);
+            lookups,0);
+            // &preplacement_core_timer);
+      // preplacement_timer.stop();
 
       // Candidate Selection
       LOG_DBG << "Selecting candidates." << std::endl;
@@ -473,6 +562,7 @@ void simple_mpi(Tree& reference_tree,
 
     // BLO placement
     LOG_DBG << "BLO Placement." << std::endl;
+    // thorough_timer.start();
     place_thorough( blo_work,
                     chunk,
                     reference_tree,
@@ -482,6 +572,8 @@ void simple_mpi(Tree& reference_tree,
                     options,
                     lookups,
                     seq_id_offset);
+                    // &thorough_core_timer);
+    // thorough_timer.stop();
 
     // Output
     compute_and_set_lwr(blo_sample);
@@ -494,6 +586,21 @@ void simple_mpi(Tree& reference_tree,
     LOG_INFO << sequences_done  << " Sequences done!";
     ++chunk_num;
   }
+
+  #ifdef __MPI
+  //Timer<> dummy;
+  //epa_mpi_gather(preplacement_timer, 0, all_ranks, local_rank, dummy);
+  //epa_mpi_gather(preplacement_core_timer, 0, all_ranks, local_rank, dummy);
+  //epa_mpi_gather(thorough_timer, 0, all_ranks, local_rank, dummy);
+  //epa_mpi_gather(thorough_core_timer, 0, all_ranks, local_rank, dummy);
+  #endif
+
+  // if (local_rank == 0) {
+  //   LOG_INFO << preplacement_timer.sum()  << "s preplacement time";
+  //   LOG_INFO << preplacement_core_timer.sum()  << "s preplacement core time";
+  //   LOG_INFO << thorough_timer.sum()  << "s thorough time";
+  //   LOG_INFO << thorough_core_timer.sum()  << "s thorough core time";
+  // }
 
   MPI_BARRIER(MPI_COMM_WORLD);
 }
