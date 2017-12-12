@@ -165,7 +165,7 @@ pll_utree_s * build_tree_from_file(const std::string& tree_file, Tree_Numbers& n
   // load the tree unrooted
   if (!(rtree = pll_rtree_parse_newick(tree_file.c_str()))) {
     if (!(tree = pll_utree_parse_newick(tree_file.c_str()))) {
-      throw std::runtime_error{"Treeparsing failed!"};
+      throw std::runtime_error{std::string("Treeparsing failed! ") + pll_errmsg};
     }
   } else {
     tree = pll_rtree_unroot(rtree);
