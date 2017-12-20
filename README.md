@@ -1,3 +1,5 @@
+[![Gitter chat](https://badges.gitter.im/Pbdas/epa-ng.png)](https://gitter.im/epa-ng/Lobby)
+
 # EPA-ng
 
 1. **[Introduction](#introduction)**
