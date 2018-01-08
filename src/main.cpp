@@ -101,7 +101,7 @@ int main(int argc, char** argv)
       cxxopts::value<unsigned int>()->default_value("1"))
     ("filter-max",
       "Maximum number of placements per sequence to include in final output.",
-      cxxopts::value<unsigned int>())
+      cxxopts::value<unsigned int>()->default_value("7"))
     ;
   cli.add_options("Compute")
     ("O,opt-ref-tree", "Optimize reference tree and model parameters.")

@@ -15,7 +15,7 @@ public:
   double support_threshold      = 0.9999;
   bool acc_threshold            = true;
   unsigned int filter_min       = 1;
-  unsigned int filter_max       = std::numeric_limits<unsigned int>::max();
+  unsigned int filter_max       = 7;
   bool prescoring_by_percentage = false;
   double prescoring_threshold   = 0.95;
   bool ranged                   = false;
