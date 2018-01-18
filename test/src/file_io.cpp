@@ -13,7 +13,7 @@ using namespace std;
 
 TEST(file_io, build_MSA_from_file)
 {
-  MSA msa = build_MSA_from_file(env->reference_file);
+  auto msa = build_MSA_from_file(env->reference_file, MSA_Info(env->reference_file), true);
   int i = 0;
   for (auto s : msa) {
     i++;
@@ -26,7 +26,7 @@ TEST(file_io, build_MSA_from_file)
 
 TEST(file_io, build_partition_from_file)
 {
-  MSA msa = build_MSA_from_file(env->reference_file);
+  auto msa = build_MSA_from_file(env->reference_file, MSA_Info(env->reference_file), true);
   Tree_Numbers nums = Tree_Numbers();
   pll_partition_t * part;
   pll_utree_t * tree;

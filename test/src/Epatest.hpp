@@ -53,6 +53,7 @@ extern Epatest* env;
 #define COMPL_OPTIMIZE      (1 << 1)
 #define COMPL_SLIDING_BLO   (1 << 2)
 #define COMPL_PRESCORING    (1 << 3)
+#define COMPL_MASKING       (1 << 4)
 
 static inline Options get_options_config(const unsigned int d)
 {
@@ -70,6 +71,9 @@ static inline Options get_options_config(const unsigned int d)
   if (d & COMPL_PRESCORING) {
     o.prescoring = not o.prescoring;
   }
+  if (d & COMPL_MASKING) {
+    o.premasking = not o.premasking;
+  }
   return o;
 }
 
@@ -79,12 +83,13 @@ void all_combinations(Func f, bool verbose=false)
   for (size_t i = 0; i < pow(2, 4); ++i) {
     auto o = get_options_config(i);
     if (verbose) {
-      printf("\nrepeats\toptim\tsliding\tprescore\n");
-      printf( "%d\t%d\t%d\t%d\t\n", 
+      printf("\nrepeats\toptim\tsliding\tprescore\tmasking\n");
+      printf( "%d\t%d\t%d\t%d\t%d\n", 
               o.repeats,
               o.opt_model,
               o.sliding_blo,
-              o.prescoring);
+              o.prescoring,
+              o.premasking);
     }
     f(o);
   }

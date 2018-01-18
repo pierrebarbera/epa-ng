@@ -18,7 +18,7 @@ using namespace std;
 TEST(epa_pll_util, link_tree_msa)
 {
   // buildup
-  MSA msa = build_MSA_from_file(env->reference_file);
+  auto msa = build_MSA_from_file(env->reference_file, MSA_Info(env->reference_file), true);
   Tree_Numbers nums = Tree_Numbers();
   pll_partition_t * part;
   pll_utree_t * tree;
@@ -56,7 +56,7 @@ static void precompute_clvs_test(Options o)
   auto tree_file = env->tree_file;
   auto reference_file = env->reference_file;
   // buildup
-  auto msa = build_MSA_from_file(reference_file);
+  auto msa = build_MSA_from_file(env->reference_file, MSA_Info(env->reference_file), o.premasking);
   Tree_Numbers nums;
   raxml::Model model;
 
@@ -152,7 +152,7 @@ TEST(epa_pll_util, precompute_clvs)
 TEST(epa_pll_util, split_combined_msa)
 {
   // buildup
-  auto combined_msa = build_MSA_from_file(env->combined_file);
+  auto combined_msa = build_MSA_from_file(env->combined_file, MSA_Info(env->combined_file), true);
   raxml::Model model;
   Options options;
 

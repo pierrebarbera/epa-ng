@@ -21,9 +21,9 @@ using namespace std;
 
 static void place_(const Options options) 
 {
-    // buildup
-  MSA msa = build_MSA_from_file(env->reference_file);
-  MSA queries = build_MSA_from_file(env->query_file);
+  // buildup
+  auto msa = build_MSA_from_file(env->reference_file, MSA_Info(env->reference_file), options.premasking);
+  auto queries = build_MSA_from_file(env->query_file, MSA_Info(env->query_file), options.premasking);
 
   auto ref_tree = Tree(env->tree_file, msa, env->model, options);
 
@@ -88,19 +88,14 @@ static void compare_samples(Sample<>& orig_samp, Sample<>& read_samp, bool verbo
 static void place_from_binary(const Options options)
 {
   // setup
-  // auto tree_file = env->data_dir + "lucas/20k.newick";
-  // auto reference_file = env->data_dir + "lucas/1k_reference.fasta";
   auto tree_file = env->tree_file;
   auto reference_file = env->reference_file;
-  auto msa     = build_MSA_from_file(reference_file);
-  auto queries = build_MSA_from_file(env->query_file);
-  // auto msa     = build_MSA_from_file(env->data_dir + "/lucas/1k_reference.fasta");
-  // auto queries = build_MSA_from_file(env->data_dir + "/lucas/1k_query_100.fasta");
+  auto msa = build_MSA_from_file(env->reference_file, MSA_Info(env->reference_file), options.premasking);
+  auto queries = build_MSA_from_file(env->query_file, MSA_Info(env->query_file), options.premasking);
   
   raxml::Model model;
 
   Tree original_tree(tree_file, msa, model, options);
-  // Tree original_tree(env->data_dir + "/lucas/20k.newick", msa, model, options);
 
   dump_to_binary(original_tree, env->binary_file);
   Tree read_tree(env->binary_file, model, options);

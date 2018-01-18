@@ -152,7 +152,7 @@ static void skip_sequences( utils::Deserializer& des,
 
 static MSA read_sequences(utils::Deserializer& des,
                           const size_t number,
-                          const size_t sites=0)
+                          const size_t sites = 0)
 {
   MSA msa(sites);
 
@@ -235,8 +235,7 @@ public:
     write_header(ser, entry_sizes);
 
     // write the data
-    utils::InputStream instr_again( std::make_unique< utils::FileInputSource >( fasta_file ));
-    auto it = sequence::FastaInputIterator( instr_again );
+    auto it = sequence::FastaInputIterator().from_file(fasta_file);
     while ( it ) {
       ser.put_string(it->label());
       put_encoded(ser, it->sites());
@@ -263,6 +262,7 @@ public:
   {
     seq_offsets_ = read_header(des_);
   }
+
   ~Binary_Fasta_Reader() = default;
 
   virtual void constrain(const size_t max_read) override
@@ -306,6 +306,7 @@ public:
   }
 
 private:
+  const MSA_Info info_;
   utils::Deserializer des_;
   std::vector<uint64_t> seq_offsets_;
   size_t cursor_ = 0;

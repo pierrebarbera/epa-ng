@@ -12,11 +12,12 @@
 #include "io/Binary_Fasta.hpp"
 #include "io/Binary.hpp"
 #include "io/file_io.hpp"
+#include "io/msa_reader.hpp"
 #include "tree/Tree.hpp"
 #include "core/raxml/Model.hpp"
 #include "core/place.hpp"
-#include "seq/MSA_Stream.hpp"
 #include "seq/MSA.hpp"
+#include "seq/MSA_Info.hpp"
 
 static void ensure_dir_has_slash(std::string& dir)
 {
@@ -105,11 +106,6 @@ int main(int argc, char** argv)
     ;
   cli.add_options("Compute")
     ("O,opt-ref-tree", "Optimize reference tree and model parameters.")
-    ("raxml-blo",
-      "Employ old style of branch length optimization during thorough insertion as opposed to sliding approach. "
-      "WARNING: may significantly slow down computation.")
-    ("no-repeats",
-      "Do NOT employ site repeats optimization. (not recommended, will increase memory footprint without improving runtime or quality) ")
     ("g,dyn-heur",
       "Two-phase heuristic, determination of candidate edges using accumulative threshold. Enabled by default! See --no-heur for disabling it",
       cxxopts::value<double>()->default_value("0.99")->implicit_value("0.99"))
@@ -135,6 +131,13 @@ int main(int argc, char** argv)
       "Alpha parameter to be used. Overwritten by -O. "
       "Example: --alpha 0.634016",
       cxxopts::value<double>())
+    ("raxml-blo",
+      "Employ old style of branch length optimization during thorough insertion as opposed to sliding approach. "
+      "WARNING: may significantly slow down computation.")
+    ("no-repeats",
+      "Do NOT employ site repeats optimization. (not recommended, will increase memory footprint without improving runtime or quality) ")
+    ("no-pre-mask",
+      "Do NOT pre-mask sequences.")
     ;
   cli.add_options("Pipeline")
     ("pipeline",
@@ -284,6 +287,11 @@ int main(int argc, char** argv)
     LOG_INFO << "Selected: Using the non-repeats version of libpll/modules";
   }
 
+  if (cli.count("no-pre-mask")) {
+    options.premasking = false;
+    LOG_INFO << "Selected: Disabling pre-masking";
+  }
+
   if (cli.count("pipeline")) {
     pipeline = true;
     LOG_INFO << "Selected: Using the pipeline distributed parallel scheme.";
@@ -371,9 +379,32 @@ int main(int argc, char** argv)
 
   LOG_INFO << banner << std::endl;
 
+  LOG_DBG << "Peeking into MSA files and generating masks";
+
+  MSA_Info ref_info;
+  if (reference_file.size()) {
+    ref_info = MSA_Info(reference_file);
+    LOG_DBG << "Reference File:\n" << ref_info;
+  }
+
+  MSA_Info qry_info;
+  if (query_file.size()) {
+    qry_info = MSA_Info(query_file);
+    LOG_DBG << "Query File:\n" << qry_info;
+  }
+
+  MSA_Info::or_mask(ref_info, qry_info);
+
+  // msa_info.reset_gaps <- --no-pre-mask
+
   MSA ref_msa;
   if (reference_file.size()) {
-    ref_msa = build_MSA_from_file(reference_file);
+    ref_msa = build_MSA_from_file(reference_file, ref_info, options.premasking);
+    LOG_DBG << "Reference File size: " << ref_msa.size();
+    LOG_DBG << "Reference File width: " << ref_msa.num_sites();
+    if (ref_msa.size() == 0 or ref_msa.num_sites() == 0 ) {
+      throw std::runtime_error{"Something went wrong reading the reference file."};
+    }
   }
 
   // build the Tree
@@ -403,7 +434,7 @@ int main(int argc, char** argv)
   if (pipeline) {
     pipeline_place(tree, query_file, work_dir, options, invocation);
   } else {
-    simple_mpi(tree, query_file, work_dir, options, invocation);
+    simple_mpi(tree, query_file, qry_info, work_dir, options, invocation);
   }
   auto end = std::chrono::high_resolution_clock::now();
   auto runtime = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();

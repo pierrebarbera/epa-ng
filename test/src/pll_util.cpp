@@ -16,7 +16,7 @@ using namespace std;
 TEST(pll_util, utree_query_branches)
 {
   // buildup
-  MSA msa = build_MSA_from_file(env->reference_file);
+  auto msa = build_MSA_from_file(env->reference_file, MSA_Info(env->reference_file), true);
   Tree_Numbers nums = Tree_Numbers();
   pll_partition_t * part;
   pll_utree_t * tree;
@@ -52,7 +52,7 @@ TEST(pll_util, utree_query_branches)
 TEST(pll_util, set_unique_clv_indices)
 {
   // buildup
-  MSA msa = build_MSA_from_file(env->reference_file);
+  auto msa = build_MSA_from_file(env->reference_file, MSA_Info(env->reference_file), true);
   Tree_Numbers nums = Tree_Numbers();
 
   auto tree = build_tree_from_file(env->tree_file, nums);
@@ -106,7 +106,7 @@ static int cb_set_branchlengths_one(pll_unode_t * node)
 TEST(pll_util, get_numbered_newick_string)
 {
   // buildup
-  MSA msa = build_MSA_from_file(env->reference_file);
+  auto msa = build_MSA_from_file(env->reference_file, MSA_Info(env->reference_file), true);
   Tree_Numbers nums = Tree_Numbers();
   pll_partition_t * part;
   pll_utree_t * tree;
@@ -142,7 +142,7 @@ TEST(pll_util, get_numbered_newick_string)
 
 TEST(pll_util, sum_branch_lengths)
 {
-  MSA msa = build_MSA_from_file(env->reference_file);
+  auto msa = build_MSA_from_file(env->reference_file, MSA_Info(env->reference_file), true);
   Tree_Numbers nums = Tree_Numbers();
   pll_partition_t * part;
   pll_utree_t * tree;

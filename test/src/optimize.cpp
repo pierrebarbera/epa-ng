@@ -20,7 +20,7 @@ TEST(optimize, repeats)
   auto tree_file = env->tree_file;
   auto reference_file = env->reference_file;
 
-  auto ref_msa = build_MSA_from_file(reference_file);
+  auto ref_msa = build_MSA_from_file(env->reference_file, MSA_Info(env->reference_file), true);
   auto utree = build_tree_from_file(tree_file, nums);
   auto part = build_partition_from_file(model, nums, ref_msa.num_sites(), true);
   link_tree_msa(utree, 

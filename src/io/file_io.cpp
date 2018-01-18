@@ -5,9 +5,10 @@
 #include <functional>
 
 #include "core/pll/pllhead.hpp"
+#include "core/pll/pll_util.hpp"
+#include "io/msa_reader.hpp"
 #include "seq/MSA.hpp"
 #include "util/constants.hpp"
-#include "core/pll/pll_util.hpp"
 #include "util/logging.hpp"
 
 
@@ -16,17 +17,6 @@ typedef struct fasta_record_s {
   char * sequence = NULL;
   char * header = NULL;
 } fasta_record_t;
-
-static unsigned long length_till_newl(char* line)
-{
-  char c;
-  unsigned long length = 0;
-  while((c = *line++) and (c != '\n' or c != '\r')) {
-    ++length;
-  }
-  return length;
-}
-
 
 int pll_fasta_fseek(pll_fasta_t* fd, const long int offset, const int whence)
 {
@@ -49,110 +39,13 @@ int pll_fasta_fseek(pll_fasta_t* fd, const long int offset, const int whence)
   return status;
 }
 
-static void epa_read_fasta( const std::string& msa_file, 
-                            std::function<void(fasta_record_t&)> fn, 
-                            const size_t offset=0, 
-                            const size_t span=std::numeric_limits<size_t>::max())
-{
-  fasta_record_t record;
-  /* open the file */
-  record.file = pll_fasta_open(msa_file.c_str(), pll_map_fasta);
-  if (!record.file) {
-    throw std::runtime_error{std::string("Cannot open file ") + msa_file};
-  }
-
-  if(pll_fasta_fseek(record.file, offset, SEEK_SET)) {
-    throw std::runtime_error{"Unable to fseek on the fasta file."};
-  }
-
-  long sequence_length;
-  long header_length;
-  long sequence_number;
-
-  /* read sequences and make sure they are all of the same length */
-  int sites = 0;
-  size_t read_seqs = 0;
-
-  /* read the first sequence seperately, so that the MSA object can be constructed */
-  if (PLL_FAILURE == pll_fasta_getnext( record.file,
-                                        &record.header,
-                                        &header_length,
-                                        &record.sequence,
-                                        &sequence_length,
-                                        &sequence_number)) {
-    throw std::runtime_error{std::string("fasta_getnext failed: ") +  pll_errmsg};
-  }
-
-  sites = sequence_length;
-
-  if (sites == -1 || sites == 0) {
-    throw std::runtime_error{"Unable to read MSA record: invalid sequence length"};
-  }
-
-  fn(record);
-  ++read_seqs;
-
-  free(record.sequence);
-  free(record.header);
-
-  /* read the rest */
-  while(read_seqs < span 
-        and pll_fasta_getnext(record.file, 
-                              &record.header, 
-                              &header_length, 
-                              &record.sequence, 
-                              &sequence_length, 
-                              &sequence_number))
-  {
-
-    if (sites && sites != sequence_length) {
-      throw std::runtime_error{"MSA file does not contain equal size sequences"};
-    }
-
-    if (!sites) sites = sequence_length;
-
-    fn(record);
-    ++read_seqs;
-
-    free(record.sequence);
-    free(record.header);
-  }
-
-  // if (pll_errno != PLL_ERROR_FILE_EOF) {
-  //   throw std::runtime_error{std::string("Error while reading file: ") +  msa_file};
-  // }
-
-  pll_fasta_close(record.file);
-
-}
-
-std::vector<size_t> get_offsets(const std::string& msa_file, MSA& msa)
-{
-  std::vector<size_t> result;
-
-  epa_read_fasta(msa_file, 
-    [&](auto& record){
-      result.push_back(ftell(record.file->fp)
-        - length_till_newl(record.file->line));
-      msa.append(record.header, "");
-  });
-
-  return result;
-}
-
-MSA build_MSA_from_file(const std::string& msa_file, 
-                        const size_t offset,
-                        const size_t span)
+MSA build_MSA_from_file(const std::string& msa_file,
+                        const MSA_Info& info,
+                        const bool premasking)
 {
   MSA msa;
-  
-  epa_read_fasta(
-    msa_file, 
-    [&](auto& record){
-      msa.append(record.header, record.sequence);
-    },
-    offset, 
-    span);
+  auto reader = make_msa_reader(msa_file, info, premasking, std::numeric_limits<size_t>::max()); 
+  reader->read_next(msa, 1);
 
   return msa;
 }

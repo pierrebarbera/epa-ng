@@ -7,7 +7,7 @@
 
 TEST(Timer, pause)
 {
-  Timer<> t;
+  Timer<std::chrono::milliseconds> t;
   t.start();
 
   std::this_thread::sleep_for(std::chrono::milliseconds(2));
@@ -19,8 +19,7 @@ TEST(Timer, pause)
   t.resume();
   t.stop();
 
-  ASSERT_GT(t.average(), 2000.0);
-  ASSERT_LT(t.average(), 3000.0);
+  ASSERT_DOUBLE_EQ(t.average(), 2.0);
 
 }
 

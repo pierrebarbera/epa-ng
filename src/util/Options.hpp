@@ -24,4 +24,5 @@ public:
   unsigned int chunk_size       = 5000;
   unsigned int num_threads      = 0;
   bool repeats                  = true;
+  bool premasking               = true;
 };

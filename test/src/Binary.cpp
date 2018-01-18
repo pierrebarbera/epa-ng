@@ -5,6 +5,7 @@
 #include "tree/Tree.hpp"
 #include "io/Binary.hpp"
 #include "io/file_io.hpp"
+#include "io/msa_reader.hpp"
 #include "util/Options.hpp"
 #include "core/raxml/Model.hpp"
 
@@ -34,7 +35,7 @@ static void check_equal(pll_unode_t const * const a, pll_unode_t const * const b
 static void write_(const Options options)
 {
   // setup
-  auto msa = build_MSA_from_file(env->reference_file);
+  auto msa = build_MSA_from_file(env->reference_file, MSA_Info(env->reference_file), options.premasking);
   raxml::Model model;
 
   Tree tree(env->tree_file, msa, model, options);
@@ -91,7 +92,7 @@ static double loglh(pll_partition* partition, pll_unode_t* node)
 static void read_(Options options)
 {
   // setup
-  auto msa = build_MSA_from_file(env->reference_file);
+  auto msa = build_MSA_from_file(env->reference_file, MSA_Info(env->reference_file), options.premasking);
   raxml::Model model;
   // double freqs[4] = {0.1,0.2,0.3,0.4};
   // double alpha = 42.42;

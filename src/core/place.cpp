@@ -433,8 +433,9 @@ void pipeline_place(Tree& reference_tree,
   }
 }
 
-void simple_mpi(Tree& reference_tree, 
-                const std::string& query_file, 
+void simple_mpi(Tree& reference_tree,
+                const std::string& query_file,
+                const MSA_Info& msa_info,
                 const std::string& outdir,
                 const Options& options,
                 const std::string& invocation)
@@ -470,7 +471,7 @@ void simple_mpi(Tree& reference_tree,
     all_ranks[i] = i;
   }
 
-  auto reader = make_msa_reader(query_file, options, reference_tree.partition()->sites);
+  auto reader = make_msa_reader(query_file, msa_info, options.premasking, options.chunk_size);
 
   size_t local_rank_seq_offset = 0;
 

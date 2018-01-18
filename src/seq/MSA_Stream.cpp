@@ -1,9 +1,32 @@
 #include "seq/MSA_Stream.hpp"
-#include "io/file_io.hpp"
 
 #include <chrono>
 
-static void read_chunk( MSA_Stream::file_type::pointer fptr, 
+static std::string subset_sequence( const std::string& seq,
+                                    const MSA_Info::mask_type& mask)
+{
+  const size_t nongap_count = mask.size() - mask.count();
+  std::string result(nongap_count, '$');
+
+  if (seq.length() != mask.size()) {
+    throw std::runtime_error{"In subset_sequence: mask and seq incompatible"};
+  }
+
+  size_t k = 0;
+  for (size_t i = 0; i < seq.length(); ++i) {
+    if (not mask[i]) {
+      result[k++] = seq[i];
+    }
+  }
+
+  assert(nongap_count == k);
+
+  return result;
+}
+
+static void read_chunk( MSA_Stream::file_type& iter,
+                        const MSA_Info& info,
+                        const bool premasking,
                         const size_t number, 
                         MSA_Stream::container_type& prefetch_buffer,
                         const size_t max_read,
@@ -11,74 +34,66 @@ static void read_chunk( MSA_Stream::file_type::pointer fptr,
 {
   prefetch_buffer.clear();
 
-  if (!fptr) {
-    throw std::runtime_error{"fptr was invalid!"};
-  }
+  auto length = info.sites();
+  size_t number_left = std::min(number, max_read - num_read);
 
-  int sites = 0;
-  int number_left = std::min(number, max_read - num_read);
+  // if (number_left <= 0 or not iter) {
+  //   return;
+  // }
 
-  if (number_left <= 0) {
-    return;
-  }
-
-  char * sequence = nullptr;
-  char * header = nullptr;
-  long sequence_length;
-  long header_length;
-  long sequence_number;
-
-  while (number_left > 0 and pll_fasta_getnext( fptr, 
-                                            &header, 
-                                            &header_length, 
-                                            &sequence, 
-                                            &sequence_length, 
-                                            &sequence_number))
+  while (number_left > 0 and iter)
   {
-    if (sites and (sites != sequence_length)) {
+    const auto sequence_length = iter->length();
+    if ( length and (length != sequence_length) ) {
       throw std::runtime_error{"MSA file does not contain equal size sequences"};
     }
 
-    if (!sites) sites = sequence_length;
+    if (!length) length = sequence_length;
 
-    for (long i = 0; i < sequence_length; ++i) {
-      sequence[i] = toupper(sequence[i]);
-    }
-    
-    prefetch_buffer.append(header, sequence);
-    free(sequence);
-    free(header);
-    sites = sequence_length;
+    prefetch_buffer.append( iter->label(), 
+                            (premasking
+                              ? subset_sequence(iter->sites(), info.gap_mask())
+                              : iter->sites())
+                          );
+
+    length = sequence_length;
     number_left--;
+    ++iter;
   }
 
   num_read += prefetch_buffer.size();
 }
 
-MSA_Stream::MSA_Stream( const std::string& msa_file, 
-                        const size_t initial_size,
-                        const size_t offset,
-                        const size_t max_read)
-  : fptr_(nullptr, fasta_close)
-  , max_read_(max_read)
-  , filename_(msa_file)
+MSA_Stream::MSA_Stream( const std::string& msa_file,
+                        const MSA_Info& info,
+                        const bool premasking,
+                        const size_t initial_size)
+  : info_(info)
+  , premasking_(premasking)
   , initial_size_(initial_size)
 {
-  fptr_ = file_type(pll_fasta_open(msa_file.c_str(), pll_map_fasta),
-                    fasta_close);
-  if (!fptr_) {
+  iter_.from_file(msa_file);
+
+  // ensure sequences are uniformly upper case
+  iter_.reader().to_upper(true);
+
+  if (!iter_) {
     throw std::runtime_error{std::string("Cannot open file: ") + msa_file};
   }
 
-  if (offset) {
-    if (pll_fasta_fseek(fptr_.get(), offset, SEEK_SET)) {
-      throw std::runtime_error{"Unable to fseek on the fasta file."};
-    }
-  }
-
-  read_chunk(fptr_.get(), initial_size, prefetch_chunk_, max_read_, num_read_);
-
-  // prefetcher_ = std::thread(read_chunk, fptr_.get(), initial_size, std::ref(prefetch_chunk_));
+#ifdef __PREFETCH
+  prefetcher_ = std::async( std::launch::async,
+                            read_chunk,
+                            std::ref(iter_),
+                            std::ref(info_),
+                            premasking_,
+                            initial_size_, 
+                            std::ref(prefetch_chunk_),
+                            max_read_,
+                            std::ref(num_read_));
+#else
+  read_chunk(iter_, info_, premasking_, initial_size_, prefetch_chunk_, max_read_, num_read_);
+#endif
 }
 
 size_t MSA_Stream::read_next( MSA_Stream::container_type& result, 
@@ -94,21 +109,23 @@ size_t MSA_Stream::read_next( MSA_Stream::container_type& result,
   // perform pointer swap to data
   std::swap(result, prefetch_chunk_);
 
-  if (!fptr_) {
-    throw std::runtime_error{"fptr was invalid during read_next!"};
-  }
+  // if (!iter_) {
+  //   return result.size();
+  // }
   
   // start request next chunk from prefetcher (async)
 #ifdef __PREFETCH
   prefetcher_ = std::async( std::launch::async,
-                            read_chunk, 
-                            fptr_.get(), 
+                            read_chunk,
+                            std::ref(iter_),
+                            std::ref(info_),
+                            premasking_,
                             number, 
                             std::ref(prefetch_chunk_),
                             max_read_,
                             std::ref(num_read_));
 #else
-  read_chunk(fptr_.get(), number, prefetch_chunk_, max_read_, num_read_);
+  read_chunk(iter_, info_, premasking_, number, prefetch_chunk_, max_read_, num_read_);
 #endif
   // return size of current buffer
   return result.size();
@@ -137,23 +154,19 @@ void MSA_Stream::skip_to_sequence(const size_t n)
     prefetcher_.wait();
   }
 #endif 
-  // ensure we have the offsets
-  if ( offsets_.size()  == 0
-    or num_sequences_   == 0 ) {
-    num_sequences_ = num_sequences();
-  }
 
-  if (n >= offsets_.size()) {
+  if (n >= num_sequences()) {
     throw std::runtime_error{"Trying to skip out of bounds!"};
   }
-  auto offset = offsets_[n];
+
+  if (n < num_read_) {
+    throw std::runtime_error{"Trying to skip behind!"};
+  }
+
+  size_t offset = n - num_read_;
 
   // seek the fileptr
-  if (offset) {
-    if (pll_fasta_fseek(fptr_.get(), offset, SEEK_SET)) {
-      throw std::runtime_error{"Unable to fseek on the fasta file."};
-    }
-  }
+  skip_ahead(offset);
 
   if (num_read_ == initial_size_) {
     num_read_ = 0;
@@ -163,37 +176,24 @@ void MSA_Stream::skip_to_sequence(const size_t n)
 #ifdef __PREFETCH
   prefetcher_ = std::async( std::launch::async,
                             read_chunk, 
-                            fptr_.get(), 
+                            std::ref(iter_),
+                            std::ref(info_),
+                            premasking_,
                             initial_size_, 
                             std::ref(prefetch_chunk_),
                             max_read_,
                             std::ref(num_read_));
 #else
-  read_chunk(fptr_.get(), n, prefetch_chunk_, max_read_, num_read_);
+  read_chunk(iter_, info_, premasking_, n, prefetch_chunk_, max_read_, num_read_);
 #endif
 }
 
-#include <fstream>
+void MSA_Stream::skip_ahead(const size_t n)
+{
+  std::advance(iter_, n);
+}
 
 size_t MSA_Stream::num_sequences()
 {
-  assert(filename_.size());
-  size_t ret = num_sequences_;
-
-  if (ret == 0) {
-    // go through entire file, count sequences ('>' character)
-    std::ifstream stream(filename_);
-    
-    for (size_t pos = 0; stream.peek() != EOF; ++pos) {
-      char c;
-      stream.get(c);
-      // TODO not good enough, need lots of escaping. use existing fasta parser, calculate the offset
-      if (c == '>') {
-        offsets_.push_back(pos);
-      }
-    }
-    ret = offsets_.size();
-  }
-
-  return ret;
+  return info_.sequences();
 }

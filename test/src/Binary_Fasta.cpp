@@ -23,7 +23,7 @@ TEST(Binary_Fasta, 4bit_store_and_load)
   const std::string orig_file(env->combined_file);
   const std::string binfile_name(orig_file + ".bin");
 
-  auto msa = build_MSA_from_file(orig_file);
+  auto msa = build_MSA_from_file(orig_file, MSA_Info(env->combined_file));
 
   Binary_Fasta::save(msa, binfile_name);
 
@@ -39,7 +39,7 @@ TEST(Binary_Fasta, reader)
   const std::string orig_file(env->combined_file);
   const std::string binfile_name(orig_file + ".bin");
 
-  auto msa = build_MSA_from_file(orig_file);
+  auto msa = build_MSA_from_file(orig_file, MSA_Info(env->combined_file));
 
   Binary_Fasta::save(msa, binfile_name);
 
