@@ -23,5 +23,5 @@ auto make_msa_reader( const std::string& file_name,
     result = std::make_unique<MSA_Stream>(file_name, options.chunk_size);
   }
 
-  return std::move(result);
+  return result;
 }

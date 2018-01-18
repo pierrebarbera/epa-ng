@@ -5,9 +5,11 @@
 #include <memory>
 
 #include "seq/MSA.hpp"
+#include "seq/MSA_Info.hpp"
 #include "io/encoding.hpp"
 #include "util/template_magic.hpp"
 #include "util/stringify.hpp"
+#include "util/logging.hpp"
 
 #include "genesis/utils/io/serializer.hpp"
 #include "genesis/sequence/formats/fasta_input_iterator.hpp"
@@ -213,18 +215,20 @@ public:
 
     out_dir += parts.back() + ".bin";
 
-    // detect number of sequences in fasta file
-    utils::InputStream instr( std::make_unique< utils::FileInputSource >( fasta_file ));
-    auto it = sequence::FastaInputIterator( instr );
-
+    // specific, per sequence sizes
     std::vector<size_t> entry_sizes;
-    while ( it ) {
+    // and a function to get it during msa info fetch
+    auto get_sizes = [&](const genesis::sequence::Sequence& s)
+    {
       entry_sizes.push_back(
-        it->label().size() +
-        code_().packed_size(it->sites().size())
-        );
-      ++it;
-    }
+        s.label().size() +
+        code_().packed_size(s.sites().size())
+      );
+    };
+
+    MSA_Info info(fasta_file, get_sizes);
+
+    LOG_DBG << info;
 
     // write the header
     utils::Serializer ser(out_dir);
@@ -232,11 +236,11 @@ public:
 
     // write the data
     utils::InputStream instr_again( std::make_unique< utils::FileInputSource >( fasta_file ));
-    auto it_again = sequence::FastaInputIterator( instr_again );
-    while ( it_again ) {
-      ser.put_string(it_again->label());
-      put_encoded(ser, it_again->sites());
-      ++it_again;
+    auto it = sequence::FastaInputIterator( instr_again );
+    while ( it ) {
+      ser.put_string(it->label());
+      put_encoded(ser, it->sites());
+      ++it;
     }
     return out_dir;
   }
