@@ -99,16 +99,16 @@ int main(int argc, char** argv)
       cxxopts::value<std::string>())
     ("filter-acc-lwr",
       "Accumulated likelihood weight after which further placements are discarded.",
-      cxxopts::value<double>()->default_value("0.9999"))
+      cxxopts::value<double>())
     ("filter-min-lwr",
       "Minimum likelihood weight below which a placement is discarded.",
-      cxxopts::value<double>())
+      cxxopts::value<double>()->default_value("0.01"))
     ("filter-min",
       "Minimum number of placements per sequence to include in final output.",
       cxxopts::value<unsigned int>()->default_value("1"))
     ("filter-max",
       "Maximum number of placements per sequence to include in final output.",
-      cxxopts::value<unsigned int>())
+      cxxopts::value<unsigned int>()->default_value("7"))
     ;
   cli.add_options("Compute")
     // ("O,opt-ref-tree", "Optimize reference tree and model parameters.")

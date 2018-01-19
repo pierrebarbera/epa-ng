@@ -12,10 +12,10 @@ public:
   bool opt_model                = false;
   bool opt_branches             = false;
   bool sliding_blo              = true;
-  double support_threshold      = 0.9999;
-  bool acc_threshold            = true;
+  double support_threshold      = 0.01;
+  bool acc_threshold            = false;
   unsigned int filter_min       = 1;
-  unsigned int filter_max       = std::numeric_limits<unsigned int>::max();
+  unsigned int filter_max       = 7;
   bool prescoring_by_percentage = false;
   double prescoring_threshold   = 0.99999;
   bool ranged                   = false;
