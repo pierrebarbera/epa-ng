@@ -6,6 +6,7 @@
 
 #include "sample/Sample.hpp"
 #include "util/logging.hpp"
+#include "io/jplace_util.hpp"
 
 #ifdef __MPI
 #include "net/epa_mpi_util.hpp"
@@ -76,7 +77,12 @@ private:
   void write_( Sample<>& chunk)
   {
     if (file_) {
-      *file_ << sample_to_jplace_string(chunk) << ",\n";
+      if (first){
+        first = false;
+      } else {
+        *file_ << ",\n";
+      }
+      *file_ << sample_to_jplace_string(chunk);
     }
   }
 
@@ -97,5 +103,6 @@ private:
   std::string invocation_;
   std::shared_ptr<std::ofstream> file_ = nullptr;
   std::future<void> prev_gather_;
+  bool first = true;
 };
  
