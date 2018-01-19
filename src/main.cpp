@@ -114,7 +114,7 @@ int main(int argc, char** argv)
     // ("O,opt-ref-tree", "Optimize reference tree and model parameters.")
     ("g,dyn-heur",
       "Two-phase heuristic, determination of candidate edges using accumulative threshold. Enabled by default! See --no-heur for disabling it",
-      cxxopts::value<double>()->default_value("0.99")->implicit_value("0.99"))
+      cxxopts::value<double>()->default_value("0.99999")->implicit_value("0.99999"))
     ("no-heur",
       "Disables heuristic preplacement completely. Overrides all other heuristic flags.")
     ("G,fix-heur",

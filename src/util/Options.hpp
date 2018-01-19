@@ -17,7 +17,7 @@ public:
   unsigned int filter_min       = 1;
   unsigned int filter_max       = std::numeric_limits<unsigned int>::max();
   bool prescoring_by_percentage = false;
-  double prescoring_threshold   = 0.95;
+  double prescoring_threshold   = 0.99999;
   bool ranged                   = false;
   bool dump_binary_mode         = false;
   bool load_binary_mode         = false;
