@@ -39,6 +39,7 @@ public:
   std::string combined_file;
   std::string query_file;
   std::string binary_file;
+  std::string info_file;
   raxml::Model model = raxml::Model("GTR+G");
   Options options;
 

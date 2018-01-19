@@ -18,6 +18,8 @@ int main(int argc, char** argv)
       env->data_dir = call.substr(0,found) + "/../data/";
   }
 
+  env->info_file = std::string(env->data_dir);
+  env->info_file += "RAxML_info.bv";
   env->tree_file = std::string(env->data_dir);
   env->tree_file += "ref.tre";
   env->tree_file_rooted = std::string(env->data_dir);

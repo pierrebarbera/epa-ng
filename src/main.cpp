@@ -9,6 +9,7 @@
 #include "util/logging.hpp"
 #include "util/Options.hpp"
 #include "util/stringify.hpp"
+#include "util/parse_model.hpp"
 #include "io/Binary_Fasta.hpp"
 #include "io/Binary.hpp"
 #include "io/file_io.hpp"
@@ -24,6 +25,11 @@ static void ensure_dir_has_slash(std::string& dir)
   if (dir.length() > 0 && dir.back() != '/') {
     dir += "/";
   }
+}
+
+inline bool is_file (const std::string& name) {
+    std::ifstream f(name.c_str());
+    return f.good();
 }
 
 void exit_epa(int ret=EXIT_SUCCESS)
@@ -105,7 +111,7 @@ int main(int argc, char** argv)
       cxxopts::value<unsigned int>())
     ;
   cli.add_options("Compute")
-    ("O,opt-ref-tree", "Optimize reference tree and model parameters.")
+    // ("O,opt-ref-tree", "Optimize reference tree and model parameters.")
     ("g,dyn-heur",
       "Two-phase heuristic, determination of candidate edges using accumulative threshold. Enabled by default! See --no-heur for disabling it",
       cxxopts::value<double>()->default_value("0.99")->implicit_value("0.99"))
@@ -115,22 +121,10 @@ int main(int argc, char** argv)
       "Two-phase heuristic, determination of candidate edges by specified percentage of total edges.",
       cxxopts::value<double>()->implicit_value("0.1"))
     ("m,model",
-      "Description string of the model to be used. --model STRING"
+      "Description string of the model to be used. May also be a file containing the parameters, such as a RAxML_info file."
+      " --model STRING | FILE "
       "See: https://github.com/amkozlov/raxml-ng/wiki/Input-data#evolutionary-model",
       cxxopts::value<std::string>()->default_value("DNA-GTR-EMPIRICAL"))
-    ("base-freqs",
-      "Base frequencies to be used. Must match alphabet size. Overwritten by -O. Example: "
-      "--base-freqs 0.2:0.3:0.25:0.25",
-      cxxopts::value<std::string>())
-    ("sub-rates",
-      "Substitution rates to be used. Must correspond to alphabet size (e.g. 6 for DNA). Overwritten by -O. "
-      "Order: A-C, A-G, A-T, C-G, C-T, G-T "
-      "Example: --sub-rates 0.88:2.0:1.31:0.86:3.48:1.0",
-      cxxopts::value<std::string>())
-    ("alpha",
-      "Alpha parameter to be used. Overwritten by -O. "
-      "Example: --alpha 0.634016",
-      cxxopts::value<double>())
     ("raxml-blo",
       "Employ old style of branch length optimization during thorough insertion as opposed to sliding approach. "
       "WARNING: may significantly slow down computation.")
@@ -195,11 +189,6 @@ int main(int argc, char** argv)
   if (cli.count("query")) {
     query_file = cli["query"].as<std::string>();
     LOG_INFO << "Selected: Query file: " << query_file;
-    // if (split_by_delimiter(query_file, ".").back() != "bin") {
-    //   LOG_INFO << "This appears to be a non-binary fasta file. Converting!";
-    //   query_file = Binary_Fasta::fasta_to_bfast(query_file, work_dir);
-    //   LOG_INFO << "Updated Query file: " << query_file;
-    // }
   }
 
   if (cli.count("tree")) {
@@ -269,14 +258,6 @@ int main(int argc, char** argv)
     }
   }
 
-  if (cli.count("opt-ref-tree")) {
-    options.opt_branches = options.opt_model = true;
-    LOG_INFO << "Selected: Optimizing the reference tree branch lengths and model parameters";
-    if (options.load_binary_mode) {
-      LOG_INFO << "\tWARNING: this option is ignored as a binary CLV store was supplied!";
-    }
-  }
-
   if (cli.count("raxml-blo")) {
     options.sliding_blo = false;
     LOG_INFO << "Selected: On query insertion, optimize branch lengths the way RAxML-EPA did it";
@@ -310,39 +291,17 @@ int main(int argc, char** argv)
 
   if (cli.count("model")) {
     model_desc = cli["model"].as<std::string>();
-
-    // if (is_file(model_desc)) {
-    //   LOG_INFO << "Selected: Specified model file: " << model_desc;
-    // } else {
-    // }
-    LOG_INFO << "Selected: Specified model: " << model_desc;
+    if (is_file(model_desc)) {
+      LOG_INFO << "Selected: Specified model file: " << model_desc;
+      model_desc = parse_model(model_desc);
+    } else {
+      LOG_INFO << "Selected: Specified model: " << model_desc;
+    }
   }
 
   model = raxml::Model(model_desc);
 
-  if (!options.opt_model) {
-    if (cli.count("base-freqs")) {
-      auto freq_strings = split_by_delimiter(cli["base-freqs"].as<std::string>(), ":");
-      std::vector<double> freqs;
-      for (auto& s : freq_strings) {
-        freqs.push_back(std::stod(s));
-      }
-      model.base_freqs(freqs);
-    }
-
-    if (cli.count("sub-rates")) {
-      auto rate_strings = split_by_delimiter(cli["sub-rates"].as<std::string>(), ":");
-      std::vector<double> rates;
-      for (auto& s : rate_strings) {
-        rates.push_back(std::stod(s));
-      }
-      model.subst_rates(rates);
-    }
-
-    if (cli.count("alpha")) {
-      model.alpha(cli["alpha"].as<double>());
-    }
-  }
+  LOG_INFO << model;
 
   if (cli.count("chunk-size")) {
     options.chunk_size = cli["chunk-size"].as<unsigned int>();
