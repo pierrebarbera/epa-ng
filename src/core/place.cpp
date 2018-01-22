@@ -471,7 +471,7 @@ void simple_mpi(Tree& reference_tree,
     all_ranks[i] = i;
   }
 
-  auto reader = make_msa_reader(query_file, msa_info, options.premasking, options.chunk_size);
+  auto reader = make_msa_reader(query_file, msa_info, options.premasking);
 
   size_t local_rank_seq_offset = 0;
 
@@ -488,8 +488,8 @@ void simple_mpi(Tree& reference_tree,
     reader->constrain(part_size);
   }
 
-  size_t num_sequences = options.chunk_size;
-  Work all_work(std::make_pair(0, num_branches), std::make_pair(0, num_sequences));
+  size_t num_sequences = 0;
+  Work all_work(std::make_pair(0, num_branches), std::make_pair(0, options.chunk_size));
 
   Work blo_work;
 
@@ -527,7 +527,6 @@ void simple_mpi(Tree& reference_tree,
       Sample preplace;
 
       LOG_DBG << "Preplacement." << std::endl;
-      // preplacement_timer.start();
       place(all_work,
             chunk,
             reference_tree,
@@ -536,8 +535,6 @@ void simple_mpi(Tree& reference_tree,
             false,
             options,
             lookups,0);
-            // &preplacement_core_timer);
-      // preplacement_timer.stop();
 
       // Candidate Selection
       LOG_DBG << "Selecting candidates." << std::endl;
@@ -563,7 +560,6 @@ void simple_mpi(Tree& reference_tree,
 
     // BLO placement
     LOG_DBG << "BLO Placement." << std::endl;
-    // thorough_timer.start();
     place_thorough( blo_work,
                     chunk,
                     reference_tree,
@@ -573,8 +569,6 @@ void simple_mpi(Tree& reference_tree,
                     options,
                     lookups,
                     seq_id_offset);
-                    // &thorough_core_timer);
-    // thorough_timer.stop();
 
     // Output
     compute_and_set_lwr(blo_sample);

@@ -44,8 +44,8 @@ MSA build_MSA_from_file(const std::string& msa_file,
                         const bool premasking)
 {
   MSA msa;
-  auto reader = make_msa_reader(msa_file, info, premasking, std::numeric_limits<size_t>::max()); 
-  reader->read_next(msa, 1);
+  auto reader = make_msa_reader(msa_file, info, premasking); 
+  reader->read_next(msa, std::numeric_limits<size_t>::max());
 
   return msa;
 }

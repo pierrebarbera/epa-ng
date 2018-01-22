@@ -24,8 +24,7 @@ public:
 
   MSA_Stream (const std::string& msa_file,
               const MSA_Info& info,
-              const bool premasking,
-              const size_t initial_size);
+              const bool premasking);
   MSA_Stream() = default;
   ~MSA_Stream();
 
@@ -55,5 +54,5 @@ private:
   size_t num_read_ = 0;
   size_t max_read_ = std::numeric_limits<size_t>::max();
   size_t num_sequences_ = 0;
-  size_t initial_size_ = 0;
+  bool first_ = true;
 };
