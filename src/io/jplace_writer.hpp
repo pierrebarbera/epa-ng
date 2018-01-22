@@ -28,14 +28,14 @@ public:
 
   ~Jplace_writer()
   {
-    if (file_) {
-      // ensure last write/gather was completed
-      #ifdef __PREFETCH
-        if (prev_gather_.valid()) {
-          prev_gather_.get();
-        }
-      #endif
+    // ensure last write/gather was completed
+    #ifdef __PREFETCH
+    if (prev_gather_.valid()) {
+      prev_gather_.get();
+    }
+    #endif
 
+    if (file_) {
       // finalize and close
       *file_ << finalize_jplace_string(invocation_);
       file_->close();
@@ -51,37 +51,45 @@ public:
     return *this;
   }
 
-  void gather_write(Sample<>& chunk,
-                    const std::vector<int>& all_ranks={0},
+  void gather_write(Sample<> chunk,
+                    const std::vector<int> all_ranks={0},
                     const int local_rank=0)
   {
-    if (file_) {
-      #ifdef __PREFETCH
-        // ensure the last write has finished
-        if (prev_gather_.valid()) {
-          prev_gather_.get();
-        }
-        prev_gather_ = std::async(std::launch::async,
-        [chunk, all_ranks, local_rank, this]() mutable -> void{
-          gather_(chunk, all_ranks, local_rank);
-          write_(chunk);
-        });
-      #else
-        gather_(chunk, all_ranks, local_rank);
-        write_(chunk);
-      #endif
+    #ifdef __PREFETCH
+      // ensure the last write has finished
+      if (prev_gather_.valid()) {
+        prev_gather_.get();
+      }
+      prev_gather_ = std::async(std::launch::async,
+      [chunk = chunk, all_ranks = all_ranks, local_rank = local_rank, this]() mutable {
+        this->gather_(chunk, all_ranks, local_rank);
+        this->write_(chunk);
+      });
+    #else
+      gather_(chunk, all_ranks, local_rank);
+      write_(chunk);
+    #endif
+  }
+
+  void wait()
+  {
+    #ifdef __PREFETCH
+    if (prev_gather_.valid()) {
+      prev_gather_.get();
     }
+    #endif
   }
 
 private:
-  void write_( Sample<>& chunk)
+  void write_(Sample<>& chunk)
   {
     if (file_) {
-      if (first){
-        first = false;
+      if (first_){
+        first_ = false;
       } else {
         *file_ << ",\n";
       }
+
       *file_ << sample_to_jplace_string(chunk);
     }
   }
@@ -103,6 +111,6 @@ private:
   std::string invocation_;
   std::shared_ptr<std::ofstream> file_ = nullptr;
   std::future<void> prev_gather_;
-  bool first = true;
+  bool first_ = true;
 };
  

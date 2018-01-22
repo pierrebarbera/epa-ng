@@ -575,27 +575,14 @@ void simple_mpi(Tree& reference_tree,
     filter(blo_sample, options);
 
     // pass the result chunk to the writer
-    jplace.gather_write(blo_sample);
+    jplace.gather_write(blo_sample, all_ranks, local_rank);
 
     sequences_done += num_sequences;
     LOG_INFO << sequences_done  << " Sequences done!";
     ++chunk_num;
   }
 
-  #ifdef __MPI
-  //Timer<> dummy;
-  //epa_mpi_gather(preplacement_timer, 0, all_ranks, local_rank, dummy);
-  //epa_mpi_gather(preplacement_core_timer, 0, all_ranks, local_rank, dummy);
-  //epa_mpi_gather(thorough_timer, 0, all_ranks, local_rank, dummy);
-  //epa_mpi_gather(thorough_core_timer, 0, all_ranks, local_rank, dummy);
-  #endif
-
-  // if (local_rank == 0) {
-  //   LOG_INFO << preplacement_timer.sum()  << "s preplacement time";
-  //   LOG_INFO << preplacement_core_timer.sum()  << "s preplacement core time";
-  //   LOG_INFO << thorough_timer.sum()  << "s thorough time";
-  //   LOG_INFO << thorough_core_timer.sum()  << "s thorough core time";
-  // }
+  jplace.wait();
 
   MPI_BARRIER(MPI_COMM_WORLD);
 }

@@ -245,6 +245,7 @@ void epa_mpi_gather(T& obj,
         continue;
       }
       T remote_obj;
+      LOG_DBG1 << "Gather loop rank: " << src_rank;
       epa_mpi_receive(remote_obj,
                       MPI_ANY_SOURCE,
                       MPI_COMM_WORLD,
@@ -254,6 +255,7 @@ void epa_mpi_gather(T& obj,
     // check for equal entries and collapse them into one
     collapse(obj);
   } else {
+    LOG_DBG1 << "Gather send to rank: " << dest_rank;
     epa_mpi_send(obj, dest_rank, MPI_COMM_WORLD);
   }
 }
