@@ -35,9 +35,6 @@ Tree::Tree( const std::string &tree_file,
                 ref_msa_, 
                 nums_.tip_nodes);
 
-  // find_collapse_equal_sequences(query_msa_);
-
-
   set_unique_clv_indices(get_root(tree_.get()), nums_.tip_nodes);
 
   // perform branch length and model optimization on the reference tree
