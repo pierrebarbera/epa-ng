@@ -40,6 +40,7 @@ void exit_epa(int ret=EXIT_SUCCESS)
 
 int main(int argc, char** argv)
 {
+  auto start_all = std::chrono::high_resolution_clock::now();
   genesis::utils::Logging::log_to_stdout();
 
 #ifdef __MPI
@@ -389,17 +390,23 @@ int main(int argc, char** argv)
   }
 
   // start the placement process and write to file
-  auto start = std::chrono::high_resolution_clock::now();
+  auto start_place = std::chrono::high_resolution_clock::now();
   if (pipeline) {
     pipeline_place(tree, query_file, work_dir, options, invocation);
   } else {
     simple_mpi(tree, query_file, qry_info, work_dir, options, invocation);
   }
-  auto end = std::chrono::high_resolution_clock::now();
-  auto runtime = std::chrono::duration_cast<std::chrono::seconds>(end - start).count();
+  auto end_place = std::chrono::high_resolution_clock::now();
+  auto placetime = std::chrono::duration_cast<std::chrono::seconds>(end_place - start_place).count();
 
-  LOG_INFO << "Time spent placing: " << runtime << "s";
+  LOG_INFO << "Time spent placing: " << placetime << "s";
 
   MPI_FINALIZE();
+
+  auto end_all = std::chrono::high_resolution_clock::now();
+  auto alltime = std::chrono::duration_cast<std::chrono::seconds>(end_all - start_all).count();
+
+  LOG_INFO << "Elapsed Time: " << alltime << "s";
+
 	return EXIT_SUCCESS;
 }
