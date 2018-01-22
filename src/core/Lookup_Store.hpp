@@ -14,6 +14,17 @@ constexpr size_t INVALID = std::numeric_limits<size_t>::max();
 
 class Lookup_Store
 {
+/**
+ * NOTE TO FUTURE DEVS:
+ * This class has gotten a bit convoluted, so where is a brief overview of the various maps and tables:
+ *
+ * store_: vector of matrices, one per branch in the ref tree
+ * <matrix in store>-> lookup_matrix: stores one CLV per character suitable for the model (ACGTVH- etc.)
+ * char_map_: set of chars for which a lookup_matrix is done (see util/maps.hpp)
+ * char_to_posish: maps ascii char to a column in a lookup_matrix. This also normalizes the input!
+ *                 meaning: map upper and lowercase to the same CLV site, different variants of
+ *                 GAP (-?Xx etc.) and ANY (N), U into T (RNA support) and defines invalid chars
+ */
 public:
   using lookup_type = Matrix<double>;
 
@@ -23,14 +34,36 @@ public:
     , char_map_size_((num_states == 4) ? NT_MAP_SIZE : AA_MAP_SIZE)
     , char_map_((num_states == 4) ? NT_MAP : AA_MAP)
   {
+    const bool dna = (num_states == 4);
+
     for (size_t i = 0; i < 128; ++i) {
       char_to_posish_[i] = INVALID;
     }
+
     // build reverse map from char to ID in the charmap
     for (size_t i = 0; i < char_map_size_; ++i) {
       char_to_posish_[char_map_[i]] = i;
       char_to_posish_[std::tolower(char_map_[i])] = i;
     }
+
+    if (dna) {
+      // allow for RNA
+      char_to_posish_['U'] = char_to_posish_['T'];
+      char_to_posish_['u'] = char_to_posish_['T'];
+    }
+
+    // gap/any chars
+    if (dna) {
+      char_to_posish_['X'] = char_to_posish_['-'];
+      char_to_posish_['x'] = char_to_posish_['-'];
+      char_to_posish_['O'] = char_to_posish_['-'];
+      char_to_posish_['o'] = char_to_posish_['-'];
+      char_to_posish_['.'] = char_to_posish_['-'];
+    } else {
+      char_to_posish_['X'] = char_to_posish_['N'];
+      char_to_posish_['x'] = char_to_posish_['N'];
+    }
+    char_to_posish_['?'] = char_to_posish_['-'];
   }
 
   Lookup_Store()  = delete;
