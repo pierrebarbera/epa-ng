@@ -5,7 +5,7 @@
 
 #include "core/raxml/types.hpp"
 
-unsigned int const * get_char_map(pll_partition_t const * const partition);
+pll_state_t const * get_char_map(pll_partition_t const * const partition);
 
 namespace raxml {
 
@@ -111,7 +111,7 @@ public:
   unsigned int num_states() const { return _num_states; };
   std::string name() const { return _name; };
 
-  const unsigned int* charmap() const;
+  const pll_state_t* charmap() const;
   const SubstitutionModel submodel(size_t i) const { return _submodels.at(i); };
 
   unsigned int ratehet_mode() const { return _rate_het; };

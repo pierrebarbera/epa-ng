@@ -6,7 +6,7 @@
 using namespace std;
 using namespace raxml;
 
-unsigned int const * get_char_map(pll_partition_t const * const partition) {
+pll_state_t const * get_char_map(pll_partition_t const * const partition) {
   auto states = partition->states;
   auto map = pll_map_nt;
 
@@ -36,7 +36,7 @@ const unordered_map<DataType,unsigned int,EnumClassHash>  DATATYPE_STATES { {Dat
 
 /* 1 = 1   | 2 = 2    | 3 = 16 | 4 = 4    | 5 = 32 | 6 = 64 | 7 = 0 | 8 = 8
  * 9 = 128 | 10 = 256 | 11 = 0 | 12 = 512 | 13 = 0 | 14 = 0 | 15 = 1023      */
-const unsigned int pll_map_diploid10[256] =
+const pll_state_t pll_map_diploid10[256] =
  {
    0,  0,   0,   0,  0,  0,  0,    0,    0,   0,  0,   0,  0,    0,    0,    0,
    0,  0,   0,   0,  0,  0,  0,    0,    0,   0,  0,   0,  0,    0,    0,    0,
@@ -56,7 +56,7 @@ const unsigned int pll_map_diploid10[256] =
    0,  0,   0,   0,  0,  0,  0,    0,    0,   0,  0,   0,  0,    0,    0,    0
  };
 
-const unordered_map<DataType, const unsigned int *,EnumClassHash>  DATATYPE_MAPS {
+const unordered_map<DataType, const pll_state_t *,EnumClassHash>  DATATYPE_MAPS {
   {DataType::dna, pll_map_nt},
   {DataType::protein, pll_map_aa},
   {DataType::binary, pll_map_bin},
@@ -143,7 +143,7 @@ Model::Model (DataType data_type, const std::string &model_string) :
   init_from_string(model_string_tmp);
 }
 
-const unsigned int * Model::charmap() const
+const pll_state_t * Model::charmap() const
 {
   return DATATYPE_MAPS.at(_data_type);
 }
