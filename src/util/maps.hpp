@@ -27,7 +27,7 @@ constexpr unsigned char NT_MAP[] =
 };
 constexpr unsigned char AA_MAP[] = 
   { 'A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 
-    'T', 'V', 'W', 'Y', '-', 'X', 'B', 'Z', 'J'};
+    'T', 'V', 'W', 'Y', '-', 'X', 'B', 'Z'};
 
 constexpr size_t NT_MAP_SIZE = array_size(NT_MAP);
 constexpr size_t AA_MAP_SIZE = array_size(AA_MAP);

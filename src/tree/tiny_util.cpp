@@ -210,7 +210,7 @@ pll_partition_t * make_tiny_partition(Tree& reference_tree,
                       old_partition,
                       old_distal);
 
-    pll_resize_repeats_lookup(tiny, tiny->sites);
+    pll_resize_repeats_lookup(tiny, tiny->sites * tiny->states);
   }
 
   return tiny;
