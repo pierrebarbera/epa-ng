@@ -57,7 +57,7 @@ private:
 
   bool opt_branches_;
   double original_branch_length_;
-  bool tip_tip_case_ = false;
+  bool premasking_ = true;
   bool sliding_blo_;
   unsigned int branch_id_;
 
