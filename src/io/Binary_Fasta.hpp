@@ -165,6 +165,21 @@ static MSA read_sequences(utils::Deserializer& des,
   return msa;
 }
 
+static void ensure_dna(const std::string& seq)
+{
+  for (const auto& s : seq) {
+    bool found = false;
+    for (size_t i = 0; i < NT_MAP_SIZE and not found; ++i) {
+      found = (s == NT_MAP[i]);
+    }
+    if (not found) {
+      throw std::runtime_error{std::string("AA DATA NOT SUPPORTED for conversion to bfast!")
+        + " Sorry! Offending char: " + s
+      };
+    }
+  }
+}
+
 class Binary_Fasta
 {
 private:
@@ -236,6 +251,10 @@ public:
 
     // write the data
     auto it = sequence::FastaInputIterator().from_file(fasta_file);
+
+    // probe first seq to see if this might be AA data
+    ensure_dna(it->sites());
+
     while ( it ) {
       ser.put_string(it->label());
       put_encoded(ser, it->sites());

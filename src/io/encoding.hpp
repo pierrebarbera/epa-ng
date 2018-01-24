@@ -15,7 +15,6 @@ class FourBit
   using uchar = unsigned char;
 private:
   static constexpr uchar NONE_CHAR = '-';
-  static constexpr uchar INVALID_CHAR = '$';
 
   uchar pack_(const uchar lhs, const uchar rhs)
   {
@@ -32,7 +31,7 @@ private:
 
 public:
   FourBit()
-    : to_fourbit_(128, 128, INVALID_CHAR)
+    : to_fourbit_(128, 128)
   {
     static_assert(NT_MAP_SIZE == 16, "Weird NT map size, go adjust encoder code!");
 
@@ -97,26 +96,12 @@ public:
 
     size_t i = 0;
     for (; i + 1 < s.size(); i += 2) {
-      const auto packed = to_fourbit_.at(s[i], s[i+1u]);
-      if (packed != INVALID_CHAR){
-        res.push_back(packed);
-      } else {
-        throw std::runtime_error{std::string("AA DATA NOT SUPPORTED FOR THIS! ")
-          + " Invalid character during to_fourbit in sequence: " + s
-        };
-      }
+      res.push_back(to_fourbit_.at(s[i], s[i+1u]));
     }
 
     // original string size not divisible by 2: trailing padding
     if (i < s.size()) {
-      const auto packed = to_fourbit_.at(s[i], NONE_CHAR);
-       if (packed != INVALID_CHAR){
-        res.push_back(packed);
-      } else {
-        throw std::runtime_error{std::string("AA DATA NOT SUPPORTED FOR THIS! ")
-          + " Invalid character during to_fourbit in sequence: " + s
-        };
-      }
+        res.push_back(to_fourbit_.at(s[i], NONE_CHAR));
     }
 
     return res;
