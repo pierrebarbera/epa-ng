@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/pll/pllhead.hpp"
+#include "util/Range.hpp"
 
 #include <string>
 #include <sstream>
@@ -50,3 +51,19 @@ pll_utree_t* make_utree_struct(pll_unode_t * root, const unsigned int num_nodes)
 
 // deprecated
 void shift_partition_focus(pll_partition_t * partition, const int offset, const unsigned int span);
+
+// templates
+template<typename Func, typename ...Args>
+double call_focused(Func func, Range& range, pll_partition_t * partition, Args && ...args)
+{
+  const auto num_sites = partition->sites;
+  // Shift there...
+  shift_partition_focus(partition, range.begin, range.span);
+
+  double ret = func(partition, args...);
+
+  // ... and shift back again
+  shift_partition_focus(partition, -range.begin, num_sites);
+
+  return ret;
+}
