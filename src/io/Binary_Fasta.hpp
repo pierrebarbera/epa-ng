@@ -228,7 +228,7 @@ public:
   {
     auto parts = split_by_delimiter(fasta_file, "/");
 
-    out_dir += parts.back() + ".bin";
+    out_dir += parts.back() + ".bfast";
 
     // specific, per sequence sizes
     std::vector<size_t> entry_sizes;
