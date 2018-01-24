@@ -9,6 +9,7 @@
 
 #include "util/Matrix.hpp"
 #include "util/maps.hpp"
+#include "util/Range.hpp"
 
 constexpr size_t INVALID = std::numeric_limits<size_t>::max();
 
@@ -122,7 +123,7 @@ public:
     return pos;
   }
 
-  double sum_precomputed_sitelk(const size_t branch_id, const std::string& seq) const
+  double sum_precomputed_sitelk(const size_t branch_id, const std::string& seq, const Range& range) const
   {
     assert(seq.length() == store_[branch_id].rows());
     
@@ -131,9 +132,11 @@ public:
     const auto& lookup = lookup_matrix.get_array();
 
     // unrolled loop
-    size_t site = 0;
+    size_t site = range.begin;
+    const size_t end = range.begin + range.span;
+
     const size_t stride = 4;
-    for (; site + stride-1u < seq.length(); site+=stride) {
+    for (; site + stride-1u < end; site+=stride) {
       double sum_one =
       lookup[lookup_matrix.coord(site, char_to_posish_[seq[site]])]
       + lookup[lookup_matrix.coord(site+1u, char_to_posish_[seq[site+1u]])];
@@ -148,7 +151,7 @@ public:
     }
 
     // rest of the horizontal add
-    while (site < seq.length()) {
+    while (site < end) {
       sum += lookup[lookup_matrix.coord(site, char_to_posish_[seq[site]])];
       ++site;
     }

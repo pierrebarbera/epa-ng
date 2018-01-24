@@ -63,6 +63,7 @@ Tiny_Tree::Tiny_Tree( pll_unode_t * edge_node,
   : partition_(nullptr, tiny_partition_destroy)
   , tree_(nullptr, utree_destroy)
   , opt_branches_(opt_branches)
+  , premasking_(options.premasking)
   , sliding_blo_(options.sliding_blo)
   , branch_id_(branch_id)
   , lookup_(lookup_store)
@@ -75,10 +76,11 @@ Tiny_Tree::Tiny_Tree( pll_unode_t * edge_node,
 
   // detect the tip-tip case. In the tip-tip case, the reference tip should
   // always be the DISTAL
+  bool tip_tip_case = false;
   if (!old_distal->next) {
-    tip_tip_case_ = true;
+    tip_tip_case = true;
   } else if (!old_proximal->next) {
-    tip_tip_case_ = true;
+    tip_tip_case = true;
     // do the switcheroo
     old_distal = old_proximal;
     old_proximal = old_distal->back;
@@ -87,7 +89,7 @@ Tiny_Tree::Tiny_Tree( pll_unode_t * edge_node,
   tree_ = std::unique_ptr<pll_utree_t, utree_deleter>(
       	                    make_tiny_tree_structure( old_proximal,
                                                       old_distal,
-                                                      tip_tip_case_),
+                                                      tip_tip_case),
                             utree_destroy);
 
   partition_ = std::unique_ptr<pll_partition_t, partition_deleter>(
@@ -95,7 +97,7 @@ Tiny_Tree::Tiny_Tree( pll_unode_t * edge_node,
                                                     tree_.get(),
                                                     old_proximal,
                                                     old_distal,
-                                                    tip_tip_case_),
+                                                    tip_tip_case),
                                 tiny_partition_destroy);
 
   // operation for computing the clv toward the new tip (for initialization and logl in non-blo case)
@@ -167,23 +169,15 @@ Placement Tiny_Tree::place(const Sequence &s)
     throw std::runtime_error{"Query sequence length not same as reference alignment!"};
   }
 
+  Range range(0, partition_->sites);
+
+  if (premasking_) {
+    range = get_valid_range(s.sequence());
+  }
+
   if (opt_branches_) {
 
-    /* differentiate between the normal case and the tip tip case:
-      in the normal case we want to compute the partial toward the newly placed sequence.
-      In other words, we set the virtual root as the node whose back-neighbour is the new
-      sequence, which is tree_. (*)
-      */
     auto virtual_root = inner;
-
-    if (tip_tip_case_) // TODO cant be used with pplacer blo
-    {
-      /* (cont. from (*))... however in the tip-tip case we want that virtual root to be toward the non-tip
-        node of the reference tree. Thus virtual_root needs to reflect that.
-        optimize_branch_triplet then takes care of the single computation operation for us
-        using that node.*/
-      // virtual_root = tree_->next->next;
-    }
 
     // init the new tip with s.sequence(), branch length
     auto err_check = pll_set_tip_states(partition_.get(), 
@@ -195,7 +189,11 @@ Placement Tiny_Tree::place(const Sequence &s)
       throw std::runtime_error{"Set tip states during placement failed!"};
     }
 
-    logl = optimize_branch_triplet(partition_.get(), virtual_root, sliding_blo_);
+    if (premasking_){
+      logl = call_focused(optimize_branch_triplet, range, partition_.get(), virtual_root, sliding_blo_);
+    } else {
+      logl = optimize_branch_triplet(partition_.get(), virtual_root, sliding_blo_);
+    }
 
     assert(inner->length >= 0);
     assert(inner->next->length >= 0);
@@ -228,7 +226,7 @@ Placement Tiny_Tree::place(const Sequence &s)
     pll_update_partials(partition_.get(), &op, 1);
 
   } else {
-    logl = lookup_->sum_precomputed_sitelk(branch_id_, s.sequence());
+    logl = lookup_->sum_precomputed_sitelk(branch_id_, s.sequence(), range);
   }
 
   assert(distal_length <= original_branch_length_);
