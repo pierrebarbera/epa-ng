@@ -21,11 +21,10 @@ TEST(Tree, process_from_binary)
 
   MSA_Info::or_mask(qry_info, ref_info);
 
-  Binary_Fasta::fasta_to_bfast(env->query_file, env->out_dir);
-  auto queries = env->query_file + ".bin";
+  auto queries = Binary_Fasta::fasta_to_bfast(env->query_file, env->out_dir);
   raxml::Model model;
   Options options;
-  auto msa = build_MSA_from_file(env->reference_file, MSA_Info(env->reference_file), options.premasking);
+  auto msa = build_MSA_from_file(env->reference_file, ref_info, options.premasking);
   Tree original_tree(env->tree_file, msa, model, options);
   dump_to_binary(original_tree, env->binary_file);
   Tree read_tree(env->binary_file, model, options);

@@ -3,6 +3,7 @@
 #include <string>
 #include <limits>
 #include <memory>
+#include <sstream>
 
 #include "seq/MSA.hpp"
 #include "seq/MSA_Info.hpp"
@@ -13,9 +14,13 @@
 
 #include "genesis/utils/io/serializer.hpp"
 #include "genesis/sequence/formats/fasta_input_iterator.hpp"
+#include "genesis/sequence/functions/functions.hpp"
+#include "genesis/sequence/sequence.hpp"
 
 constexpr char MAGIC[] = "BFAST\0";
 constexpr size_t MAGIC_SIZE = array_size(MAGIC);
+
+using mask_type = MSA_Info::mask_type;
 
 using namespace genesis;
 
@@ -34,7 +39,8 @@ static inline size_t data_section_offset(const size_t num_sequences)
 }
 
 static inline void write_header(utils::Serializer& ser,
-                                const std::vector<size_t>& entry_sizes)
+                                const std::vector<size_t>& entry_sizes,
+                                const mask_type& mask)
 {
   const uint64_t num_sequences = entry_sizes.size();
 
@@ -43,7 +49,13 @@ static inline void write_header(utils::Serializer& ser,
   ser.put_raw(MAGIC, MAGIC_SIZE);
   ser.put_int(num_sequences);
 
-  // Second part: the offset table for random access
+  // Scond part: the gap mask
+  // <mask_width><mask_string>
+  std::stringstream ss;
+  ss << mask;
+  ser.put_string(ss.str());
+
+  // Third part: the offset table for random access
   // <<seqID><seqOffset>><...>
   uint64_t offset = data_section_offset(num_sequences);
   for (uint64_t i = 0; i < num_sequences; ++i) {
@@ -97,7 +109,9 @@ static std::string get_decoded(utils::Deserializer& des)
   return code_().from_fourbit(coded_str, decoded_size);
 }
 
-static auto read_header(utils::Deserializer& des)
+static void read_header(utils::Deserializer& des,
+                        std::vector<uint64_t>& offset,
+                        mask_type& mask)
 {
   // read the header info
   char magic[MAGIC_SIZE];
@@ -109,7 +123,12 @@ static auto read_header(utils::Deserializer& des)
 
   const uint64_t num_sequences = des.get_int<uint64_t>();
 
-  std::vector<uint64_t> offset(num_sequences);
+  // retrieve the mask
+  mask = mask_type();
+  std::stringstream mask_str( des.get_string() );
+  mask_str >> mask;
+
+  offset = std::vector<uint64_t>(num_sequences);
   // read the random access table
   for (size_t i = 0; i < num_sequences; ++i) {
     // sequence id
@@ -117,8 +136,6 @@ static auto read_header(utils::Deserializer& des)
     // offset
     offset[idx] = des.get_int<uint64_t>();
   }
-
-  return offset;
 }
 
 static void skip_sequences( utils::Deserializer& des,
@@ -151,6 +168,7 @@ static void skip_sequences( utils::Deserializer& des,
 }
 
 static MSA read_sequences(utils::Deserializer& des,
+                          const mask_type& mask,
                           const size_t number,
                           const size_t sites = 0)
 {
@@ -159,6 +177,11 @@ static MSA read_sequences(utils::Deserializer& des,
   for (size_t i = 0; i < number and not des.finished(); ++i) {
     auto label = des.get_string();
     auto sequence = get_decoded(des);
+
+    if ( mask.count() ) {
+      sequence = subset_sequence(sequence, mask);
+    }
+
     msa.append( label, sequence );
   }
 
@@ -188,13 +211,36 @@ private:
 
 public:
 
+  static MSA_Info get_info(const std::string& file)
+  {
+    utils::Deserializer des(file);
+
+    std::vector<uint64_t> offset;
+    mask_type mask;
+    read_header(des, offset, mask);
+
+    const auto sequences = offset.size();
+
+    return MSA_Info(file, sequences, mask, mask.size());
+  }
+
   static void save(const MSA& msa, const std::string& file_name)
   {
+    // get the gap mask for the MSA
+    mask_type gap_mask(msa.num_sites(), true);
+    for (const auto& s : msa) {
+      const genesis::sequence::Sequence seq("", s.sequence());
+      // get the mask of the current sequence
+      auto cur_mask = genesis::sequence::gap_sites(seq);
+      // adjust global mask accordingly 
+      gap_mask &= cur_mask;
+    }
+
     utils::Serializer ser(file_name);
 
     // Write the header
     auto sizes = get_entry_sizes(msa);
-    write_header(ser, sizes);
+    write_header(ser, sizes, gap_mask);
 
     // Write the data. Every entry:
     // <header_length (bytes/chars)><header string><sequence_length><encoded sequence padded to next byte>
@@ -207,20 +253,26 @@ public:
 
   }
 
-  static MSA load( const std::string& file_name,
-            const size_t skip = 0,
-            const size_t number = std::numeric_limits<size_t>::max())
+  static MSA load(const std::string& file_name,
+                  const bool premasking = false,
+                  const size_t skip = 0,
+                  const size_t number = std::numeric_limits<size_t>::max())
   {
-
     utils::Deserializer des(file_name);
 
-    const auto offset = read_header(des);
+    std::vector<uint64_t> offset;
+    mask_type mask;
+    read_header(des, offset, mask);
 
     if (skip) {
       skip_sequences(des, offset, skip, 0);
     }
 
-    return read_sequences(des, number);
+    if (not premasking) {
+      mask = mask_type();
+    }
+
+    return read_sequences(des, mask, number);
   }
 
   static std::string fasta_to_bfast( const std::string& fasta_file,
@@ -247,7 +299,7 @@ public:
 
     // write the header
     utils::Serializer ser(out_dir);
-    write_header(ser, entry_sizes);
+    write_header(ser, entry_sizes, info.gap_mask());
 
     // write the data
     auto it = sequence::FastaInputIterator().from_file(fasta_file);
@@ -271,15 +323,21 @@ class Binary_Fasta_Reader : public msa_reader
 {
 public:
   Binary_Fasta_Reader(const std::string& file_name,
-                      const size_t enforced_sites=0,
+                      const MSA_Info info,
+                      const bool premasking = false,
                       const size_t max_read=std::numeric_limits<size_t>::max())
     : des_(file_name)
+    , mask_(info.gap_mask())
     , cursor_(0)
     , num_read_(0)
     , max_read_(max_read)
-    , enforced_sites_(enforced_sites)
   {
-    seq_offsets_ = read_header(des_);
+    mask_type dummy_mask;
+    read_header(des_, seq_offsets_, dummy_mask);
+
+    if (not premasking) {
+      mask_ = mask_type();
+    }
   }
 
   ~Binary_Fasta_Reader() = default;
@@ -311,7 +369,7 @@ public:
     const auto to_read =
       std::min(number, max_read_ - num_read_);
 
-    result = read_sequences(des_, to_read, enforced_sites_);
+    result = read_sequences(des_, mask_, to_read);
 
     num_read_ += result.size();
     cursor_ += result.size();
@@ -325,11 +383,10 @@ public:
   }
 
 private:
-  const MSA_Info info_;
   utils::Deserializer des_;
+  mask_type mask_;
   std::vector<uint64_t> seq_offsets_;
   size_t cursor_ = 0;
   size_t num_read_ = 0;
   size_t max_read_ = std::numeric_limits<size_t>::max();
-  size_t enforced_sites_ = 0;
 };

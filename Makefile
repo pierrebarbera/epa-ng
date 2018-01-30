@@ -62,20 +62,21 @@ clean:
 #======================================
 EPABIN=./bin/epa-ng
 TEST=test/data/lucas
-TREE=$(TEST)/20k.newick
-REF=$(TEST)/1k_reference.fasta
-QRY=$(TEST)/1k_query_100.fasta.bin
+TREE=$(TEST)/tree.newick
+REF=$(TEST)/reference.fasta
+QRY=$(TEST)/query.fasta.bfast
+INFO=$(TEST)/infofile
 BINFILE=$(TEST)/epa_binary_file
 OUTDIR=/tmp/epa
 
 BINARY_WRITE= -t $(TREE) -s $(REF) -B -w $(OUTDIR) --verbose $(F)
 BINARY_READ=-b $(BINFILE) -q $(QRY) -w $(OUTDIR) -g 0.99 --verbose $(F)
-NORM_TEST=-t $(TREE) -s $(REF) -q $(QRY) -w $(OUTDIR) -g 0.99 --chunk-size=100 --verbose $(F)
+NORM_TEST=-t $(TREE) -s $(REF) -q $(QRY) --model $(INFO)  -w $(OUTDIR)  --verbose $(F)
 
 test: #update
 	mkdir -p $(OUTDIR)
 	rm -f $(OUTDIR)/*
-	$(EPABIN) $(NORM_TEST) #--threads 4
+	$(EPABIN) $(NORM_TEST) --threads 4
 .PHONY: test
 
 bintest: update
@@ -85,8 +86,8 @@ bintest: update
 	$(EPABIN) $(BINARY_READ)
 .PHONY: bintest
 
-mpi_test: update
+mpi_test: #update
 	mkdir -p $(OUTDIR)
 	rm -f $(OUTDIR)/*
-	mpirun -n 4 $(EPABIN) $(BINARY_READ)
+	mpirun -n 2 $(EPABIN) $(NORM_TEST) --threads 2
 .PHONY: mpi_test

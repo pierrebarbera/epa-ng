@@ -61,6 +61,17 @@ public:
       ++it;
     }
   }
+
+  MSA_Info( const std::string& file_path,
+            const size_t sequences,
+            const mask_type& mask,
+            const size_t sites = 0)
+    : path_(file_path)
+    , sites_(sites)
+    , sequences_(sequences)
+    , gap_mask_(mask)
+  { }
+
   MSA_Info() = default;
   ~MSA_Info() = default;
 
@@ -94,6 +105,28 @@ private:
   
 };
 
+inline std::string subset_sequence( const std::string& seq,
+                                    const MSA_Info::mask_type& mask)
+{
+  const size_t nongap_count = mask.size() - mask.count();
+  std::string result(nongap_count, '$');
+
+  if (seq.length() != mask.size()) {
+    throw std::runtime_error{"In subset_sequence: mask and seq incompatible"};
+  }
+
+  size_t k = 0;
+  for (size_t i = 0; i < seq.length(); ++i) {
+    if (not mask[i]) {
+      result[k++] = seq[i];
+    }
+  }
+
+  assert(nongap_count == k);
+
+  return result;
+}
+
 inline std::ostream& operator << (std::ostream& out, MSA_Info const& rhs)
 {
   out << "Path: " << rhs.path();
@@ -105,3 +138,5 @@ inline std::ostream& operator << (std::ostream& out, MSA_Info const& rhs)
 
   return out;
 }
+
+MSA_Info make_msa_info(const std::string& file_path);

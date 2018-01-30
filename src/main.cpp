@@ -343,13 +343,13 @@ int main(int argc, char** argv)
 
   MSA_Info ref_info;
   if (reference_file.size()) {
-    ref_info = MSA_Info(reference_file);
+    ref_info = make_msa_info(reference_file);
     LOG_DBG << "Reference File:\n" << ref_info;
   }
 
   MSA_Info qry_info;
   if (query_file.size()) {
-    qry_info = MSA_Info(query_file);
+    qry_info = make_msa_info(query_file);
     LOG_DBG << "Query File:\n" << qry_info;
   }
 
@@ -392,7 +392,7 @@ int main(int argc, char** argv)
   // start the placement process and write to file
   auto start_place = std::chrono::high_resolution_clock::now();
   if (pipeline) {
-    pipeline_place(tree, query_file, work_dir, options, invocation);
+    pipeline_place(tree, query_file, qry_info, work_dir, options, invocation);
   } else {
     simple_mpi(tree, query_file, qry_info, work_dir, options, invocation);
   }

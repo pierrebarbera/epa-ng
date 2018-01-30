@@ -217,6 +217,7 @@ static void place_thorough(const Work& to_place,
 
 void pipeline_place(Tree& reference_tree,
                     const std::string& query_file,
+                    const MSA_Info& info,
                     const std::string& outdir,
                     const Options& options,
                     const std::string& invocation)
@@ -251,7 +252,7 @@ void pipeline_place(Tree& reference_tree,
   Work all_work(std::make_pair(0, num_branches), std::make_pair(0, chunk_size));
   
   MSA chunk;
-  Binary_Fasta_Reader reader(query_file);
+  Binary_Fasta_Reader reader(query_file, info, options.premasking);
 
   size_t num_sequences = 0;
 

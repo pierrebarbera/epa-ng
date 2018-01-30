@@ -37,21 +37,12 @@ Tree::Tree( const std::string &tree_file,
 
   set_unique_clv_indices(get_root(tree_.get()), nums_.tip_nodes);
 
-  // perform branch length and model optimization on the reference tree
-  optimize( model_, 
-            tree_.get(), 
-            partition_.get(), 
-            nums_, 
-            options_.opt_branches, 
-            options_.opt_model);
-
   LOG_DBG << model_;
-
   LOG_DBG << "Tree length: " << sum_branch_lengths(tree_.get());
 
   precompute_clvs(tree_.get(), partition_.get(), nums_);
 
-  LOG_DBG << "Post-optimization reference tree log-likelihood: "
+  LOG_DBG << "Reference tree log-likelihood: "
           << std::to_string(this->ref_tree_logl());
 
 }
@@ -70,9 +61,13 @@ Tree::Tree( const std::string& bin_file,
   partition_ = partition_ptr(binary_.load_partition(), pll_partition_destroy);
   nums_ = Tree_Numbers(partition_->tips);
   tree_ = utree_ptr(binary_.load_utree(partition_->tips), utree_destroy);
-
   locks_ = Mutex_List(partition_->tips + partition_->clv_buffers);
 
+  raxml::assign(model_, partition_.get());
+  LOG_DBG << model_;
+  LOG_DBG << "Tree length: " << sum_branch_lengths(tree_.get());
+  LOG_DBG << "Reference tree log-likelihood: "
+        << std::to_string(this->ref_tree_logl());
 }
 
 /**

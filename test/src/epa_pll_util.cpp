@@ -144,8 +144,8 @@ static void precompute_clvs_test(Options o)
 TEST(epa_pll_util, precompute_clvs)
 {
   Options o;
-  o.opt_model = o.opt_branches = true;
-  o.repeats = true;
+  o.opt_model = o.opt_branches = false;
+  o.repeats = false;
   precompute_clvs_test(o);  
 }
 

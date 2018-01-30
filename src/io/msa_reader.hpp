@@ -18,7 +18,7 @@ inline auto make_msa_reader(const std::string& file_name,
   std::unique_ptr<msa_reader> result(nullptr);
 
   try {
-    result = std::make_unique<Binary_Fasta_Reader>(file_name, info.sites());
+    result = std::make_unique<Binary_Fasta_Reader>(file_name, info, premasking);
   } catch(const std::exception&) {
     LOG_DBG << "Failed to parse input as binary fasta (bfast), trying `fasta` instead.";
     result = std::make_unique<MSA_Stream>(file_name, info, premasking);
