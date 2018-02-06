@@ -153,11 +153,6 @@ int main(int argc, char** argv)
 
   cli.parse(argc, argv);
 
-  if (cli.count("verbose")) {
-    LOG_INFO << "Selected: verbose (debug) output";
-    genesis::utils::Logging::max_level(genesis::utils::Logging::kDebug2);
-  }
-
   if (cli.count("help") or empty) {
     std::cout << cli.help({"", "Input", "Output", "Compute", "Pipeline"});
     exit_epa();
@@ -165,10 +160,21 @@ int main(int argc, char** argv)
 
   if (cli.count("outdir")) {
     work_dir = cli["outdir"].as<std::string>();
-    LOG_INFO << "Selected: Output dir: " << work_dir;
   }
-
   ensure_dir_has_slash(work_dir);
+
+  #ifdef __MPI
+  genesis::utils::Logging::log_to_file(work_dir + std::to_string(local_rank) + ".epa_info.log");
+  #else
+  genesis::utils::Logging::log_to_file(work_dir + "epa_info.log");
+  #endif
+
+  LOG_INFO << "Selected: Output dir: " << work_dir;
+
+  if (cli.count("verbose")) {
+    LOG_INFO << "Selected: verbose (debug) output";
+    genesis::utils::Logging::max_level(genesis::utils::Logging::kDebug2);
+  }
 
   if (cli.count("bfast")) {
     LOG_INFO << "Converting given FASTA file to BFAST format.";
@@ -327,12 +333,6 @@ int main(int argc, char** argv)
   //================================================================
   //============    EPA    =========================================
   //================================================================
-
-  #ifdef __MPI
-  genesis::utils::Logging::log_to_file(work_dir + std::to_string(local_rank) + ".epa_info.log");
-  #else
-  genesis::utils::Logging::log_to_file(work_dir + "epa_info.log");
-  #endif
 
   banner += "    ______ ____   ___           _   __ ______\n";
   banner += "   / ____// __ \\ /   |         / | / // ____/\n";
