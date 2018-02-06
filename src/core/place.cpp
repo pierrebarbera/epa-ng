@@ -28,6 +28,7 @@
 #include "core/Work.hpp"
 #include "core/Lookup_Store.hpp"
 #include "core/Work.hpp"
+#include "core/heuristics.hpp"
 #include "sample/Sample.hpp"
 #include "set_manipulators.hpp"
 
@@ -539,17 +540,8 @@ void simple_mpi(Tree& reference_tree,
 
       // Candidate Selection
       LOG_DBG << "Selecting candidates." << std::endl;
-      compute_and_set_lwr(preplace);
 
-      if (options.prescoring_by_percentage) {
-        discard_bottom_x_percent(preplace, 
-                                (1.0 - options.prescoring_threshold));
-      } else {
-        discard_by_accumulated_threshold( preplace, 
-                                          options.prescoring_threshold,
-                                          options.filter_min,
-                                          options.filter_max);
-      }
+      apply_heuristic(preplace, options);
 
       blo_work = Work(preplace);
 

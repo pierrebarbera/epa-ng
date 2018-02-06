@@ -25,4 +25,5 @@ public:
   unsigned int num_threads      = 0;
   bool repeats                  = false;
   bool premasking               = true;
+  bool baseball                 = false;
 };

@@ -116,11 +116,13 @@ int main(int argc, char** argv)
     ("g,dyn-heur",
       "Two-phase heuristic, determination of candidate edges using accumulative threshold. Enabled by default! See --no-heur for disabling it",
       cxxopts::value<double>()->default_value("0.99999")->implicit_value("0.99999"))
-    ("no-heur",
-      "Disables heuristic preplacement completely. Overrides all other heuristic flags.")
     ("G,fix-heur",
       "Two-phase heuristic, determination of candidate edges by specified percentage of total edges.",
       cxxopts::value<double>()->implicit_value("0.1"))
+    ("baseball-heur",
+      "Baseball heuristic as known from pplacer. strike_box=3,max_strikes=6,max_picthes=40.")
+    ("no-heur",
+      "Disables heuristic preplacement completely. Overrides all other heuristic flags.")
     ("m,model",
       "Description string of the model to be used. May also be a file containing the parameters, such as a RAxML_info file."
       " --model STRING | FILE "
@@ -235,28 +237,30 @@ int main(int argc, char** argv)
     throw std::runtime_error{"filter-min must not exceed filter-max!"};
   }
 
+  // ensure only one heuristic was selected
+  if ( (cli.count("fix-heur")
+      + cli.count("dyn-heur")
+      + cli.count("baseball-heur")
+      + cli.count("no-heur")) <= 1 ) {
+    throw std::runtime_error{"Heuristic flags are mutually exclusive! Please select only one."};
+  }
+
   if (cli.count("fix-heur")) {
-    if (cli.count("no-heur")) {
-      LOG_WARN << "WARNING: ignoring --fix-heur/-G as it conflicts with: --no-heur";
-    } else {
-      options.prescoring_threshold = cli["fix-heur"].as<double>();
-      options.prescoring = options.prescoring_by_percentage = true;
-      LOG_INFO << "Selected: Prescoring by percentage of branches: " << options.prescoring_threshold;
-    }
+    options.prescoring_threshold = cli["fix-heur"].as<double>();
+    options.prescoring = options.prescoring_by_percentage = true;
+    LOG_INFO << "Selected: Prescoring by percentage of branches: " << options.prescoring_threshold;
   }
 
   if (cli.count("dyn-heur")) {
-    if (cli.count("no-heur")) {
-      LOG_WARN << "WARNING: ignoring --dyn-heur/-g as it conflicts with: --no-heur";
-    } else {
-      options.prescoring_threshold = cli["dyn-heur"].as<double>();
-      if (cli.count("fix-heur"))  {
-        LOG_INFO << "Cannot use -G and -g concurrently! Running with -g " << options.prescoring_threshold ;
-      }
-      options.prescoring = true;
-      options.prescoring_by_percentage = false;
-      LOG_INFO << "Selected: Prescoring by accumulated LWR threshold: " << options.prescoring_threshold;
-    }
+    options.prescoring_threshold = cli["dyn-heur"].as<double>();
+    options.prescoring = true;
+    options.prescoring_by_percentage = false;
+    LOG_INFO << "Selected: Prescoring by accumulated LWR threshold: " << options.prescoring_threshold;
+  }
+
+  if (cli.count("baseball-heur")) {
+    options.baseball = true;
+    LOG_INFO << "Selected: Prescoring using the baseball heuristic";
   }
 
   if (cli.count("raxml-blo")) {
