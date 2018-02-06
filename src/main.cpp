@@ -247,7 +247,7 @@ int main(int argc, char** argv)
   if ( (cli.count("fix-heur")
       + cli.count("dyn-heur")
       + cli.count("baseball-heur")
-      + cli.count("no-heur")) <= 1 ) {
+      + cli.count("no-heur")) > 1 ) {
     throw std::runtime_error{"Heuristic flags are mutually exclusive! Please select only one."};
   }
 
