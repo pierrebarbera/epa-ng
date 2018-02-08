@@ -25,10 +25,12 @@ project ( epa CXX C )
 set (epa_VERSION_MAJOR 0)
 set (epa_VERSION_MINOR 1)
 set (epa_VERSION_PATCH 1)
+set (epa_VERSION_BETA "beta")
 
 set (epa_PROJECT_VERSION "${epa_VERSION_MAJOR}")
 set (epa_PROJECT_VERSION "${epa_PROJECT_VERSION}.${epa_VERSION_MINOR}")
 set (epa_PROJECT_VERSION "${epa_PROJECT_VERSION}.${epa_VERSION_PATCH}")
+set (epa_PROJECT_VERSION "${epa_PROJECT_VERSION}-${epa_VERSION_BETA}")
 
 #check for minimum compiler versions
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
@@ -43,7 +45,7 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   endif()
 endif()
 
-message(STATUS "EPA-ng version: ${epa_PROJECT_VERSION}")
+message(STATUS "Building EPA-ng version: ${epa_PROJECT_VERSION}")
 
 set (CMAKE_BUILD_TYPE RELEASE)
 
@@ -51,10 +53,10 @@ if ( $ENV{EPA_DEBUG} )
   set (CMAKE_BUILD_TYPE DEBUG)
 endif ()
 
-message (STATUS "Building ${CMAKE_BUILD_TYPE}")
+message (STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
 set (WARN_FLAGS               "-Wall -Wextra")
-set (CMAKE_CXX_FLAGS          "-std=c++14 ${WARN_FLAGS}")
+set (CMAKE_CXX_FLAGS          "-std=c++14 ${WARN_FLAGS} -DEPA_VERSION='\"${epa_PROJECT_VERSION}\"'")
 
 set (CMAKE_CXX_FLAGS_DEBUG    "-O0 -g -ggdb3 -DDEBUG -D_GLIBCXX_DEBUG")
 set (CMAKE_CXX_FLAGS_RELEASE  "-O3 -DNDEBUG")
@@ -96,6 +98,10 @@ if(ENABLE_PREFETCH)
 else()
   set(GENESIS_USE_THREADS OFF CACHE BOOL "Passing GENESIS_USE_THREADS=OFF to genesis")
 endif()
+
+if ( $ENV{EPA_DEBUG} )
+  set(GENESIS_DEBUG 1 CACHE BOOL "Passing GENESIS_DEBUG=1 to genesis")
+endif ()
 
 set(GENESIS_USE_OPENMP OFF CACHE BOOL "Passing GENESIS_USE_OPENMP=OFF to genesis")
 

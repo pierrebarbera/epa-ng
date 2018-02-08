@@ -20,6 +20,10 @@
 #include "seq/MSA.hpp"
 #include "seq/MSA_Info.hpp"
 
+#ifndef EPA_VERSION
+#define EPA_VERSION "UNKNOWN"
+#endif
+
 static void ensure_dir_has_slash(std::string& dir)
 {
   if (dir.length() > 0 && dir.back() != '/') {
@@ -149,6 +153,11 @@ int main(int argc, char** argv)
 
   if (cli.count("help") or empty) {
     std::cout << cli.help({"", "Input", "Output", "Compute"});
+    exit_epa();
+  }
+
+  if (cli.count("version")) {
+    std::cout << "EPA-ng v" << EPA_VERSION << std::endl;
     exit_epa();
   }
 
@@ -327,8 +336,9 @@ int main(int argc, char** argv)
   banner += "   / ____// __ \\ /   |         / | / // ____/\n";
   banner += "  / __/  / /_/ // /| | ______ /  |/ // / __  \n";
   banner += " / /___ / ____// ___ |/_____// /|  // /_/ /  \n";
-  banner += "/_____//_/    /_/  |_|      /_/ |_/ \\____/   \n";
-  banner += " \n";
+  banner += "/_____//_/    /_/  |_|      /_/ |_/ \\____/ (v";
+  banner += EPA_VERSION;
+  banner += ")\n \n";
 
   LOG_INFO << banner << std::endl;
 
