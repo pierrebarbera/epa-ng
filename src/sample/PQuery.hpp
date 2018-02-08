@@ -99,7 +99,7 @@ public:
 
   // serialization
   template<class Archive>
-  void serialize(Archive& ar) { ar( sequence_id_, header_, placements_ ); }
+  void serialize(Archive& ar) { ar( sequence_id_, header_, placements_, entropy_ ); }
 private:
   seqid_type sequence_id_ = 0;
   std::string header_;
