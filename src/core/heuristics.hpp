@@ -2,41 +2,103 @@
 
 #include <algorithm>
 
+#ifdef __OMP
+#include <omp.h>
+#endif
+
+#include "core/Work.hpp"
 #include "sample/Sample.hpp"
 #include "util/Options.hpp"
 #include "set_manipulators.hpp"
 
-inline void dynamic_heuristic(Sample<Placement>& sample,
+static inline size_t get_num_threads(const Options& options)
+{
+  #ifdef __OMP
+  const size_t num_threads  = options.num_threads
+                            ? options.num_threads
+                            : omp_get_max_threads();
+  omp_set_num_threads(num_threads);
+  #else
+  (void) options;
+  const size_t num_threads = 1;
+  #endif
+  return num_threads;
+}
+
+static inline size_t get_thread_id()
+{
+  #ifdef __OMP
+  return omp_get_thread_num();
+  #else
+  return 0;
+  #endif
+}
+
+inline Work dynamic_heuristic(Sample<Placement>& sample,
                               const Options& options)
 {
+  Work result;
   compute_and_set_lwr(sample);
-  discard_by_accumulated_threshold( sample, 
-                                    options.prescoring_threshold,
-                                    options.filter_min,
-                                    options.filter_max);
+
+  const auto num_threads = get_num_threads(options);
+
+  std::vector<Work> workvec(num_threads);
+
+  #ifdef __OMP
+  #pragma omp parallel for schedule(dynamic)
+  #endif
+  for (size_t i = 0; i < sample.size(); ++i) {
+    auto &pq = sample[i];
+    const auto tid = get_thread_id();
+
+    auto end = until_accumulated_reached( pq,
+                                          options.prescoring_threshold,
+                                          options.filter_min,
+                                          options.filter_max);
+
+    for (auto iter = pq.begin(); iter != end; ++iter) {
+      workvec[tid].add(iter->branch_id(), pq.sequence_id());
+    }
+  }
+  merge(result, workvec);
+  return result;
 }
 
-inline void fixed_heuristic(Sample<Placement>& sample,
+inline Work fixed_heuristic(Sample<Placement>& sample,
                             const Options& options)
 {
+  Work result;
   compute_and_set_lwr(sample);
-  discard_bottom_x_percent(sample,
-                          (1.0 - options.prescoring_threshold));
-}
 
-static inline void sort_by_logl(PQuery<Placement>& pq)
-{
-  std::sort(pq.begin(), pq.end(),
-    [](const Placement &lhs, const Placement &rhs) -> bool {
-      return lhs.likelihood() > rhs.likelihood();
+  const auto num_threads = get_num_threads(options);
+
+  std::vector<Work> workvec(num_threads);
+
+  #ifdef __OMP
+  #pragma omp parallel for schedule(dynamic)
+  #endif
+  for (size_t i = 0; i < sample.size(); ++i) {
+    auto &pq = sample[i];
+    const auto tid = get_thread_id();
+
+    auto end = until_top_percent(pq, options.prescoring_threshold);
+
+    for (auto iter = pq.begin(); iter != end; ++iter) {
+      workvec[tid].add(iter->branch_id(), pq.sequence_id());
     }
-  );
+  }
+
+  merge(result, workvec);
+  return result;
 }
 
-inline void baseball_heuristic( Sample<Placement>& sample,
+inline Work baseball_heuristic( Sample<Placement>& sample,
                                 const Options& options)
 {
-  (void) options;
+  Work result;
+
+  const auto num_threads = get_num_threads(options);
+
   // strike_box: logl delta, keep placements within this many logl units from the best
   const double strike_box = 3;
   // max_strikes: number of additional branches to add after strike box is full
@@ -44,11 +106,14 @@ inline void baseball_heuristic( Sample<Placement>& sample,
   // max_pitches: absolute maximum of candidates to select
   const size_t max_pitches = 40;
   
+  std::vector<Work> workvec(num_threads);
   #ifdef __OMP
   #pragma omp parallel for schedule(dynamic)
   #endif
   for (size_t i = 0; i < sample.size(); ++i) {
     auto &pq = sample[i];
+    const auto tid = get_thread_id();
+
     assert(pq.size());
     // sort placements by likelihood (descending)
     sort_by_logl(pq);
@@ -69,19 +134,23 @@ inline void baseball_heuristic( Sample<Placement>& sample,
 
     std::advance(keep_iter, to_add);
 
-    // erase any other placements that were not selected
-    pq.erase(keep_iter, pq.end());
+    for (auto iter = pq.begin(); iter != keep_iter; ++iter) {
+      workvec[tid].add(iter->branch_id(), pq.sequence_id());
+    }
+
   }
+  merge(result, workvec);
+  return result;
 }
 
-inline void apply_heuristic(Sample<Placement>& sample,
+inline Work apply_heuristic(Sample<Placement>& sample,
                             const Options& options)
 {
   if (options.baseball) {
-    baseball_heuristic(sample, options);
+    return baseball_heuristic(sample, options);
   } else if (options.prescoring_by_percentage) {
-    dynamic_heuristic(sample, options);
+    return fixed_heuristic(sample, options);
   } else {
-    fixed_heuristic(sample, options);    
+    return dynamic_heuristic(sample, options);
   }
 }

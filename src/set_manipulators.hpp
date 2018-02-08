@@ -11,6 +11,34 @@
 #include "seq/MSA.hpp"
 #include "core/Work.hpp"
 
+using pq_citer_t  = PQuery<Placement>::const_iterator;
+using pq_iter_t   = PQuery<Placement>::iterator;
+
+void merge(Work& dest, const Work& src);
+void merge(Timer<>& dest, const Timer<>& src);
+
+void sort_by_lwr(PQuery<Placement>& pq);
+void sort_by_logl(PQuery<Placement>& pq);
+void compute_and_set_lwr(Sample<Placement>& sample);
+pq_iter_t until_top_percent( PQuery<Placement>& pq,
+                              const double x);
+void discard_bottom_x_percent(Sample<Placement>& sample, const double x);
+void discard_by_support_threshold(Sample<Placement>& sample,
+                                  const double thresh,
+                                  const size_t min=1,
+                                  const size_t max=std::numeric_limits<size_t>::max());
+
+pq_iter_t until_accumulated_reached( PQuery<Placement>& pq,
+                                      const double thresh,
+                                      const size_t min,
+                                      const size_t max);
+void discard_by_accumulated_threshold(Sample<Placement>& sample,
+                                      const double thresh,
+                                      const size_t min=1,
+                                      const size_t max=std::numeric_limits<size_t>::max());
+void filter(Sample<Placement>& sample, const Options& options);
+void find_collapse_equal_sequences(MSA& msa);
+
 /**
  * collapses PQuerys with the same ID inside a Sample into one
  */
@@ -176,20 +204,3 @@ void merge(std::vector<T>& dest, const std::vector<T>& parts)
 {
   dest.insert( std::end(dest), std::begin(parts), std::end(parts) );
 }
-
-void merge(Work& dest, const Work& src);
-void merge(Timer<>& dest, const Timer<>& src);
-
-void compute_and_set_lwr(Sample<Placement>& sample);
-void discard_bottom_x_percent(Sample<Placement>& sample, const double x);
-void discard_by_support_threshold(Sample<Placement>& sample, 
-                                  const double thresh, 
-                                  const size_t min=1,
-                                  const size_t max=std::numeric_limits<size_t>::max());
-void discard_by_accumulated_threshold(Sample<Placement>& sample, 
-                                      const double thresh,
-                                      const size_t min=1, 
-                                      const size_t max=std::numeric_limits<size_t>::max());
-void filter(Sample<Placement>& sample, const Options& options);
-void find_collapse_equal_sequences(MSA& msa);
-

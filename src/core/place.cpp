@@ -319,12 +319,9 @@ void simple_mpi(Tree& reference_tree,
             options,
             lookups,0);
 
-      // Candidate Selection
       LOG_DBG << "Selecting candidates." << std::endl;
 
-      apply_heuristic(preplace, options);
-
-      blo_work = Work(preplace);
+      blo_work = apply_heuristic(preplace, options);
 
     } else {
       blo_work = all_work;

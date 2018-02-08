@@ -84,7 +84,7 @@ void compute_and_set_lwr(Sample<Placement>& sample)
   }
 }
 
-static void sort_by_lwr(PQuery<Placement>& pq)
+void sort_by_lwr(PQuery<Placement>& pq)
 {
   sort(pq.begin(), pq.end(),
     [](const Placement &p_a, const Placement &p_b) -> bool {
@@ -92,6 +92,51 @@ static void sort_by_lwr(PQuery<Placement>& pq)
     }
   );
 }
+
+void sort_by_logl(PQuery<Placement>& pq)
+{
+  std::sort(pq.begin(), pq.end(),
+    [](const Placement &lhs, const Placement &rhs) -> bool {
+      return lhs.likelihood() > rhs.likelihood();
+    }
+  );
+}
+
+pq_iter_t until_top_percent( PQuery<Placement>& pq,
+                              const double x)
+{
+  sort_by_lwr(pq);
+  auto num_keep = static_cast<size_t>(ceil(x * static_cast<double>(pq.size())));
+  auto iter = pq.begin();
+  advance(iter, num_keep);
+  return iter;
+}
+
+pq_iter_t until_accumulated_reached( PQuery<Placement>& pq,
+                                      const double thresh,
+                                      const size_t min,
+                                      const size_t max)
+{
+  sort_by_lwr(pq);
+
+  double sum = 0.0;
+  size_t num_summed = 0;
+
+  auto pq_iter = pq.begin();
+  for (pq_iter = pq.begin(); num_summed < max and sum < thresh; ++pq_iter, ++num_summed) {
+    // sum up until threshold is passed. if we abort before it is passed, we would have the possibility of
+    // empty lists
+    sum += pq_iter->lwr();
+  }
+
+  auto to_add = distance(pq_iter, pq.begin() + min - 1);
+  if (to_add > 0) {
+    advance(pq_iter, to_add);
+  }
+
+  return pq_iter;
+}
+
 
 void discard_bottom_x_percent(Sample<Placement>& sample, const double x)
 {
@@ -104,10 +149,7 @@ void discard_bottom_x_percent(Sample<Placement>& sample, const double x)
   #endif
   for (size_t i = 0; i < sample.size(); ++i) {
     auto &pq = sample[i];
-    auto num_keep = static_cast<int>(ceil((1.0 - x) * static_cast<double>(pq.size())));
-    sort_by_lwr(pq);
-    auto erase_iter = pq.begin();
-    advance(erase_iter, num_keep);
+    auto erase_iter = until_top_percent(pq, 1.0 - x);
     pq.erase(erase_iter, pq.end());
   }
 }
@@ -120,7 +162,6 @@ void discard_by_support_threshold(Sample<Placement>& sample,
   if (thresh < 0.0 or thresh > 1.0){
     throw std::range_error{"thresh is not a valid likelihood weight ratio (outside of [0,1])"};
   }
-
   if (min < 1) {
     throw std::range_error{"Filter min cannot be smaller than 1!"};
   }
@@ -175,22 +216,8 @@ void discard_by_accumulated_threshold(Sample<Placement>& sample,
   #endif
   for (size_t i = 0; i < sample.size(); ++i) {
     auto &pq = sample[i];
-    sort_by_lwr(pq);
-    double sum = 0.0;
 
-    size_t num_summed = 0;
-
-    auto pq_iter = pq.begin();
-    for (pq_iter = pq.begin(); num_summed < max and sum < thresh; ++pq_iter, ++num_summed) {
-      // sum up until threshold is passed. if we abort before it is passed, we would have the possibility of
-      // empty lists
-      sum += pq_iter->lwr();
-    }
-
-    auto to_add = distance(pq_iter, pq.begin() + min - 1);
-    if (to_add > 0) {
-      advance(pq_iter, to_add);
-    }
+    auto pq_iter = until_accumulated_reached(pq, thresh, min, max);
 
     pq.erase(pq_iter, pq.end());
   }
