@@ -53,34 +53,28 @@ void compute_and_set_lwr(Sample<Placement>& sample)
   #ifdef __OMP
   #pragma omp parallel for schedule(dynamic)
   #endif
-  for (size_t i = 0; i < sample.size(); ++i) {
-    auto &pq = sample[i];
+  for (size_t j = 0; j < sample.size(); ++j) {
+    auto &pq = sample[j];
     double total = 0.0;
-    double max=-std::numeric_limits<double>::infinity();
-
-    double entropy = 0.0;
 
     // find the maximum
-    for (auto &p : pq) {
-      if (p.likelihood() > max) {
-        max = p.likelihood();
+    auto max = std::max_element(pq.begin(), pq.end(),
+      [](const Placement& lhs, const Placement& rhs){
+        return (lhs.likelihood() < rhs.likelihood());
       }
-    }
+    )->likelihood();
 
-    // sum up the distances to the max
-    for (auto &p : pq) {
-      total += std::exp(p.likelihood() - max);
+    std::vector<double> exp_lh(pq.size());
+    //get the distances to the max
+    for (size_t i = 0; i < pq.size(); ++i) {
+      exp_lh[i] = std::exp(pq[i].likelihood() - max);
+      total += exp_lh[i];
     }
 
     // normalize the distances
-    for (auto &p : pq) {
-      double lwr = std::exp(p.likelihood() - max) / total;
-      p.lwr(lwr);
-      // compute the shannon entropy of the query (in nats)
-      entropy -= (lwr * std::log(lwr));
+    for (size_t i = 0; i < pq.size(); ++i) {
+      pq[i].lwr(exp_lh[i] / total);
     }
-
-    pq.entropy(entropy);
   }
 }
 

@@ -51,9 +51,6 @@ std::string pquery_to_jplace_string(const PQuery<Placement>& pquery)
   // closing bracket for pquery array
   output << "      ]," << NEWL; 
   
-  // start of entropy column
-  output << "    \"m\": {\"entropy\": " << std::to_string(pquery.entropy()) << "}," << NEWL;
-
   // start of name column
   output <<"    \"n\": [";
   

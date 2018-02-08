@@ -61,12 +61,10 @@ public:
   inline seqid_type sequence_id() const { return sequence_id_; }
   inline void sequence_id(const seqid_type seq_id) { sequence_id_ = seq_id; }
   const std::string& header() const { return header_; }
-  double entropy() const { return entropy_; }
-  void entropy(const double e) { entropy_ = e; }
   size_t size() const { return placements_.size(); }
-  void erase(iterator begin, iterator end) { placements_.erase(begin, end); }
 
   // manipulators
+  void erase(iterator begin, iterator end) { placements_.erase(begin, end); }
   void resize(size_t size) { return placements_.resize(size); }
   inline void insert(iterator this_first, const_iterator begin, const_iterator end)
   {
@@ -99,10 +97,9 @@ public:
 
   // serialization
   template<class Archive>
-  void serialize(Archive& ar) { ar( sequence_id_, header_, placements_, entropy_ ); }
+  void serialize(Archive& ar) { ar( sequence_id_, header_, placements_ ); }
 private:
   seqid_type sequence_id_ = 0;
   std::string header_;
   std::vector<value_type> placements_;
-  double entropy_ = -1.0;
 };
