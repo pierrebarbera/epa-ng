@@ -1,3 +1,5 @@
+[![Gitter chat](https://badges.gitter.im/Pbdas/epa-ng.png)](https://gitter.im/epa-ng/Lobby)
+
 # EPA-ng
 
 1. **[Introduction](#introduction)**
@@ -11,13 +13,21 @@ The by far easiest way to clone this repository is to use the following command
 git clone --recursive https://github.com/Pbdas/epa.git
 ```
 
-(unless you are brave enough to deal with `git submodules` directly)
+If that is not an option (perhaps you downloaded the zip file), you can fix the submodules by running
+
+```
+git submodule update --init --recursive
+```
+
+### SUPPORT
+
+The most reliable way to get in touch with us is to head over to the [RAxML Google Group](https://groups.google.com/forum/#!forum/raxml). You can also search the history of the list for your particular question.
+
+Alternatively I've created a [gitter chat room](https://gitter.im/epa-ng/Lobby) where I can usually be found during office hours.
 
 ### DISCLAIMER
 
 This tool is still in an active, *beta* phase of development. Suggestions, bug reports and constructive comments are more than encuraged! Please do so in the [issues section](https://github.com/Pbdas/epa/issues).
-
-For general discussion of the algorithm and its usage please head to [the RAxML Google Group](https://groups.google.com/forum/#!forum/raxml).
 
 ## Introduction
 
