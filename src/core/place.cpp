@@ -36,6 +36,8 @@
 #include "net/epa_mpi_util.hpp"
 #endif
 
+using mytimer = Timer<std::chrono::milliseconds>;
+
 template <class T>
 static void place(MSA& msa,
                   Tree& reference_tree,
@@ -288,7 +290,7 @@ void simple_mpi(Tree& reference_tree,
             branches,
             preplace,
             options,
-            lookups, &pre_inner);
+            lookups);
 
       LOG_DBG << "Selecting candidates." << std::endl;
 
@@ -308,7 +310,7 @@ void simple_mpi(Tree& reference_tree,
                     blo_sample,
                     options,
                     lookups,
-                    seq_id_offset, &blo_inner);
+                    seq_id_offset);
 
     // Output
     compute_and_set_lwr(blo_sample);
