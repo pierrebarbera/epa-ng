@@ -30,7 +30,7 @@ public:
   // getters
   size_t size() const {return sequence_list_.size();}
   size_t num_sites() const {return num_sites_;}
-  const Sequence& operator[](const size_t i) const;
+  const Sequence& operator[](const size_t i) const {return sequence_list_[i];};
 
   // setters
   void num_sites(const size_t sites) {num_sites_ = sites;}
