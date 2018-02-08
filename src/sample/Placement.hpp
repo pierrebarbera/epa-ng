@@ -1,12 +1,14 @@
 #pragma once
 
+#include <cstddef>
+
 class Slim_Placement;
 
 class Placement {
 public:
   Placement() = default;
 
-  Placement(const unsigned int branch_id, 
+  Placement(const size_t branch_id,
             const double likelihood, 
             const double pendant_length, 
             const double distal_length)
@@ -32,7 +34,7 @@ public:
   double likelihood() const {return likelihood_;}
   double pendant_length() const {return pendant_length_;};
   double distal_length() const {return distal_length_;};
-  unsigned int branch_id() const {return branch_id_;}
+  size_t branch_id() const {return branch_id_;}
 
   // setters
   void lwr(double value) {lwr_ = value;};
@@ -45,7 +47,7 @@ public:
   void serialize(Archive& ar) { ar(branch_id_, likelihood_, lwr_, pendant_length_, distal_length_); }
 
 private:
-  unsigned int branch_id_;
+  size_t branch_id_;
   double likelihood_;
   double lwr_;
   double pendant_length_;
@@ -57,7 +59,7 @@ class Slim_Placement
 public:
   Slim_Placement() = default;
 
-  Slim_Placement( const unsigned int branch_id, 
+  Slim_Placement( const size_t branch_id,
                   const double likelihood,
                   const double, 
                   const double)
@@ -69,14 +71,14 @@ public:
   ~Slim_Placement() = default;
 
   double likelihood() const {return likelihood_;}
-  unsigned int branch_id() const {return branch_id_;}
+  size_t branch_id() const {return branch_id_;}
 
   // serialization
   template<class Archive>
   void serialize(Archive& ar) { ar(branch_id_, likelihood_); }
 
 private:
-  unsigned int branch_id_;
+  size_t branch_id_;
   double likelihood_;
   
 };

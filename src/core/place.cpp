@@ -37,16 +37,13 @@
 #endif
 
 template <class T>
-static void place(const Work& to_place,
-                  MSA& msa,
+static void place(MSA& msa,
                   Tree& reference_tree,
                   const std::vector<pll_unode_t *>& branches,
                   Sample<T>& sample,
-                  bool do_blo,
                   const Options& options,
                   std::shared_ptr<Lookup_Store>& lookup_store,
-                  const size_t seq_id_offset=0,
-                  Timer<>* time=nullptr)
+                  mytimer* time=nullptr)
 {
 
 #ifdef __OMP
@@ -60,70 +57,51 @@ static void place(const Work& to_place,
   const unsigned int num_threads = 1;
 #endif
 
-  // split the sample structure such that the parts are thread-local
-  std::vector<Sample<T>> sample_parts(num_threads);
-
-  // build vector of elements
-  std::vector<Work::Work_Pair> id;
-  for(auto it = to_place.begin(); it != to_place.end(); ++it) {
-    id.push_back(*it);
-  }
-
-  // Map from sequence indices to indices in the pquery vector.
-  auto seq_lookup_vec = std::vector<std::unordered_map<size_t, size_t>>(num_threads);
+  const size_t num_sequences  = msa.size();
+  const size_t num_branches   = branches.size();
 
   std::vector<std::unique_ptr<Tiny_Tree>> branch_ptrs(num_threads);
   auto prev_branch_id = std::numeric_limits<size_t>::max();
   
-  // work seperately
   if (time){
     time->start();
   }
 #ifdef __OMP
-  #pragma omp parallel for schedule(guided, 5000), firstprivate(prev_branch_id)
+  #pragma omp parallel for schedule(guided, 10000), firstprivate(prev_branch_id)
 #endif
-  for (size_t i = 0; i < id.size(); ++i) {
+  for (size_t i = 0; i < num_sequences * num_branches; ++i) {
 
 #ifdef __OMP
     const auto tid = omp_get_thread_num();
 #else
     const auto tid = 0;
 #endif
-    auto& local_sample = sample_parts[tid];
-    auto& seq_lookup = seq_lookup_vec[tid];
+    // reference to the threadlocal branch
+    auto& branch = branch_ptrs[tid];
 
-    const auto branch_id = id[i].branch_id;
-    const auto seq_id = id[i].sequence_id;
-    const auto& seq = msa[seq_id];
+    const auto branch_id = static_cast<size_t>(i) / num_sequences;
+    const auto seq_id = i % num_sequences;
 
     // get a tiny tree representing the current branch,
     // IF the branch has changed. Overwriting the old variable ensures
     // the now unused previous tiny tree is deallocated
-    if ((branch_id != prev_branch_id) or not branch_ptrs[tid]) {
+    if ((branch_id != prev_branch_id) or not branch) {
       // as make_unique produces an rvalue, this is a move assignment and thus legal
-      branch_ptrs[tid] = std::make_unique<Tiny_Tree>(branches[branch_id],
+      branch = std::make_unique<Tiny_Tree>(branches[branch_id],
                                            branch_id,
                                            reference_tree,
-                                           do_blo,
+                                           false,
                                            options,
                                            lookup_store);
     }
 
-    if (seq_lookup.count( seq_id ) == 0) {
-      auto const new_idx = local_sample.add_pquery( seq_id_offset + seq_id, seq.header() );
-      seq_lookup[ seq_id ] = new_idx;
-    }
-    assert( seq_lookup.count( seq_id ) > 0 );
-    local_sample[ seq_lookup[ seq_id ] ].emplace_back( branch_ptrs[tid]->place(seq) );
+    sample[seq_id][branch_id] = branch->place(msa[seq_id]);
 
     prev_branch_id = branch_id;
   }
   if (time){
     time->stop();
   }
-  // merge samples back
-  merge(sample, std::move(sample_parts));
-  collapse(sample);
 }
 
 template <class T>
@@ -132,11 +110,10 @@ static void place_thorough(const Work& to_place,
                   Tree& reference_tree,
                   const std::vector<pll_unode_t *>& branches,
                   Sample<T>& sample,
-                  bool,
                   const Options& options,
                   std::shared_ptr<Lookup_Store>& lookup_store,
                   const size_t seq_id_offset=0,
-                  Timer<>* time=nullptr)
+                  mytimer* time=nullptr)
 {
   
 #ifdef __OMP
@@ -223,11 +200,6 @@ void simple_mpi(Tree& reference_tree,
                 const Options& options,
                 const std::string& invocation)
 {
-  // Timer<> preplacement_timer;
-  // Timer<> preplacement_core_timer;
-  // Timer<> thorough_timer;
-  // Timer<> thorough_core_timer;
-
   const auto num_branches = reference_tree.nums().branches;
 
   // get all edges
@@ -293,6 +265,8 @@ void simple_mpi(Tree& reference_tree,
                             invocation);
   }
 
+  Sample preplace(options.chunk_size, num_branches);
+
   while ( (num_sequences = reader->read_next(chunk, options.chunk_size)) ) {
 
     assert(chunk.size() == num_sequences);
@@ -303,21 +277,18 @@ void simple_mpi(Tree& reference_tree,
 
     if (num_sequences < options.chunk_size) {
       all_work = Work(std::make_pair(0, num_branches), std::make_pair(0, num_sequences));
+      preplace = Sample(num_sequences, num_branches);
     }
 
     if (options.prescoring) {
 
-      Sample preplace;
-
       LOG_DBG << "Preplacement." << std::endl;
-      place(all_work,
-            chunk,
+      place(chunk,
             reference_tree,
             branches,
             preplace,
-            false,
             options,
-            lookups,0);
+            lookups, &pre_inner);
 
       LOG_DBG << "Selecting candidates." << std::endl;
 
@@ -329,17 +300,15 @@ void simple_mpi(Tree& reference_tree,
 
     Sample blo_sample;
 
-    // BLO placement
     LOG_DBG << "BLO Placement." << std::endl;
     place_thorough( blo_work,
                     chunk,
                     reference_tree,
                     branches,
                     blo_sample,
-                    true,
                     options,
                     lookups,
-                    seq_id_offset);
+                    seq_id_offset, &blo_inner);
 
     // Output
     compute_and_set_lwr(blo_sample);

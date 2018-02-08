@@ -35,9 +35,22 @@ public:
       pquerys_[i] = PQuery<Placement>(other.at(i));
     }
   }
-  Sample(const size_t size) 
-    : pquerys_(size) 
-  { }
+  Sample(const size_t size)
+  {
+    pquerys_.reserve(size);
+    for (size_t i = 0; i < size; ++i) {
+      pquerys_.emplace_back(i);
+    }
+  }
+
+  Sample(const size_t size, const size_t depth)
+    : Sample(size)
+  {
+    for (size_t i = 0; i < pquerys_.size(); ++i) {
+      pquerys_[i].resize(depth);
+    }
+  }
+
   Sample(const std::string newick) 
     : newick_(newick) 
   { }

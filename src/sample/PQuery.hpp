@@ -63,9 +63,11 @@ public:
   const std::string& header() const { return header_; }
   double entropy() const { return entropy_; }
   void entropy(const double e) { entropy_ = e; }
-  unsigned int size() const { return placements_.size(); }
+  size_t size() const { return placements_.size(); }
   void erase(iterator begin, iterator end) { placements_.erase(begin, end); }
 
+  // manipulators
+  void resize(size_t size) { return placements_.resize(size); }
   inline void insert(iterator this_first, const_iterator begin, const_iterator end)
   {
     placements_.insert(this_first, begin, end);
