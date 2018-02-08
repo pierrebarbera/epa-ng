@@ -73,7 +73,6 @@ int main(int argc, char** argv)
   raxml::Model model;
 
   const bool empty = argc == 1;
-  bool pipeline = false;
 
   try
   {
@@ -135,11 +134,6 @@ int main(int argc, char** argv)
       "Do NOT employ site repeats optimization. (not recommended, will increase memory footprint without improving runtime or quality) ")
     ("no-pre-mask",
       "Do NOT pre-mask sequences.")
-    ;
-  cli.add_options("Pipeline")
-    ("pipeline",
-      "Type of distributed parallelism to use. If specified, pieline mode is used. This mode was built to handle "
-      "input reference data that is too large to fit into memory of one node. Less efficient than the standard mode.")
     ("chunk-size",
       "Number of query sequences to be read in at a time. May influence performance.",
       cxxopts::value<unsigned int>()->default_value("5000"))
@@ -154,7 +148,7 @@ int main(int argc, char** argv)
   cli.parse(argc, argv);
 
   if (cli.count("help") or empty) {
-    std::cout << cli.help({"", "Input", "Output", "Compute", "Pipeline"});
+    std::cout << cli.help({"", "Input", "Output", "Compute"});
     exit_epa();
   }
 
@@ -284,11 +278,6 @@ int main(int argc, char** argv)
     LOG_INFO << "Selected: Disabling pre-masking";
   }
 
-  if (cli.count("pipeline")) {
-    pipeline = true;
-    LOG_INFO << "Selected: Using the pipeline distributed parallel scheme.";
-  }
-
   if (cli.count("no-heur")) {
     options.prescoring = false;
     LOG_INFO << "Selected: Disabling the prescoring heuristics.";
@@ -395,11 +384,7 @@ int main(int argc, char** argv)
 
   // start the placement process and write to file
   auto start_place = std::chrono::high_resolution_clock::now();
-  if (pipeline) {
-    pipeline_place(tree, query_file, qry_info, work_dir, options, invocation);
-  } else {
-    simple_mpi(tree, query_file, qry_info, work_dir, options, invocation);
-  }
+  simple_mpi(tree, query_file, qry_info, work_dir, options, invocation);
   auto end_place = std::chrono::high_resolution_clock::now();
   auto placetime = std::chrono::duration_cast<std::chrono::seconds>(end_place - start_place).count();
 
