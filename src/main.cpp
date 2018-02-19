@@ -97,9 +97,9 @@ int main(int argc, char** argv)
     ("w,outdir", "Path to output directory.",
       cxxopts::value<std::string>()->default_value("./"))
     ("B,dump-binary",
-      "Binary Dump mode: write ref. tree in binary format then exit.")
+      "Binary Dump mode: write ref. tree in binary format then exit. NOTE: not compatible with premasking!")
     ("c,bfast",
-      "Convert the given fasta file to bfast format needed for running EPA-ng with MPI",
+      "Convert the given fasta file to bfast format",
       cxxopts::value<std::string>())
     ("filter-acc-lwr",
       "Accumulated likelihood weight after which further placements are discarded.",
@@ -122,14 +122,14 @@ int main(int argc, char** argv)
       "Two-phase heuristic, determination of candidate edges by specified percentage of total edges.",
       cxxopts::value<double>()->implicit_value("0.1"))
     ("baseball-heur",
-      "Baseball heuristic as known from pplacer. strike_box=3,max_strikes=6,max_picthes=40.")
+      "Baseball heuristic as known from pplacer. strike_box=3,max_strikes=6,max_pitches=40.")
     ("no-heur",
       "Disables heuristic preplacement completely. Overrides all other heuristic flags.")
     ("m,model",
-      "Description string of the model to be used. May also be a file containing the parameters, such as a RAxML_info file."
+      "Description string of the model to be used, or a RAxML_info file."
       " --model STRING | FILE "
       "See: https://github.com/amkozlov/raxml-ng/wiki/Input-data#evolutionary-model",
-      cxxopts::value<std::string>()->default_value("DNA-GTR-EMPIRICAL"))
+      cxxopts::value<std::string>())
     ("raxml-blo",
       "Employ old style of branch length optimization during thorough insertion as opposed to sliding approach. "
       "WARNING: may significantly slow down computation.")
@@ -160,6 +160,11 @@ int main(int argc, char** argv)
     exit_epa();
   }
 
+  if (cli.count("outdir")) {
+    work_dir = cli["outdir"].as<std::string>();
+  }
+  ensure_dir_has_slash(work_dir);
+
   // no log file for conversion functions
   if (cli.count("bfast")) {
     LOG_INFO << "Converting given FASTA file to BFAST format.";
@@ -170,11 +175,6 @@ int main(int argc, char** argv)
     LOG_INFO << "Resulting bfast file was written to: " << resultfile;
     exit_epa();
   }
-
-  if (cli.count("outdir")) {
-    work_dir = cli["outdir"].as<std::string>();
-  }
-  ensure_dir_has_slash(work_dir);
 
   #ifdef __MPI
   genesis::utils::Logging::log_to_file(work_dir + std::to_string(local_rank) + ".epa_info.log");

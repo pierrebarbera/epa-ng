@@ -68,7 +68,7 @@ static void compare_samples(Sample<>& orig_samp, Sample<>& read_samp, bool verbo
       if (verbose) {
         auto limit = head ? head : 2000;
         if (branch_id <= limit and seq_id < 1) {
-          printf("branch %u: %f vs branch %u: %f\n",orig_p.branch_id(), 
+          printf("branch %lu: %f vs branch %lu: %f\n",orig_p.branch_id(), 
                                                     orig_p.likelihood(),
                                                     read_p.branch_id(),  
                                                     read_p.likelihood());
