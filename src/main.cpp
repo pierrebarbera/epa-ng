@@ -67,7 +67,7 @@ int main(int argc, char** argv)
   }
 
   std::string query_file("");
-  std::string work_dir(".");
+  std::string work_dir("./");
   std::string tree_file("");
   std::string reference_file("");
   std::string binary_file("");
@@ -115,7 +115,6 @@ int main(int argc, char** argv)
       cxxopts::value<unsigned int>()->default_value("7"))
     ;
   cli.add_options("Compute")
-    // ("O,opt-ref-tree", "Optimize reference tree and model parameters.")
     ("g,dyn-heur",
       "Two-phase heuristic, determination of candidate edges using accumulative threshold. Enabled by default! See --no-heur for disabling it",
       cxxopts::value<double>()->default_value("0.99999")->implicit_value("0.99999"))
@@ -137,7 +136,7 @@ int main(int argc, char** argv)
     ("no-repeats",
       "Do NOT employ site repeats optimization. (not recommended, will increase memory footprint without improving runtime or quality) ")
     ("no-pre-mask",
-      "Do NOT pre-mask sequences.")
+      "Do NOT pre-mask sequences. Enables repeats unless --no-repeats is also specified.")
     ("chunk-size",
       "Number of query sequences to be read in at a time. May influence performance.",
       cxxopts::value<unsigned int>()->default_value("5000"))
@@ -161,6 +160,17 @@ int main(int argc, char** argv)
     exit_epa();
   }
 
+  // no log file for conversion functions
+  if (cli.count("bfast")) {
+    LOG_INFO << "Converting given FASTA file to BFAST format.";
+    auto fasta = cli["bfast"].as<std::string>();
+    LOG_INFO << "Started " << genesis::utils::current_time();
+    auto resultfile = Binary_Fasta::fasta_to_bfast(fasta, work_dir);
+    LOG_INFO << "Finished " << genesis::utils::current_time();
+    LOG_INFO << "Resulting bfast file was written to: " << resultfile;
+    exit_epa();
+  }
+
   if (cli.count("outdir")) {
     work_dir = cli["outdir"].as<std::string>();
   }
@@ -176,17 +186,7 @@ int main(int argc, char** argv)
 
   if (cli.count("verbose")) {
     LOG_INFO << "Selected: verbose (debug) output";
-    genesis::utils::Logging::max_level(genesis::utils::Logging::kDebug2);
-  }
-
-  if (cli.count("bfast")) {
-    LOG_INFO << "Converting given FASTA file to BFAST format.";
-    auto fasta = cli["bfast"].as<std::string>();
-    LOG_INFO << "Started " << genesis::utils::current_time();
-    auto resultfile = Binary_Fasta::fasta_to_bfast(fasta, work_dir);
-    LOG_INFO << "Finished " << genesis::utils::current_time();
-    LOG_INFO << "Resulting bfast file was written to: " << resultfile;
-    exit_epa();
+    genesis::utils::Logging::max_level(genesis::utils::Logging::kDebug);
   }
 
   // check for valid input combinations
@@ -277,14 +277,15 @@ int main(int argc, char** argv)
     LOG_INFO << "Selected: On query insertion, optimize branch lengths the way RAxML-EPA did it";
   }
 
+  if (cli.count("no-pre-mask")) {
+    options.premasking = false;
+    options.repeats = true;
+    LOG_INFO << "Selected: Disabling pre-masking. (repeats enabled!)";
+  }
+
   if (cli.count("no-repeats")) {
     options.repeats = false;
     LOG_INFO << "Selected: Using the non-repeats version of libpll/modules";
-  }
-
-  if (cli.count("no-pre-mask")) {
-    options.premasking = false;
-    LOG_INFO << "Selected: Disabling pre-masking";
   }
 
   if (cli.count("no-heur")) {
