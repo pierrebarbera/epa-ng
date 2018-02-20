@@ -10,6 +10,7 @@
 #include "util/Options.hpp"
 #include "util/stringify.hpp"
 #include "util/parse_model.hpp"
+#include "util/split.hpp"
 #include "io/Binary_Fasta.hpp"
 #include "io/Binary.hpp"
 #include "io/file_io.hpp"
@@ -80,27 +81,33 @@ int main(int argc, char** argv)
 
   try
   {
-  cxxopts::Options cli(argv[0], "Massively-Parallel Evolutionary Placement Algorithm");
+  cxxopts::Options opts(argv[0], "Massively-Parallel Evolutionary Placement Algorithm");
 
-  cli.add_options()
+  opts.add_options()
     ("help", "Display help.")
     ("v,version", "Display version.")
     ("verbose", "Display debug information.")
     ;
-  cli.add_options("Input")
+  opts.add_options("Input")
     ("t,tree", "Path to Reference Tree file.", cxxopts::value<std::string>())
     ("s,ref-msa", "Path to Reference MSA file.", cxxopts::value<std::string>())
     ("q,query", "Path to Query MSA file.", cxxopts::value<std::string>())
     ("b,binary", "Path to Binary file.", cxxopts::value<std::string>())
     ;
-  cli.add_options("Output")
-    ("w,outdir", "Path to output directory.",
-      cxxopts::value<std::string>()->default_value("./"))
+  opts.add_options("Convert")
     ("B,dump-binary",
       "Binary Dump mode: write ref. tree in binary format then exit. NOTE: not compatible with premasking!")
     ("c,bfast",
       "Convert the given fasta file to bfast format",
       cxxopts::value<std::string>())
+    ("split",
+      "Takes a reference MSA (phylip) and combined ref + query MSA(s) (phylip) and outputs one pure query file (fasta)."
+      "Usage: epa-ng --split ref_alignment query_alignments+",
+      cxxopts::value<std::vector<std::string>>())
+    ;
+  opts.add_options("Output")
+    ("w,outdir", "Path to output directory.",
+      cxxopts::value<std::string>()->default_value("./"))
     ("filter-acc-lwr",
       "Accumulated likelihood weight after which further placements are discarded.",
       cxxopts::value<double>())
@@ -114,7 +121,7 @@ int main(int argc, char** argv)
       "Maximum number of placements per sequence to include in final output.",
       cxxopts::value<unsigned int>()->default_value("7"))
     ;
-  cli.add_options("Compute")
+  opts.add_options("Compute")
     ("g,dyn-heur",
       "Two-phase heuristic, determination of candidate edges using accumulative threshold. Enabled by default! See --no-heur for disabling it",
       cxxopts::value<double>()->default_value("0.99999")->implicit_value("0.99999"))
@@ -148,10 +155,12 @@ int main(int argc, char** argv)
     #endif
     ;
 
-  cli.parse(argc, argv);
+  opts.parse_positional("split");
+
+  auto cli = opts.parse(argc, argv);
 
   if (cli.count("help") or empty) {
-    std::cout << cli.help({"", "Input", "Output", "Compute"});
+    std::cout << opts.help({"", "Convert", "Input", "Output", "Compute"});
     exit_epa();
   }
 
@@ -173,6 +182,20 @@ int main(int argc, char** argv)
     auto resultfile = Binary_Fasta::fasta_to_bfast(fasta, work_dir);
     LOG_INFO << "Finished " << genesis::utils::current_time();
     LOG_INFO << "Resulting bfast file was written to: " << resultfile;
+    exit_epa();
+  }
+
+  if (cli.count("split")) {
+    auto files = cli["split"].as<std::vector<std::string>>();
+    if (files.size() < 2) {
+      LOG_ERR << "Incorrect number of inputs! Usage: epa-ng --split ref_alignment query_alignments+";
+      exit_epa();
+    }
+    auto ref_msa = files[0];
+    files.erase(files.begin());
+    LOG_INFO << "Splitting files based on reference: " << ref_msa;
+
+    split(ref_msa, files, work_dir);
     exit_epa();
   }
 

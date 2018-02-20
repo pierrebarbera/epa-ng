@@ -188,7 +188,7 @@ Again, using this format is highly reccomended, and required to use the MPI vers
 To convert the fasta file, simply run the program with the query file specified thusly:
 
 ```
-epa-ng --bfast query.fasta --out-dir $OUT
+epa-ng --bfast query.fasta --outdir $OUT
 ```
 
 This will produce a file called `query.fasta.bfast` in the specified output directory.
