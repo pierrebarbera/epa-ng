@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <chrono>
 
-#include <cxxopts.hpp>
+#include <CLI/CLI.hpp>
 
 #include "net/mpihead.hpp"
 #include "util/logging.hpp"
@@ -67,135 +67,205 @@ int main(int argc, char** argv)
     invocation += " ";
   }
 
-  std::string query_file("");
+  std::string query_file;
   std::string work_dir("./");
-  std::string tree_file("");
-  std::string reference_file("");
-  std::string binary_file("");
+  std::string tree_file;
+  std::string reference_file;
+  std::string binary_file;
+  std::string bfast_conv_file;
+  std::vector<std::string> split_files;
 
   std::string banner;
 
   raxml::Model model;
 
+  bool display_version  = false;
+  bool verbosity        = false;
+  bool heuristics_off   = not options.prescoring;
+  bool raxml_blo        = not options.sliding_blo;
+  bool no_pre_mask      = not options.premasking;
+
   const bool empty = argc == 1;
 
-  try
-  {
-  cxxopts::Options opts(argv[0], "Massively-Parallel Evolutionary Placement Algorithm");
+  CLI::App app{"epa-ng - Massively-Parallel Evolutionary Placement Algorithm"};
 
-  opts.add_options()
-    ("help", "Display help.")
-    ("v,version", "Display version.")
-    ("verbose", "Display debug information.")
-    ;
-  opts.add_options("Input")
-    ("t,tree", "Path to Reference Tree file.", cxxopts::value<std::string>())
-    ("s,ref-msa", "Path to Reference MSA file.", cxxopts::value<std::string>())
-    ("q,query", "Path to Query MSA file.", cxxopts::value<std::string>())
-    ("b,binary", "Path to Binary file.", cxxopts::value<std::string>())
-    ;
-  opts.add_options("Convert")
-    ("B,dump-binary",
-      "Binary Dump mode: write ref. tree in binary format then exit. NOTE: not compatible with premasking!")
-    ("c,bfast",
-      "Convert the given fasta file to bfast format",
-      cxxopts::value<std::string>())
-    ("split",
-      "Takes a reference MSA (phylip) and combined ref + query MSA(s) (phylip) and outputs one pure query file (fasta)."
-      "Usage: epa-ng --split ref_alignment query_alignments+",
-      cxxopts::value<std::vector<std::string>>())
-    ;
-  opts.add_options("Output")
-    ("w,outdir", "Path to output directory.",
-      cxxopts::value<std::string>()->default_value("./"))
-    ("filter-acc-lwr",
-      "Accumulated likelihood weight after which further placements are discarded.",
-      cxxopts::value<double>())
-    ("filter-min-lwr",
-      "Minimum likelihood weight below which a placement is discarded.",
-      cxxopts::value<double>()->default_value("0.01"))
-    ("filter-min",
-      "Minimum number of placements per sequence to include in final output.",
-      cxxopts::value<unsigned int>()->default_value("1"))
-    ("filter-max",
-      "Maximum number of placements per sequence to include in final output.",
-      cxxopts::value<unsigned int>()->default_value("7"))
-    ;
-  opts.add_options("Compute")
-    ("g,dyn-heur",
-      "Two-phase heuristic, determination of candidate edges using accumulative threshold. Enabled by default! See --no-heur for disabling it",
-      cxxopts::value<double>()->default_value("0.99999")->implicit_value("0.99999"))
-    ("G,fix-heur",
-      "Two-phase heuristic, determination of candidate edges by specified percentage of total edges.",
-      cxxopts::value<double>()->implicit_value("0.1"))
-    ("baseball-heur",
-      "Baseball heuristic as known from pplacer. strike_box=3,max_strikes=6,max_pitches=40.")
-    ("no-heur",
-      "Disables heuristic preplacement completely. Overrides all other heuristic flags.")
-    ("m,model",
-      "Description string of the model to be used, or a RAxML_info file."
-      " --model STRING | FILE "
-      "See: https://github.com/amkozlov/raxml-ng/wiki/Input-data#evolutionary-model",
-      cxxopts::value<std::string>())
-    ("raxml-blo",
-      "Employ old style of branch length optimization during thorough insertion as opposed to sliding approach. "
-      "WARNING: may significantly slow down computation.")
-    ("no-repeats",
-      "Do NOT employ site repeats optimization. (not recommended, will increase memory footprint without improving runtime or quality) ")
-    ("no-pre-mask",
-      "Do NOT pre-mask sequences. Enables repeats unless --no-repeats is also specified.")
-    ("chunk-size",
-      "Number of query sequences to be read in at a time. May influence performance.",
-      cxxopts::value<unsigned int>()->default_value("5000"))
-    #ifdef __OMP
-    ("T,threads",
-      "Number of threads to use. If 0 is passed as argument, program will run with the maximum number "
-      "of threads available.",
-      cxxopts::value<unsigned int>()->default_value("0"))
-    #endif
-    ;
+  //  ============== GENERAL OPTIONS ==============
 
-  opts.parse_positional("split");
+  app.add_flag("-v,--version", display_version, "Display version.");
+  app.add_flag("--verbose", verbosity, "Display debug output.");
 
-  auto cli = opts.parse(argc, argv);
+  //  ============== CONVERT OPTIONS ==============
 
-  if (cli.count("help") or empty) {
-    std::cout << opts.help({"", "Convert", "Input", "Output", "Compute"});
-    exit_epa();
+  app.add_option( "-c,--bfast",
+                  bfast_conv_file,
+                  "Convert the given fasta file to bfast format."
+                )->group("Convert")->check(CLI::ExistingFile);
+  app.add_flag( "-B,--dump-binary",
+                  options.dump_binary_mode,
+                  "Binary Dump mode: write ref. tree in binary format then exit. NOTE: not compatible with premasking!"
+                )->group("Convert");
+  app.add_option( "--split",
+                  split_files,
+                  "Takes a reference MSA (phylip) and combined ref +"
+                  " query MSA(s) (phylip) and outputs one pure query file (fasta). "
+                  "Usage: epa-ng --split ref_alignment query_alignments+"
+                )->group("Convert")->check(CLI::ExistingFile);
+
+  //  ============== INPUT OPTIONS ==============
+  auto tree_file_opt =
+  app.add_option( "-t,--tree",
+                  tree_file,
+                  "Path to Reference Tree file."
+                )->group("Input")->check(CLI::ExistingFile);
+  auto reference_file_opt =
+  app.add_option( "-s,--ref-msa",
+                  reference_file,
+                  "Path to Reference MSA file."
+                )->group("Input")->check(CLI::ExistingFile);
+  auto binary_file_opt =
+  app.add_option( "-b,--binary",
+                  binary_file,
+                  "Path to binary reference file, as created using --dump-binary."
+                )->group("Input")->check(CLI::ExistingFile);
+
+  binary_file_opt->excludes(tree_file_opt)->excludes(reference_file_opt);
+  tree_file_opt->excludes(binary_file_opt);  
+  reference_file_opt->excludes(binary_file_opt);  
+
+  app.add_option( "-q,--query",
+                  query_file,
+                  "Path to Query MSA file."
+                )->group("Input")->check(CLI::ExistingFile);
+  app.add_option( "-m,--model",
+                  model_desc,
+                  "Description string of the model to be used, or a RAxML_info file."
+                  " --model STRING | FILE "
+                  "See: https://github.com/amkozlov/raxml-ng/wiki/Input-data#evolutionary-model",
+                  true
+                )->group("Input");
+
+  //  ============== OUTPUT OPTIONS ==============
+
+  app.add_option("-w,--outdir", work_dir, "Path to output directory.", true
+                )->group("Output")->check(CLI::ExistingDirectory);
+
+  auto filter_acc_lwr =
+  app.add_option( "--filter-acc-lwr",
+                  options.support_threshold,
+                  "Accumulated likelihood weight after which further placements are discarded.",
+                  options.acc_threshold
+                )->group("Output")->check(CLI::Range(0.0,1.0));
+  auto filter_min_lwr =
+  app.add_option( "--filter-min-lwr",
+                  options.support_threshold,
+                  "Minimum likelihood weight below which a placement is discarded.",
+                  not options.acc_threshold
+                )->group("Output")->check(CLI::Range(0.0,1.0));
+  filter_acc_lwr->excludes(filter_min_lwr);
+  filter_min_lwr->excludes(filter_acc_lwr);
+
+  auto filter_min =
+  app.add_option( "--filter-min",
+                  options.filter_min,
+                  "Minimum number of placements per sequence to include in final output.",
+                  true
+                )->group("Output");
+  auto filter_max =
+  app.add_option( "--filter-max",
+                  options.filter_max,
+                  "Maximum number of placements per sequence to include in final output.",
+                  true
+                )->group("Output");
+
+  //  ============== COMPUTE OPTIONS ==============
+
+  auto dyn_heur =
+  app.add_option( "-g,--dyn-heur",
+                  options.prescoring_threshold,
+                  "Two-phase heuristic, determination of candidate edges using accumulative threshold. "
+                  "Enabled by default! See --no-heur for disabling it",
+                  true
+                )->group("Compute")->check(CLI::Range(0.0,1.0));
+  auto fix_heur =
+  app.add_option( "-G,--fix-heur",
+                  options.prescoring_threshold,
+                  "Two-phase heuristic, determination of candidate edges by specified percentage of total edges.",
+                  options.prescoring_by_percentage
+                )->group("Compute")->check(CLI::Range(0.0,1.0));
+  auto baseball_heur =
+  app.add_flag( "--baseball-heur",
+                  options.baseball,
+                  "Baseball heuristic as known from pplacer. strike_box=3,max_strikes=6,max_pitches=40."
+                )->group("Compute");
+  auto no_heur =
+  app.add_flag( "--no-heur",
+                  heuristics_off,
+                  "Disables heuristic preplacement completely. Overrides all other heuristic flags."
+                )->group("Compute");
+  dyn_heur->excludes(fix_heur)->excludes(baseball_heur)->excludes(no_heur);
+  fix_heur->excludes(dyn_heur)->excludes(baseball_heur)->excludes(no_heur);
+  baseball_heur->excludes(dyn_heur)->excludes(fix_heur)->excludes(no_heur);
+  no_heur->excludes(dyn_heur)->excludes(fix_heur)->excludes(baseball_heur);
+
+  auto chunk_size =
+  app.add_option( "--chunk-size",
+                  options.chunk_size,
+                  "Number of query sequences to be read in at a time. May influence performance.",
+                  true
+                )->group("Compute");
+  app.add_flag( "--raxml-blo",
+                  raxml_blo,
+                  "Employ old style of branch length optimization during thorough insertion as opposed to sliding approach. "
+                  "WARNING: may significantly slow down computation."
+                )->group("Compute");
+  app.add_flag( "--no-pre-mask",
+                  no_pre_mask,
+                  "Do NOT pre-mask sequences. Enables repeats unless --no-repeats is also specified."
+                )->group("Compute");
+
+  #ifdef __OMP
+  auto threads =
+  app.add_option( "-T,--threads",
+                  options.num_threads,
+                  "Number of threads to use. If 0 is passed as argument,"
+                  "program will run with the maximum number of threads available.",
+                  true
+                )->group("Compute");
+  #endif
+
+  try {
+    app.parse(argc, argv);
+    if (empty) {
+      throw CLI::CallForHelp();
+    }
+  } catch (const CLI::ParseError &e) {
+    return app.exit(e);
   }
 
-  if (cli.count("version")) {
+  if (display_version) {
     std::cout << "EPA-ng v" << EPA_VERSION << std::endl;
     exit_epa();
   }
 
-  if (cli.count("outdir")) {
-    work_dir = cli["outdir"].as<std::string>();
-  }
   ensure_dir_has_slash(work_dir);
 
   // no log file for conversion functions
-  if (cli.count("bfast")) {
-    LOG_INFO << "Converting given FASTA file to BFAST format.";
-    auto fasta = cli["bfast"].as<std::string>();
-    LOG_INFO << "Started " << genesis::utils::current_time();
-    auto resultfile = Binary_Fasta::fasta_to_bfast(fasta, work_dir);
-    LOG_INFO << "Finished " << genesis::utils::current_time();
+  if (not bfast_conv_file.empty()) {
+    LOG_INFO << "Converting given FASTA file to BFAST format...";
+    auto resultfile = Binary_Fasta::fasta_to_bfast(bfast_conv_file, work_dir);
     LOG_INFO << "Resulting bfast file was written to: " << resultfile;
     exit_epa();
   }
 
-  if (cli.count("split")) {
-    auto files = cli["split"].as<std::vector<std::string>>();
-    if (files.size() < 2) {
+  if (split_files.size()) {
+    if (split_files.size() < 2) {
       LOG_ERR << "Incorrect number of inputs! Usage: epa-ng --split ref_alignment query_alignments+";
       exit_epa();
     }
-    auto ref_msa = files[0];
-    files.erase(files.begin());
+    auto ref_msa = split_files[0];
+    split_files.erase(split_files.begin());
     LOG_INFO << "Splitting files based on reference: " << ref_msa;
-
-    split(ref_msa, files, work_dir);
+    split(ref_msa, split_files, work_dir);
     exit_epa();
   }
 
@@ -207,61 +277,53 @@ int main(int argc, char** argv)
 
   LOG_INFO << "Selected: Output dir: " << work_dir;
 
-  if (cli.count("verbose")) {
+  if (verbosity) {
     LOG_INFO << "Selected: verbose (debug) output";
     genesis::utils::Logging::max_level(genesis::utils::Logging::kDebug);
   }
 
   // check for valid input combinations
-  if (not(
-        ( cli.count("tree") and cli.count("ref-msa") )
-    or  ( cli.count("binary") and (cli.count("query") or cli.count("ref-msa")) )
-    )) {
-    LOG_INFO << "Must supply reference tree/msa either directly or as precomputed binary.";
-    exit_epa(EXIT_FAILURE);
-  }
+  // if (not(
+  //       ( cli.count("tree") and cli.count("ref-msa") )
+  //   or  ( cli.count("binary") and (cli.count("query") or cli.count("ref-msa")) )
+  //   )) {
+  //   LOG_INFO << "Must supply reference tree/msa either directly or as precomputed binary.";
+  //   exit_epa(EXIT_FAILURE);
+  // }
 
-  if (cli.count("query")) {
-    query_file = cli["query"].as<std::string>();
+  if (not query_file.empty()) {
     LOG_INFO << "Selected: Query file: " << query_file;
   }
 
-  if (cli.count("tree")) {
-    tree_file = cli["tree"].as<std::string>();
+  if (not tree_file.empty()) {
     LOG_INFO << "Selected: Tree file: " << tree_file;
   }
 
-  if (cli.count("ref-msa")) {
-    reference_file = cli["ref-msa"].as<std::string>();
+  if (not reference_file.empty()) {
     LOG_INFO << "Selected: Reference MSA: " << reference_file;
   }
 
-  if (cli.count("binary")) {
-    binary_file = cli["binary"].as<std::string>();
+  if (not binary_file.empty()) {
     options.load_binary_mode = true;
     LOG_INFO << "Selected: Binary CLV store: " << binary_file;
   }
 
-  if (cli.count("filter-acc-lwr"))
+  if (*filter_acc_lwr)
   {
-    options.support_threshold = cli["filter-acc-lwr"].as<double>();
     options.acc_threshold = true;
     LOG_INFO << "Selected: Filtering by accumulated threshold: " << options.support_threshold;
   }
 
-  if (cli.count("filter-min-lwr")) {
-    options.support_threshold = cli["filter-min-lwr"].as<double>();
+  if (*filter_min_lwr) {
     options.acc_threshold = false;
     LOG_INFO << "Selected: Filtering by minimum threshold: " << options.support_threshold;
   }
 
-  if (cli.count("filter-min")) {
-    options.filter_min = cli["filter-min"].as<unsigned int>();
+  if (*filter_min) {
     LOG_INFO << "Selected: Minimum number of placements per query: " << options.filter_min;
   }
 
-  if (cli.count("filter-max")) {
-    options.filter_max = cli["filter-max"].as<unsigned int>();
+  if (*filter_max) {
     LOG_INFO << "Selected: Maximum number of placements per query: " << options.filter_max;
   }
 
@@ -269,88 +331,66 @@ int main(int argc, char** argv)
     throw std::runtime_error{"filter-min must not exceed filter-max!"};
   }
 
-  // ensure only one heuristic was selected
-  if ( (cli.count("fix-heur")
-      + cli.count("dyn-heur")
-      + cli.count("baseball-heur")
-      + cli.count("no-heur")) > 1 ) {
-    throw std::runtime_error{"Heuristic flags are mutually exclusive! Please select only one."};
-  }
-
-  if (cli.count("fix-heur")) {
-    options.prescoring_threshold = cli["fix-heur"].as<double>();
+  if (*fix_heur) {
     options.prescoring = options.prescoring_by_percentage = true;
     LOG_INFO << "Selected: Prescoring by percentage of branches: " << options.prescoring_threshold;
   }
 
-  if (cli.count("dyn-heur")) {
-    options.prescoring_threshold = cli["dyn-heur"].as<double>();
+  if (*dyn_heur) {
     options.prescoring = true;
     options.prescoring_by_percentage = false;
     LOG_INFO << "Selected: Prescoring by accumulated LWR threshold: " << options.prescoring_threshold;
   }
 
-  if (cli.count("baseball-heur")) {
-    options.baseball = true;
+  if (*baseball_heur) {
     LOG_INFO << "Selected: Prescoring using the baseball heuristic";
   }
 
-  if (cli.count("raxml-blo")) {
+  if (raxml_blo) {
     options.sliding_blo = false;
     LOG_INFO << "Selected: On query insertion, optimize branch lengths the way RAxML-EPA did it";
   }
 
-  if (cli.count("no-pre-mask")) {
+  if (no_pre_mask) {
     options.premasking = false;
     options.repeats = true;
     LOG_INFO << "Selected: Disabling pre-masking. (repeats enabled!)";
   }
 
-  if (cli.count("no-repeats")) {
-    options.repeats = false;
-    LOG_INFO << "Selected: Using the non-repeats version of libpll/modules";
-  }
+  // if (cli.count("no-repeats")) {
+  //   options.repeats = false;
+  //   LOG_INFO << "Selected: Using the non-repeats version of libpll/modules";
+  // }
 
-  if (cli.count("no-heur")) {
+  if (*no_heur) {
     options.prescoring = false;
     LOG_INFO << "Selected: Disabling the prescoring heuristics.";
   }
 
-  if (cli.count("dump-binary")) {
-    options.dump_binary_mode =  true;
+  if (options.dump_binary_mode) {
     LOG_INFO << "Selected: Build reference tree and write it out as a binary CLV store (for MPI)";
     LOG_INFO << "\tWARNING: this mode means that no placement will take place in this run";
   }
 
-  if (cli.count("model")) {
-    model_desc = cli["model"].as<std::string>();
-    if (is_file(model_desc)) {
-      LOG_INFO << "Selected: Specified model file: " << model_desc;
-      model_desc = parse_model(model_desc);
-    } else {
-      LOG_INFO << "Selected: Specified model: " << model_desc;
-    }
+  if (is_file(model_desc)) {
+    LOG_INFO << "Selected: Specified model file: " << model_desc;
+    model_desc = parse_model(model_desc);
+  } else {
+    LOG_INFO << "Selected: Specified model: " << model_desc;
   }
 
   model = raxml::Model(model_desc);
 
   LOG_INFO << model;
 
-  if (cli.count("chunk-size")) {
-    options.chunk_size = cli["chunk-size"].as<unsigned int>();
+  if (*chunk_size) {
     LOG_INFO << "Selected: Reading queries in chunks of: " << options.chunk_size;
   }
-
-  if (cli.count("threads")) {
-    options.num_threads = cli["threads"].as<unsigned int>();
+  #ifdef __OMP
+  if (*threads) {
     LOG_INFO << "Selected: Using threads: " << options.num_threads;
   }
-
-  } catch (const cxxopts::OptionException& e) {
-    std::cout << "error parsing options: " << e.what() << std::endl;
-    exit_epa(EXIT_FAILURE);
-  }
-
+  #endif
 
   //================================================================
   //============    EPA    =========================================
@@ -369,13 +409,13 @@ int main(int argc, char** argv)
   LOG_DBG << "Peeking into MSA files and generating masks";
 
   MSA_Info ref_info;
-  if (reference_file.size()) {
+  if (not reference_file.empty()) {
     ref_info = make_msa_info(reference_file);
     LOG_DBG << "Reference File:\n" << ref_info;
   }
 
   MSA_Info qry_info;
-  if (query_file.size()) {
+  if (not query_file.empty()) {
     qry_info = make_msa_info(query_file);
     LOG_DBG << "Query File:\n" << qry_info;
   }
@@ -405,7 +445,7 @@ int main(int argc, char** argv)
   }
 
   if (not options.dump_binary_mode) {
-    if (query_file.size() == 0) {
+    if (query_file.empty()) {
       throw std::runtime_error{"Must supply query file! Combined MSA files not currently supported, please split them and specify using -s and -q."};
     }
   } else {

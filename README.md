@@ -159,7 +159,7 @@ Here again the branches are sorted by the LWR of the placement of a sequence.
 Then, the top x% of the total number of branches are selected into the set of candidates.
 Like in `RAxML`, this behavior is controlled via the `-G` (or `--fix-heur`) flag.
 
-The third mode works identically to the *baseball heuristic* from [pplacer](http://matsen.github.io/pplacer/), with default settings (--strike-box 3.0, --max-strikes 6, --max-pitches 40).
+The third mode works identically to the *baseball heuristic* from [pplacer](http://matsen.github.io/pplacer/), with default settings (--strike-box 3.0, --max-strikes 6, --max-pitches 40) and is enabled using the `--baseball-heur` flag.
 
 Lastly, to disable the preplacement completely, you can simply supply the `--no-heur` flag.
 Be warned however: doing so will be significantly more computationally demanding.

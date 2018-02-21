@@ -118,7 +118,7 @@ message(STATUS "Using flags: ${CMAKE_CXX_FLAGS}")
 
 # Add include directories.
 include_directories(${PROJECT_SOURCE_DIR}/libs/cereal/include)
-include_directories(${PROJECT_SOURCE_DIR}/libs/cxxopts/include)
+include_directories(${PROJECT_SOURCE_DIR}/libs/CLI11/include)
 include_directories(${PROJECT_SOURCE_DIR}/libs/include/libpll)
 
 set(pll_dir ${PROJECT_SOURCE_DIR}/libs/pll-modules/libs/libpll/src)
