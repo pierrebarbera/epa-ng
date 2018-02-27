@@ -223,11 +223,6 @@ void simple_mpi(Tree& reference_tree,
 
   LOG_INFO << "Number of ranks: " << num_ranks;
 
-  std::vector<int> all_ranks(num_ranks);
-  for (int i = 0; i < num_ranks; ++i) {
-    all_ranks[i] = i;
-  }
-
   auto reader = make_msa_reader(query_file, msa_info, options.premasking);
 
   size_t local_rank_seq_offset = 0;
@@ -258,14 +253,11 @@ void simple_mpi(Tree& reference_tree,
   size_t sequences_done = 0; // not just for info output!
 
   // prepare output file
-  Jplace_writer jplace;
+  LOG_INFO << "Output file: " << outdir + "epa_result.jplace";
+  localized_jplace_writer jplace( outdir, "epa_result.jplace",
+                                  get_numbered_newick_string(reference_tree.tree()),
+                                  invocation);
 
-  if (local_rank == 0) {
-    LOG_INFO << "Output file: " << outdir + "epa_result.jplace";
-    jplace = Jplace_writer( outdir + "epa_result.jplace",
-                            get_numbered_newick_string(reference_tree.tree()),
-                            invocation);
-  }
 
   Sample preplace(options.chunk_size, num_branches);
 
@@ -317,7 +309,7 @@ void simple_mpi(Tree& reference_tree,
     filter(blo_sample, options);
 
     // pass the result chunk to the writer
-    jplace.gather_write(blo_sample, all_ranks, local_rank);
+    jplace.write( blo_sample );
 
     sequences_done += num_sequences;
     LOG_INFO << sequences_done  << " Sequences done!";
