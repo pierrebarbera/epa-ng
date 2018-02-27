@@ -123,7 +123,7 @@ protected:
                 std::fstream::in | std::fstream::out | std::fstream::trunc);
 
     if (not file_->is_open()) {
-      throw std::runtime_error{file_name + ": could not open!"};
+      throw std::runtime_error{file_path + ": could not open!"};
     }
     enclosed_ = enclosed;
   }
@@ -165,14 +165,18 @@ public:
   localized_jplace_writer(const std::string& out_dir,
                           const std::string& file_name,
                           const std::string& tree_string,
-                          const std::string& invocation_string)
+                          const std::string& invocation_string,
+                          const std::string& tmp_dir="")
   {
     auto local_file = file_name;
-    #ifdef __MPI // then have one outfile per rank
+    #ifdef __MPI // then have one outfile per rank    
     local_file = std::to_string(local_rank_) + "." + local_file;
     #endif
 
-    init_(out_dir, local_file, invocation_string, false);
+    init_(tmp_dir.empty() ? out_dir : tmp_dir,
+          local_file,
+          invocation_string,
+          false);
 
     final_file_ = out_dir + file_name;
     tree_string_ = tree_string;

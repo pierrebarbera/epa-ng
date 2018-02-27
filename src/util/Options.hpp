@@ -1,6 +1,7 @@
 #pragma once
 
 #include <limits>
+#include <string>
 
 class Options {
 
@@ -26,4 +27,5 @@ public:
   bool repeats                  = false;
   bool premasking               = true;
   bool baseball                 = false;
+  std::string tmp_dir;
 };

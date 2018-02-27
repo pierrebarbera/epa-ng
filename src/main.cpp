@@ -149,6 +149,11 @@ int main(int argc, char** argv)
   app.add_option("-w,--outdir", work_dir, "Path to output directory.", true
                 )->group("Output")->check(CLI::ExistingDirectory);
 
+  app.add_option("--tmp", options.tmp_dir, "Path to temporary directory. If set, MPI-Rank-local"
+                  " files will be stored here instead. Useful for node-local SSDs!"
+              )->group("")->check(CLI::ExistingDirectory)
+  // ->set_custom_option("DIR", 2)
+  ;
   auto filter_acc_lwr =
   app.add_option( "--filter-acc-lwr",
                   options.support_threshold,
@@ -248,6 +253,10 @@ int main(int argc, char** argv)
   }
 
   ensure_dir_has_slash(work_dir);
+  if ( not options.tmp_dir.empty() ) {
+    ensure_dir_has_slash(options.tmp_dir);
+    LOG_INFO << "Selected: Temporary dir: " << options.tmp_dir;
+  }
 
   // no log file for conversion functions
   if (not bfast_conv_file.empty()) {
@@ -281,16 +290,7 @@ int main(int argc, char** argv)
     LOG_INFO << "Selected: verbose (debug) output";
     genesis::utils::Logging::max_level(genesis::utils::Logging::kDebug);
   }
-
-  // check for valid input combinations
-  // if (not(
-  //       ( cli.count("tree") and cli.count("ref-msa") )
-  //   or  ( cli.count("binary") and (cli.count("query") or cli.count("ref-msa")) )
-  //   )) {
-  //   LOG_INFO << "Must supply reference tree/msa either directly or as precomputed binary.";
-  //   exit_epa(EXIT_FAILURE);
-  // }
-
+  
   if (not query_file.empty()) {
     LOG_INFO << "Selected: Query file: " << query_file;
   }
