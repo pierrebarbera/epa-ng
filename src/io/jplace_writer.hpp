@@ -4,6 +4,7 @@
 #include <future>
 #include <memory>
 #include <sstream>
+#include <cassert>
 
 #include "sample/Sample.hpp"
 #include "util/logging.hpp"
@@ -88,7 +89,7 @@ protected:
     #endif
   }
 
-  void write_(Sample<>& chunk)
+  virtual void write_( Sample<>& chunk )
   {
     if (file_) {
       if (first_){
@@ -116,8 +117,15 @@ protected:
               const std::string& invocation_string,
               const bool enclosed=true)
   {
-    const auto file_path = out_dir + file_name;
     invocation_ = invocation_string;
+    init_file_(out_dir, file_name); 
+    enclosed_ = enclosed;
+  }
+
+  virtual void init_file_(const std::string& out_dir,
+                          const std::string& file_name)
+  {
+    const auto file_path = out_dir + file_name;
     file_ = std::make_unique<std::fstream>();
     file_->open(file_path,
                 std::fstream::in | std::fstream::out | std::fstream::trunc);
@@ -125,7 +133,6 @@ protected:
     if (not file_->is_open()) {
       throw std::runtime_error{file_path + ": could not open!"};
     }
-    enclosed_ = enclosed;
   }
 
   void init_mpi_()
@@ -160,6 +167,7 @@ protected:
  */
 class localized_jplace_writer : public jplace_writer
 {
+
 public:
   localized_jplace_writer() = default;
   localized_jplace_writer(const std::string& out_dir,
@@ -193,18 +201,23 @@ public:
     wait();
 
     #ifdef __MPI
-    const bool master = (local_rank_ == 0);
+    const bool first = (local_rank_ == 0);
+    const bool last  = (local_rank_ == static_cast<int>(all_ranks_.size() - 1));
     // size of this part
-    size_t num_bytes = file_->tellp();
+    size_t num_bytes = file_->tellp(); // one byte for the comma
 
     // measure the size of the leading and trailing string
     std::string leading;
     std::string trailing;
-    if (master) {
+    if (first) {
       leading   = init_jplace_string(tree_string_);
-      trailing  = finalize_jplace_string(invocation_);
       // rank 0 writes the initial string into its fraction
       num_bytes += leading.size();
+    }
+
+    if (last) {
+      trailing  = finalize_jplace_string(invocation_);
+      num_bytes += trailing.size();
     }
 
     // broadcast all block sizes, such that everyone can calculate their displacement
@@ -215,14 +228,11 @@ public:
       displacement += block_sizes[i];
     }
 
-    // for (auto& )
     LOG_DBG << "Displacement: " << displacement;
 
     // create parallel outfile, with num_bytes reserved for this rank 
     MPI_File fh;
-    MPI_Status status;
     MPI_File_open(MPI_COMM_WORLD, final_file_.c_str(), MPI_MODE_WRONLY | MPI_MODE_CREATE, MPI_INFO_NULL,&fh);
-    // MPI_File_set_view(fh, displacement, MPI_CHAR, filetype, datarep, MPI_INFO_NULL);
     
     // get the contents of the file back
     std::stringstream buffer;
@@ -230,16 +240,16 @@ public:
     file_->seekg(0); // back to the start
     buffer << file_->rdbuf();
 
-    MPI_File_write_at_all(fh, displacement, buffer.str().c_str(), buffer.str().size(),
-                              MPI_CHAR, &status);
+    buffer << trailing;
 
-    if (master) {
-      // goto end of file
-      size_t eof = std::accumulate(std::begin(block_sizes), std::end(block_sizes), 0);
-      MPI_File_seek(fh, eof, MPI_SEEK_SET);
-      MPI_File_write(fh, trailing.c_str(), trailing.size(),
-                   MPI_CHAR, &status);
-    }
+    // MPI_Datatype arraytype;
+    // MPI_Type_contiguous(num_bytes, MPI_CHAR, &arraytype);
+    // MPI_Type_commit(&arraytype);
+    // MPI_File_set_view(fh, displacement, MPI_CHAR, arraytype,"native", MPI_INFO_NULL);
+    // MPI_File_write(fh, buffer.str().c_str(), buffer.str().size(), MPI_CHAR, MPI_STATUS_IGNORE);
+
+    MPI_File_write_at_all(fh, displacement, buffer.str().c_str(), buffer.str().size(),
+                              MPI_CHAR, MPI_STATUS_IGNORE);
 
     MPI_File_close(&fh);
     #endif
@@ -256,4 +266,117 @@ private:
   std::string tree_string_;
 
 };
- 
+
+
+/**
+ * special jplace writer that writes parts using mpi io
+ */
+class mpio_jplace_writer : public jplace_writer
+{
+public:
+  mpio_jplace_writer() = default;
+  mpio_jplace_writer( const std::string& out_dir,
+                      const std::string& file_name,
+                      const std::string& tree_string,
+                      const std::string& invocation_string)
+  {
+    #ifndef __MPI
+    assert(0);
+    #endif
+
+    init_(out_dir,
+          file_name,
+          invocation_string,
+          false);
+
+    tree_string_ = tree_string;
+
+    // ensure non-rank-0 blocks start with a comma
+    if (local_rank_ != 0) {
+      first_ = false;
+    }
+
+  }
+
+  ~mpio_jplace_writer()
+  {
+    // ensure last write/gather was completed
+    wait();
+
+    if (local_rank_ == 0) {
+      auto trailing = finalize_jplace_string(invocation_);
+      MPI_File_seek(shared_file_, 0, MPI_SEEK_END);
+      MPI_File_write(shared_file_, trailing.c_str(), trailing.size(),
+                      MPI_CHAR, MPI_STATUS_IGNORE);
+    }
+  }
+
+private:
+  void init_file_(const std::string& out_dir,
+                  const std::string& file_name) override
+  {
+    auto outfile = out_dir + file_name;
+
+    MPI_File_open(MPI_COMM_WORLD,
+                  outfile.c_str(),
+                  MPI_MODE_WRONLY | MPI_MODE_CREATE,
+                  MPI_INFO_NULL,
+                  &shared_file_);
+  }
+
+  void write_( Sample<>& chunk ) override
+  {
+    if (shared_file_) {
+      // serialize the sample
+      std::stringstream buffer;
+      if (first_){
+        // account for the leading string
+        if (local_rank_ == 0) {
+          buffer << init_jplace_string(tree_string_);
+        }
+        first_ = false;
+      } else {
+        buffer << ",\n";
+      }
+      buffer << sample_to_jplace_string(chunk);
+
+      // how much this rank intends to write this turn
+      const auto buffer_str = buffer.str();
+      size_t num_bytes = buffer_str.size();
+      buffer.clear();
+
+      // make the displacements known to all
+      std::vector<size_t> block_sizes( all_ranks_.size() );
+      MPI_Allgather(&num_bytes, 1, MPI_SIZE_T, block_sizes.data(), 1, MPI_SIZE_T, MPI_COMM_WORLD);
+      size_t displacement = bytes_written_; // displacement is from cur file view
+      size_t total_written = 0;
+      for (size_t i = 0; i < block_sizes.size(); ++i) {
+        if ( i < static_cast<size_t>(local_rank_) ) {
+          displacement += block_sizes[i];
+        }
+        total_written += block_sizes[i];
+      }
+
+      // write the local chunk
+      MPI_File_write_at_all(shared_file_,
+                            displacement,
+                            buffer_str.c_str(),
+                            buffer_str.size(),
+                            MPI_CHAR,
+                            MPI_STATUS_IGNORE);
+
+      bytes_written_ += total_written;
+    }
+  }
+
+  // no gather, only write
+  void gather_( Sample<>& chunk ) override
+  {
+    (void) chunk;
+  }
+
+  MPI_File shared_file_;
+  std::string tree_string_;
+  size_t bytes_written_ = 0;
+
+};
