@@ -171,6 +171,10 @@ public:
     auto local_file = file_name;
     #ifdef __MPI // then have one outfile per rank    
     local_file = std::to_string(local_rank_) + "." + local_file;
+    // ensure non-rank-0 blocks start with a comma
+    if (local_rank_ != 0) {
+      first_ = false;
+    }
     #endif
 
     init_(tmp_dir.empty() ? out_dir : tmp_dir,
