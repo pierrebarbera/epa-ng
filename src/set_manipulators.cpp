@@ -176,11 +176,13 @@ void discard_by_support_threshold(Sample<Placement>& sample,
     const auto num_kept = static_cast<size_t>(distance(pq.begin(), erase_iter));
 
     if ( num_kept < min ) {
-      erase_iter = pq.begin() + min - 1;
+      const auto to_add = min - num_kept;
+      std::advance(erase_iter, to_add);
     }
 
     if ( num_kept > max ) {
-      erase_iter = pq.begin() + max - 1;
+      const auto to_remove = num_kept - max;
+      std::advance(erase_iter, -to_remove);
     }
 
     pq.erase(erase_iter, pq.end());
