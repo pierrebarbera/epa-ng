@@ -5,6 +5,7 @@
 1. **[Introduction](#introduction)**
 2. **[Build Instructions](#build-instructions)**
 3. **[Usage](#usage)**
+4. **[Citing EPA-ng](#citing-epa-ng)**
 
 ## IMPORTANT
 The by far easiest way to clone this repository is to use the following command
@@ -215,3 +216,8 @@ mpirun epa-ng --ref-msa $REF_MSA --tree $TREE -q query.fasta.bin -w ./some/outpu
 ```
 
 **Note** that using the binary format is not strictly required, however it is highly reccomended to increase parallel efficiency.
+
+
+## Citing EPA-ng
+
+For now, please cite [this preprint](https://www.biorxiv.org/content/early/2018/03/29/291658) of the paper when using EPA-ng.
