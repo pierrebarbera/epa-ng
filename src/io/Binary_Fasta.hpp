@@ -30,12 +30,13 @@ static FourBit& code_()
   return obj;
 }
 
-static inline size_t data_section_offset(const size_t num_sequences)
+static inline size_t data_section_offset(const size_t num_sequences, const size_t mask_size)
 {
   return MAGIC_SIZE
       + sizeof(num_sequences)
       + (num_sequences *
-        sizeof(uint64_t) * 2 );
+        sizeof(uint64_t) * 2 )
+      + mask_size + sizeof(uint64_t);
 }
 
 static inline void write_header(utils::Serializer& ser,
@@ -49,7 +50,7 @@ static inline void write_header(utils::Serializer& ser,
   ser.put_raw(MAGIC, MAGIC_SIZE);
   ser.put_int(num_sequences);
 
-  // Scond part: the gap mask
+  // Second part: the gap mask
   // <mask_width><mask_string>
   std::stringstream ss;
   ss << mask;
@@ -57,7 +58,7 @@ static inline void write_header(utils::Serializer& ser,
 
   // Third part: the offset table for random access
   // <<seqID><seqOffset>><...>
-  uint64_t offset = data_section_offset(num_sequences);
+  uint64_t offset = data_section_offset(num_sequences, mask.size());
   for (uint64_t i = 0; i < num_sequences; ++i) {
     ser.put_int(i);
     ser.put_int(offset);
@@ -174,8 +175,8 @@ static MSA read_sequences(utils::Deserializer& des,
 {
   MSA msa(sites);
 
-  for (size_t i = 0; i < number and not des.finished(); ++i) {
-    auto label = des.get_string();
+  for (size_t i = 0; i < number; ++i) {
+    auto label    = des.get_string();
     auto sequence = get_decoded(des);
 
     if ( mask.count() ) {
@@ -334,6 +335,7 @@ public:
   {
     mask_type dummy_mask;
     read_header(des_, seq_offsets_, dummy_mask);
+    max_read_ = seq_offsets_.size();
 
     if (not premasking) {
       mask_ = mask_type();
@@ -344,6 +346,7 @@ public:
 
   virtual void constrain(const size_t max_read) override
   {
+    assert(max_read < max_read_);
     max_read_ = max_read;
   }
 
@@ -362,6 +365,7 @@ public:
 
     skip_sequences(des_, seq_offsets_, skip, cursor_);
     cursor_ += skip;
+    max_read_ -= skip;
   }
 
   virtual size_t read_next(MSA& result, const size_t number) override
@@ -386,7 +390,7 @@ private:
   utils::Deserializer des_;
   mask_type mask_;
   std::vector<uint64_t> seq_offsets_;
-  size_t cursor_ = 0;
-  size_t num_read_ = 0;
-  size_t max_read_ = std::numeric_limits<size_t>::max();
+  size_t cursor_    = 0;
+  size_t num_read_  = 0;
+  size_t max_read_  = std::numeric_limits<size_t>::max();
 };

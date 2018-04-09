@@ -109,11 +109,14 @@ public:
 
   std::string from_fourbit(const std::basic_string<char>& s, const size_t n)
   {
+    assert(s.size() > 0);
+    assert(n > 0);
+
     // prepare the result string
     std::string res;
     res.resize(n);
 
-    // determine wether the packed string has padding
+    // determine whether the packed string has padding
     const bool padded = (s.size() * 2 < n);
 
     // unpack
