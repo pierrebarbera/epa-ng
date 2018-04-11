@@ -255,9 +255,7 @@ public:
   }
 
   static MSA load(const std::string& file_name,
-                  const bool premasking = false,
-                  const size_t skip = 0,
-                  const size_t number = std::numeric_limits<size_t>::max())
+                  const bool premasking = false)
   {
     utils::Deserializer des(file_name);
 
@@ -265,15 +263,11 @@ public:
     mask_type mask;
     read_header(des, offset, mask);
 
-    if (skip) {
-      skip_sequences(des, offset, skip, 0);
-    }
-
     if (not premasking) {
       mask = mask_type();
     }
 
-    return read_sequences(des, mask, number);
+    return read_sequences( des, mask, offset.size() );
   }
 
   static std::string fasta_to_bfast( const std::string& fasta_file,
