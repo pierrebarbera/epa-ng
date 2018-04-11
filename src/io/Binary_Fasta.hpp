@@ -346,8 +346,7 @@ public:
 
   virtual void constrain(const size_t max_read) override
   {
-    assert(max_read < max_read_);
-    max_read_ = max_read;
+    max_read_ = std::min( max_read , max_read_);
   }
 
   virtual void skip_to_sequence(const size_t n) override
