@@ -49,7 +49,7 @@ MSA_Stream::MSA_Stream( const std::string& msa_file,
   iter_.from_file(msa_file);
 
   // ensure sequences are uniformly upper case
-  iter_.reader().to_upper(true);
+  iter_.reader().site_casing(genesis::sequence::FastaReader::SiteCasing::kToUpper);
 
   if (!iter_) {
     throw std::runtime_error{std::string("Cannot open file: ") + msa_file};
