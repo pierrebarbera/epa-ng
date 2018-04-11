@@ -99,10 +99,6 @@ else()
   set(GENESIS_USE_THREADS OFF CACHE BOOL "Passing GENESIS_USE_THREADS=OFF to genesis")
 endif()
 
-if ( $ENV{EPA_DEBUG} )
-  set(GENESIS_DEBUG 1 CACHE BOOL "Passing GENESIS_DEBUG=1 to genesis")
-endif ()
-
 set(GENESIS_USE_OPENMP OFF CACHE BOOL "Passing GENESIS_USE_OPENMP=OFF to genesis")
 
 # Add Genesis as dependency
