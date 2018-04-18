@@ -93,6 +93,35 @@ if(ENABLE_MPI)
 endif()
 
 # =============================================
+#   Download Dependencies
+# =============================================
+
+# Downloads dependencies if they are not there. We use a special script for this.
+include( "${CMAKE_CURRENT_LIST_DIR}/libs/cmake/DownloadDependency.cmake" )
+
+# Store the commit hashes of our dependencies.
+# These are replaced by libs/cmake/update_dependencies.sh to the hashes that are currently checked out.
+# Thus, do not replace the hashes manually!
+SET( CLI11_COMMIT_HASH "d465414455e01c9e0753efbbf5bde16685bc7b90" ) #CLI11_COMMIT_HASH#
+SET( genesis_COMMIT_HASH "fcfa3e2d45df6e4b64427c26cdf3fc4e2767c429" ) #genesis_COMMIT_HASH#
+SET( pll-modules_COMMIT_HASH "f6174cdff472be5a43220e1581d5d4cb7d4ef18c" ) #pll-modules_COMMIT_HASH#
+SET( libpll_COMMIT_HASH "f89f1f40842ecba4ed0b1e6a87a688f9a46865fb" ) #libpll_COMMIT_HASH#
+SET( cereal_COMMIT_HASH "51cbda5f30e56c801c07fe3d3aba5d7fb9e6cca4" ) #cereal_COMMIT_HASH#
+
+# Call the github download function, which takes four arguments:
+#  - LIBPATH    : Path to the libracy dir where dependencies are stored.
+#  - LIBNAME    : Name of the dependency, that is, the name of its main directory within the ${LIBPATH}.
+#  - TESTFILE   : A testfile to check if the dependency is already there.
+#  - REPOSITORY : Github repository (user/reponame)
+#  - COMMITHASH : Hash of the commit to check out
+DOWNLOAD_GITHUB_DEPENDENCY( "${PROJECT_SOURCE_DIR}/libs" "CLI11"      "CMakeLists.txt"  "CLIUtils/CLI11"        ${CLI11_COMMIT_HASH} )
+DOWNLOAD_GITHUB_DEPENDENCY( "${PROJECT_SOURCE_DIR}/libs" "genesis"    "CMakeLists.txt"  "lczech/genesis"        ${genesis_COMMIT_HASH} )
+DOWNLOAD_GITHUB_DEPENDENCY( "${PROJECT_SOURCE_DIR}/libs" "pll-modules""README.md"       "ddarriba/pll-modules"  ${pll-modules_COMMIT_HASH} )
+DOWNLOAD_GITHUB_DEPENDENCY( "${PROJECT_SOURCE_DIR}/libs/pll-modules/libs"
+                                                         "libpll"     "README.md"       "xflouris/libpll-2"     ${libpll_COMMIT_HASH} )
+DOWNLOAD_GITHUB_DEPENDENCY( "${PROJECT_SOURCE_DIR}/libs" "cereal"     "README.md"       "USCiLab/cereal"        ${cereal_COMMIT_HASH} )
+
+# =============================================
 #         Build pll-modules
 # =============================================
 
@@ -124,9 +153,16 @@ set( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GENESIS_EXE_LINKER_FLAG
 
 message(STATUS "Using flags: ${CMAKE_CXX_FLAGS}")
 
-# Add include directories.
+# =============================================
+# Add include directories for other dependencies
+# =============================================
+
 include_directories(${PROJECT_SOURCE_DIR}/libs/cereal/include)
 include_directories(${PROJECT_SOURCE_DIR}/libs/CLI11/include)
+
+# =============================================
+#         Recurse and compile main code
+# =============================================
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/src)
 
