@@ -57,7 +57,6 @@ ENDIF()
 # Download a fixed commit instead of the current master, so that we know that it works for us.
 ExternalProject_Add( @DEPENDENCY_NAME@
     URL @DEPENDENCY_URL@
-    ${CMAKE_DOWNLOAD_PROGRESS}
     SOURCE_DIR        "@DEPENDENCY_PATH@/@DEPENDENCY_NAME@"
     BINARY_DIR        "@DEPENDENCY_PATH@/@DEPENDENCY_NAME@"
     CONFIGURE_COMMAND ""
