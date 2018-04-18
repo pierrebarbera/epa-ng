@@ -1,7 +1,3 @@
-PLLMOD=libs/pll-modules
-PLL=${PLLMOD}/libs/libpll
-GENESIS=libs/genesis
-
 all: build/CMakeCache.txt run_make
 .PHONY: all
 
@@ -13,7 +9,7 @@ build/CMakeCache.txt: CMakeLists.txt
 
 run_make: build/CMakeCache.txt
 	@echo "Running make"
-	$(MAKE) -C build 
+	$(MAKE) -C build
 .PHONY: run_make
 
 update:
@@ -26,30 +22,6 @@ unittest: update
 	@./test/bin/epa_test
 .PHONY: test
 
-genesis:
-	mkdir -p bin
-	cd ${GENESIS} && $(MAKE)
-.PHONY: genesis
-
-genesis_update:
-	mkdir -p bin
-	cd ${GENESIS} && $(MAKE) update
-.PHONY: genesis
-
-genesis_clean:
-	cd ${GENESIS} && $(MAKE) clean
-.PHONY: genesis
-
-pll:
-	mkdir -p bin
-	cd ${PLLMOD} && ./install-with-libpll.sh .. 
-.PHONY: pll
-
-pll_clean:
-	cd ${PLL} && make clean
-	cd ${PLLMOD} && make clean
-.PHONY: pll_clean
-		
 clean:
 	@echo "Cleaning"
 	@rm -rf build

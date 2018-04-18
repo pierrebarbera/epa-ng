@@ -22,11 +22,7 @@ set (EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/test/bin)
 add_executable        (epa_test_module ${epa_test_sources})
 
 target_link_libraries (epa_test_module ${GENESIS_LINK_LIBRARIES} )
-target_link_libraries (epa_test_module ${PROJECT_SOURCE_DIR}/libs/lib/libpll_binary.a)
-target_link_libraries (epa_test_module ${PROJECT_SOURCE_DIR}/libs/lib/libpll_optimize.a)
-target_link_libraries (epa_test_module ${PROJECT_SOURCE_DIR}/libs/lib/libpll_msa.a)
-target_link_libraries (epa_test_module ${PROJECT_SOURCE_DIR}/libs/lib/libpll_util.a)
-target_link_libraries (epa_test_module ${PROJECT_SOURCE_DIR}/libs/lib/libpll.a)
+target_link_libraries (epa_test_module ${PLLMOD_EXPORTED_LIBS_STATIC})
 target_link_libraries (epa_test_module m)
 
 target_link_libraries (epa_test_module ${GTEST_BOTH_LIBRARIES})

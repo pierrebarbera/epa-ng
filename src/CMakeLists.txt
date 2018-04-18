@@ -7,11 +7,7 @@ set (EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 add_executable        (epa_module ${epa_sources})
 
 target_link_libraries (epa_module ${GENESIS_LINK_LIBRARIES} )
-target_link_libraries (epa_module ${PROJECT_SOURCE_DIR}/libs/lib/libpll_binary.a)
-target_link_libraries (epa_module ${PROJECT_SOURCE_DIR}/libs/lib/libpll_optimize.a)
-target_link_libraries (epa_module ${PROJECT_SOURCE_DIR}/libs/lib/libpll_msa.a)
-target_link_libraries (epa_module ${PROJECT_SOURCE_DIR}/libs/lib/libpll_util.a)
-target_link_libraries (epa_module ${PROJECT_SOURCE_DIR}/libs/lib/libpll.a)
+target_link_libraries (epa_module ${PLLMOD_EXPORTED_LIBS_STATIC})
 target_link_libraries (epa_module m)
 
 if(ENABLE_PREFETCH)

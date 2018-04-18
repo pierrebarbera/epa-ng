@@ -92,6 +92,18 @@ if(ENABLE_MPI)
   endif()
 endif()
 
+# =============================================
+#         Build pll-modules
+# =============================================
+
+add_subdirectory(${PROJECT_SOURCE_DIR}/libs/pll-modules)
+
+include_directories(${PLLMOD_EXPORTED_INCLUDE_PATH})
+
+# =============================================
+#         Build genesis
+# =============================================
+
 # pass special info to genesis
 if(ENABLE_PREFETCH)
   set(GENESIS_USE_THREADS ON CACHE BOOL "Passing GENESIS_USE_THREADS=ON to genesis")
@@ -115,12 +127,6 @@ message(STATUS "Using flags: ${CMAKE_CXX_FLAGS}")
 # Add include directories.
 include_directories(${PROJECT_SOURCE_DIR}/libs/cereal/include)
 include_directories(${PROJECT_SOURCE_DIR}/libs/CLI11/include)
-include_directories(${PROJECT_SOURCE_DIR}/libs/include/libpll)
-
-set(pll_dir ${PROJECT_SOURCE_DIR}/libs/pll-modules/libs/libpll/src)
-set(pll_binary_dir ${PROJECT_SOURCE_DIR}/libs/pll-modules/src/binary)
-set(pll_optimize_dir ${PROJECT_SOURCE_DIR}/libs/pll-modules/src/optimize)
-set(pll_msa_dir ${PROJECT_SOURCE_DIR}/libs/pll-modules/src/msa)
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/src)
 

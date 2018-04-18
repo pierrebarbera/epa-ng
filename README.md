@@ -31,7 +31,7 @@ This tool is still in an active, *beta* phase of development. Suggestions, bug r
 
 ## Introduction
 
-`EPA-ng` is a complete rewrite of the [Evolutionary Placement Algorithm (EPA)](https://academic.oup.com/sysbio/article/60/3/291/1667010/Performance-Accuracy-and-Web-Server-for), previously implemented in [RAxML](https://github.com/stamatak/standard-RAxML). It uses [libpll](https://github.com/xflouris/libpll) to perform maximum likelihood-based phylogenetic placement of genetic sequences on a user-supplied reference tree and alignment.
+`EPA-ng` is a complete rewrite of the [Evolutionary Placement Algorithm (EPA)](https://academic.oup.com/sysbio/article/60/3/291/1667010/Performance-Accuracy-and-Web-Server-for), previously implemented in [RAxML](https://github.com/stamatak/standard-RAxML). It uses [libpll](https://github.com/xflouris/libpll-2) and [pll-modules](https://github.com/ddarriba/pll-modules) to perform maximum likelihood-based phylogenetic placement of genetic sequences on a user-supplied reference tree and alignment.
 
 ### What can EPA-ng do?
 
@@ -61,17 +61,7 @@ Once these dependencies are available, you need to ensure that your compiler is 
 
 Any one of these compilers will be sufficient. gcc is the most wide spread, and current versions of Ubuntu have gcc versions exceeding the minimum.
 
-Now it's time to build the program. First, we build `libpll`:
-
-```
-cd epa
-make pll
-```
-
-This will configure, build, and install the various `libpll` libraries into a subfolder of the `epa-ng` directory.
-**Make sure this step has not produced any errors!** Otherwise, we cannot procede.
-
-Next, we will build `EPA-ng` itself:
+Now it's time to build the program.
 
 ```
 make
@@ -112,14 +102,14 @@ On a single computer, an example execution might look like this:
 epa-ng --ref-msa $REF_MSA --tree $TREE --query $QRY_MSA --outdir $OUT
 ```
 
-Note that this will use as many threads as specified by the environment variable `OMP_NUM_THREADS`. 
+Note that this will use as many threads as specified by the environment variable `OMP_NUM_THREADS`.
 Usually this defaults to the number of cores.
 Note however, that no speedup is to be expected from hyperthreads, meaning the number of threads should be set to the number of physical cores.
 
 #### Setting the Model Parameters
 As of version 0.2.0, GTRGAMMA model parameters have to be specified explicitly.
 There are currently two ways of doing this:
-Either specify a raxml-ng-style model descriptor, like so: 
+Either specify a raxml-ng-style model descriptor, like so:
 ```
 epa-ng <...> --model GTR{0.7/1.8/1.2/0.6/3.0/1.0}+FU{0.25/0.23/0.30/0.22}+G4{0.47}
 ```
