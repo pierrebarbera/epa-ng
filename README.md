@@ -21,13 +21,13 @@ git submodule update --init --recursive
 
 ### SUPPORT
 
-The most reliable way to get in touch with us is to head over to the [RAxML Google Group](https://groups.google.com/forum/#!forum/raxml). You can also search the history of the list for your particular question.
+The most reliable way to get in touch with us is to head over either to the [Phylogenetic Placement Google Group](https://groups.google.com/forum/#!forum/phylogenetic-placement) or the [RAxML Google Group](https://groups.google.com/forum/#!forum/raxml). You can also search the history of these lists for your particular question.
 
 Alternatively I've created a [gitter chat room](https://gitter.im/epa-ng/Lobby) where I can usually be found during office hours.
 
 ### DISCLAIMER
 
-This tool is still in an active, *beta* phase of development. Suggestions, bug reports and constructive comments are more than encuraged! Please do so in the [issues section](https://github.com/Pbdas/epa/issues).
+This tool is still in an active, *beta* phase of development. Suggestions, bug reports and constructive comments are more than encuraged! Please do so in the [google group](https://groups.google.com/forum/#!categories/phylogenetic-placement/epa-ng).
 
 ## Introduction
 
