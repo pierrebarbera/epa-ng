@@ -21,7 +21,7 @@ git submodule update --init --recursive
 
 ### SUPPORT
 
-The most reliable way to get in touch with us is to head over either to the [Phylogenetic Placement Google Group](https://groups.google.com/forum/#!forum/phylogenetic-placement) or the [RAxML Google Group](https://groups.google.com/forum/#!forum/raxml). You can also search the history of these lists for your particular question.
+The most reliable way to get in touch with us is to head over to the [Phylogenetic Placement Google Group](https://groups.google.com/forum/#!forum/phylogenetic-placement). You can also search its history, or the hostory of the  [RAxML Google Group](https://groups.google.com/forum/#!forum/raxml) for your particular question.
 
 Alternatively I've created a [gitter chat room](https://gitter.im/epa-ng/Lobby) where I can usually be found during office hours.
 
@@ -210,4 +210,4 @@ mpirun epa-ng --ref-msa $REF_MSA --tree $TREE -q query.fasta.bin -w ./some/outpu
 
 ## Citing EPA-ng
 
-For now, please cite [this preprint](https://www.biorxiv.org/content/early/2018/03/29/291658) of the paper when using EPA-ng.
+For now, please cite [this preprint](https://www.biorxiv.org/content/early/2018/04/17/291658) of the paper when using EPA-ng.
