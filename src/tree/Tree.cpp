@@ -12,27 +12,35 @@
 #include "util/logging.hpp"
 #include "util/stringify.hpp"
 
-Tree::Tree( const std::string &tree_file, 
+Tree::Tree( const std::string &tree_file,
             const MSA &msa,
-            raxml::Model &model, 
+            raxml::Model &model,
             const Options& options)
   : ref_msa_(msa)
   , model_(model)
   , options_(options)
 {
-  tree_ = utree_ptr(build_tree_from_file(tree_file, nums_), utree_destroy);
-  partition_ = partition_ptr( build_partition_from_file(model_, 
-                                                        nums_, 
+  try {
+    tree_ = utree_ptr(build_tree_from_file(tree_file, nums_), utree_destroy);
+  } catch (std::invalid_argument& e) {
+    auto modelstring = model_.num_states() == 4 ? "GTRGAMMAX" : "PROTGAMMAGTRX";
+    std::cout << e.what() << " Please resolve the tree fully.\n( e.g. raxml -g "
+              << tree_file << " -m " << modelstring << " -n <name> -s <alignment> -p 1234 )" << std::endl;
+    throw std::runtime_error{"Aborting"};
+  }
+
+  partition_ = partition_ptr( build_partition_from_file(model_,
+                                                        nums_,
                                                         ref_msa_.num_sites(),
-                                                        options_.repeats ), 
+                                                        options_.repeats ),
                               pll_partition_destroy);
 
   locks_ = Mutex_List(partition_->tips + partition_->clv_buffers);
 
-  link_tree_msa(tree_.get(), 
-                partition_.get(), 
-                model_, 
-                ref_msa_, 
+  link_tree_msa(tree_.get(),
+                partition_.get(),
+                model_,
+                ref_msa_,
                 nums_.tip_nodes);
 
   set_unique_clv_indices(get_root(tree_.get()), nums_.tip_nodes);
@@ -50,8 +58,8 @@ Tree::Tree( const std::string &tree_file,
 /**
   Constructs the structures from binary file.
 */
-Tree::Tree( const std::string& bin_file, 
-            raxml::Model& model, 
+Tree::Tree( const std::string& bin_file,
+            raxml::Model& model,
             const Options& options)
   : model_(model)
   , options_(options)
@@ -93,7 +101,7 @@ void* Tree::get_clv(const pll_unode_t* node)
   if (use_tipchars and i < partition_->tips) {
     clv_ptr = partition_->tipchars[i];
     // dynamically load from disk if not in memory
-    if (options_.load_binary_mode 
+    if (options_.load_binary_mode
         and clv_ptr == nullptr) {
       binary_.load_tipchars(partition_.get(), i);
       clv_ptr = partition_->tipchars[i];
@@ -101,7 +109,7 @@ void* Tree::get_clv(const pll_unode_t* node)
   } else {
     clv_ptr = partition_->clv[i];
     // dynamically load from disk if not in memory
-    if (options_.load_binary_mode 
+    if (options_.load_binary_mode
         and clv_ptr == nullptr) {
       binary_.load_clv(partition_.get(), i);
       clv_ptr = partition_->clv[i];
@@ -109,8 +117,8 @@ void* Tree::get_clv(const pll_unode_t* node)
   }
 
   // dynamically load the scaler if needed
-  if (options_.load_binary_mode 
-      and scaler != PLL_SCALE_BUFFER_NONE 
+  if (options_.load_binary_mode
+      and scaler != PLL_SCALE_BUFFER_NONE
       and partition_->scale_buffer[scaler] == nullptr) {
     binary_.load_scaler(partition_.get(), scaler);
   }

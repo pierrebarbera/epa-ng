@@ -44,7 +44,7 @@ MSA build_MSA_from_file(const std::string& msa_file,
                         const bool premasking)
 {
   MSA msa;
-  auto reader = make_msa_reader(msa_file, info, premasking); 
+  auto reader = make_msa_reader(msa_file, info, premasking);
   reader->read_next(msa, std::numeric_limits<size_t>::max());
 
   return msa;
@@ -66,6 +66,10 @@ pll_utree_s * build_tree_from_file(const std::string& tree_file, Tree_Numbers& n
 
     /* optional step if using default PLL clv/pmatrix index assignments */
     pll_utree_reset_template_indices(get_root(tree), tree->tip_count);
+  }
+
+  if (not tree->binary) {
+    throw std::invalid_argument{"Input Tree contains multifurcations (polytomies)!"};
   }
 
   if (tree->tip_count < 3) {
@@ -91,8 +95,8 @@ static unsigned int simd_autodetect()
     return PLL_ATTRIB_ARCH_CPU;
 }
 
-pll_partition_t *  build_partition_from_file( const raxml::Model& model, 
-                                              Tree_Numbers& nums, 
+pll_partition_t *  build_partition_from_file( const raxml::Model& model,
+                                              Tree_Numbers& nums,
                                               const int num_sites,
                                               const bool repeats)
 {

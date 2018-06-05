@@ -6,10 +6,10 @@
 #include "core/pll/pll_util.hpp"
 #include "set_manipulators.hpp"
 
-void link_tree_msa( pll_utree_t * tree, 
-                    pll_partition_t * partition, 
-                    raxml::Model& model, 
-                    const MSA& msa, 
+void link_tree_msa( pll_utree_t * tree,
+                    pll_partition_t * partition,
+                    raxml::Model& model,
+                    const MSA& msa,
                     const unsigned int num_tip_nodes)
 {
   // associate the sequences from the MSA file with the correct tips
@@ -37,8 +37,8 @@ void link_tree_msa( pll_utree_t * tree,
   }
 }
 
-void precompute_clvs( pll_utree_t const * const tree, 
-                      pll_partition_t * partition, 
+void precompute_clvs( pll_utree_t const * const tree,
+                      pll_partition_t * partition,
                       const Tree_Numbers& nums)
 {
   /* various buffers for creating a postorder traversal and operations structures */
@@ -49,11 +49,6 @@ void precompute_clvs( pll_utree_t const * const tree,
   std::vector<pll_operation_t> operations(nums.nodes);
 
   const auto root = get_root(tree);
-
-  /* adjust clv indices such that every direction has its own */
-  // set_unique_clv_indices(root, nums.tip_nodes);
-
-  std::vector<std::vector<double>> persite(tree->tip_count);
 
   utree_free_node_data(root);
 
@@ -67,7 +62,7 @@ void precompute_clvs( pll_utree_t const * const tree,
     if (pll_utree_traverse( node->back,
                             PLL_TREE_TRAVERSE_POSTORDER,
                             cb_partial_traversal,
-                            &travbuffer[0], 
+                            &travbuffer[0],
                             &traversal_size)
                 != PLL_SUCCESS) {
       throw std::runtime_error{"Function pll_unode_traverse() requires inner nodes as parameters"};
@@ -97,12 +92,12 @@ void precompute_clvs( pll_utree_t const * const tree,
   utree_free_node_data(root);
 }
 
-void split_combined_msa(MSA& source, 
-                        MSA& target, 
+void split_combined_msa(MSA& source,
+                        MSA& target,
                         Tree& tree)
 {
   std::vector<pll_unode_t*> tip_nodes(tree.nums().tip_nodes);
-  tip_nodes.assign( tree.tree()->nodes, 
+  tip_nodes.assign( tree.tree()->nodes,
                     tree.tree()->nodes + tree.tree()->tip_count);
 
   auto falsegroup_begin = partition(source.begin(), source.end(),
