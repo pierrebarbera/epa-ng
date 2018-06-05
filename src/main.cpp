@@ -40,6 +40,9 @@ inline bool is_file (const std::string& name) {
 void exit_epa(int ret=EXIT_SUCCESS)
 {
   MPI_FINALIZE();
+  if (ret != EXIT_SUCCESS) {
+    std::cout << "Aborting with a failure." << std::endl;
+  }
   std::exit(ret);
 }
 
@@ -53,7 +56,7 @@ int main(int argc, char** argv)
   int local_rank = 0;
   MPI_Comm_rank(MPI_COMM_WORLD, &local_rank);
   if (local_rank != 0) {
-    genesis::utils::Logging::log_to_stdout(false);  
+    genesis::utils::Logging::log_to_stdout(false);
   }
 #endif
   genesis::utils::Logging::max_level(genesis::utils::Logging::kInfo);
@@ -129,13 +132,15 @@ int main(int argc, char** argv)
                 )->group("Input")->check(CLI::ExistingFile);
 
   binary_file_opt->excludes(tree_file_opt)->excludes(reference_file_opt);
-  tree_file_opt->excludes(binary_file_opt);  
-  reference_file_opt->excludes(binary_file_opt);  
+  tree_file_opt->excludes(binary_file_opt);
+  reference_file_opt->excludes(binary_file_opt);
 
   app.add_option( "-q,--query",
                   query_file,
                   "Path to Query MSA file."
                 )->group("Input")->check(CLI::ExistingFile);
+
+  auto model_option =
   app.add_option( "-m,--model",
                   model_desc,
                   "Description string of the model to be used, or a RAxML_info file."
@@ -290,7 +295,7 @@ int main(int argc, char** argv)
     LOG_INFO << "Selected: verbose (debug) output";
     genesis::utils::Logging::max_level(genesis::utils::Logging::kDebug);
   }
-  
+
   if (not query_file.empty()) {
     LOG_INFO << "Selected: Query file: " << query_file;
   }
@@ -441,6 +446,14 @@ int main(int argc, char** argv)
     tree = Tree(binary_file, model, options);
   } else {
     // build the full tree with all possible clv's
+    if (not *model_option) {
+      std::cout <<"When using epa-ng like this, a model has to be explicitly specified! \n"
+                  "You may specify it generically (GTR+G), however parameters will not be optimized. \n"
+                  "Instead we reccommend to use RAxML to re-evaluate the parameters and then pass the resulting \n"
+                  "RAxML_info file to the epa-ng --model argument. epa-ng will then auto-parse the parameters.\n"
+                  "( raxmlHPC -f e -s " << reference_file << " -t " << tree_file << " -n info -m GTRGAMMAX )" << std::endl;
+      exit_epa(EXIT_FAILURE);
+    }
     tree = Tree(tree_file, ref_msa, model, options);
   }
 
