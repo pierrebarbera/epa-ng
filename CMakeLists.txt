@@ -104,8 +104,8 @@ include( "${CMAKE_CURRENT_LIST_DIR}/libs/cmake/DownloadDependency.cmake" )
 # Thus, do not replace the hashes manually!
 SET( CLI11_COMMIT_HASH "d465414455e01c9e0753efbbf5bde16685bc7b90" ) #CLI11_COMMIT_HASH#
 SET( genesis_COMMIT_HASH "fcfa3e2d45df6e4b64427c26cdf3fc4e2767c429" ) #genesis_COMMIT_HASH#
-SET( pll-modules_COMMIT_HASH "f6174cdff472be5a43220e1581d5d4cb7d4ef18c" ) #pll-modules_COMMIT_HASH#
-SET( libpll_COMMIT_HASH "f89f1f40842ecba4ed0b1e6a87a688f9a46865fb" ) #libpll_COMMIT_HASH#
+SET( pll-modules_COMMIT_HASH "717828ecba07de0563af3524a0b44525edf0a5d4" ) #pll-modules_COMMIT_HASH#
+SET( libpll_COMMIT_HASH "2b0bd1460b49794725b68d190f4bb2c0e1162276" ) #libpll_COMMIT_HASH#
 SET( cereal_COMMIT_HASH "51cbda5f30e56c801c07fe3d3aba5d7fb9e6cca4" ) #cereal_COMMIT_HASH#
 
 # Call the github download function, which takes four arguments:
