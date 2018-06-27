@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <cassert>
 
 class Range {
 public:
@@ -9,8 +10,10 @@ public:
   Range() = default;
   ~Range () = default;
 
-  unsigned int begin;
-  unsigned int span;
+  operator bool() const { return span > 0;}
+
+  size_t begin;
+  size_t span;
 
 private:
 
@@ -33,14 +36,18 @@ inline std::ostream& operator << (std::ostream& out, Range const& rhs)
  */
 inline Range get_valid_range(const std::string& sequence)
 {
-  unsigned int lower = 0;
-  unsigned int upper = sequence.length();
+  size_t lower = 0;
+  size_t upper = sequence.length();
 
-  while(sequence.c_str()[lower] == '-')
+  assert(upper);
+
+  while(lower < upper and sequence.c_str()[lower] == '-') {
     lower++;
+  }
 
-  while(sequence.c_str()[upper - 1] == '-')
+  while(upper > lower and sequence.c_str()[upper - 1u] == '-') {
     upper--;
+  }
 
   return Range(lower, upper - lower);
 }

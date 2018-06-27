@@ -31,8 +31,8 @@ static void precompute_sites_static(char nt,
 
   auto map = get_char_map(partition);
 
-  auto err_check = pll_set_tip_states(partition, 
-                                      new_tip->clv_index, 
+  auto err_check = pll_set_tip_states(partition,
+                                      new_tip->clv_index,
                                       map,
                                       seq.c_str());
 
@@ -45,20 +45,20 @@ static void precompute_sites_static(char nt,
 
   pll_compute_edge_loglikelihood( partition,
                                   new_tip->clv_index,
-                                  PLL_SCALE_BUFFER_NONE, 
+                                  PLL_SCALE_BUFFER_NONE,
                                   inner->clv_index,
                                   inner->scaler_index,
                                   inner->pmatrix_index,
-                                  &param_indices[0], 
+                                  &param_indices[0],
                                   &result[0]);
 }
 
 
-Tiny_Tree::Tiny_Tree( pll_unode_t * edge_node, 
-                      const unsigned int branch_id, 
-                      Tree& reference_tree, 
-                      const bool opt_branches, 
-                      const Options& options, 
+Tiny_Tree::Tiny_Tree( pll_unode_t * edge_node,
+                      const unsigned int branch_id,
+                      Tree& reference_tree,
+                      const bool opt_branches,
+                      const Options& options,
                       std::shared_ptr<Lookup_Store>& lookup_store)
   : partition_(nullptr, tiny_partition_destroy)
   , tree_(nullptr, utree_destroy)
@@ -121,10 +121,10 @@ Tiny_Tree::Tiny_Tree( pll_unode_t * edge_node,
 
   // use branch lengths to compute the probability matrices
   std::vector<unsigned int> param_indices(reference_tree.partition()->rate_cats, 0);
-  pll_update_prob_matrices( partition_.get(), 
-                            &param_indices[0], 
-                            matrix_indices, 
-                            branch_lengths, 
+  pll_update_prob_matrices( partition_.get(),
+                            &param_indices[0],
+                            matrix_indices,
+                            branch_lengths,
                             3);
 
   // use update_partials to compute the clv pointing toward the new tip
@@ -147,10 +147,9 @@ Tiny_Tree::Tiny_Tree( pll_unode_t * edge_node,
       lookup_store->init_branch(branch_id, precomputed_sites);
     }
   }
-  
 }
 
-Placement Tiny_Tree::place(const Sequence &s) 
+Placement Tiny_Tree::place(const Sequence &s)
 {
   assert(partition_);
   assert(tree_);
@@ -173,6 +172,10 @@ Placement Tiny_Tree::place(const Sequence &s)
 
   if (premasking_) {
     range = get_valid_range(s.sequence());
+    if (not range) {
+      throw std::runtime_error{std::string()+"Sequence with header '" + s.header()
+        + "' does not appear to have any non-gap sites!"};
+    }
   }
 
   if (opt_branches_) {
@@ -180,8 +183,8 @@ Placement Tiny_Tree::place(const Sequence &s)
     auto virtual_root = inner;
 
     // init the new tip with s.sequence(), branch length
-    auto err_check = pll_set_tip_states(partition_.get(), 
-                                        new_tip->clv_index, 
+    auto err_check = pll_set_tip_states(partition_.get(),
+                                        new_tip->clv_index,
                                         get_char_map(partition_.get()),
                                         s.sequence().c_str());
 
@@ -206,9 +209,9 @@ Placement Tiny_Tree::place(const Sequence &s)
     pendant_length = inner->length;
 
     reset_triplet_lengths(inner,
-                          partition_.get(), 
+                          partition_.get(),
                           original_branch_length_);
-    
+
     // re-update the partial
     auto child1 = virtual_root->next->back;
     auto child2 = virtual_root->next->next->back;
