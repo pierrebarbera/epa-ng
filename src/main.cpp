@@ -425,9 +425,13 @@ int main(int argc, char** argv)
     LOG_DBG << "Query File:\n" << qry_info;
   }
 
-  MSA_Info::or_mask(ref_info, qry_info);
+  if (ref_info.sites() != qry_info.sites()) {
+    LOG_ERR << "The reference and query alignment files do not seem to have the same alignment width! ("
+            << ref_info.sites() << " vs. " << qry_info.sites() << "). Are the query sequences not aligned?" << std::endl;
+    exit_epa(EXIT_FAILURE);
+  }
 
-  // msa_info.reset_gaps <- --no-pre-mask
+  MSA_Info::or_mask(ref_info, qry_info);
 
   MSA ref_msa;
   if (reference_file.size()) {
@@ -447,7 +451,7 @@ int main(int argc, char** argv)
   } else {
     // build the full tree with all possible clv's
     if (not *model_option) {
-      std::cout <<"When using epa-ng like this, a model has to be explicitly specified! \n"
+      LOG_ERR <<  "When using epa-ng like this, a model has to be explicitly specified! \n"
                   "You may specify it generically (GTR+G), however parameters will not be optimized. \n"
                   "Instead we reccommend to use RAxML to re-evaluate the parameters and then pass the resulting \n"
                   "RAxML_info file to the epa-ng --model argument. epa-ng will then auto-parse the parameters.\n"
