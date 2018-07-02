@@ -7,8 +7,8 @@
 #include <cmath>
 
 
-void split( const Work& src, 
-            std::vector<Work>& parts, 
+void split( const Work& src,
+            std::vector<Work>& parts,
             const unsigned int num_parts)
 {
   parts.clear();
@@ -29,17 +29,19 @@ void split( const Work& src,
 
 void merge(Work& dest, const Work& src)
 {
-  auto prev_branch_id = (*src.begin()).branch_id + 1;
-  for (auto it : src)  {
-    const auto branch_id = it.branch_id;
-    if (prev_branch_id != branch_id) {
-      dest[branch_id];
-      dest[branch_id].insert( dest.at(branch_id).end(),
-                              src.at(branch_id).begin(), 
-                              src.at(branch_id).end()
-                            );
+  if ( not src.empty() ) {
+    auto prev_branch_id = (*src.begin()).branch_id + 1;
+    for (auto it : src)  {
+      const auto branch_id = it.branch_id;
+      if (prev_branch_id != branch_id) {
+        dest[branch_id];
+        dest[branch_id].insert( dest.at(branch_id).end(),
+                                src.at(branch_id).begin(),
+                                src.at(branch_id).end()
+                              );
+      }
+      prev_branch_id = branch_id;
     }
-    prev_branch_id = branch_id;
   }
 }
 
@@ -148,8 +150,8 @@ void discard_bottom_x_percent(Sample<Placement>& sample, const double x)
   }
 }
 
-void discard_by_support_threshold(Sample<Placement>& sample, 
-                                  const double thresh, 
+void discard_by_support_threshold(Sample<Placement>& sample,
+                                  const double thresh,
                                   const size_t min,
                                   const size_t max)
 {
@@ -166,7 +168,7 @@ void discard_by_support_threshold(Sample<Placement>& sample,
   for (size_t i = 0; i < sample.size(); ++i) {
     auto &pq = sample[i];
     auto erase_iter = partition(
-      pq.begin(), 
+      pq.begin(),
       pq.end(),
       [thresh](Placement &p) -> bool {
         return (p.lwr() > thresh);
@@ -180,7 +182,7 @@ void discard_by_support_threshold(Sample<Placement>& sample,
       std::advance(erase_iter, to_add);
     }
 
-    if ( num_kept > max ) {
+    if ( max and num_kept > max ) {
       const auto to_remove = num_kept - max;
       std::advance(erase_iter, -to_remove);
     }
@@ -189,9 +191,9 @@ void discard_by_support_threshold(Sample<Placement>& sample,
   }
 }
 
-void discard_by_accumulated_threshold(Sample<Placement>& sample, 
+void discard_by_accumulated_threshold(Sample<Placement>& sample,
                                       const double thresh,
-                                      const size_t min, 
+                                      const size_t min,
                                       const size_t max)
 {
   if (thresh < 0.0 || thresh > 1.0) {
@@ -201,7 +203,7 @@ void discard_by_accumulated_threshold(Sample<Placement>& sample,
   if (min < 1) {
     throw std::range_error{"Filter min cannot be smaller than 1!"};
   }
-  
+
   if (min > max) {
     throw std::range_error{"Filter min cannot be smaller than max!"};
   }
@@ -223,7 +225,7 @@ void filter(Sample<Placement>& sample, const Options& options)
 {
     if (options.acc_threshold) {
       LOG_DBG << "Filtering output by accumulated threshold: " << options.support_threshold << std::endl;
-      discard_by_accumulated_threshold( sample, 
+      discard_by_accumulated_threshold( sample,
                                         options.support_threshold,
                                         options.filter_min,
                                         options.filter_max);

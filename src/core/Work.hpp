@@ -27,7 +27,7 @@ public:
   using container_type        = std::map<key_type, container_value_type>;
   using const_iterator        = WorkIterator;
   // typedef typename container_type::iterator         iterator;
-  
+
   struct Work_Pair
   {
       key_type    branch_id;
@@ -59,7 +59,7 @@ public:
   {
     for (key_type branch_id = branch_range.first; branch_id < branch_range.second; ++branch_id) {
       for (value_type seq_id = seq_range.first; seq_id < seq_range.second; ++seq_id) {
-        work_set_[branch_id].push_back(seq_id);      
+        work_set_[branch_id].push_back(seq_id);
       }
     }
   }
@@ -70,18 +70,20 @@ public:
   Work& operator=(Work const&) = default;
   Work& operator=(Work &&) = default;
 
-  Work() = default;       
+  Work() = default;
   ~Work() = default;
 
   // methods
   void clear() {work_set_.clear();}
 
-  size_t size() const 
+  size_t size() const
   {
     return std::accumulate(work_set_.begin(), work_set_.end(), 0,
       [](size_t a, std::pair<key_type, container_value_type> b){return a + b.second.size();}
       );
   }
+
+  bool empty() const { return work_set_.empty();}
 
   inline void add(key_type branch_id, value_type seq_id)
   {
@@ -106,10 +108,10 @@ public:
   // Operator overloads
   const container_value_type& at (const key_type index) const { return work_set_.at(index); }
   container_value_type& operator[] (const key_type index) { return work_set_[index]; }
-  
+
   // serialization
   template <class Archive>
-  void serialize(Archive & ar) 
+  void serialize(Archive & ar)
   { ar( *static_cast<Token*>( this ), work_set_ ); }
 
 
