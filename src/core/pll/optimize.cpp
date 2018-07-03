@@ -12,11 +12,11 @@
 #include "util/constants.hpp"
 #include "util/logging.hpp"
 
-static void traverse_update_partials( pll_unode_t * root, 
-                                      pll_partition_t * partition, 
-                                      pll_unode_t ** travbuffer, 
-                                      double * branch_lengths, 
-                                      unsigned int * matrix_indices, 
+static void traverse_update_partials( pll_unode_t * root,
+                                      pll_partition_t * partition,
+                                      pll_unode_t ** travbuffer,
+                                      double * branch_lengths,
+                                      unsigned int * matrix_indices,
                                       pll_operation_t * operations)
 {
   unsigned int num_matrices, num_ops;
@@ -26,10 +26,10 @@ static void traverse_update_partials( pll_unode_t * root,
   unsigned int traversal_size;
   // TODO this only needs to be done once, outside of this func. pass traversal size also
   // however this is practically nonexistent impact compared to clv comp
-  pll_utree_traverse( root, 
+  pll_utree_traverse( root,
                       PLL_TREE_TRAVERSE_POSTORDER,
-                      cb_full_traversal, 
-                      travbuffer, 
+                      cb_full_traversal,
+                      travbuffer,
                       &traversal_size);
 
   /* given the computed traversal descriptor, generate the operations
@@ -55,9 +55,9 @@ static void traverse_update_partials( pll_unode_t * root,
 
 }
 
-static void utree_derivative_func ( void * parameters, 
+static void utree_derivative_func ( void * parameters,
                                     double proposal,
-                                    double *df, 
+                                    double *df,
                                     double *ddf)
 {
   auto params = static_cast<pll_newton_tree_params_t*>(parameters);
@@ -66,25 +66,26 @@ static void utree_derivative_func ( void * parameters,
                                       params->tree->back->scaler_index,
                                       proposal,
                                       params->params_indices,
-                                      params->sumtable, 
-                                      df, 
+                                      params->sumtable,
+                                      df,
                                       ddf);
 }
 
 /**
  * Branch length optimization akin to how pplacer does it: slide the pendant branch along
  * insertion branch of the reference tree, optimize pendant length fully.
- * 
+ *
  * @param  partition  the partition
  * @param  tree       the tree structure
  * @param  smoothings maximum number of iterations
  * @return            negative log likelihood after optimization
  */
-static double opt_branch_lengths_pplacer( pll_partition_t * partition, 
-                                          pll_unode_t * inner, 
-                                          unsigned int smoothings, 
+static double opt_branch_lengths_pplacer( pll_partition_t * partition,
+                                          pll_unode_t * inner,
+                                          unsigned int smoothings,
                                           const double tolerance)
 {
+  const int max_iters = 30;
   double loglikelihood = 0.0, new_loglikelihood;
   double xmin,    /* min branch length */
          xguess,  /* initial guess */
@@ -139,6 +140,7 @@ static double opt_branch_lengths_pplacer( pll_partition_t * partition,
   // nr_params.branch_length_min = PLLMOD_OPT_MIN_BRANCH_LEN;
   // nr_params.branch_length_max = PLLMOD_OPT_MAX_BRANCH_LEN;
   // nr_params.tolerance         = tolerance;
+  nr_params.max_newton_iters  = max_iters;
   nr_params.sumtable          = nullptr;
 
   /* get the initial likelihood score */
@@ -158,11 +160,11 @@ static double opt_branch_lengths_pplacer( pll_partition_t * partition,
   }
 
   if ((nr_params.sumtable = static_cast<double *> (
-      pll_aligned_alloc(sites_alloc 
+      pll_aligned_alloc(sites_alloc
                         * partition->rate_cats
-                        * partition->states_padded 
-                        * sizeof(double), 
-                        partition->alignment))) 
+                        * partition->states_padded
+                        * sizeof(double),
+                        partition->alignment)))
         == nullptr) {
     throw std::runtime_error{"Cannot allocate memory for bl opt variables"};
   }
@@ -202,14 +204,17 @@ static double opt_branch_lengths_pplacer( pll_partition_t * partition,
                                       xguess,
                                       xmax,
                                       xtol,
-                                      10,
+                                      max_iters,
                                       &nr_params,
                                       utree_derivative_func);
-    assert(xres >= 0.0);
+
+    assert(xres > 0.0);
 
     // update length and pmatrix for pendant
-    lengths[2] = score_node->length = score_node->back->length = xres;
-    pll_update_prob_matrices(partition, &param_indices[0], &p_indices[2], &lengths[2], 1);
+    if ( xres > 0.0 ) {
+      lengths[2] = score_node->length = score_node->back->length = xres;
+      pll_update_prob_matrices(partition, &param_indices[0], &p_indices[2], &lengths[2], 1);
+    }
 
     /*=============================================================
             NR for Proximal
@@ -222,13 +227,16 @@ static double opt_branch_lengths_pplacer( pll_partition_t * partition,
       /* set N-R parameters */
       xguess = blo_node->length;
       // min has to be half the ususal because original length might already be min
-      xmax = original_length;
-      xmin = std::min(PLLMOD_OPT_MIN_BRANCH_LEN / 2.0,
-                      xmax / 2.0);
+      xmin = std::min(PLLMOD_OPT_MIN_BRANCH_LEN / 2.0, xmax / 2.0);
       xtol = xmin/10.0;
+      xmax = original_length - xtol;
       if ( (xguess < xmin) or (xguess > xmax) ) {
         xguess = original_length / 2.0;
       }
+
+      assert(xmin > 0.0);
+      assert(xmax > 0.0);
+      assert(xtol > 0.0);
 
       /* prepare sumtable for current branch */
       pll_update_sumtable(partition,
@@ -245,21 +253,22 @@ static double opt_branch_lengths_pplacer( pll_partition_t * partition,
       nr_params.tolerance         = xtol;
 
       // minimize newton for pendant length
-      xres = pllmod_opt_minimize_newton(xmin, 
+      xres = pllmod_opt_minimize_newton(xmin,
                                         xguess, xmax, xtol,
-                                        10, 
+                                        max_iters,
                                         &nr_params,
                                         utree_derivative_func);
-      assert(xres >= 0.0);
-      assert(xres <= original_length);
+      assert(xres > 0.0);
+      assert(xres < original_length);
 
       // update lengths and pmatrices for proximal/distal
-      lengths[0] = blo_node->length     = blo_node->back->length      = xres;
-      lengths[1] = blo_antinode->length = blo_antinode->back->length  = original_length - xres;
-      pll_update_prob_matrices(partition, &param_indices[0], p_indices, lengths, 2);
-  
+      if ( xres > 0.0 ) {
+        lengths[0] = blo_node->length     = blo_node->back->length      = xres;
+        lengths[1] = blo_antinode->length = blo_antinode->back->length  = original_length - xres;
+        pll_update_prob_matrices(partition, &param_indices[0], p_indices, lengths, 2);
+      }
     }
-    
+
     /*=============================================================
             Calculate the score
      =============================================================*/
@@ -275,7 +284,7 @@ static double opt_branch_lengths_pplacer( pll_partition_t * partition,
                                         &param_indices[0],
                                         nullptr);
 
-    
+
     if(new_loglikelihood - loglikelihood > new_loglikelihood * 1e-14) {
       // printf("Worse logl by %lf units! %d. iter\n", new_loglikelihood - loglikelihood, 32 - smoothings);
       // the NR procedure returned a worse logl than the previous iteration
@@ -304,8 +313,11 @@ static double opt_branch_lengths_pplacer( pll_partition_t * partition,
   return loglikelihood;
 }
 
-double optimize_branch_triplet( pll_partition_t * partition, 
-                                pll_unode_t * root, 
+#include <sstream>
+#include <iterator>
+
+double optimize_branch_triplet( pll_partition_t * partition,
+                                pll_unode_t * root,
                                 const bool sliding)
 {
   if (!root->next) {
@@ -317,11 +329,11 @@ double optimize_branch_triplet( pll_partition_t * partition,
   std::vector<unsigned int> matrix_indices(3);
   std::vector<pll_operation_t> operations(4);
 
-  traverse_update_partials( root, 
-                            partition, 
-                            &travbuffer[0], 
-                            &branch_lengths[0], 
-                            &matrix_indices[0], 
+  traverse_update_partials( root,
+                            partition,
+                            &travbuffer[0],
+                            &branch_lengths[0],
+                            &matrix_indices[0],
                             &operations[0]);
 
   std::vector<unsigned int> param_indices(partition->rate_cats, 0);
@@ -330,9 +342,9 @@ double optimize_branch_triplet( pll_partition_t * partition,
   const int smoothings = 32;
 
   if (sliding) {
-    cur_logl = -opt_branch_lengths_pplacer( partition, 
-                                            root, 
-                                            smoothings, 
+    cur_logl = -opt_branch_lengths_pplacer( partition,
+                                            root,
+                                            smoothings,
                                             OPT_BRANCH_EPSILON);
   } else {
     cur_logl = -pllmod_opt_optimize_branch_lengths_local(
@@ -347,27 +359,35 @@ double optimize_branch_triplet( pll_partition_t * partition,
                                                 1); // keep update
   }
 
- 
+  pll_compute_edge_loglikelihood(partition,
+                                root->clv_index,
+                                root->scaler_index,
+                                root->back->clv_index,
+                                root->back->scaler_index,
+                                root->pmatrix_index,
+                                &param_indices[0],
+                                nullptr);
+
   return cur_logl;
 }
 
-static double optimize_branch_lengths(pll_unode_t * root, 
-                                      pll_partition_t * partition, 
-                                      pll_optimize_options_t& params, 
-                                      pll_unode_t ** travbuffer, 
-                                      double cur_logl, 
-                                      double lnl_monitor, 
+static double optimize_branch_lengths(pll_unode_t * root,
+                                      pll_partition_t * partition,
+                                      pll_optimize_options_t& params,
+                                      pll_unode_t ** travbuffer,
+                                      double cur_logl,
+                                      double lnl_monitor,
                                       int* smoothings)
 {
   if (!root->next) {
     root = root->back;
   }
 
-  traverse_update_partials( root, 
-                            partition, 
-                            travbuffer, 
-                            params.lk_params.branch_lengths, 
-                            params.lk_params.matrix_indices, 
+  traverse_update_partials( root,
+                            partition,
+                            travbuffer,
+                            params.lk_params.branch_lengths,
+                            params.lk_params.matrix_indices,
                             params.lk_params.operations);
 
   pll_errno = 0; // hotfix
@@ -385,8 +405,8 @@ static double optimize_branch_lengths(pll_unode_t * root,
     1); // keep updating BLs during call
 
   if (cur_logl+1e-6 < lnl_monitor) {
-    throw std::runtime_error{std::string("cur_logl < lnl_monitor: ") 
-                        + std::to_string(cur_logl) 
+    throw std::runtime_error{std::string("cur_logl < lnl_monitor: ")
+                        + std::to_string(cur_logl)
                         + std::string(" : ")
                         + std::to_string(lnl_monitor)};
   }
@@ -398,33 +418,33 @@ static double optimize_branch_lengths(pll_unode_t * root,
   params.lk_params.where.unrooted_t.child_scaler_index = root->back->scaler_index;
   params.lk_params.where.unrooted_t.edge_pmatrix_index = root->pmatrix_index;
 
-  traverse_update_partials( root, 
-                            partition, 
-                            travbuffer, 
+  traverse_update_partials( root,
+                            partition,
+                            travbuffer,
                             params.lk_params.branch_lengths,
-                            params.lk_params.matrix_indices, 
+                            params.lk_params.matrix_indices,
                             params.lk_params.operations);
 
-  cur_logl = pll_compute_edge_loglikelihood(partition, 
+  cur_logl = pll_compute_edge_loglikelihood(partition,
                                             root->clv_index,
                                             root->scaler_index,
                                             root->back->clv_index,
                                             root->back->scaler_index,
-                                            root->pmatrix_index, 
-                                            &param_indices[0], 
+                                            root->pmatrix_index,
+                                            &param_indices[0],
                                             nullptr);
 
   return cur_logl;
 }
 
-void optimize(raxml::Model& model, 
-              pll_utree_t * const tree, 
-              pll_partition_t * partition, 
-              const Tree_Numbers& nums, 
-              const bool opt_branches, 
+void optimize(raxml::Model& model,
+              pll_utree_t * const tree,
+              pll_partition_t * partition,
+              const Tree_Numbers& nums,
+              const bool opt_branches,
               const bool opt_model)
 {
-  
+
   if (not opt_branches and not opt_model) {
     return;
   }
@@ -446,21 +466,21 @@ void optimize(raxml::Model& model,
   std::vector<unsigned int> matrix_indices(nums.branches);
   std::vector<pll_operation_t> operations(nums.nodes);
 
-  traverse_update_partials( root, 
-                            partition, 
-                            &travbuffer[0], 
+  traverse_update_partials( root,
+                            partition,
+                            &travbuffer[0],
                             &branch_lengths[0],
-                            &matrix_indices[0], 
+                            &matrix_indices[0],
                             &operations[0]);
 
   // compute logl once to give us a logl starting point
-  auto cur_logl = pll_compute_edge_loglikelihood( partition, 
+  auto cur_logl = pll_compute_edge_loglikelihood( partition,
                                                   root->clv_index,
                                                   root->scaler_index,
                                                   root->back->clv_index,
                                                   root->back->scaler_index,
-                                                  root->pmatrix_index, 
-                                                  &param_indices[0], 
+                                                  root->pmatrix_index,
+                                                  &param_indices[0],
                                                   nullptr);
 
   // double cur_logl = -numeric_limits<double>::infinity();
@@ -499,11 +519,11 @@ void optimize(raxml::Model& model,
   if (opt_branches) {
     smoothings = 8;
     cur_logl = optimize_branch_lengths( branches[branch_index],
-                                        partition, 
-                                        params, 
-                                        &travbuffer[0], 
-                                        cur_logl, 
-                                        lnl_monitor, 
+                                        partition,
+                                        params,
+                                        &travbuffer[0],
+                                        cur_logl,
+                                        lnl_monitor,
                                         &smoothings);
   }
 
@@ -528,11 +548,11 @@ void optimize(raxml::Model& model,
       if (opt_branches) {
         smoothings = 2;
         cur_logl = optimize_branch_lengths( branches[branch_index],
-                                            partition, 
-                                            params, 
-                                            &travbuffer[0], 
-                                            cur_logl, 
-                                            lnl_monitor, 
+                                            partition,
+                                            params,
+                                            &travbuffer[0],
+                                            cur_logl,
+                                            lnl_monitor,
                                             &smoothings);
 
         // LOG_INFO << "after blo 1: " << to_string(cur_logl) << "\n";
@@ -545,11 +565,11 @@ void optimize(raxml::Model& model,
       if (opt_branches) {
         smoothings = 2;
         cur_logl = optimize_branch_lengths( branches[branch_index],
-                                            partition, 
-                                            params, 
-                                            &travbuffer[0], 
-                                            cur_logl, 
-                                            lnl_monitor, 
+                                            partition,
+                                            params,
+                                            &travbuffer[0],
+                                            cur_logl,
+                                            lnl_monitor,
                                             &smoothings);
 
         // LOG_INFO << "after blo 2: " << to_string(cur_logl) << "\n";
@@ -568,11 +588,11 @@ void optimize(raxml::Model& model,
     if (opt_branches) {
       smoothings = 3;
       cur_logl = optimize_branch_lengths( branches[branch_index],
-                                          partition, 
-                                          params, 
-                                          &travbuffer[0], 
-                                          cur_logl, 
-                                          lnl_monitor, 
+                                          partition,
+                                          params,
+                                          &travbuffer[0],
+                                          cur_logl,
+                                          lnl_monitor,
                                           &smoothings);
 
       // LOG_INFO << "after blo 3: " << to_string(cur_logl) << "\n";

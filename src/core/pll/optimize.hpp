@@ -14,14 +14,16 @@ constexpr double OPT_RATE_MIN       = 1e-4;
 constexpr double OPT_RATE_MAX       = 1e6;
 
 // interface
-void optimize(raxml::Model& model, 
-              pll_utree_t * const tree, 
-              pll_partition_t * partition, 
-              const Tree_Numbers& nums, 
-              const bool opt_branches, 
+void optimize(raxml::Model& model,
+              pll_utree_t * const tree,
+              pll_partition_t * partition,
+              const Tree_Numbers& nums,
+              const bool opt_branches,
               const bool opt_model);
-void compute_and_set_empirical_frequencies( pll_partition_t * partition, 
+
+void compute_and_set_empirical_frequencies( pll_partition_t * partition,
                                             raxml::Model& model);
-double optimize_branch_triplet( pll_partition_t * partition, 
-                                pll_unode_t * inner, 
+
+double optimize_branch_triplet( pll_partition_t * partition,
+                                pll_unode_t * inner,
                                 const bool sliding);

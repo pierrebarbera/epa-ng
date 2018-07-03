@@ -232,6 +232,10 @@ Placement Tiny_Tree::place(const Sequence &s)
     logl = lookup_->sum_precomputed_sitelk(branch_id_, s.sequence(), range);
   }
 
+  if (logl == -std::numeric_limits<double>::infinity()) {
+    LOG_ERR << "-INF logl at branch " << branch_id_ << " with sequence " << s.header();
+  }
+
   assert(distal_length <= original_branch_length_);
   assert(distal_length >= 0.0);
 
