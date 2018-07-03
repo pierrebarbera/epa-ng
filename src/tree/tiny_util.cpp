@@ -11,7 +11,7 @@ constexpr unsigned int new_tip_clv_index          = 1;
 constexpr unsigned int distal_clv_index_if_tip    = 2;
 constexpr unsigned int distal_clv_index_if_inner  = 5;
 
-template <class T, 
+template <class T,
           typename = typename std::enable_if<std::is_pointer<T>::value>::type>
 static void alloc_and_copy(T& dest, const T src, const size_t size)
 {
@@ -28,7 +28,6 @@ static void alloc_and_copy(T& dest, const T src, const size_t size)
           size * sizeof(base_t));
 }
 
-//TODO src_part should be const const
 static void deep_copy_scaler( pll_partition_t* dest_part,
                               pll_unode_t* dest_node,
                               pll_partition_t const * const src_part,
@@ -36,13 +35,13 @@ static void deep_copy_scaler( pll_partition_t* dest_part,
 {
   if (src_node->scaler_index != PLL_SCALE_BUFFER_NONE
     and src_part->scale_buffer[src_node->scaler_index] != nullptr) {
-    
-    const auto scaler_size = 
-    pll_get_sites_number( const_cast<pll_partition_t*>(src_part), 
-                          src_node->clv_index);
 
-    alloc_and_copy( dest_part->scale_buffer[dest_node->scaler_index], 
-                    src_part->scale_buffer[src_node->scaler_index], 
+    const auto sites_alloc = src_part->asc_additional_sites + src_part->sites;
+    const auto scaler_size  = (src_part->attributes & PLL_ATTRIB_RATE_SCALERS)
+                            ? sites_alloc * src_part->rate_cats : sites_alloc;
+
+    alloc_and_copy( dest_part->scale_buffer[dest_node->scaler_index],
+                    src_part->scale_buffer[src_node->scaler_index],
                     scaler_size);
   }
 }
@@ -57,32 +56,32 @@ static void deep_copy_repeats(pll_partition_t* dest_part,
     dest_part->repeats->perscale_ids[dest_node->scaler_index]
       = src_part->repeats->perscale_ids[src_node->scaler_index];
   }
-  
+
   dest_part->repeats->pernode_ids[dest_node->clv_index]
     = src_part->repeats->pernode_ids[src_node->clv_index];
   dest_part->repeats->pernode_allocated_clvs[dest_node->clv_index]
     = src_part->repeats->pernode_allocated_clvs[src_node->clv_index];
 
   if (src_part->repeats->pernode_ids[src_node->clv_index]) {
-    const auto size = 
-    pll_get_sites_number( const_cast<pll_partition_t*>(src_part), 
+    const auto size =
+    pll_get_sites_number( const_cast<pll_partition_t*>(src_part),
                           src_node->clv_index);
-    
-    alloc_and_copy( dest_part->repeats->pernode_site_id[dest_node->clv_index], 
-                    src_part->repeats->pernode_site_id[src_node->clv_index], 
+
+    alloc_and_copy( dest_part->repeats->pernode_site_id[dest_node->clv_index],
+                    src_part->repeats->pernode_site_id[src_node->clv_index],
                     src_part->sites);
-    alloc_and_copy( dest_part->repeats->pernode_id_site[dest_node->clv_index], 
-                    src_part->repeats->pernode_id_site[src_node->clv_index], 
+    alloc_and_copy( dest_part->repeats->pernode_id_site[dest_node->clv_index],
+                    src_part->repeats->pernode_id_site[src_node->clv_index],
                     size);
   }
 
 }
 
 
-pll_partition_t * make_tiny_partition(Tree& reference_tree, 
-                                      const pll_utree_t * tree, 
-                                      pll_unode_t const * const old_proximal, 
-                                      pll_unode_t const * const old_distal, 
+pll_partition_t * make_tiny_partition(Tree& reference_tree,
+                                      const pll_utree_t * tree,
+                                      pll_unode_t const * const old_proximal,
+                                      pll_unode_t const * const old_distal,
                                       const bool tip_tip_case)
 {
   /**
@@ -249,7 +248,7 @@ void tiny_partition_destroy(pll_partition_t * partition)
   }
 }
 
-pll_utree_t * make_tiny_tree_structure( const pll_unode_t * old_proximal, 
+pll_utree_t * make_tiny_tree_structure( const pll_unode_t * old_proximal,
                                         const pll_unode_t * old_distal,
                                         const bool tip_tip_case)
 {
