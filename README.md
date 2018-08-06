@@ -27,7 +27,7 @@ Alternatively I've created a [gitter chat room](https://gitter.im/epa-ng/Lobby) 
 
 ### DISCLAIMER
 
-This tool is still in an active, *beta* phase of development. Suggestions, bug reports and constructive comments are more than encuraged! Please do so in the [google group](https://groups.google.com/forum/#!categories/phylogenetic-placement/epa-ng).
+This tool is still in an active development. Suggestions, bug reports and constructive comments are more than encuraged! Please do so in the [google group](https://groups.google.com/forum/#!categories/phylogenetic-placement/epa-ng).
 
 ## Introduction
 
@@ -35,13 +35,13 @@ This tool is still in an active, *beta* phase of development. Suggestions, bug r
 
 ### What can EPA-ng do?
 
-- do phylogenetic placement using the **GTR+GAMMA ML model only** (for now)
+- do phylogenetic placement using [explicitly specified model parameters](#setting-the-model-parameters)
 - take as input **separated reference and query alignment files**, in the **fasta** format (for now)
 - handle **DNA** and **Amino Acid** data
 - distributed computing suitable for the **cluster**
 - **prepare inputs** for the cluster:
   - convert query fasta file into a random access, binary encoded file called a `bfast`-file
-- output the placement results in the [jplace format](http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0031009) ready for downstream analysis by frameworks such as [genesis](https://github.com/lczech/genesis)
+- output the placement results in the [jplace format](http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0031009) ready for downstream analysis by libraries like [genesis](https://github.com/lczech/genesis) and tools like [gappa](https://github.com/lczech/gappa)
 
 ## Build Instructions
 
