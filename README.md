@@ -5,7 +5,8 @@
 1. **[Introduction](#introduction)**
 2. **[Build Instructions](#build-instructions)**
 3. **[Usage](#usage)**
-4. **[Citing EPA-ng](#citing-epa-ng)**
+4. **[Test data](#test-data)**
+5. **[Citing EPA-ng](#citing-epa-ng)**
 
 ## IMPORTANT
 The by far easiest way to clone this repository is to use the following command
@@ -206,6 +207,9 @@ mpirun epa-ng --ref-msa $REF_MSA --tree $TREE -q query.fasta.bin -w ./some/outpu
 ```
 
 **Note** that using the binary format is not strictly required, however it is highly reccomended to increase parallel efficiency.
+
+## Test data
+This repository includes a test data set which can be found under [`test/data/neotrop`](test/data/neotrop). Consult the README located there for usage examples.
 
 
 ## Citing EPA-ng
