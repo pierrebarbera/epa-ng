@@ -110,7 +110,7 @@ Note however, that no speedup is to be expected from hyperthreads, meaning the n
 #### Setting the Model Parameters
 As of version 0.2.0, GTRGAMMA model parameters have to be specified explicitly.
 There are currently two ways of doing this:
-Either specify a raxml-ng-style model descriptor, like so:
+Either specify a raxml-ng-style model descriptor (elaborated [here](https://github.com/amkozlov/raxml-ng/wiki/Input-data#evolutionary-model)), like so:
 ```
 epa-ng <...> --model GTR{0.7/1.8/1.2/0.6/3.0/1.0}+FU{0.25/0.23/0.30/0.22}+G4{0.47}
 ```
@@ -121,7 +121,6 @@ raxmlHPC-AVX -f e -s $REF_MSA -t $TREE -n file -m GTRGAMMAX
 (generates a RAxML_info file with model parameters, called RAxML_info.file)
 epa-ng <...> --model RAxML_info.file
 ```
-
 
 ### Advanced
 
