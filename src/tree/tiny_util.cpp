@@ -154,10 +154,17 @@ pll_partition_t * make_tiny_partition(Tree& reference_tree,
   }
   free(tiny->eigenvals);
   tiny->eigenvals = old_partition->eigenvals;
+
   if (tiny->prop_invar) {
     free(tiny->prop_invar);
   }
   tiny->prop_invar = old_partition->prop_invar;
+
+  if (tiny->invariant) {
+    free(tiny->invariant);
+  }
+  tiny->invariant = old_partition->invariant;
+
   free(tiny->eigen_decomp_valid);
   tiny->eigen_decomp_valid = old_partition->eigen_decomp_valid;
   if (tiny->pattern_weights) {
@@ -226,6 +233,7 @@ void tiny_partition_destroy(pll_partition_t * partition)
     partition->inv_eigenvecs      = nullptr;
     partition->eigenvals          = nullptr;
     partition->prop_invar         = nullptr;
+    partition->invariant          = nullptr;
     partition->eigen_decomp_valid = nullptr;
     partition->pattern_weights    = nullptr;
 

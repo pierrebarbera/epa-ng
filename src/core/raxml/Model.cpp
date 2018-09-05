@@ -758,7 +758,7 @@ int Model::params_to_optimize() const
   return params_to_optimize;
 }
 
-void assign(Model& model, const pllmod_msa_stats_t * stats)
+void raxml::assign(Model& model, const pllmod_msa_stats_t * stats)
 {
   /* either compute empirical P-inv, or set the fixed user-specified value */
   switch (model.param_mode(PLLMOD_OPT_PARAM_PINV))
@@ -852,7 +852,7 @@ void raxml::assign(Model& model, const pll_partition_t * partition)
     throw runtime_error("incompatible partition!");
 }
 
-void assign(pll_partition_t * partition, const Model& model)
+void raxml::assign(pll_partition_t * partition, const Model& model)
 {
   if (model.num_states() == partition->states &&
       model.num_submodels() == partition->rate_matrices)

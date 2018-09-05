@@ -6,6 +6,7 @@
 
 #include "core/pll/pllhead.hpp"
 #include "core/pll/pll_util.hpp"
+#include "core/raxml/Model.hpp"
 #include "io/msa_reader.hpp"
 #include "seq/MSA.hpp"
 #include "util/constants.hpp"
@@ -120,26 +121,28 @@ pll_partition_t *  build_partition_from_file( const raxml::Model& model,
            (nums.inner_nodes * 3) + nums.tip_nodes, /* number of scaler buffers */
            attributes);
 
-  if (!partition) {
+  if (not partition) {
     throw std::runtime_error{std::string("Could not create partition (build_partition_from_file). pll_errmsg: ") + pll_errmsg};
   }
 
-  std::vector<double> rate_cats(model.num_ratecats(), 0.0);
+  // raxml::assign(partition, model);
 
-  /* compute the discretized category rates from a gamma distribution
-     with alpha shape */
-  pll_compute_gamma_cats( model.alpha(),
-                          model.num_ratecats(),
-                          &rate_cats[0],
-                          PLL_GAMMA_RATES_MEAN);
-  pll_set_frequencies(partition,
-                      0,
-                      &(model.base_freqs(0)[0]));
-  pll_set_subst_params( partition,
-                        0,
-                        &(model.subst_rates(0)[0]));
-  pll_set_category_rates( partition,
-                          &rate_cats[0]);
+  // std::vector<double> rate_cats(model.num_ratecats(), 0.0);
+
+  // /* compute the discretized category rates from a gamma distribution
+  //    with alpha shape */
+  // pll_compute_gamma_cats( model.alpha(),
+  //                         model.num_ratecats(),
+  //                         &rate_cats[0],
+  //                         PLL_GAMMA_RATES_MEAN);
+  // pll_set_frequencies(partition,
+  //                     0,
+  //                     &(model.base_freqs(0)[0]));
+  // pll_set_subst_params( partition,
+  //                       0,
+  //                       &(model.subst_rates(0)[0]));
+  // pll_set_category_rates( partition,
+  //                         &rate_cats[0]);
 
   // if (repeats) {
   //   pll_resize_repeats_lookup(partition, ( REPEATS_LOOKUP_SIZE ) * 10);

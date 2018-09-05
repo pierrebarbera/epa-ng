@@ -35,6 +35,8 @@ void link_tree_msa( pll_utree_t * tree,
     // associates the sequence with the tip by calculating the tips clv buffers
     pll_set_tip_states(partition, clv_index, model.charmap(), s.sequence().c_str());
   }
+
+  raxml::assign(partition, model);
 }
 
 void precompute_clvs( pll_utree_t const * const tree,

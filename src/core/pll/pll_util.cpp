@@ -6,9 +6,9 @@
 
 #include "util/constants.hpp"
 
-void fasta_close(pll_fasta_t* fptr) 
-{ 
-  if(fptr) pll_fasta_close(fptr); 
+void fasta_close(pll_fasta_t* fptr)
+{
+  if(fptr) pll_fasta_close(fptr);
 }
 
 static void set_missing_branch_lengths_recursive(pll_unode_t * tree, const double length)
@@ -194,8 +194,8 @@ void utree_destroy(pll_utree_t * tree)
   }
 }
 
-static void utree_query_branches_recursive( pll_unode_t * const node, 
-                                            pll_unode_t ** node_list, 
+static void utree_query_branches_recursive( pll_unode_t * const node,
+                                            pll_unode_t ** node_list,
                                             unsigned int * index)
 {
   // Postorder traversal
@@ -222,8 +222,8 @@ unsigned int utree_query_branches(pll_utree_t const * const tree, pll_unode_t **
   return index;
 }
 
-static void get_numbered_newick_string_recursive( pll_unode_t const * const node, 
-                                                  std::ostringstream &ss, 
+static void get_numbered_newick_string_recursive( pll_unode_t const * const node,
+                                                  std::ostringstream &ss,
                                                   unsigned int * const index)
 {
 
@@ -261,8 +261,8 @@ std::string get_numbered_newick_string(pll_utree_t const * const tree)
   return ss.str();
 }
 
-void reset_triplet_lengths( pll_unode_t * toward_pendant, 
-                            pll_partition_t * partition, 
+void reset_triplet_lengths( pll_unode_t * toward_pendant,
+                            pll_partition_t * partition,
                             const double old_length)
 {
   double half_original = old_length / 2.0;
@@ -289,17 +289,16 @@ void reset_triplet_lengths( pll_unode_t * toward_pendant,
     double branch_lengths[3] = {half_original, half_original, DEFAULT_BRANCH_LENGTH};
     unsigned int matrix_indices[3] = {0, 1, 2};
     std::vector<unsigned int> param_indices(partition->rate_cats, 0);
-    pll_update_prob_matrices( partition, 
-                              &param_indices[0], 
-                              matrix_indices, 
-                              branch_lengths, 
+    pll_update_prob_matrices( partition,
+                              &param_indices[0],
+                              matrix_indices,
+                              branch_lengths,
                               3);
   }
 }
 
-// TODO adjust when using pattern compression
-void shift_partition_focus( pll_partition_t * partition, 
-                            const int offset, 
+void shift_partition_focus( pll_partition_t * partition,
+                            const int offset,
                             const unsigned int span)
 {
   const auto clv_size = static_cast<int>(partition->rate_cats * partition->states_padded);
@@ -325,6 +324,9 @@ void shift_partition_focus( pll_partition_t * partition,
 
   // shift the pattern weights
   partition->pattern_weights += offset;
+
+  // shift the invariant array
+  partition->invariant += offset;
 
   // adjust the number of sites
   partition->sites = span;
@@ -385,7 +387,7 @@ static int cb_trav_no_tips(pll_unode_t* n)
 
 pll_utree_t* make_utree_struct(pll_unode_t * root, const unsigned int num_nodes)
 {
-  auto tree = static_cast<pll_utree_t*>(calloc(1, sizeof(pll_utree_t))); 
+  auto tree = static_cast<pll_utree_t*>(calloc(1, sizeof(pll_utree_t)));
   auto nodes = static_cast<pll_unode_t**>(calloc(num_nodes, sizeof(pll_unode_t*)));
 
   // get tips
@@ -393,10 +395,10 @@ pll_utree_t* make_utree_struct(pll_unode_t * root, const unsigned int num_nodes)
 
 
   unsigned int inner_count = 0;
-  pll_utree_traverse( root, 
-                      PLL_TREE_TRAVERSE_POSTORDER, 
-                      cb_trav_no_tips, 
-                      nodes + tip_count, 
+  pll_utree_traverse( root,
+                      PLL_TREE_TRAVERSE_POSTORDER,
+                      cb_trav_no_tips,
+                      nodes + tip_count,
                       &inner_count);
 
   assert(num_nodes == tip_count + inner_count);
@@ -407,7 +409,7 @@ pll_utree_t* make_utree_struct(pll_unode_t * root, const unsigned int num_nodes)
   tree->nodes       = nodes;
 
   return tree;
-} 
+}
 
 pll_unode_t* get_root(pll_utree_t const * const tree)
 {
