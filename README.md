@@ -213,4 +213,6 @@ This repository includes a test data set which can be found under [`test/data/ne
 
 ## Citing EPA-ng
 
-For now, please cite [this preprint](https://www.biorxiv.org/content/early/2018/04/17/291658) of the paper when using EPA-ng.
+If you use EPA-ng, please cite the following paper:
+
+Pierre Barbera, Alexey M Kozlov, Lucas Czech, Benoit Morel, Diego Darriba, Tomáš Flouri, Alexandros Stamatakis; EPA-ng: Massively Parallel Evolutionary Placement of Genetic Sequences, Systematic Biology, syy054, https://doi.org/10.1093/sysbio/syy054
