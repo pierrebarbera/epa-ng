@@ -120,17 +120,17 @@ TEST(pll_util, get_numbered_newick_string)
   // tests
   // valid output as returned by RAxML, with reset branch lengths, as we only want to test format
   string valid(
-  "(Seal:1{0},(Whale:1{1},(Mouse:1{2},(Human:1{3},(Chicken:1{4},(Frog:1{5},Loach:1{6}):1{7}):1{8}):1{9}):1{10}):1{11},Cow:1{12});");
+  "(Seal:1.00{0},(Whale:1.00{1},(Mouse:1.00{2},(Human:1.00{3},(Chicken:1.00{4},(Frog:1.00{5},Loach:1.00{6}):1.00{7}):1.00{8}):1.00{9}):1.00{10}):1.00{11},Cow:1.00{12});");
 
   vector<pll_unode_t*> travbuffer(nums.nodes);
   unsigned int traversal_size;
-  pll_utree_traverse( get_root(tree), 
+  pll_utree_traverse( get_root(tree),
                       PLL_TREE_TRAVERSE_POSTORDER,
-                      cb_set_branchlengths_one, 
-                      &travbuffer[0], 
+                      cb_set_branchlengths_one,
+                      &travbuffer[0],
                       &traversal_size);
 
-  auto ret_string =  get_numbered_newick_string(tree);
+  auto ret_string =  get_numbered_newick_string(tree, 2);
 
   EXPECT_STREQ(valid.c_str(), ret_string.c_str());
 
@@ -179,7 +179,7 @@ TEST(pll_util, shift_partition_focus_shifty)
   int clv_size = part->states * part->rate_cats;
   int begin = 2;
   int span = 4;
-  
+
   for (size_t i = 0; i < part->sites * clv_size; i++) {
     if ((int)i < begin * clv_size or (int)i >= (begin + span) * clv_size)
       part->clv[3][i] = 2.0;
@@ -189,7 +189,7 @@ TEST(pll_util, shift_partition_focus_shifty)
 
   auto seq = new char[part->sites];
 
-  for (size_t i = 0; i < part->sites; i++) 
+  for (size_t i = 0; i < part->sites; i++)
   {
     if ((int)i < begin or (int)i >= (begin + span))
     {
