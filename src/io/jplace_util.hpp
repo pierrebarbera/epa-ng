@@ -9,11 +9,11 @@
 #include "sample/Placement.hpp"
 #include "seq/MSA.hpp"
 
-std::string placement_to_jplace_string(const Placement& p);
-std::string pquery_to_jplace_string(const PQuery<Placement>& p);
-std::string full_jplace_string( const Sample<Placement>& sample, 
+void placement_to_jplace_string(const Placement& p, std::ostream& os);
+void pquery_to_jplace_string(const PQuery<Placement>& p, std::ostream& os);
+std::string full_jplace_string( const Sample<Placement>& sample,
                                 const std::string& invocation);
-std::string init_jplace_string(const std::string& numbered_newick);
-std::string finalize_jplace_string(const std::string& invocation);
-std::string sample_to_jplace_string(const Sample<Placement>& sample);
+void init_jplace_string(const std::string& numbered_newick, std::ostream& os);
+void finalize_jplace_string(const std::string& invocation, std::ostream& os);
+void sample_to_jplace_string(const Sample<Placement>& sample, std::ostream& os);
 void merge_into(std::ofstream& dest, const std::vector<std::string>& sources);

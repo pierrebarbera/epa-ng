@@ -234,17 +234,21 @@ static void get_numbered_newick_string_recursive( pll_unode_t const * const node
     get_numbered_newick_string_recursive(node->next->next->back, ss, index);
     ss << "):" << node->length << "{" << *index << "}";
   } else {
-    ss << node->label << ":" << std::setprecision(20) << node->length << "{" << *index << "}";
+    ss << node->label << ":" << node->length << "{" << *index << "}";
   }
   *index = *index + 1;
 
 }
 
-std::string get_numbered_newick_string(pll_utree_t const * const tree)
+std::string get_numbered_newick_string(pll_utree_t const * const tree, size_t precision)
 {
   const auto root = get_root(tree);
 
   std::ostringstream ss;
+
+  ss.precision( precision );
+  ss.setf( std::ios::fixed, std:: ios::floatfield );
+
   unsigned int index = 0;
 
   ss << "(";

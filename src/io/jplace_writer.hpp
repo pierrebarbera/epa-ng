@@ -5,6 +5,7 @@
 #include <memory>
 #include <sstream>
 #include <cassert>
+#include <iomanip>
 
 #include "sample/Sample.hpp"
 #include "util/logging.hpp"
@@ -22,8 +23,8 @@ public:
                 const std::string& file_name,
                 const std::string& tree_string,
                 const std::string& invocation_string)
-  : tree_string_(tree_string)
-  , invocation_(invocation_string)
+    : tree_string_(tree_string)
+    , invocation_(invocation_string)
   {
     init_mpi_();
     init_file_(out_dir, file_name);
@@ -48,21 +49,12 @@ public:
     #else
 
     if (file_) {
-      *file_ << finalize_jplace_string(invocation_);
+      finalize_jplace_string(invocation_, *file_);
       file_->close();
     }
 
     #endif
   }
-
-  // jplace_writer& operator=( jplace_writer&& other )
-  // {
-  //   this->invocation_ = std::move(other.invocation_);
-  //   this->file_ = std::move(other.file_);
-  //   other.file_ = nullptr;
-  //   this->prev_gather_ = std::move(other.prev_gather_);
-  //   return *this;
-  // }
 
   void write( Sample<>& chunk )
   {
@@ -89,6 +81,14 @@ public:
     #endif
   }
 
+  jplace_writer& set_precision( size_t n )
+  {
+    precision_ = n;
+    file_->precision( n );
+    file_->setf( std::ios::fixed, std:: ios::floatfield );
+    return *this;
+  }
+
 protected:
 
   void write_( Sample<>& chunk )
@@ -98,16 +98,17 @@ protected:
     if (shared_file_) {
       // serialize the sample
       std::stringstream buffer;
+      buffer.precision( precision_ );
       if (first_){
         // account for the leading string
         if (local_rank_ == 0) {
-          buffer << init_jplace_string(tree_string_);
+          init_jplace_string( tree_string_, buffer );
         }
         first_ = false;
       } else {
         buffer << ",\n";
       }
-      buffer << sample_to_jplace_string(chunk);
+      sample_to_jplace_string(chunk, buffer);
 
       // how much this rank intends to write this turn
       const auto buffer_str = buffer.str();
@@ -142,12 +143,12 @@ protected:
     if (file_) {
       if (first_){
         first_ = false;
-        *file_ << init_jplace_string(tree_string_);
+        init_jplace_string(tree_string_, *file_);
       } else {
         *file_ << ",\n";
       }
 
-      *file_ << sample_to_jplace_string(chunk);
+      sample_to_jplace_string(chunk, *file_);
     }
 
     #endif
@@ -171,6 +172,9 @@ protected:
     if (not file_->is_open()) {
       throw std::runtime_error{file_path + ": could not open!"};
     }
+
+    set_precision( precision_ );
+
     #endif
   }
 
@@ -198,7 +202,8 @@ protected:
   std::string invocation_;
   std::future<void> prev_gather_;
   bool first_ = true;
-  
+  unsigned int precision_ = 6;
+
   #ifdef __MPI
   MPI_File shared_file_;
   size_t bytes_written_ = 0;

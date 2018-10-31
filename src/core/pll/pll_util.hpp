@@ -26,23 +26,23 @@ int cb_partial_traversal(pll_unode_t * node);
 int cb_full_traversal(pll_unode_t * node);
 
 // recursive traversal functions
-unsigned int utree_query_branches(pll_utree_t const * const node, 
+unsigned int utree_query_branches(pll_utree_t const * const node,
                                   pll_unode_t ** node_list);
-void set_unique_clv_indices(pll_unode_t * const tree, 
+void set_unique_clv_indices(pll_unode_t * const tree,
                             const int num_tip_nodes);
-void set_missing_branch_lengths(pll_utree_t * tree, 
+void set_missing_branch_lengths(pll_utree_t * tree,
                                 const double length);
-void set_branch_lengths(pll_utree_t * tree, 
+void set_branch_lengths(pll_utree_t * tree,
                         const double length);
 double sum_branch_lengths(pll_utree_t const * const tree);
 
 // tiny tree specific
-void reset_triplet_lengths( pll_unode_t * toward_pendant, 
-                            pll_partition_t * partition, 
+void reset_triplet_lengths( pll_unode_t * toward_pendant,
+                            pll_partition_t * partition,
                             const double old_length);
 
 // general helpers
-std::string get_numbered_newick_string(pll_utree_t const * const root);
+std::string get_numbered_newick_string(pll_utree_t const * const root, size_t precision=10);
 pll_unode_t * get_tip_node(pll_unode_t * node);
 
 pll_unode_t* get_root(pll_utree_t const * const tree);

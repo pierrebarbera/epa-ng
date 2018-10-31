@@ -64,7 +64,7 @@ static void place(MSA& msa,
 
   std::vector<std::unique_ptr<Tiny_Tree>> branch_ptrs(num_threads);
   auto prev_branch_id = std::numeric_limits<size_t>::max();
-  
+
   if (time){
     time->start();
   }
@@ -117,7 +117,7 @@ static void place_thorough(const Work& to_place,
                   const size_t seq_id_offset=0,
                   mytimer* time=nullptr)
 {
-  
+
 #ifdef __OMP
   const unsigned int num_threads  = options.num_threads
                                   ? options.num_threads
@@ -143,7 +143,7 @@ static void place_thorough(const Work& to_place,
 
   std::vector<std::unique_ptr<Tiny_Tree>> branch_ptrs(num_threads);
   auto prev_branch_id = std::numeric_limits<size_t>::max();
-  
+
   // work seperately
   if (time){
     time->start();
@@ -211,7 +211,7 @@ void simple_mpi(Tree& reference_tree,
     throw std::runtime_error{"Traversing the utree went wrong during pipeline startup!"};
   }
 
-  auto lookups = 
+  auto lookups =
     std::make_shared<Lookup_Store>(num_branches, reference_tree.partition()->states);
 
   // some MPI prep
@@ -255,9 +255,9 @@ void simple_mpi(Tree& reference_tree,
   // prepare output file
   LOG_INFO << "Output file: " << outdir + "epa_result.jplace";
   jplace_writer jplace( outdir, "epa_result.jplace",
-                        get_numbered_newick_string(reference_tree.tree()),
+                        get_numbered_newick_string(reference_tree.tree(), options.precision),
                         invocation);
-
+  jplace.set_precision( options.precision );
 
   Sample preplace(options.chunk_size, num_branches);
 

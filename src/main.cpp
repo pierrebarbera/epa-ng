@@ -187,6 +187,13 @@ int main(int argc, char** argv)
                   true
                 )->group("Output");
 
+  auto precision =
+  app.add_option( "--precision",
+                  options.precision,
+                  "Output decimal point precision for floating point numbers.",
+                  true
+                )->group("Output");
+
   //  ============== COMPUTE OPTIONS ==============
 
   auto dyn_heur =
@@ -330,6 +337,10 @@ int main(int argc, char** argv)
 
   if (*filter_max) {
     LOG_INFO << "Selected: Maximum number of placements per query: " << options.filter_max;
+  }
+
+  if (*precision) {
+    LOG_INFO << "Selected: Custom output floating point precision: " << options.precision;
   }
 
   if (options.filter_min > options.filter_max) {

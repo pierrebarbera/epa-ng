@@ -18,114 +18,95 @@ void merge_into(std::ofstream& dest, const std::vector<std::string>& sources)
   }
 }
 
-std::string placement_to_jplace_string(const Placement& p)
+void placement_to_jplace_string(const Placement& p, std::ostream& os)
 {
-  std::ostringstream output;
-
-  output << "[" << std::to_string(p.branch_id()) << ", ";
-  output << std::to_string(p.likelihood()) << ", ";
-  output << std::to_string(p.lwr()) << ", ";
-  output << std::to_string(p.distal_length()) << ", ";
-  output << std::to_string(p.pendant_length()) << "]";
-
-  return output.str();
+  os << "[" << p.branch_id() << ", ";
+  os << p.likelihood() << ", ";
+  os << p.lwr() << ", ";
+  os << p.distal_length() << ", ";
+  os << p.pendant_length() << "]";
 }
 
-std::string pquery_to_jplace_string(const PQuery<Placement>& pquery)
+void pquery_to_jplace_string(const PQuery<Placement>& pquery, std::ostream& os)
 {
-  std::ostringstream output;
-
-  output << "    {\"p\": [" << NEWL; // p for pquery
+  os << "    {\"p\": [" << NEWL; // p for pquery
 
   size_t i = 0;
   for (const auto& place : pquery)
   {
     // individual pquery
-    output << "      " << placement_to_jplace_string(place);
+    os << "      ";
+    placement_to_jplace_string(place, os);
     if (++i < pquery.size()) {
-      output << ",";  
+      os << ",";
     }
-    output << NEWL;
-  } 
+    os << NEWL;
+  }
 
   // closing bracket for pquery array
-  output << "      ]," << NEWL; 
-  
+  os << "      ]," << NEWL;
+
   // start of name column
-  output <<"    \"n\": [";
-  
+  os <<"    \"n\": [";
+
   // sequence header
   const auto& header = pquery.header();
-  output << "\"" << header.c_str() << "\"";
- 
+  os << "\"" << header.c_str() << "\"";
 
-  output << "]" << NEWL; // close name bracket
 
-  output << "    }";// final bracket
+  os << "]" << NEWL; // close name bracket
 
-  return output.str();
+  os << "    }";// final bracket
+
 }
 
-std::string init_jplace_string(const std::string& numbered_newick)
+void init_jplace_string(const std::string& numbered_newick, std::ostream& os)
 {
-  std::ostringstream output;
-
-  output << "{" << NEWL;
-  output << "  \"tree\": \"" << numbered_newick << "\"," << NEWL;
-  output << "  \"placements\": " << NEWL;
-  output << "  [" << NEWL;
-
-  return output.str();
+  os << "{" << NEWL;
+  os << "  \"tree\": \"" << numbered_newick << "\"," << NEWL;
+  os << "  \"placements\": " << NEWL;
+  os << "  [" << NEWL;
 }
 
-std::string finalize_jplace_string(const std::string& invocation)
+void finalize_jplace_string(const std::string& invocation, std::ostream& os)
 {
   assert(invocation.length() > 0);
 
-  std::ostringstream output;
+  os << "  ]," << NEWL;
 
-  output << "  ]," << NEWL;
+  os << "  \"metadata\": {\"invocation\": \"" << invocation << "\"}," << NEWL;
 
-  output << "  \"metadata\": {\"invocation\": \"" << invocation << "\"}," << NEWL;
+  os << "  \"version\": 3," << NEWL;
+  os << "  \"fields\": ";
+  os << "[\"edge_num\", \"likelihood\", \"like_weight_ratio\", \"distal_length\"";
+  os << ", \"pendant_length\"]" << NEWL;
 
-  output << "  \"version\": 3," << NEWL;
-  output << "  \"fields\": ";
-  output << "[\"edge_num\", \"likelihood\", \"like_weight_ratio\", \"distal_length\"";
-  output << ", \"pendant_length\"]" << NEWL;
-
-  output << "}" << NEWL;
-
-  return output.str();
+  os << "}" << NEWL;
 }
 
-std::string sample_to_jplace_string(const Sample<Placement>& sample)
+void sample_to_jplace_string(const Sample<Placement>& sample, std::ostream& os)
 {
-  std::ostringstream output;
-
   size_t i = 0;
   for (const auto& p : sample) {
-    output << pquery_to_jplace_string(p); 
+    pquery_to_jplace_string(p, os);
     if (++i < sample.size()) {
-      output << ",";
+      os << ",";
     }
-    output << NEWL;
+    os << NEWL;
   }
-  return output.str();
 }
 
-std::string full_jplace_string( const Sample<Placement>& sample,
-                                const std::string& invocation)
+void full_jplace_string(const Sample<Placement>& sample,
+                        const std::string& invocation,
+                        std::ostream& os)
 {
-  std::ostringstream output;
-
   // tree and other init
-  output << init_jplace_string(sample.newick());
+  init_jplace_string(sample.newick(), os);
 
   // actual placements
-  output << sample_to_jplace_string(sample);
+  sample_to_jplace_string(sample, os);
 
   // metadata std::string
-  output << finalize_jplace_string(invocation);
+  finalize_jplace_string(invocation, os);
 
-  return output.str();
 }

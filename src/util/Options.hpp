@@ -28,4 +28,6 @@ public:
   bool premasking               = true;
   bool baseball                 = false;
   std::string tmp_dir;
+  unsigned int precision        = 10;
+
 };
