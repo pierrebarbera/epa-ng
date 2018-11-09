@@ -6,6 +6,7 @@
 
 #include "core/pll/pllhead.hpp"
 #include "core/pll/pll_util.hpp"
+#include "core/pll/rtree_mapper.hpp"
 #include "core/raxml/Model.hpp"
 #include "io/msa_reader.hpp"
 #include "seq/MSA.hpp"
@@ -51,22 +52,144 @@ MSA build_MSA_from_file(const std::string& msa_file,
   return msa;
 }
 
-pll_utree_s * build_tree_from_file(const std::string& tree_file, Tree_Numbers& nums)
+static void recurse_post_order(pll_unode_t const * const node,
+                        std::vector<unsigned int>& translation,
+                        unsigned int * const rooted_index)
+{
+  if ( not node->next ) {
+    translation.push_back( *rooted_index );
+    *rooted_index = *rooted_index + 1;
+    return;
+  }
+
+  recurse_post_order( node->next->back,       translation, rooted_index );
+  recurse_post_order( node->next->next->back, translation, rooted_index );
+
+  translation.push_back( *rooted_index );
+  *rooted_index = *rooted_index + 1;
+}
+
+static rtree_mapper determine_edge_num_translation(pll_unode_t const * const vroot,
+                                            bool const left,
+                                            double const proximal_length,
+                                            double const distal_length)
+{
+  // map from unrooted edge nums to rooted edge nums
+  rtree_mapper::map_type unrooted_to_rooted;
+  unsigned int rooted_index = 0;
+
+  unsigned int rtree_proximal_edge  = 0;
+  unsigned int rtree_distal_edge = 0;
+  unsigned int utree_root_edge  = 0;
+
+  /* since we are in a special situation of a) starting at a top level trifurcation
+   * and b) having to treat one edge in a special way, we do part of the normally
+   * recursive legwork here already
+   */
+
+  if ( left ) {
+    // if the vroot sits on the left subtree of the original rtree, we can recurse twice,
+    // then account for the missing branch w.r.t. the rooted tree
+    recurse_post_order( vroot->back,        unrooted_to_rooted, &rooted_index );
+    recurse_post_order( vroot->next->back,  unrooted_to_rooted, &rooted_index );
+
+    // remember the edge num in the rtree of the branch leading to left subtree
+    rtree_proximal_edge = rooted_index;
+    rooted_index++;
+
+    // keep recursing down the originally right path
+    recurse_post_order( vroot->next->next->back, unrooted_to_rooted, &rooted_index );
+
+    // remember the edge num in the rtree of the branch leading to the right subtree
+    rtree_distal_edge = unrooted_to_rooted.back();
+
+    // in this case the edge num in the utree that previously held the rtree root is the last branch by definiton
+    utree_root_edge = unrooted_to_rooted.size() - 1u;
+  } else {
+    // if the vroot sits on the right subtree, we can recurse three times normally, then in the
+    // end track the extraneous edge num
+
+    // remember the edge num in the rtree of the branch leading to left subtree
+    rtree_distal_edge = rooted_index;
+    // ... which is also the utree edge num of the branch that held the rtree root
+    utree_root_edge = rtree_distal_edge;
+
+    recurse_post_order( vroot->back,  unrooted_to_rooted, &rooted_index );
+    recurse_post_order( vroot, unrooted_to_rooted, &rooted_index );
+
+    // remember the edge num in the rtree of the branch leading to right subtree
+    // this also removes the uneeded mapping for the edge that was traversed twice
+    // (the edge where the rtree root was)
+    rtree_proximal_edge = unrooted_to_rooted.back();
+    unrooted_to_rooted.pop_back();
+
+  }
+
+  rtree_mapper mapper(utree_root_edge,
+                      rtree_proximal_edge,
+                      rtree_distal_edge,
+                      proximal_length,
+                      distal_length,
+                      left );
+  mapper.map( std::move(unrooted_to_rooted) );
+  return mapper;
+}
+
+pll_utree_s * build_tree_from_file( const std::string& tree_file,
+                                    Tree_Numbers& nums,
+                                    rtree_mapper& mapper)
 {
   pll_utree_t * tree;
   pll_rtree_t * rtree;
 
   // load the tree unrooted
-  if (!(rtree = pll_rtree_parse_newick(tree_file.c_str()))) {
-    if (!(tree = pll_utree_parse_newick(tree_file.c_str()))) {
-      throw std::runtime_error{std::string("Treeparsing failed! ") + pll_errmsg};
+  // if we can load it unrooted, then do so
+  if ( (tree = pll_utree_parse_newick(tree_file.c_str()))) {
+
+  // otherwise try to parse rooted, and unroot the tree
+  } else if ( ( rtree = pll_rtree_parse_newick( tree_file.c_str() ) ) ) {
+
+    // convert the tree
+    tree = pll_rtree_unroot( rtree );
+
+    // is the virtual root on the left side of the rtree?
+    // (this is the case if the left child node isn't a tip)
+    bool const left = rtree->root->left->left;
+
+    // what was the original branch length that used to be attached to the now vroot?
+    // lets by default assume the "utree distal" edge is the right one
+    double distal_length  = rtree->root->left->length;
+    double proximal_length = rtree->root->right->length;
+
+    if ( left ) {
+      /* if the virtual root sits on the left subtree we need to correct for an inconistent way the pll_rtee_unroot
+       * function returns the root node. It returns the node whose ->back is the right hand subtree (from the
+       * rooted perspective), which would be wrong as this is the subtree that post and pre order
+       * traversals recurse into first.
+       */
+      tree->vroot = tree->vroot->next;
+
+      // update branch lengths: they are flipped in this case
+      double tmp = distal_length;
+      distal_length = proximal_length;
+      proximal_length = tmp;
     }
-  } else {
-    tree = pll_rtree_unroot(rtree);
+
+    // get the translation
+    mapper = determine_edge_num_translation(  tree->vroot,
+                                              left,
+                                              proximal_length,
+                                              distal_length );
+
     pll_rtree_destroy(rtree, nullptr);
 
+
     /* optional step if using default PLL clv/pmatrix index assignments */
-    pll_utree_reset_template_indices(get_root(tree), tree->tip_count);
+    pll_utree_reset_template_indices( tree->vroot, tree->tip_count );
+
+  // if both fails, abort
+  } else {
+    throw std::runtime_error{std::string("Treeparsing failed! ") + pll_errmsg};
   }
 
   if (not tree->binary) {
@@ -124,29 +247,6 @@ pll_partition_t *  build_partition_from_file( const raxml::Model& model,
   if (not partition) {
     throw std::runtime_error{std::string("Could not create partition (build_partition_from_file). pll_errmsg: ") + pll_errmsg};
   }
-
-  // raxml::assign(partition, model);
-
-  // std::vector<double> rate_cats(model.num_ratecats(), 0.0);
-
-  // /* compute the discretized category rates from a gamma distribution
-  //    with alpha shape */
-  // pll_compute_gamma_cats( model.alpha(),
-  //                         model.num_ratecats(),
-  //                         &rate_cats[0],
-  //                         PLL_GAMMA_RATES_MEAN);
-  // pll_set_frequencies(partition,
-  //                     0,
-  //                     &(model.base_freqs(0)[0]));
-  // pll_set_subst_params( partition,
-  //                       0,
-  //                       &(model.subst_rates(0)[0]));
-  // pll_set_category_rates( partition,
-  //                         &rate_cats[0]);
-
-  // if (repeats) {
-  //   pll_resize_repeats_lookup(partition, ( REPEATS_LOOKUP_SIZE ) * 10);
-  // }
 
   return partition;
 

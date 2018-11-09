@@ -4,13 +4,14 @@
 #include <vector>
 #include <memory>
 
-#include "core/pll/pllhead.hpp"
 #include "seq/MSA.hpp"
 #include "core/raxml/Model.hpp"
 #include "tree/Tree_Numbers.hpp"
 #include "util/Options.hpp"
 #include "io/Binary.hpp"
+#include "core/pll/pllhead.hpp"
 #include "core/pll/pll_util.hpp"
+#include "core/pll/rtree_mapper.hpp"
 
 /* Encapsulates the pll data structures for ML computation */
 class Tree
@@ -43,6 +44,7 @@ public:
   Options& options() { return options_; }
   auto partition() { return partition_.get(); }
   auto tree() { return tree_.get(); }
+  rtree_mapper& mapper() { return mapper_; }
 
   void * get_clv(const pll_unode_t*);
 
@@ -62,6 +64,7 @@ private:
   raxml::Model model_;
   Options options_;
   Binary binary_;
+  rtree_mapper mapper_;
 
   // thread safety
   Mutex_List locks_;

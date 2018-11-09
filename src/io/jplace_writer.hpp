@@ -10,6 +10,7 @@
 #include "sample/Sample.hpp"
 #include "util/logging.hpp"
 #include "io/jplace_util.hpp"
+#include "core/pll/rtree_mapper.hpp"
 
 #ifdef __MPI
 #include "net/epa_mpi_util.hpp"
@@ -22,9 +23,11 @@ public:
   jplace_writer(const std::string& out_dir,
                 const std::string& file_name,
                 const std::string& tree_string,
-                const std::string& invocation_string)
+                const std::string& invocation_string,
+                rtree_mapper const& mapper)
     : tree_string_(tree_string)
     , invocation_(invocation_string)
+    , mapper_(mapper)
   {
     init_mpi_();
     init_file_(out_dir, file_name);
@@ -108,7 +111,7 @@ protected:
       } else {
         buffer << ",\n";
       }
-      sample_to_jplace_string(chunk, buffer);
+      sample_to_jplace_string(chunk, buffer, mapper_);
 
       // how much this rank intends to write this turn
       const auto buffer_str = buffer.str();
@@ -148,7 +151,7 @@ protected:
         *file_ << ",\n";
       }
 
-      sample_to_jplace_string(chunk, *file_);
+      sample_to_jplace_string(chunk, *file_, mapper_);
     }
 
     #endif
@@ -203,6 +206,7 @@ protected:
   std::future<void> prev_gather_;
   bool first_ = true;
   unsigned int precision_ = 6;
+  rtree_mapper const mapper_;
 
   #ifdef __MPI
   MPI_File shared_file_;

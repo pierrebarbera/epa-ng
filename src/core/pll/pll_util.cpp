@@ -222,25 +222,30 @@ unsigned int utree_query_branches(pll_utree_t const * const tree, pll_unode_t **
   return index;
 }
 
-static void get_numbered_newick_string_recursive( pll_unode_t const * const node,
+void get_numbered_newick_string_recursive( pll_unode_t const * const node,
                                                   std::ostringstream &ss,
-                                                  unsigned int * const index)
+                                                  unsigned int * const index,
+                                                  rtree_mapper const& mapper)
 {
 
-  if (node->next) { //inner node
+  if ( node->next ) { //inner node
     ss << "(";
-    get_numbered_newick_string_recursive(node->next->back, ss, index);
+    get_numbered_newick_string_recursive(node->next->back, ss, index, mapper);
     ss << ",";
-    get_numbered_newick_string_recursive(node->next->next->back, ss, index);
-    ss << "):" << node->length << "{" << *index << "}";
+    get_numbered_newick_string_recursive(node->next->next->back, ss, index, mapper);
+    auto const edge_id = (mapper) ? mapper.map_at( *index ) : *index;
+    ss << "):" << node->length << "{" << edge_id << "}";
   } else {
-    ss << node->label << ":" << node->length << "{" << *index << "}";
+    auto const edge_id = (mapper) ? mapper.map_at( *index ) : *index;
+    ss << node->label << ":" << node->length << "{" << edge_id << "}";
   }
   *index = *index + 1;
 
 }
 
-std::string get_numbered_newick_string(pll_utree_t const * const tree, size_t precision)
+std::string get_numbered_newick_string( pll_utree_t const * const tree,
+                                        rtree_mapper const& mapper,
+                                        size_t precision )
 {
   const auto root = get_root(tree);
 
@@ -249,18 +254,100 @@ std::string get_numbered_newick_string(pll_utree_t const * const tree, size_t pr
   ss.precision( precision );
   ss.setf( std::ios::fixed, std:: ios::floatfield );
 
-  unsigned int index = 0;
+  // print the unrooted tree
+  if ( not mapper ) {
+    unsigned int index = 0;
 
-  ss << "(";
+    ss << "(";
 
-  get_numbered_newick_string_recursive(root->back, ss, &index);
-  ss << ",";
-  get_numbered_newick_string_recursive(root->next->back, ss, &index);
-  ss << ",";
-  get_numbered_newick_string_recursive(root->next->next->back, ss, &index);
+    get_numbered_newick_string_recursive(root->back, ss, &index, mapper);
+    ss << ",";
+    get_numbered_newick_string_recursive(root->next->back, ss, &index, mapper);
+    ss << ",";
+    get_numbered_newick_string_recursive(root->next->next->back, ss, &index, mapper);
 
-  ss << ")";
-  ss << ";";
+    ss << ")";
+    ss << ";";
+
+    // print the rooted tree by simulating it on the unrooted one
+  } else {
+    // the index that reflects the edge_id of the UNROOTED tree
+    unsigned int unrooted_idx = 0;
+
+    unsigned int edge_id = 0;
+    double branch_length = -1.0;
+
+    ss << "(";
+
+    // if the uroot was assigned to the left subtree of the rtree
+    if ( mapper.uroot_is_left() ) {
+      ss << "(";
+      get_numbered_newick_string_recursive(root->back, ss, &unrooted_idx, mapper);
+      ss << ",";
+      get_numbered_newick_string_recursive(root->next->back, ss, &unrooted_idx, mapper);
+      ss << ")";
+
+      // account for the edge connecting the left subtree to the rtree root
+      std::tie( edge_id, branch_length ) = mapper.proximal_of_utree_root();
+      assert( unrooted_idx == edge_id );
+      ss << ":" << branch_length << "{" << edge_id << "}";
+
+      ss << ","; // this is the comma at the root!
+
+      // catch a special case: if the right rtree subtree is just a leaf, we don't recurse
+      auto const right = root->next->next->back;
+      if ( not right->next ) {
+        std::tie( edge_id, branch_length ) = mapper.distal_of_utree_root();
+        assert( unrooted_idx + 1 == edge_id );
+        ss << right->label << ":" << branch_length << "{" << edge_id << "}";
+      } else {
+        // otherise recurse again
+        ss << "(";
+        get_numbered_newick_string_recursive(right->next->back, ss, &unrooted_idx, mapper);
+        ss << ",";
+        get_numbered_newick_string_recursive(right->next->next->back, ss, &unrooted_idx, mapper);
+        ss << ")";
+
+        // and account for the edge connecting to the root
+        std::tie( edge_id, branch_length ) = mapper.distal_of_utree_root();
+        assert( unrooted_idx + 1 == edge_id );
+        ss << ":" << branch_length << "{" << edge_id << "}";
+      }
+
+    // if the uroot was assigned to the right subtree of the rtree
+    } else {
+      // this means the first edge has to be a leaf
+      auto const left = root->back;
+      assert( mapper.is_utree_root_edge( 0 ) );
+      assert( left->next == nullptr );
+
+      // so we manually handle this branch
+      std::tie( edge_id, branch_length ) = mapper.distal_of_utree_root();
+      assert( edge_id == 0 );
+      ss << left->label << ":" << branch_length << "{" << edge_id << "}";
+
+      // manually iterate the index
+      unrooted_idx++;
+
+      ss << ","; // this is the comma at the root!
+
+      // recurse down
+      auto const right = root;
+      ss << "(";
+      get_numbered_newick_string_recursive(right->next->back, ss, &unrooted_idx, mapper);
+      ss << ",";
+      get_numbered_newick_string_recursive(right->next->next->back, ss, &unrooted_idx, mapper);
+      ss << ")";
+
+      // finally account for the edge connecting the right rtree subtree to the root
+      std::tie( edge_id, branch_length ) = mapper.proximal_of_utree_root();
+      assert( unrooted_idx == edge_id );
+      ss << ":" << branch_length << "{" << edge_id << "}";
+    }
+
+    ss << ");";
+
+  }
 
   return ss.str();
 }
@@ -417,5 +504,5 @@ pll_utree_t* make_utree_struct(pll_unode_t * root, const unsigned int num_nodes)
 
 pll_unode_t* get_root(pll_utree_t const * const tree)
 {
-  return tree->nodes[tree->tip_count+tree->inner_count-1];
+  return tree->vroot;
 }

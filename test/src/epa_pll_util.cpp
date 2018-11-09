@@ -4,6 +4,7 @@
 #include "core/pll/epa_pll_util.hpp"
 #include "core/pll/pll_util.hpp"
 #include "core/pll/optimize.hpp"
+#include "core/pll/rtree_mapper.hpp"
 #include "io/file_io.hpp"
 #include "tree/Tree_Numbers.hpp"
 #include "tree/Tree.hpp"
@@ -24,8 +25,9 @@ TEST(epa_pll_util, link_tree_msa)
   pll_utree_t * tree;
   raxml::Model model;
 
-  tree = build_tree_from_file(env->tree_file, nums);
-  part = build_partition_from_file( env->model, nums, msa.num_sites());
+  rtree_mapper dummy;
+  tree = build_tree_from_file( env->tree_file, nums, dummy );
+  part = build_partition_from_file( env->model, nums, msa.num_sites() );
   // auto valid_map = vector<Range>(nums.tip_nodes);
   link_tree_msa(tree, part, model, msa, nums.tip_nodes);
 
@@ -60,9 +62,9 @@ static void precompute_clvs_test(Options o)
   Tree_Numbers nums;
   raxml::Model model;
 
-
-  auto tree = build_tree_from_file( tree_file, nums);
-  auto part = build_partition_from_file( model, nums, msa.num_sites(), o.repeats);
+  rtree_mapper dummy;
+  auto tree = build_tree_from_file( tree_file, nums, dummy );
+  auto part = build_partition_from_file( model, nums, msa.num_sites(), o.repeats );
 
 
   auto root = get_root(tree);
@@ -70,11 +72,11 @@ static void precompute_clvs_test(Options o)
   // auto valid_map = vector<Range>(nums.tip_nodes);
   link_tree_msa(tree, part, model, msa, nums.tip_nodes);
 
-  optimize( model, 
-            tree, 
-            part, 
-            nums, 
-            o.opt_branches, 
+  optimize( model,
+            tree,
+            part,
+            nums,
+            o.opt_branches,
             o.opt_model);
 
   precompute_clvs(tree, part, nums);
@@ -146,7 +148,7 @@ TEST(epa_pll_util, precompute_clvs)
   Options o;
   o.opt_model = o.opt_branches = false;
   o.repeats = false;
-  precompute_clvs_test(o);  
+  precompute_clvs_test(o);
 }
 
 TEST(epa_pll_util, split_combined_msa)

@@ -1,6 +1,7 @@
 #include "Epatest.hpp"
 
 #include "core/pll/pllhead.hpp"
+#include "core/pll/rtree_mapper.hpp"
 #include "core/raxml/Model.hpp"
 #include "io/file_io.hpp"
 #include "tree/Tree_Numbers.hpp"
@@ -31,8 +32,9 @@ TEST(file_io, build_partition_from_file)
   pll_partition_t * part;
   pll_utree_t * tree;
 
-  tree = build_tree_from_file(env->tree_file, nums);
-  part = build_partition_from_file( env->model, nums, msa.num_sites());
+  rtree_mapper dummy;
+  tree = build_tree_from_file(env->tree_file, nums, dummy );
+  part = build_partition_from_file( env->model, nums, msa.num_sites() );
 
   EXPECT_EQ(nums.tip_nodes, 8);
   EXPECT_EQ(nums.nodes, 14);

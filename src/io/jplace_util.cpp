@@ -1,6 +1,7 @@
 #include "io/jplace_util.hpp"
 
 #include <sstream>
+#include <tuple>
 
 void merge_into(std::ofstream& dest, const std::vector<std::string>& sources)
 {
@@ -18,16 +19,26 @@ void merge_into(std::ofstream& dest, const std::vector<std::string>& sources)
   }
 }
 
-void placement_to_jplace_string(const Placement& p, std::ostream& os)
+void placement_to_jplace_string(Placement const& p,
+                                std::ostream& os,
+                                rtree_mapper const& mapper)
 {
-  os << "[" << p.branch_id() << ", ";
+  auto branch_id = p.branch_id();
+  auto distal_length = p.distal_length();
+  if ( mapper ) {
+    std::tie(branch_id, distal_length) = mapper.in_rtree(branch_id, distal_length);
+  }
+
+  os << "[" << branch_id << ", ";
   os << p.likelihood() << ", ";
   os << p.lwr() << ", ";
-  os << p.distal_length() << ", ";
+  os << distal_length << ", ";
   os << p.pendant_length() << "]";
 }
 
-void pquery_to_jplace_string(const PQuery<Placement>& pquery, std::ostream& os)
+void pquery_to_jplace_string( PQuery<Placement> const& pquery,
+                              std::ostream& os,
+                              rtree_mapper const& mapper)
 {
   os << "    {\"p\": [" << NEWL; // p for pquery
 
@@ -36,7 +47,9 @@ void pquery_to_jplace_string(const PQuery<Placement>& pquery, std::ostream& os)
   {
     // individual pquery
     os << "      ";
-    placement_to_jplace_string(place, os);
+
+    placement_to_jplace_string(place, os, mapper);
+
     if (++i < pquery.size()) {
       os << ",";
     }
@@ -84,11 +97,11 @@ void finalize_jplace_string(const std::string& invocation, std::ostream& os)
   os << "}" << NEWL;
 }
 
-void sample_to_jplace_string(const Sample<Placement>& sample, std::ostream& os)
+void sample_to_jplace_string(Sample<Placement> const& sample, std::ostream& os, rtree_mapper const& mapper)
 {
   size_t i = 0;
   for (const auto& p : sample) {
-    pquery_to_jplace_string(p, os);
+    pquery_to_jplace_string(p, os, mapper);
     if (++i < sample.size()) {
       os << ",";
     }
@@ -96,15 +109,16 @@ void sample_to_jplace_string(const Sample<Placement>& sample, std::ostream& os)
   }
 }
 
-void full_jplace_string(const Sample<Placement>& sample,
-                        const std::string& invocation,
-                        std::ostream& os)
+void full_jplace_string(Sample<Placement> const& sample,
+                        std::string const& invocation,
+                        std::ostream& os,
+                        rtree_mapper const& mapper)
 {
   // tree and other init
   init_jplace_string(sample.newick(), os);
 
   // actual placements
-  sample_to_jplace_string(sample, os);
+  sample_to_jplace_string(sample, os, mapper);
 
   // metadata std::string
   finalize_jplace_string(invocation, os);

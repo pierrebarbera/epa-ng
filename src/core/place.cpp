@@ -255,8 +255,11 @@ void simple_mpi(Tree& reference_tree,
   // prepare output file
   LOG_INFO << "Output file: " << outdir + "epa_result.jplace";
   jplace_writer jplace( outdir, "epa_result.jplace",
-                        get_numbered_newick_string(reference_tree.tree(), options.precision),
-                        invocation);
+                        get_numbered_newick_string( reference_tree.tree(),
+                                                    reference_tree.mapper(),
+                                                    options.precision ),
+                        invocation,
+                        reference_tree.mapper());
   jplace.set_precision( options.precision );
 
   Sample preplace(options.chunk_size, num_branches);

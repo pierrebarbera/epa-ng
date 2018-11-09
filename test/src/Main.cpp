@@ -22,8 +22,14 @@ int main(int argc, char** argv)
   env->info_file += "RAxML_info.bv";
   env->tree_file = std::string(env->data_dir);
   env->tree_file += "ref.tre";
+
   env->tree_file_rooted = std::string(env->data_dir);
   env->tree_file_rooted += "ref_rooted.tre";
+  env->tree_file_rooted_2 = std::string(env->data_dir);
+  env->tree_file_rooted_2 += "ref_rooted_2.tre";
+  env->tree_file_rooted_3 = std::string(env->data_dir);
+  env->tree_file_rooted_3 += "ref_rooted_3.tre";
+
   env->reference_file  = std::string(env->data_dir);
   env->reference_file += "aln.fasta";
   env->query_file  = std::string(env->data_dir);
@@ -47,7 +53,7 @@ int main(int argc, char** argv)
 
   ::testing::InitGoogleTest(&argc, argv);
   MPI_INIT(&argc, &argv);
-  ::testing::AddGlobalTestEnvironment(env);
+  ::testing::AddGlobalTestEnvironment( env );
   auto result = RUN_ALL_TESTS();
   MPI_FINALIZE();
   return result;

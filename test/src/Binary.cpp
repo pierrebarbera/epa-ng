@@ -63,8 +63,8 @@ static auto create_scaler_to_clv_map(Tree& tree)
   unsigned int trav_size = 0;
   pll_utree_traverse( get_root(tree.tree()),
                       PLL_TREE_TRAVERSE_POSTORDER,
-                      full_trav, 
-                      &travbuffer[0], 
+                      full_trav,
+                      &travbuffer[0],
                       &trav_size);
 
   for (auto& n : travbuffer) {
@@ -112,8 +112,8 @@ static void read_(Options options)
   auto read_part = read_tree.partition();
 
   // compare numbered jplace strings
-  string original_nns(get_numbered_newick_string(original_tree.tree()));
-  string read_nns(get_numbered_newick_string(read_tree.tree()));
+  string original_nns( get_numbered_newick_string( original_tree.tree(), rtree_mapper() ) );
+  string read_nns( get_numbered_newick_string( read_tree.tree(), rtree_mapper() ) );
 
   EXPECT_STREQ(original_nns.c_str(), read_nns.c_str());
   // compare tree traversals
@@ -123,8 +123,8 @@ static void read_(Options options)
   unsigned int original_traversed, read_traversed;
   pll_utree_traverse( get_root(original_tree.tree()),
                       PLL_TREE_TRAVERSE_POSTORDER,
-                      cb_full_traversal, 
-                      &original_nodes[0], 
+                      cb_full_traversal,
+                      &original_nodes[0],
                       &original_traversed);
   pll_utree_traverse( get_root(read_tree.tree()),
                       PLL_TREE_TRAVERSE_POSTORDER,

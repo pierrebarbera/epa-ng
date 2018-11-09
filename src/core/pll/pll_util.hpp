@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/pll/pllhead.hpp"
+#include "core/pll/rtree_mapper.hpp"
 #include "util/Range.hpp"
 
 #include <string>
@@ -42,7 +43,9 @@ void reset_triplet_lengths( pll_unode_t * toward_pendant,
                             const double old_length);
 
 // general helpers
-std::string get_numbered_newick_string(pll_utree_t const * const root, size_t precision=10);
+std::string get_numbered_newick_string( pll_utree_t const * const root,
+                                        rtree_mapper const& mapper,
+                                        size_t precision=10);
 pll_unode_t * get_tip_node(pll_unode_t * node);
 
 pll_unode_t* get_root(pll_utree_t const * const tree);

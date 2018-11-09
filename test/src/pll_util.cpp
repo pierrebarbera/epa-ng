@@ -21,7 +21,8 @@ TEST(pll_util, utree_query_branches)
   pll_partition_t * part;
   pll_utree_t * tree;
 
-  tree = build_tree_from_file(env->tree_file, nums);
+  rtree_mapper dummy;
+  tree = build_tree_from_file( env->tree_file, nums, dummy );
   part = build_partition_from_file( env->model, nums, msa.num_sites());
 
   // tests
@@ -55,8 +56,9 @@ TEST(pll_util, set_unique_clv_indices)
   auto msa = build_MSA_from_file(env->reference_file, MSA_Info(env->reference_file), true);
   Tree_Numbers nums = Tree_Numbers();
 
-  auto tree = build_tree_from_file(env->tree_file, nums);
-  auto part = build_partition_from_file( env->model, nums, msa.num_sites());
+  rtree_mapper dummy;
+  auto tree = build_tree_from_file( env->tree_file, nums, dummy );
+  auto part = build_partition_from_file( env->model, nums, msa.num_sites() );
 
   set_unique_clv_indices(get_root(tree), nums.tip_nodes);
 
@@ -103,7 +105,7 @@ static int cb_set_branchlengths_one(pll_unode_t * node)
   return 1;
 };
 
-TEST(pll_util, get_numbered_newick_string)
+TEST( pll_util, get_numbered_newick_string )
 {
   // buildup
   auto msa = build_MSA_from_file(env->reference_file, MSA_Info(env->reference_file), true);
@@ -112,8 +114,12 @@ TEST(pll_util, get_numbered_newick_string)
   pll_utree_t * tree;
   raxml::Model model;
 
-  tree = build_tree_from_file(env->tree_file, nums);
-  part = build_partition_from_file( env->model, nums, msa.num_sites());
+  rtree_mapper dummy;
+
+  ASSERT_TRUE( (not dummy) );
+
+  tree = build_tree_from_file( env->tree_file, nums, dummy );
+  part = build_partition_from_file( env->model, nums, msa.num_sites() );
   // auto valid_map = vector<Range>(nums.tip_nodes);
   link_tree_msa(tree, part, model, msa, nums.tip_nodes);
 
@@ -130,7 +136,7 @@ TEST(pll_util, get_numbered_newick_string)
                       &travbuffer[0],
                       &traversal_size);
 
-  auto ret_string =  get_numbered_newick_string(tree, 2);
+  auto ret_string =  get_numbered_newick_string( tree, dummy, 2 );
 
   EXPECT_STREQ(valid.c_str(), ret_string.c_str());
 
@@ -140,6 +146,42 @@ TEST(pll_util, get_numbered_newick_string)
   pll_utree_destroy(tree, nullptr);
 }
 
+static void test_rooted_preserve( std::string const& tree_file, std::string const& valid )
+{
+  // buildup
+  pll_utree_t * tree;
+  raxml::Model model;
+
+  rtree_mapper mapper;
+  Tree_Numbers nums;
+  tree = build_tree_from_file( tree_file, nums, mapper );
+
+  auto ret_string = get_numbered_newick_string( tree, mapper, 2 );
+
+  EXPECT_STREQ( valid.c_str(), ret_string.c_str() );
+
+  // teardown
+  pll_utree_destroy(tree, nullptr);
+}
+
+TEST( pll_util, get_numbered_newick_string_rooted )
+{
+  test_rooted_preserve(
+    env->tree_file_rooted,
+    "((A:1.34{0},(B:1.66{1},(C:1.08{2},D:1.26{3}):1.12{4}):1.00{5}):1.01{6},(G:1.08{7},H:1.90{8}):0.01{9});"
+  );
+
+  test_rooted_preserve(
+    env->tree_file_rooted_2,
+    "(A:1.34{0},((B:1.66{1},(C:1.08{2},D:1.26{3}):1.12{4}):1.00{5},(G:1.01{6},H:1.08{7}):1.90{8}):0.01{9});"
+  );
+
+  test_rooted_preserve(
+    env->tree_file_rooted_3,
+    "(((A:1.34{0},(B:1.66{1},(C:1.08{2},D:1.26{3}):1.12{4}):1.00{5}):1.01{6},G:1.08{7}):1.90{8},H:0.01{9});"
+  );
+}
+
 TEST(pll_util, sum_branch_lengths)
 {
   auto msa = build_MSA_from_file(env->reference_file, MSA_Info(env->reference_file), true);
@@ -147,8 +189,9 @@ TEST(pll_util, sum_branch_lengths)
   pll_partition_t * part;
   pll_utree_t * tree;
 
-  tree = build_tree_from_file(env->tree_file, nums);
-  part = build_partition_from_file( env->model, nums, msa.num_sites());
+  rtree_mapper dummy;
+  tree = build_tree_from_file( env->tree_file, nums, dummy );
+  part = build_partition_from_file( env->model, nums, msa.num_sites() );
   set_branch_lengths(tree, 1.0);
   auto total_length = sum_branch_lengths(tree);
 

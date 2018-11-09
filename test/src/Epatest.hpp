@@ -35,6 +35,8 @@ public:
   std::string out_dir;
   std::string tree_file;
   std::string tree_file_rooted;
+  std::string tree_file_rooted_2;
+  std::string tree_file_rooted_3;
   std::string reference_file;
   std::string combined_file;
   std::string query_file;
@@ -85,7 +87,7 @@ void all_combinations(Func f, bool verbose=false)
     auto o = get_options_config(i);
     if (verbose) {
       printf("\nrepeats\toptim\tsliding\tprescore\tmasking\n");
-      printf( "%d\t%d\t%d\t%d\t%d\n", 
+      printf( "%d\t%d\t%d\t%d\t%d\n",
               o.repeats,
               o.opt_model,
               o.sliding_blo,
