@@ -126,7 +126,7 @@ TEST( pll_util, get_numbered_newick_string )
   // tests
   // valid output as returned by RAxML, with reset branch lengths, as we only want to test format
   string valid(
-  "(Seal:1.00{0},(Whale:1.00{1},(Mouse:1.00{2},(Human:1.00{3},(Chicken:1.00{4},(Frog:1.00{5},Loach:1.00{6}):1.00{7}):1.00{8}):1.00{9}):1.00{10}):1.00{11},Cow:1.00{12});");
+  "(A:1.00{0},(B:1.00{1},(C:1.00{2},(D:1.00{3},(E:1.00{4},(F:1.00{5},G:1.00{6}):1.00{7}):1.00{8}):1.00{9}):1.00{10}):1.00{11},H:1.00{12});");
 
   vector<pll_unode_t*> travbuffer(nums.nodes);
   unsigned int traversal_size;
