@@ -42,9 +42,12 @@ public:
     #ifdef __MPI
 
     if (local_rank_ == 0) {
-      const auto trailing = finalize_jplace_string(invocation_);
+      std::stringstream trailing;
+      trailing.precision( precision_ );
+      trailing.setf( std::ios::fixed, std:: ios::floatfield );
+      finalize_jplace_string( invocation_, trailing );
       MPI_File_seek(shared_file_, 0, MPI_SEEK_END);
-      MPI_File_write(shared_file_, trailing.c_str(), trailing.size(),
+      MPI_File_write(shared_file_, trailing.str().c_str(), trailing.str().size(),
                       MPI_CHAR, MPI_STATUS_IGNORE);
     }
     MPI_File_close(&shared_file_);
@@ -87,8 +90,14 @@ public:
   jplace_writer& set_precision( size_t n )
   {
     precision_ = n;
+
+    #ifdef __MPI
+
+    #else
     file_->precision( n );
     file_->setf( std::ios::fixed, std:: ios::floatfield );
+    #endif
+
     return *this;
   }
 
@@ -102,6 +111,7 @@ protected:
       // serialize the sample
       std::stringstream buffer;
       buffer.precision( precision_ );
+      buffer.setf( std::ios::fixed, std:: ios::floatfield );
       if (first_){
         // account for the leading string
         if (local_rank_ == 0) {
