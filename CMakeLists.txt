@@ -1,5 +1,8 @@
 cmake_minimum_required (VERSION 2.8.7 FATAL_ERROR)
 
+# add extra cmake modules specifically for Lucas' find_openmp patch under clang/macOS
+set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/libs/genesis/tools/cmake" )
+
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 set(CMAKE_DISABLE_SOURCE_CHANGES  ON)
 
@@ -61,7 +64,7 @@ set (CMAKE_CXX_FLAGS          "-std=c++14 ${WARN_FLAGS} -DEPA_VERSION='\"${epa_P
 set (CMAKE_CXX_FLAGS_DEBUG    "-O0 -g -ggdb3 -DDEBUG -D_GLIBCXX_DEBUG")
 set (CMAKE_CXX_FLAGS_RELEASE  "-O3 -DNDEBUG")
 
-if(ENABLE_PREFETCH)
+if( ENABLE_PREFETCH )
   set (CMAKE_THREAD_PREFER_PTHREAD ON)
   set (THREADS_PREFER_PTHREAD_FLAG ON)
   find_package (Threads)
@@ -69,10 +72,25 @@ if(ENABLE_PREFETCH)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__PREFETCH")
 endif()
 
-if(ENABLE_OMP)
+if( ENABLE_OMP )
   message(STATUS "Checking for OpenMP")
-  find_package( OpenMP QUIET )
-  if(OPENMP_FOUND)
+  # CMake versions before 3.5 do not properly support Clang OpenMP flags.
+  # And even with more recent CMake versions, it is not fully working.
+  # In order to still enable OpenMP, we use our own patch of the find module.
+  # See ./tools/cmake/FindOpenMP_patch.cmake for the modifications we made to support Clang.
+  if( "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang" )
+      find_package( OpenMP_patch )
+
+      # If our patch does not work, try the standard one, just in case.
+      if( NOT OPENMP_FOUND )
+          find_package( OpenMP )
+      endif()
+
+  else()
+      # In all other cases, use the normal find module.
+      find_package( OpenMP )
+  endif()
+  if( OPENMP_FOUND )
     message(STATUS "Checking for OpenMP -- found")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS} -D__OMP")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
@@ -125,7 +143,7 @@ DOWNLOAD_GITHUB_DEPENDENCY( "${PROJECT_SOURCE_DIR}/libs" "cereal"     "README.md
 #         Build pll-modules
 # =============================================
 
-add_subdirectory(${PROJECT_SOURCE_DIR}/libs/pll-modules)
+add_subdirectory( ${PROJECT_SOURCE_DIR}/libs/pll-modules )
 
 include_directories(${PLLMOD_EXPORTED_INCLUDE_PATH})
 
@@ -143,7 +161,7 @@ endif()
 set(GENESIS_USE_OPENMP OFF CACHE BOOL "Passing GENESIS_USE_OPENMP=OFF to genesis")
 
 # Add Genesis as dependency
-add_subdirectory(${PROJECT_SOURCE_DIR}/libs/genesis)
+add_subdirectory( ${PROJECT_SOURCE_DIR}/libs/genesis )
 
 # Use everything that Genesis exports, just to be sure that we use the same setup.
 add_definitions( ${GENESIS_DEFINITIONS} )
