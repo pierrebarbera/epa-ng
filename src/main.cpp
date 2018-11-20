@@ -49,16 +49,18 @@ void exit_epa(int ret=EXIT_SUCCESS)
 int main(int argc, char** argv)
 {
   auto start_all = std::chrono::high_resolution_clock::now();
-  genesis::utils::Logging::log_to_stdout();
 
 #ifdef __MPI
   MPI_INIT(&argc, &argv);
   int local_rank = 0;
   MPI_Comm_rank(MPI_COMM_WORLD, &local_rank);
-  if (local_rank != 0) {
-    genesis::utils::Logging::log_to_stdout(false);
+  if (local_rank == 0) {
+    genesis::utils::Logging::log_to_stdout();
   }
+#else
+  genesis::utils::Logging::log_to_stdout();
 #endif
+
   genesis::utils::Logging::max_level(genesis::utils::Logging::kInfo);
 
   std::string invocation("");
