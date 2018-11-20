@@ -91,9 +91,7 @@ public:
   {
     precision_ = n;
 
-    #ifdef __MPI
-
-    #else
+    #ifndef __MPI
     file_->precision( n );
     file_->setf( std::ios::fixed, std:: ios::floatfield );
     #endif
