@@ -22,7 +22,7 @@ set (EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/test/bin)
 add_executable        (epa_test_module ${epa_test_sources})
 
 target_link_libraries (epa_test_module ${GENESIS_LINK_LIBRARIES} )
-target_link_libraries (epa_test_module ${PLLMOD_EXPORTED_LIBS_STATIC})
+target_link_libraries (epa_test_module ${PLLMODULES_LIBRARIES})
 target_link_libraries (epa_test_module m)
 
 target_link_libraries (epa_test_module ${GTEST_BOTH_LIBRARIES})

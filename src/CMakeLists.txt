@@ -6,8 +6,11 @@ set (EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 
 add_executable        (epa_module ${epa_sources})
 
+message (STATUS "PLLMODULES_LIBRARIES: ${PLLMODULES_LIBRARIES}")
+message (STATUS "GENESIS_LINK_LIBRARIES: ${GENESIS_LINK_LIBRARIES}")
+
 target_link_libraries (epa_module ${GENESIS_LINK_LIBRARIES} )
-target_link_libraries (epa_module ${PLLMOD_EXPORTED_LIBS_STATIC})
+target_link_libraries (epa_module ${PLLMODULES_LIBRARIES})
 target_link_libraries (epa_module m)
 
 if(ENABLE_PREFETCH)

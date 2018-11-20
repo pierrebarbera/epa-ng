@@ -122,8 +122,8 @@ include( "${CMAKE_CURRENT_LIST_DIR}/libs/cmake/DownloadDependency.cmake" )
 # Thus, do not replace the hashes manually!
 SET( CLI11_COMMIT_HASH "d465414455e01c9e0753efbbf5bde16685bc7b90" ) #CLI11_COMMIT_HASH#
 SET( genesis_COMMIT_HASH "ae45112fe7a5d3a0543f9693f2604792b8817bac" ) #genesis_COMMIT_HASH#
-SET( pll-modules_COMMIT_HASH "717828ecba07de0563af3524a0b44525edf0a5d4" ) #pll-modules_COMMIT_HASH#
-SET( libpll_COMMIT_HASH "2b0bd1460b49794725b68d190f4bb2c0e1162276" ) #libpll_COMMIT_HASH#
+SET( pll-modules_COMMIT_HASH "55dabb9d537b5725179aad13d30ec886e4d7f7e0" ) #pll-modules_COMMIT_HASH#
+SET( libpll_COMMIT_HASH "2afd08f3a2cfefb77577cbfe2c60ec170a457256" ) #libpll_COMMIT_HASH#
 SET( cereal_COMMIT_HASH "51cbda5f30e56c801c07fe3d3aba5d7fb9e6cca4" ) #cereal_COMMIT_HASH#
 
 # Call the github download function, which takes four arguments:
@@ -132,16 +132,19 @@ SET( cereal_COMMIT_HASH "51cbda5f30e56c801c07fe3d3aba5d7fb9e6cca4" ) #cereal_COM
 #  - TESTFILE   : A testfile to check if the dependency is already there.
 #  - REPOSITORY : Github repository (user/reponame)
 #  - COMMITHASH : Hash of the commit to check out
-DOWNLOAD_GITHUB_DEPENDENCY( "${PROJECT_SOURCE_DIR}/libs" "CLI11"      "CMakeLists.txt"  "CLIUtils/CLI11"        ${CLI11_COMMIT_HASH} )
-DOWNLOAD_GITHUB_DEPENDENCY( "${PROJECT_SOURCE_DIR}/libs" "genesis"    "CMakeLists.txt"  "lczech/genesis"        ${genesis_COMMIT_HASH} )
-DOWNLOAD_GITHUB_DEPENDENCY( "${PROJECT_SOURCE_DIR}/libs" "pll-modules""README.md"       "ddarriba/pll-modules"  ${pll-modules_COMMIT_HASH} )
+DOWNLOAD_GITHUB_DEPENDENCY( "${PROJECT_SOURCE_DIR}/libs" "CLI11"        "CMakeLists.txt"  "CLIUtils/CLI11"        ${CLI11_COMMIT_HASH} )
+DOWNLOAD_GITHUB_DEPENDENCY( "${PROJECT_SOURCE_DIR}/libs" "genesis"      "CMakeLists.txt"  "lczech/genesis"        ${genesis_COMMIT_HASH} )
+DOWNLOAD_GITHUB_DEPENDENCY( "${PROJECT_SOURCE_DIR}/libs" "pll-modules"  "README.md"       "ddarriba/pll-modules"  ${pll-modules_COMMIT_HASH} )
 DOWNLOAD_GITHUB_DEPENDENCY( "${PROJECT_SOURCE_DIR}/libs/pll-modules/libs"
-                                                         "libpll"     "README.md"       "xflouris/libpll-2"     ${libpll_COMMIT_HASH} )
-DOWNLOAD_GITHUB_DEPENDENCY( "${PROJECT_SOURCE_DIR}/libs" "cereal"     "README.md"       "USCiLab/cereal"        ${cereal_COMMIT_HASH} )
+                                                         "libpll"       "README.md"       "xflouris/libpll-2"     ${libpll_COMMIT_HASH} )
+DOWNLOAD_GITHUB_DEPENDENCY( "${PROJECT_SOURCE_DIR}/libs" "cereal"       "README.md"       "USCiLab/cereal"        ${cereal_COMMIT_HASH} )
 
 # =============================================
 #         Build pll-modules
 # =============================================
+
+set( BUILD_PLLMODULES_STATIC ON   CACHE BOOL "Passing BUILD_PLLMODULES_STATIC=ON to pll-modules" )
+set( BUILD_PLLMODULES_SHARED OFF  CACHE BOOL "Passing BUILD_PLLMODULES_SHARED=OFF to pll-modules" )
 
 add_subdirectory( ${PROJECT_SOURCE_DIR}/libs/pll-modules )
 
