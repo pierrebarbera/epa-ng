@@ -1,8 +1,13 @@
 #pragma once
 
+#include "net/mpihead.hpp"
+#include <cstddef>
+#include <utility>
+
+std::pair<size_t, size_t> local_seq_package( const size_t num_seqs );
+
 #ifdef __MPI
 
-#include "net/mpihead.hpp"
 #include "util/Timer.hpp"
 #include "util/logging.hpp"
 
@@ -76,7 +81,7 @@ static void err_check(int errval)
   }
 }
 
-void epa_mpi_waitall(previous_request_storage_t& reqs)
+inline void epa_mpi_waitall(previous_request_storage_t& reqs)
 {
   for (auto& pair : reqs) {
     auto& r = pair.second;
@@ -148,7 +153,7 @@ void epa_mpi_isend( T& obj,
                         0,
                         comm,
                         &prev_req.req));
-  
+
   prev_req.buf = buffer;
 }
 

@@ -13,6 +13,7 @@
 #include "util/logging.hpp"
 
 #include "genesis/utils/io/serializer.hpp"
+#include "genesis/utils/io/deserializer.hpp"
 #include "genesis/sequence/formats/fasta_input_iterator.hpp"
 #include "genesis/sequence/functions/functions.hpp"
 #include "genesis/sequence/sequence.hpp"
@@ -139,35 +140,6 @@ static void read_header(utils::Deserializer& des,
   }
 }
 
-static void skip_sequences( utils::Deserializer& des,
-                            const std::vector<uint64_t>& offset,
-                            const size_t skip,
-                            const size_t cursor)
-{
-  assert(skip);
-  assert(offset.size());
-  assert(des);
-
-  const auto num_sequences = offset.size();
-
-  if ( (skip > num_sequences)
-    or (cursor + skip > num_sequences)) {
-    throw std::runtime_error{
-      std::string("Tried to skip past the end: ")
-      + std::to_string(num_sequences)
-      + " vs. "
-      + std::to_string(skip)
-    };
-  }
-  
-  // skip ahead to correct file offset
-  // subtract where we want to be from where we are
-  const size_t bytes_to_skip =  offset[cursor + skip] 
-                              - offset[cursor];
-
-  des.skip( bytes_to_skip );
-}
-
 static MSA read_sequences(utils::Deserializer& des,
                           const mask_type& mask,
                           const size_t number,
@@ -233,7 +205,7 @@ public:
       const genesis::sequence::Sequence seq("", s.sequence());
       // get the mask of the current sequence
       auto cur_mask = genesis::sequence::gap_sites(seq);
-      // adjust global mask accordingly 
+      // adjust global mask accordingly
       gap_mask &= cur_mask;
     }
 
@@ -245,8 +217,8 @@ public:
 
     // Write the data. Every entry:
     // <header_length (bytes/chars)><header string><sequence_length><encoded sequence padded to next byte>
-    // (note: the sequence_length is in number of encoded characters, so for 
-    // 4bit the number of bytes to be read is sequence_length * 2) 
+    // (note: the sequence_length is in number of encoded characters, so for
+    // 4bit the number of bytes to be read is sequence_length * 2)
     for (const auto& s : msa) {
       ser.put_string(s.header());
       put_encoded(ser, s.sequence());
@@ -313,23 +285,39 @@ public:
 };
 
 #include "io/msa_reader_interface.hpp"
+#include "net/epa_mpi_util.hpp"
 
 class Binary_Fasta_Reader : public msa_reader
 {
 public:
   Binary_Fasta_Reader(const std::string& file_name,
                       const MSA_Info info,
-                      const bool premasking = false,
-                      const size_t max_read=std::numeric_limits<size_t>::max())
-    : des_(file_name)
+                      const bool premasking = false)
+    : istream_(file_name)
+    , des_(istream_)
     , mask_(info.gap_mask())
-    , cursor_(0)
-    , num_read_(0)
-    , max_read_(max_read)
   {
     mask_type dummy_mask;
     read_header(des_, seq_offsets_, dummy_mask);
-    max_read_ = seq_offsets_.size();
+
+    assert(seq_offsets_.size() == info.sequences());
+
+
+    // if we are under MPI, skip to this ranks assigned part of the input file
+    #ifdef __MPI
+      // get info about to which sequence to skip to and how much this rank should read
+      std::tie( local_seq_offset_, max_read_ ) = local_seq_package( info.sequences() );
+
+      // skip to that offset in the underlying istream
+      istream_ = std::ifstream( file_name );
+      istream_.seekg( seq_offsets_[ local_seq_offset_ ], istream_.beg );
+
+      // rebuild the deserializer, starting from the desired sequence
+      des_ = utils::Deserializer( istream_ );
+
+    #endif
+
+    max_read_ = std::min( seq_offsets_.size(), max_read_);
 
     if (not premasking) {
       mask_ = mask_type();
@@ -338,52 +326,35 @@ public:
 
   ~Binary_Fasta_Reader() = default;
 
-  virtual void constrain(const size_t max_read) override
-  {
-    max_read_ = std::min( max_read , max_read_);
-  }
-
-  virtual void skip_to_sequence(const size_t n) override
-  {
-    if (n == 0) {
-      return;
-    }
-    assert(cursor_ <= n);
-
-    if ( n < cursor_ ) {
-      throw std::runtime_error{"Cannot skip into the past."};
-    }
-
-    const size_t skip = n - cursor_;
-
-    skip_sequences(des_, seq_offsets_, skip, cursor_);
-    cursor_ += skip;
-    max_read_ -= skip;
-  }
-
   virtual size_t read_next(MSA& result, const size_t number) override
   {
     const auto to_read =
-      std::min(number, max_read_ - num_read_);
+      std::min( number, max_read_ - num_read_ );
 
-    result = read_sequences(des_, mask_, to_read);
+    result = read_sequences( des_, mask_, to_read );
 
     num_read_ += result.size();
-    cursor_ += result.size();
 
     return result.size();
   }
 
-  virtual size_t num_sequences() override
+  virtual size_t num_sequences() const override
   {
     return seq_offsets_.size();
   }
 
+  virtual size_t local_seq_offset() const override
+  {
+    return local_seq_offset_;
+  }
+
+
 private:
+  std::ifstream istream_;
   utils::Deserializer des_;
   mask_type mask_;
   std::vector<uint64_t> seq_offsets_;
-  size_t cursor_    = 0;
   size_t num_read_  = 0;
   size_t max_read_  = std::numeric_limits<size_t>::max();
+  size_t local_seq_offset_ = 0;
 };

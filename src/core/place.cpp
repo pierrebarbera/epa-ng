@@ -214,31 +214,9 @@ void simple_mpi(Tree& reference_tree,
   auto lookups =
     std::make_shared<Lookup_Store>(num_branches, reference_tree.partition()->states);
 
-  // some MPI prep
-  int local_rank = 0;
-  int num_ranks = 1;
-
-  MPI_COMM_RANK(MPI_COMM_WORLD, &local_rank);
-  MPI_COMM_SIZE(MPI_COMM_WORLD, &num_ranks);
-
-  LOG_INFO << "Number of ranks: " << num_ranks;
-
-  auto reader = make_msa_reader(query_file, msa_info, options.premasking);
-
-  size_t local_rank_seq_offset = 0;
-
-  if (num_ranks > 1) {
-    // how many should each rank read?
-    const size_t part_size = ceil(reader->num_sequences() / static_cast<double>(num_ranks));
-    LOG_INFO << "Number of sequences per rank: " << part_size;
-
-    // read only the locally relevant part of the queries
-    // ... by skipping the appropriate amount
-    local_rank_seq_offset = part_size * local_rank;
-    reader->skip_to_sequence( local_rank_seq_offset );
-    // and limiting the reading to the given window
-    reader->constrain(part_size);
-  }
+  auto reader = make_msa_reader(query_file,
+                                msa_info,
+                                options.premasking);
 
   size_t num_sequences = 0;
   Work all_work(std::make_pair(0, num_branches), std::make_pair(0, options.chunk_size));
@@ -270,7 +248,7 @@ void simple_mpi(Tree& reference_tree,
 
     LOG_DBG << "num_sequences: " << num_sequences << std::endl;
 
-    const size_t seq_id_offset = sequences_done + local_rank_seq_offset;
+    const size_t seq_id_offset = sequences_done + reader->local_seq_offset();;
 
     if (num_sequences < options.chunk_size) {
       all_work = Work(std::make_pair(0, num_branches), std::make_pair(0, num_sequences));

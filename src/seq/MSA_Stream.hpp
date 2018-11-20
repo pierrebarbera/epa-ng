@@ -23,7 +23,7 @@ public:
   using file_type       = genesis::sequence::FastaInputIterator;
 
   MSA_Stream (const std::string& msa_file,
-              const MSA_Info& info,
+              const MSA_Info const& info,
               const bool premasking);
   MSA_Stream() = default;
   ~MSA_Stream();
@@ -35,12 +35,11 @@ public:
   MSA_Stream& operator= (MSA_Stream && other) = default;
 
   size_t read_next(container_type& result, const size_t number) override;
-  void constrain(const size_t max_read) override;
-  void skip_to_sequence(const size_t n) override;
-  size_t num_sequences() override;
+  size_t num_sequences() const override { return info_.sequences(); }
+  size_t local_seq_offset() const override { return local_seq_offset_; }
 
 private:
-  void skip_ahead(const size_t);
+  void skip_to_sequence(const size_t);
 
 private:
   MSA_Info info_;
@@ -53,6 +52,6 @@ private:
   bool premasking_ = true;
   size_t num_read_ = 0;
   size_t max_read_ = std::numeric_limits<size_t>::max();
-  size_t num_sequences_ = 0;
+  size_t local_seq_offset_ = 0;
   bool first_ = true;
 };
