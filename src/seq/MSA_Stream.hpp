@@ -23,7 +23,7 @@ public:
   using file_type       = genesis::sequence::FastaInputIterator;
 
   MSA_Stream (const std::string& msa_file,
-              const MSA_Info const& info,
+              const MSA_Info& info,
               const bool premasking);
   MSA_Stream() = default;
   ~MSA_Stream();
