@@ -47,9 +47,7 @@ TEST(Binary_Fasta, reader)
 
   Binary_Fasta_Reader reader(binfile_name, info);
 
-  const size_t skip = 3;
-
-  reader.skip_to_sequence(skip);
+  const size_t skip = 0;
 
   MSA read_msa;
   size_t i = skip;
@@ -58,7 +56,7 @@ TEST(Binary_Fasta, reader)
   while ( (num_sequences = reader.read_next(read_msa, chunksize)) ) {
 
     ASSERT_EQ(num_sequences, read_msa.size()) << "bad size at i=" << i;
-  
+
     for (size_t k = 0; k < num_sequences; ++k) {
       EXPECT_STREQ(msa[i+k].header().c_str(), read_msa[k].header().c_str());
       EXPECT_STREQ(msa[i+k].sequence().c_str(), read_msa[k].sequence().c_str());

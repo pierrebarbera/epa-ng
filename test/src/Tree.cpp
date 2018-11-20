@@ -7,6 +7,8 @@
 #include "seq/MSA_Info.hpp"
 #include "core/place.hpp"
 
+#include "genesis/utils/core/options.hpp"
+
 #include <string>
 #include <vector>
 #include <limits>
@@ -15,6 +17,8 @@ using namespace std;
 
 TEST(Tree, process_from_binary)
 {
+  genesis::utils::Options::get().allow_file_overwriting(true);
+
   // setup
   MSA_Info qry_info(env->query_file);
   MSA_Info ref_info(env->reference_file);
@@ -22,6 +26,7 @@ TEST(Tree, process_from_binary)
   MSA_Info::or_mask(qry_info, ref_info);
 
   auto queries = Binary_Fasta::fasta_to_bfast(env->query_file, env->out_dir);
+
   raxml::Model model;
   Options options;
   auto msa = build_MSA_from_file(env->reference_file, ref_info, options.premasking);
@@ -31,13 +36,14 @@ TEST(Tree, process_from_binary)
 
   EXPECT_DOUBLE_EQ(original_tree.ref_tree_logl(), read_tree.ref_tree_logl());
 
-  // test
   string invocation("./this --is -a test");
 
   simple_mpi(read_tree, queries, qry_info, env->out_dir, options, invocation);
 
+
   options.prescoring = true;
   simple_mpi(read_tree, queries, qry_info, env->out_dir, options, invocation);
+
 
   Tree mvstree;
   mvstree = Tree(env->binary_file, model, options);
