@@ -269,7 +269,7 @@ public:
     write_header(ser, entry_sizes, info.gap_mask());
 
     // write the data
-    auto it = sequence::FastaInputIterator().from_file(fasta_file);
+    auto it = sequence::FastaInputIterator( utils::from_file(fasta_file) );
 
     // probe first seq to see if this might be AA data
     ensure_dna(it->sites());

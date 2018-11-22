@@ -11,16 +11,16 @@ void split(std::string ref_msa, std::vector<std::string> query_files, std::strin
     }
 
     genesis::sequence::SequenceSet ref_set;
-  
+
     auto reader = genesis::sequence::PhylipReader();
-    reader.from_file( ref_msa, ref_set );
+    reader.read( genesis::utils::from_file( ref_msa ), ref_set );
 
     auto ref_labels = labels( ref_set );
 
     genesis::sequence::SequenceSet qry_set;
     for (const auto& f : query_files) {
       LOG_INFO << "File: " << f;
-      reader.from_file( f, qry_set );
+      reader.read( genesis::utils::from_file( f ), qry_set );
     }
 
     genesis::sequence::filter_by_label_list( qry_set, ref_labels );

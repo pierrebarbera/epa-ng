@@ -25,7 +25,7 @@ public:
     : path_(file_path)
   {
     // detect number of sequences in fasta file and generate mask
-    auto it = genesis::sequence::FastaInputIterator().from_file(file_path);
+    auto it = genesis::sequence::FastaInputIterator( genesis::utils::from_file(file_path) );
 
     // set some initial stuff
     if (it) {
@@ -102,7 +102,7 @@ private:
   size_t sites_ = 0;
   size_t sequences_ = 0;
   mask_type gap_mask_;
-  
+
 };
 
 inline std::string subset_sequence( const std::string& seq,
