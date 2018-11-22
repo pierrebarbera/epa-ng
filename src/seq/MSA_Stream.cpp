@@ -47,10 +47,10 @@ MSA_Stream::MSA_Stream( const std::string& msa_file,
   : info_(info)
   , premasking_(premasking)
 {
-  iter_ = genesis::sequence::FastaInputIterator( genesis::utils::from_file( msa_file ) );
-
+  genesis::sequence::FastaReader reader_settings;
   // ensure sequences are uniformly upper case
-  iter_.reader().site_casing( genesis::sequence::FastaReader::SiteCasing::kToUpper );
+  reader_settings.site_casing( genesis::sequence::FastaReader::SiteCasing::kToUpper );
+  iter_ = genesis::sequence::FastaInputIterator( genesis::utils::from_file( msa_file ), reader_settings );
 
   if (!iter_) {
     throw std::runtime_error{std::string("Cannot open file: ") + msa_file};
