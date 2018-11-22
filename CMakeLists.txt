@@ -26,14 +26,16 @@ endif ()
 project ( epa CXX C )
 
 set (epa_VERSION_MAJOR 0)
-set (epa_VERSION_MINOR 2)
+set (epa_VERSION_MINOR 3)
 set (epa_VERSION_PATCH 1)
-set (epa_VERSION_BETA "beta")
+# set (epa_VERSION_BETA "beta")
 
 set (epa_PROJECT_VERSION "${epa_VERSION_MAJOR}")
 set (epa_PROJECT_VERSION "${epa_PROJECT_VERSION}.${epa_VERSION_MINOR}")
 set (epa_PROJECT_VERSION "${epa_PROJECT_VERSION}.${epa_VERSION_PATCH}")
-set (epa_PROJECT_VERSION "${epa_PROJECT_VERSION}-${epa_VERSION_BETA}")
+if ( ${epa_VERSION_BETA} )
+  set (epa_PROJECT_VERSION "${epa_PROJECT_VERSION}-${epa_VERSION_BETA}")
+endif()
 
 #check for minimum compiler versions
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
