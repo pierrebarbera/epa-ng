@@ -13,7 +13,9 @@ std::pair<size_t, size_t> local_seq_package( const size_t num_seqs );
 
 #include <sstream>
 #include <memory>
+#include <cstring>
 #include <unordered_map>
+
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/vector.hpp>
 #include <cereal/types/string.hpp>
@@ -34,14 +36,6 @@ std::pair<size_t, size_t> local_seq_package( const size_t num_seqs );
 #else
    #error "what is happening here?"
 #endif
-
-// inline auto epa_mpi_file( const int local_rank,
-//                           const size_t section_size)
-// {
-
-
-//   return ;
-// }
 
 // types to keep track of previous async sends
 typedef struct
@@ -107,7 +101,7 @@ void epa_mpi_send(T& obj,
   // send obj to specified node
   std::string data = ss.str();
   auto buffer = new char[data.size()];
-  memcpy(buffer, data.c_str(), data.size() * sizeof(char));
+  std::memcpy(buffer, data.c_str(), data.size() * sizeof(char));
   err_check( MPI_Send(buffer,
                       data.size(),
                       MPI_CHAR,
@@ -145,7 +139,7 @@ void epa_mpi_isend( T& obj,
   // send obj to specified node
   std::string data = ss.str();
   auto buffer = new char[data.size()];
-  memcpy(buffer, data.c_str(), data.size() * sizeof(char));
+  std::memcpy(buffer, data.c_str(), data.size() * sizeof(char));
   err_check( MPI_Issend(buffer,
                         data.size(),
                         MPI_CHAR,
