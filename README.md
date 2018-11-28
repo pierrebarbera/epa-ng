@@ -8,19 +8,8 @@
 4. **[Test data](#test-data)**
 5. **[Citing EPA-ng](#citing-epa-ng)**
 
-## IMPORTANT
-The by far easiest way to clone this repository is to use the following command
-```
-git clone --recursive https://github.com/Pbdas/epa.git
-```
-
-If that is not an option (perhaps you downloaded the zip file), you can fix the submodules by running
-
-```
-git submodule update --init --recursive
-```
-
 ### SUPPORT
+There is now a short tutorial available that covers the basic steps of a placement project. [You can find it here](https://github.com/Pbdas/epa-ng/wiki/Full-Stack-Example)
 
 The most reliable way to get in touch with us is to head over to the [Phylogenetic Placement Google Group](https://groups.google.com/forum/#!forum/phylogenetic-placement). You can also search its history, or the hostory of the  [RAxML Google Group](https://groups.google.com/forum/#!forum/raxml) for your particular question.
 
@@ -37,7 +26,7 @@ This tool is still in an active development. Suggestions, bug reports and constr
 ### What can EPA-ng do?
 
 - do phylogenetic placement using [explicitly specified model parameters](#setting-the-model-parameters)
-- take as input **separated reference and query alignment files**, in the **fasta** format (for now)
+- take as input **separated reference and query alignment files**, in the **fasta** or **fasta.gz** formats
 - handle **DNA** and **Amino Acid** data
 - distributed computing suitable for the **cluster**
 - **prepare inputs** for the cluster:
@@ -68,7 +57,7 @@ Now it's time to build the program.
 make
 ```
 
-Thats it! The executable should now be located in the `epa-ng/bin/` folder.
+Thats it! If all goes well, the build process will fetch any missing `git submodule` dependencies, and build them as well, before building the program itself. The executable will be located in the `epa-ng/bin/` folder.
 
 ### Apple
 
@@ -167,25 +156,6 @@ For short read data, the impact will be massive, as typically query alignments w
 
 ### Cluster usage
 
-Before using the cluster version of `EPA-ng`, the input files must be preprocessed.
-In general, these preprocessed files also enable more streamlined re-runs of experiments and are reccomended for use, always.
-
-#### Converting the query file
-
-You may also explicitly convert the input query fasta file to our internal fasta format.
-This format is binary encoded (reducing the size by half) and randomly accessible.
-Again, using this format is highly reccomended, and required to use the MPI version.
-
-To convert the fasta file, simply run the program with the query file specified thusly:
-
-```
-epa-ng --bfast query.fasta --outdir $OUT
-```
-
-This will produce a file called `query.fasta.bfast` in the specified output directory.
-
-#### Running on the cluster
-
 To use distributed parallelism in `EPA-ng`, first we must re-compile the program with MPI enabled.
 This requires a version of MPI to be loaded/installed on your system.
 The only additional requirement `EPA-ng` has, is that the compiler that is loaded in conjunction with MPI satisfies the [minimum version requirements](#build-instructions).
@@ -202,10 +172,23 @@ This will attempt to compile the program with both MPI and OpenMP, as the most e
 In your job submission script, you can then call the program in a highly similar way to before:
 
 ```
-mpirun epa-ng --ref-msa $REF_MSA --tree $TREE -q query.fasta.bin -w ./some/output/dir
+mpirun epa-ng --ref-msa $REF_MSA --tree $TREE -q query.fasta -w ./some/output/dir
 ```
 
-**Note** that using the binary format is not strictly required, however it is highly reccomended to increase parallel efficiency.
+#### Converting the query file to `.bfast`
+
+You may also explicitly convert the input query fasta file to our internal fasta format.
+This format is binary encoded (reducing the size by half) and randomly accessible.
+Using this format is reccomended for use under MPI, as it increases parallel efficiency.
+
+To convert the fasta file, simply run the program with the query file specified thusly:
+
+```
+epa-ng --bfast query.fasta --outdir $OUT
+```
+
+This will produce a file called `query.fasta.bfast` in the specified output directory.
+
 
 ## Test data
 This repository includes a test data set which can be found under [`test/data/neotrop`](test/data/neotrop). Consult the README located there for usage examples.
