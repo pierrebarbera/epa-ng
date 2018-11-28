@@ -43,7 +43,8 @@ static void read_chunk( MSA_Stream::file_type& iter,
 
 MSA_Stream::MSA_Stream( const std::string& msa_file,
                         const MSA_Info& info,
-                        const bool premasking)
+                        const bool premasking,
+                        const bool split)
   : info_(info)
   , premasking_(premasking)
 {
@@ -57,12 +58,16 @@ MSA_Stream::MSA_Stream( const std::string& msa_file,
   }
 
   // if we are under MPI, skip to this ranks assigned part of the input file
+
   #ifdef __MPI
+  if ( split ) {
     // get info about to which sequence to skip to and how much this rank should read
     std::tie(local_seq_offset_, max_read_) = local_seq_package( info.sequences() );
 
     skip_to_sequence( local_seq_offset_ );
-
+  }
+  #else
+  static_cast<void>(split);
   #endif
 
 }

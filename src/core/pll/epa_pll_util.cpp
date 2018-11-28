@@ -12,6 +12,8 @@ void link_tree_msa( pll_utree_t * tree,
                     const MSA& msa,
                     const unsigned int num_tip_nodes)
 {
+  assert( num_tip_nodes == msa.size() );
+
   // associate the sequences from the MSA file with the correct tips
   /* create a hash table of size num_tip_nodes */
   std::unordered_map<std::string, unsigned int> map; // mapping labels to tip clv indices

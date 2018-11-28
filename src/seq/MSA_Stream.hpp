@@ -24,7 +24,8 @@ public:
 
   MSA_Stream (const std::string& msa_file,
               const MSA_Info& info,
-              const bool premasking);
+              const bool premasking = true,
+              const bool split = false);
   MSA_Stream() = default;
   ~MSA_Stream();
 

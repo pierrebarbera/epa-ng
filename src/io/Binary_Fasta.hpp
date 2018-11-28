@@ -292,7 +292,8 @@ class Binary_Fasta_Reader : public msa_reader
 public:
   Binary_Fasta_Reader(const std::string& file_name,
                       const MSA_Info info,
-                      const bool premasking = false)
+                      const bool premasking = false,
+                      const bool split = false)
     : istream_(file_name)
     , des_(istream_)
     , mask_(info.gap_mask())
@@ -305,6 +306,7 @@ public:
 
     // if we are under MPI, skip to this ranks assigned part of the input file
     #ifdef __MPI
+    if ( split ) {
       // get info about to which sequence to skip to and how much this rank should read
       std::tie( local_seq_offset_, max_read_ ) = local_seq_package( info.sequences() );
 
@@ -314,7 +316,9 @@ public:
 
       // rebuild the deserializer, starting from the desired sequence
       des_ = utils::Deserializer( istream_ );
-
+    }
+    #else
+    static_cast<void>(split);
     #endif
 
     max_read_ = std::min( seq_offsets_.size(), max_read_);
