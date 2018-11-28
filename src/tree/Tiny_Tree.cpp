@@ -233,7 +233,10 @@ Placement Tiny_Tree::place(const Sequence &s)
   }
 
   if (logl == -std::numeric_limits<double>::infinity()) {
-    LOG_ERR << "-INF logl at branch " << branch_id_ << " with sequence " << s.header();
+    throw std::runtime_error{
+      std::string("-INF logl at branch ") + std::to_string( branch_id_ ) +
+      " with sequence " + s.header()
+    };
   }
 
   assert(distal_length <= original_branch_length_);

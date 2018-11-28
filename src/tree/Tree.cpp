@@ -29,6 +29,10 @@ Tree::Tree( const std::string &tree_file,
     throw std::runtime_error{"Aborting"};
   }
 
+  if ( ref_msa_.size() != nums_.tip_nodes ) {
+    throw std::runtime_error{"The reference MSA and tree have differing number of taxa!"};
+  }
+
   partition_ = partition_ptr( build_partition_from_file(model_,
                                                         nums_,
                                                         ref_msa_.num_sites(),

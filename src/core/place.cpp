@@ -216,7 +216,8 @@ void simple_mpi(Tree& reference_tree,
 
   auto reader = make_msa_reader(query_file,
                                 msa_info,
-                                options.premasking);
+                                options.premasking,
+                                true);
 
   size_t num_sequences = 0;
   Work all_work(std::make_pair(0, num_branches), std::make_pair(0, options.chunk_size));
