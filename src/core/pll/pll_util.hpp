@@ -6,6 +6,7 @@
 
 #include <string>
 #include <sstream>
+#include <tuple>
 
 typedef struct
 {
