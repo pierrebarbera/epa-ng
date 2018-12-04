@@ -30,7 +30,8 @@ Tree::Tree( const std::string &tree_file,
   }
 
   if ( ref_msa_.size() != nums_.tip_nodes ) {
-    throw std::runtime_error{"The reference MSA and tree have differing number of taxa!"};
+    LOG_WARN << "The reference MSA and tree have differing number of taxa! " <<
+      ref_msa_.size() << " vs. " << nums_.tip_nodes;
   }
 
   partition_ = partition_ptr( build_partition_from_file(model_,
