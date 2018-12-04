@@ -28,10 +28,10 @@ void discard_by_support_threshold(Sample<Placement>& sample,
                                   const size_t min=1,
                                   const size_t max=std::numeric_limits<size_t>::max());
 
-pq_iter_t until_accumulated_reached( PQuery<Placement>& pq,
+pq_iter_t until_accumulated_reached(  PQuery<Placement>& pq,
                                       const double thresh,
-                                      const size_t min,
-                                      const size_t max);
+                                      const size_t min=1,
+                                      const size_t max=std::numeric_limits<size_t>::max());
 void discard_by_accumulated_threshold(Sample<Placement>& sample,
                                       const double thresh,
                                       const size_t min=1,
@@ -95,14 +95,14 @@ void collapse(T&)
  * special split function that Splits samples in buckets according to the global sequence ID
  * of their PQueries. The goal is to have them split such that each aggregate node gets their
  * correct set of sequence results (even if that part is empty, which constitutes a null-message)
- * 
+ *
  * @param
  * @param
  * @param
  */
 template<class T>
-void split( const Sample<T>& src, 
-            std::vector<Sample<T>>& parts, 
+void split( const Sample<T>& src,
+            std::vector<Sample<T>>& parts,
             const unsigned int num_parts)
 {
   parts.clear();
@@ -124,14 +124,14 @@ void split( const Sample<T>& src,
  *   Iterable
  *   has size()
  *   has insert()
- * 
+ *
  * @param src    Container to split
  * @param parts     resulting parts vector
  * @param num_parts number of parts
  */
 template <class T>
-void split( const T& src, 
-            std::vector<T>& parts, 
+void split( const T& src,
+            std::vector<T>& parts,
             const unsigned int num_parts)
 {
   parts.clear();
@@ -146,8 +146,8 @@ void split( const T& src,
   }
 }
 
-void split( const Work& source, 
-            std::vector<Work>& parts, 
+void split( const Work& source,
+            std::vector<Work>& parts,
             const unsigned int num_parts);
 
 /**

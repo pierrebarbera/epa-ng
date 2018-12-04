@@ -52,9 +52,7 @@ inline Work dynamic_heuristic(Sample<Placement>& sample,
     const auto tid = get_thread_id();
 
     auto end = until_accumulated_reached( pq,
-                                          options.prescoring_threshold,
-                                          options.filter_min,
-                                          options.filter_max);
+                                          options.prescoring_threshold);
 
     for (auto iter = pq.begin(); iter != end; ++iter) {
       workvec[tid].add(iter->branch_id(), pq.sequence_id());
@@ -105,7 +103,7 @@ inline Work baseball_heuristic( Sample<Placement>& sample,
   const size_t max_strikes = 6;
   // max_pitches: absolute maximum of candidates to select
   const size_t max_pitches = 40;
-  
+
   std::vector<Work> workvec(num_threads);
   #ifdef __OMP
   #pragma omp parallel for schedule(dynamic)
