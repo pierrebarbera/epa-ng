@@ -13,8 +13,13 @@ void split(std::string ref_msa, std::vector<std::string> query_files, std::strin
     genesis::sequence::SequenceSet ref_set;
 
     auto reader = genesis::sequence::PhylipReader();
-    reader.read( genesis::utils::from_file( ref_msa ), ref_set );
-
+    try {
+        reader.read( genesis::utils::from_file( ref_msa ), ref_set );
+    } catch(std::exception& e) {
+	ref_set.clear();
+        reader.mode( genesis::sequence::PhylipReader::Mode::kInterleaved );
+	reader.read( genesis::utils::from_file( ref_msa ), ref_set );
+    }
     auto ref_labels = labels( ref_set );
 
     genesis::sequence::SequenceSet qry_set;
