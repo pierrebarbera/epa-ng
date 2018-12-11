@@ -12,7 +12,9 @@ public:
     , nodes(inner_nodes + tn)
     , branches(nodes -1)
   { }
-  
+
+  bool large_tree() { return tip_nodes > 2000;}
+
   unsigned int tip_nodes = 0;
   unsigned int inner_nodes = 0;
   unsigned int nodes = 0;

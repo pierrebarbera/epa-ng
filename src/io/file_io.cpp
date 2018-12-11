@@ -228,6 +228,10 @@ pll_partition_t *  build_partition_from_file( const raxml::Model& model,
 
   auto attributes = simd_autodetect();
 
+  if ( nums.large_tree() ) {
+    attributes = PLL_ATTRIB_RATE_SCALERS;
+  }
+
   if (repeats) {
     attributes |= PLL_ATTRIB_SITE_REPEATS;
   } else {
