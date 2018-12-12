@@ -4,6 +4,7 @@
 #include <utility>
 #include <cassert>
 #include <stdexcept>
+#include <string>
 
 class rtree_mapper
 {
