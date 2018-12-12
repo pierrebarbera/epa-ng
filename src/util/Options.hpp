@@ -6,6 +6,12 @@
 class Options {
 
 public:
+  enum class NumericalScaling {
+    kOn,
+    kOff,
+    kAuto
+  };
+
   Options()  = default;
   ~Options() = default;
 
@@ -29,5 +35,5 @@ public:
   bool baseball                 = false;
   std::string tmp_dir;
   unsigned int precision        = 10;
-
+  NumericalScaling scaling      = NumericalScaling::kAuto;
 };

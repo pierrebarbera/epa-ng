@@ -23,7 +23,7 @@ TEST(pll_util, utree_query_branches)
 
   rtree_mapper dummy;
   tree = build_tree_from_file( env->tree_file, nums, dummy );
-  part = build_partition_from_file( env->model, nums, msa.num_sites());
+  part = make_partition( env->model, nums, msa.num_sites(), Options());
 
   // tests
   vector<pll_unode_t *> node_list(nums.branches);
@@ -58,7 +58,7 @@ TEST(pll_util, set_unique_clv_indices)
 
   rtree_mapper dummy;
   auto tree = build_tree_from_file( env->tree_file, nums, dummy );
-  auto part = build_partition_from_file( env->model, nums, msa.num_sites() );
+  auto part = make_partition( env->model, nums, msa.num_sites(), Options() );
 
   set_unique_clv_indices(get_root(tree), nums.tip_nodes);
 
@@ -119,7 +119,7 @@ TEST( pll_util, get_numbered_newick_string )
   ASSERT_TRUE( (not dummy) );
 
   tree = build_tree_from_file( env->tree_file, nums, dummy );
-  part = build_partition_from_file( env->model, nums, msa.num_sites() );
+  part = make_partition( env->model, nums, msa.num_sites(), Options() );
   // auto valid_map = vector<Range>(nums.tip_nodes);
   link_tree_msa(tree, part, model, msa, nums.tip_nodes);
 
@@ -191,7 +191,7 @@ TEST(pll_util, sum_branch_lengths)
 
   rtree_mapper dummy;
   tree = build_tree_from_file( env->tree_file, nums, dummy );
-  part = build_partition_from_file( env->model, nums, msa.num_sites() );
+  part = make_partition( env->model, nums, msa.num_sites(), Options() );
   set_branch_lengths(tree, 1.0);
   auto total_length = sum_branch_lengths(tree);
 

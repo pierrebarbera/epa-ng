@@ -25,7 +25,7 @@ TEST(file_io, build_MSA_from_file)
 
 }
 
-TEST(file_io, build_partition_from_file)
+TEST(file_io, make_partition)
 {
   auto msa = build_MSA_from_file(env->reference_file, MSA_Info(env->reference_file), true);
   Tree_Numbers nums = Tree_Numbers();
@@ -34,7 +34,7 @@ TEST(file_io, build_partition_from_file)
 
   rtree_mapper dummy;
   tree = build_tree_from_file(env->tree_file, nums, dummy );
-  part = build_partition_from_file( env->model, nums, msa.num_sites() );
+  part = make_partition( env->model, nums, msa.num_sites(), Options() );
 
   EXPECT_EQ(nums.tip_nodes, 8);
   EXPECT_EQ(nums.nodes, 14);

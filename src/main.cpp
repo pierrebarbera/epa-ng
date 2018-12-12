@@ -123,7 +123,7 @@ int main(int argc, char** argv)
                   "Path to Reference Tree file."
                 )->group("Input")->check(CLI::ExistingFile);
   auto reference_file_opt =
-  app.add_option( "-s,--ref-msa",
+  app.add_option( "-s,--ref-msa,--msa",
                   reference_file,
                   "Path to Reference MSA file."
                 )->group("Input")->check(CLI::ExistingFile);
@@ -153,7 +153,7 @@ int main(int argc, char** argv)
 
   //  ============== OUTPUT OPTIONS ==============
 
-  app.add_option("-w,--outdir", work_dir, "Path to output directory.", true
+  app.add_option("-w,--outdir,--out-dir", work_dir, "Path to output directory.", true
                 )->group("Output")->check(CLI::ExistingDirectory);
 
   app.add_option("--tmp", options.tmp_dir, "Path to temporary directory. If set, MPI-Rank-local"
@@ -240,6 +240,14 @@ int main(int argc, char** argv)
   app.add_flag( "--no-pre-mask",
                   no_pre_mask,
                   "Do NOT pre-mask sequences. Enables repeats unless --no-repeats is also specified."
+                )->group("Compute");
+
+  std::string rate_scalers_option("auto");
+  app.add_set( "--rate-scalers",
+                rate_scalers_option,
+                {"off", "on", "auto"},
+                "Use individual rate scalers. Important to avoid numerical underflow in taxa rich trees.",
+                true
                 )->group("Compute");
 
   #ifdef __OMP
@@ -373,6 +381,17 @@ int main(int argc, char** argv)
     options.premasking = false;
     options.repeats = true;
     LOG_INFO << "Selected: Disabling pre-masking. (repeats enabled!)";
+  }
+
+  if (rate_scalers_option == "auto") {
+    options.scaling = Options::NumericalScaling::kAuto;
+    LOG_INFO << "Selected: Automatic switching of use of per rate scalers";
+  } else if (rate_scalers_option == "on") {
+    options.scaling = Options::NumericalScaling::kOn;
+    LOG_INFO << "Selected: Using per rate scalers to combat numerical underflow";
+  } else if (rate_scalers_option == "off") {
+    options.scaling = Options::NumericalScaling::kOff;
+    LOG_INFO << "Selected: Disabling per rate scalers";
   }
 
   // if (cli.count("no-repeats")) {

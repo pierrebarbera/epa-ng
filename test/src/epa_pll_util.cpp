@@ -27,7 +27,7 @@ TEST(epa_pll_util, link_tree_msa)
 
   rtree_mapper dummy;
   tree = build_tree_from_file( env->tree_file, nums, dummy );
-  part = build_partition_from_file( env->model, nums, msa.num_sites() );
+  part = make_partition( env->model, nums, msa.num_sites(), Options() );
   // auto valid_map = vector<Range>(nums.tip_nodes);
   link_tree_msa(tree, part, model, msa, nums.tip_nodes);
 
@@ -64,7 +64,7 @@ static void precompute_clvs_test(Options o)
 
   rtree_mapper dummy;
   auto tree = build_tree_from_file( tree_file, nums, dummy );
-  auto part = build_partition_from_file( model, nums, msa.num_sites(), o.repeats );
+  auto part = make_partition( model, nums, msa.num_sites(), o );
 
 
   auto root = get_root(tree);

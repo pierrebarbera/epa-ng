@@ -219,20 +219,21 @@ static unsigned int simd_autodetect()
     return PLL_ATTRIB_ARCH_CPU;
 }
 
-pll_partition_t *  build_partition_from_file( const raxml::Model& model,
-                                              Tree_Numbers& nums,
-                                              const int num_sites,
-                                              const bool repeats)
+pll_partition_t *  make_partition(const raxml::Model& model,
+                                  Tree_Numbers& nums,
+                                  const int num_sites,
+                                  const Options options)
 {
   assert(nums.tip_nodes); // nums must have been initialized correctly
 
   auto attributes = simd_autodetect();
 
-  if ( nums.large_tree() ) {
+  if ( (options.scaling == Options::NumericalScaling::kOn) or
+     ( (options.scaling == Options::NumericalScaling::kAuto) and nums.large_tree() ) ) {
     attributes = PLL_ATTRIB_RATE_SCALERS;
   }
 
-  if (repeats) {
+  if ( options.repeats ) {
     attributes |= PLL_ATTRIB_SITE_REPEATS;
   } else {
     attributes |= PLL_ATTRIB_PATTERN_TIP;
@@ -249,7 +250,7 @@ pll_partition_t *  build_partition_from_file( const raxml::Model& model,
            attributes);
 
   if (not partition) {
-    throw std::runtime_error{std::string("Could not create partition (build_partition_from_file). pll_errmsg: ") + pll_errmsg};
+    throw std::runtime_error{std::string("Could not create partition (make_partition). pll_errmsg: ") + pll_errmsg};
   }
 
   return partition;

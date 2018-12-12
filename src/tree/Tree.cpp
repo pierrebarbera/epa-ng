@@ -25,7 +25,8 @@ Tree::Tree( const std::string &tree_file,
   } catch (std::invalid_argument& e) {
     auto modelstring = model_.num_states() == 4 ? "GTRGAMMAX" : "PROTGAMMAGTRX";
     std::cout << e.what() << " Please resolve the tree fully.\n( e.g. raxml -g "
-              << tree_file << " -m " << modelstring << " -n <name> -s <alignment> -p 1234 )" << std::endl;
+              << tree_file << " -m " << modelstring << " -n <name> -s <alignment> -p 1234 )"
+              << std::endl;
     throw std::runtime_error{"Aborting"};
   }
 
@@ -34,10 +35,10 @@ Tree::Tree( const std::string &tree_file,
       ref_msa_.size() << " vs. " << nums_.tip_nodes;
   }
 
-  partition_ = partition_ptr( build_partition_from_file(model_,
-                                                        nums_,
-                                                        ref_msa_.num_sites(),
-                                                        options_.repeats ),
+  partition_ = partition_ptr( make_partition( model_,
+                                              nums_,
+                                              ref_msa_.num_sites(),
+                                              options_ ),
                               pll_partition_destroy);
 
   locks_ = Mutex_List(partition_->tips + partition_->clv_buffers);
