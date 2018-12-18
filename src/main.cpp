@@ -21,6 +21,9 @@
 #include "seq/MSA.hpp"
 #include "seq/MSA_Info.hpp"
 
+#include "genesis/utils/core/options.hpp"
+#include "genesis/utils/core/fs.hpp"
+
 #ifndef EPA_VERSION
 #define EPA_VERSION "UNKNOWN"
 #endif
@@ -89,6 +92,7 @@ int main(int argc, char** argv)
   bool heuristics_off   = not options.prescoring;
   bool raxml_blo        = not options.sliding_blo;
   bool no_pre_mask      = not options.premasking;
+  bool redo             = false;
 
   const bool empty = argc == 1;
 
@@ -196,6 +200,11 @@ int main(int argc, char** argv)
                   true
                 )->group("Output");
 
+  app.add_flag( "--redo",
+                  redo,
+                  "Overwrite existing files."
+                )->group("Output");
+
   //  ============== COMPUTE OPTIONS ==============
 
   auto dyn_heur =
@@ -300,11 +309,22 @@ int main(int argc, char** argv)
     exit_epa();
   }
 
+  if ( redo ) {
+    genesis::utils::Options::get().allow_file_overwriting( true );
+  }
+
+  std::string log_file;
   #ifdef __MPI
-  genesis::utils::Logging::log_to_file(work_dir + std::to_string(local_rank) + ".epa_info.log");
+  log_file = work_dir + std::to_string(local_rank) + ".epa_info.log";
   #else
-  genesis::utils::Logging::log_to_file(work_dir + "epa_info.log");
+  log_file = work_dir + "epa_info.log";
   #endif
+
+  if ( not redo and genesis::utils::file_exists( log_file ) ) {
+    throw std::runtime_error{ log_file + " already exists! To overwrite existing output files, rerun with --redo" };
+  } else {
+    genesis::utils::Logging::log_to_file( log_file );
+  }
 
   LOG_INFO << "Selected: Output dir: " << work_dir;
 
