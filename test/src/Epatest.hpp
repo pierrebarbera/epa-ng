@@ -50,7 +50,6 @@ public:
 extern Epatest* env;
 
 #include <cmath>
-// #include <cmath>
 
 #define COMPL_REPEATS       (1 << 0)
 #define COMPL_OPTIMIZE      (1 << 1)
