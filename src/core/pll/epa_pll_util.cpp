@@ -4,6 +4,7 @@
 #include <algorithm>
 
 #include "core/pll/pll_util.hpp"
+#include "core/pll/optimize.hpp"
 #include "set_manipulators.hpp"
 
 void link_tree_msa( pll_utree_t * tree,
@@ -36,6 +37,10 @@ void link_tree_msa( pll_utree_t * tree,
     auto clv_index = map_value->second;
     // associates the sequence with the tip by calculating the tips clv buffers
     pll_set_tip_states(partition, clv_index, model.charmap(), s.sequence().c_str());
+  }
+
+  if ( model.empirical_base_freqs() ) {
+    compute_and_set_empirical_frequencies(partition, model);
   }
 
   raxml::assign(partition, model);

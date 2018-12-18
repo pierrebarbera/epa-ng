@@ -149,6 +149,8 @@ public:
   /* initialization */
   void init_from_string(const std::string& model_string);
 
+  bool empirical_base_freqs() { return _param_mode.at(PLLMOD_OPT_PARAM_FREQUENCIES) == ParamValue::empirical; }
+
 private:
   std::string _name;
   DataType _data_type;
