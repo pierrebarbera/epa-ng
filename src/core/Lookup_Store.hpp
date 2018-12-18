@@ -6,6 +6,7 @@
 #include <utility>
 #include <limits>
 #include <cassert>
+#include <array>
 
 #include "util/Matrix.hpp"
 #include "util/maps.hpp"
