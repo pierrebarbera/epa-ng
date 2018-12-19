@@ -35,7 +35,7 @@ This tool is still in an active development. Suggestions, bug reports and constr
 
 ## Build Instructions
 
-After cloning with the above command, ensure the following packages are installed or otherwise available (relevant modules loaded on your cluster):
+First, ensure the following packages are installed or otherwise available (relevant modules loaded on your cluster):
 
 ```
 sudo apt-get install autotools-dev libtool flex bison cmake automake autoconf
