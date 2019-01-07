@@ -3,7 +3,7 @@
 # EPA-ng
 
 1. **[Introduction](#introduction)**
-2. **[Build Instructions](#build-instructions)**
+2. **[Installation](#installation)**
 3. **[Usage](#usage)**
 4. **[Test data](#test-data)**
 5. **[Citing EPA-ng](#citing-epa-ng)**
@@ -33,7 +33,16 @@ This tool is still in an active development. Suggestions, bug reports and constr
   - convert query fasta file into a random access, binary encoded file called a `bfast`-file
 - output the placement results in the [jplace format](http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0031009) ready for downstream analysis by libraries like [genesis](https://github.com/lczech/genesis) and tools like [gappa](https://github.com/lczech/gappa)
 
-## Build Instructions
+## Installation
+
+### With Conda
+
+Thanks to @gavinmdouglas, EPA-ng can now be installed using conda:
+```
+conda install -c bioconda epa-ng
+```
+
+### Building from source
 
 First, ensure the following packages are installed or otherwise available (relevant modules loaded on your cluster):
 
