@@ -8,6 +8,7 @@
 #include "util/logging.hpp"
 
 #include "genesis/utils/text/string.hpp"
+#include "genesis/utils/core/fs.hpp"
 
 static std::string parse(const std::string& full, std::string qry, size_t& pos )
 {
@@ -138,12 +139,17 @@ enum class ModelfileType {
   kUnknown
 };
 
+static bool contains( const std::string& file, const std::string& needle )
+{
+  auto full_file = genesis::utils::file_read( file );
+
+  return full_file.find( needle ) != std::string::npos;
+}
+
 static ModelfileType guess( const std::string& file )
 {
-  std::ifstream fs(file);
-  std::string line;
-  std::getline( fs, line );
-  if ( line.empty() ) {
+  if ( contains(file, "This is RAxML version 8.") ) {
+    LOG_DBG << "Detected RAxML 8 infofile";
     // lets just guess this is raxml8
     return ModelfileType::kRaxml8;
   } else {
