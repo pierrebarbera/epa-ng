@@ -40,25 +40,46 @@ static void test_placement_mapping( std::string const& tree_file,
     EXPECT_NEAR(  r_p.second, distal, 1e-10 );
   }
 
+  // printf("utree_root_edge_: %u\n", mapper.utree_root_edge_);
+  // printf("rtree_proximal_edge_: %u\n", mapper.rtree_proximal_edge_);
+  // printf("rtree_distal_edge_: %u\n", mapper.rtree_distal_edge_);
+
+  // printf("map:\n");
+  // auto const& map = mapper.map();
+  // for (unsigned int i = 0; i < map.size(); ++i) {
+  //   printf("%u %u\n", map[i], i);
+  // }
+
   // teardown
   pll_utree_destroy(tree, nullptr);
 }
 
-TEST(rtree_mapper, translate_distal)
+/*  basic idea of this test: init the mapper by different rooted trees
+    for which we know the resulting distal lengths of placements
+*/
+TEST(rtree_mapper, test_mapping_1)
 {
-  /*  basic idea of this test: init the mapper by different rooted trees
-      for which we know the resulting distal lengths of placements
-  */
-
   test_placement_mapping(
     env->tree_file_rooted,
-    { {0, 1.0}, {7, 1.5}, {8, 0.5},   {8, 0.001}, },
-    { {0, 1.0}, {8, 1.5}, {6, 0.52},  {9, 0.001}, }
+    { {8, 1.0}, {8, 1.5}, {6, 0.5},   {7, 0.001}, },
+    { {9, 1.0}, {6, 0.63}, {7, 0.5},  {8, 0.001}, }
   );
-
+}
+TEST(rtree_mapper, test_mapping_2)
+{
   test_placement_mapping(
     env->tree_file_rooted_2,
     { {0, 1.34}, {0, 1.345}, {8, 0.5},  {2, 0.001}, },
     { {0, 1.34}, {9, 0.005}, {8, 0.5},  {2, 0.001}, }
   );
 }
+TEST(rtree_mapper, test_mapping_3)
+{
+  test_placement_mapping(
+    env->tree_file_rooted_3,
+    { {8, 0.5}, {8, 0.005}, {0, 0.5},  {2, 0.001}, },
+    { {8, 1.41}, {9, 0.005}, {0, 0.5},  {2, 0.001}, }
+  );
+}
+
+//todo general rooting mapping test

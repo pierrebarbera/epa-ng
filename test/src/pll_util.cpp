@@ -168,7 +168,7 @@ TEST( pll_util, get_numbered_newick_string_rooted )
 {
   test_rooted_preserve(
     env->tree_file_rooted,
-    "((A:1.34{0},(B:1.66{1},(C:1.08{2},D:1.26{3}):1.12{4}):1.00{5}):1.01{6},(G:1.08{7},H:1.90{8}):0.01{9});"
+    "((((G:1.01{0},H:1.08{1}):0.01{2},A:1.34{3}):1.00{4},B:1.66{5}):1.01{6},(C:1.08{7},D:1.26{8}):1.12{9});"
   );
 
   test_rooted_preserve(
