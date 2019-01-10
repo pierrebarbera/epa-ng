@@ -21,7 +21,9 @@ Tree::Tree( const std::string &tree_file,
   , options_(options)
 {
   try {
-    tree_ = utree_ptr(build_tree_from_file(tree_file, nums_, mapper_), utree_destroy);
+    tree_ = utree_ptr(
+      build_tree_from_file(tree_file, nums_, mapper_, options.preserve_rooting),
+      utree_destroy);
   } catch (std::invalid_argument& e) {
     auto modelstring = model_.num_states() == 4 ? "GTRGAMMAX" : "PROTGAMMAGTRX";
     std::cout << e.what() << " Please resolve the tree fully.\n( e.g. raxml -g "

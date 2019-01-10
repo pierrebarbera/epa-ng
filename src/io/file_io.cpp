@@ -137,7 +137,8 @@ static rtree_mapper determine_edge_num_translation(pll_unode_t const * const vro
 
 pll_utree_s * build_tree_from_file( const std::string& tree_file,
                                     Tree_Numbers& nums,
-                                    rtree_mapper& mapper)
+                                    rtree_mapper& mapper,
+                                    const bool preserve_rooting)
 {
   pll_utree_t * tree;
   pll_rtree_t * rtree;
@@ -182,10 +183,12 @@ pll_utree_s * build_tree_from_file( const std::string& tree_file,
     }
 
     // get the translation
-    mapper = determine_edge_num_translation(  tree->vroot,
-                                              left,
-                                              proximal_length,
-                                              distal_length );
+    if ( preserve_rooting ) {
+      mapper = determine_edge_num_translation(  tree->vroot,
+                                                left,
+                                                proximal_length,
+                                                distal_length );
+    }
 
     pll_rtree_destroy(rtree, nullptr);
 

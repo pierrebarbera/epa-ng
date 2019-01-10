@@ -205,6 +205,14 @@ int main(int argc, char** argv)
                   "Overwrite existing files."
                 )->group("Output");
 
+  std::string preserve_rooting_option("on");
+  app.add_set( "--preserve-rooting",
+                preserve_rooting_option,
+                {"off", "on"},
+                "Preserve the rooting of rooted trees. When disabled, EPA-ng will print the result as an unrooted tree.",
+                true
+                )->group("Output");
+
   //  ============== COMPUTE OPTIONS ==============
 
   auto dyn_heur =
@@ -412,6 +420,14 @@ int main(int argc, char** argv)
   } else if (rate_scalers_option == "off") {
     options.scaling = Options::NumericalScaling::kOff;
     LOG_INFO << "Selected: Disabling per rate scalers";
+  }
+
+  if (preserve_rooting_option == "off") {
+    options.preserve_rooting = false;
+    LOG_INFO << "Selected: Do NOT preserve the root of the input tree";
+  } else if (preserve_rooting_option == "on") {
+    options.preserve_rooting = true;
+    LOG_INFO << "Selected: Preserving the root of the input tree";
   }
 
   // if (cli.count("no-repeats")) {

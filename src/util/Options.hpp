@@ -36,4 +36,5 @@ public:
   std::string tmp_dir;
   unsigned int precision        = 10;
   NumericalScaling scaling      = NumericalScaling::kAuto;
+  bool preserve_rooting         = true;
 };
