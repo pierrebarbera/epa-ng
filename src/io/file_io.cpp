@@ -152,6 +152,12 @@ pll_utree_s * build_tree_from_file( const std::string& tree_file,
     // convert the tree
     tree = pll_rtree_unroot( rtree );
 
+    if ( (tree == NULL) or (tree == PLL_FAILURE) ) {
+      throw std::runtime_error{std::string("pll_rtree_unroot failed with message: ")
+        + pll_errmsg + " (" + std::to_string(pll_errno) + ") "
+      };
+    }
+
     // is the virtual root on the left side of the rtree?
     // (this is the case if the left child node isn't a tip)
     bool const left = rtree->root->left->left;

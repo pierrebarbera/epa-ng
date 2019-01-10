@@ -21,7 +21,7 @@ void link_tree_msa( pll_utree_t * tree,
 
   /* populate the hash table with tree tip labels */
   for (size_t i = 0; i < num_tip_nodes; ++i) {
-    map[tree->nodes[i]->label] = i;
+    map[tree->nodes[i]->label] = tree->nodes[i]->clv_index;
   }
 
   /* find sequences in hash table and link them with the corresponding taxa */
