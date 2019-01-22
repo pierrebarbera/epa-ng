@@ -8,6 +8,9 @@
 4. **[Test data](#test-data)**
 5. **[Citing EPA-ng](#citing-epa-ng)**
 
+## WARNING v0.3.0 - v0.3.3!
+Please note that versions v0.3.0 through v0.3.3 are affected by a result breaking bug if the input tree is rooted! If you think this may be the case for you, we urgently insist you update to at least version v0.3.4! 
+
 ### SUPPORT
 There is now a short tutorial available that covers the basic steps of a placement project. [You can find it here](https://github.com/Pbdas/epa-ng/wiki/Full-Stack-Example)
 
