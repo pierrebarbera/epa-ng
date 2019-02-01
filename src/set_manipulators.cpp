@@ -167,6 +167,7 @@ void discard_by_support_threshold(Sample<Placement>& sample,
   #endif
   for (size_t i = 0; i < sample.size(); ++i) {
     auto &pq = sample[i];
+    sort_by_lwr(pq);
     auto erase_iter = partition(
       pq.begin(),
       pq.end(),
