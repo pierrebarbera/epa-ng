@@ -260,7 +260,7 @@ int main(int argc, char** argv)
                 )->group("Compute");
 
   std::string rate_scalers_option("auto");
-  app.add_set( "--rate-scalers",
+  app.add_set_ignore_case( "--rate-scalers",
                 rate_scalers_option,
                 {"off", "on", "auto"},
                 "Use individual rate scalers. Important to avoid numerical underflow in taxa rich trees.",
