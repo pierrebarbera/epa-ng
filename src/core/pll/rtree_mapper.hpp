@@ -88,6 +88,9 @@ public:
 
   bool is_utree_root_edge( size_t const i ) const { return i == utree_root_edge_; }
 
+  void root_label(std::string s) {root_label_ = s;};
+  std::string const& root_label() const {return root_label_;}
+
 private:
   /*
     needed to identify and deal with the special case of the root edge
@@ -95,6 +98,7 @@ private:
   unsigned int utree_root_edge_     = 0;
   unsigned int rtree_proximal_edge_ = 0;
   unsigned int rtree_distal_edge_   = 0;
+  std::string root_label_;
 
   /*
     needed to correctly translate the distal lengths and to which rtree edge the placement goes

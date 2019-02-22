@@ -145,7 +145,7 @@ pll_utree_s * build_tree_from_file( const std::string& tree_file,
 
   // load the tree unrooted
   // if we can load it unrooted, then do so
-  if ( (tree = pll_utree_parse_newick(tree_file.c_str()))) {
+  if ( (tree = pll_utree_parse_newick(tree_file.c_str())) ) {
 
   // otherwise try to parse rooted, and unroot the tree
   } else if ( ( rtree = pll_rtree_parse_newick( tree_file.c_str() ) ) ) {
@@ -188,6 +188,9 @@ pll_utree_s * build_tree_from_file( const std::string& tree_file,
                                                 left,
                                                 proximal_length,
                                                 distal_length );
+      if (rtree->root->label) {
+        mapper.root_label( rtree->root->label );
+      }
     }
 
     pll_rtree_destroy(rtree, nullptr);

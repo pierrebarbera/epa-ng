@@ -234,7 +234,11 @@ void get_numbered_newick_string_recursive( pll_unode_t const * const node,
     ss << ",";
     get_numbered_newick_string_recursive(node->next->next->back, ss, index, mapper);
     auto const edge_id = (mapper) ? mapper.map_at( *index ) : *index;
-    ss << "):" << node->length << "{" << edge_id << "}";
+    ss << ")";
+    if (node->label) {
+      ss << node->label;
+    }
+    ss << ":" << node->length << "{" << edge_id << "}";
   } else {
     auto const edge_id = (mapper) ? mapper.map_at( *index ) : *index;
     ss << node->label << ":" << node->length << "{" << edge_id << "}";
@@ -267,6 +271,9 @@ std::string get_numbered_newick_string( pll_utree_t const * const tree,
     get_numbered_newick_string_recursive(root->next->next->back, ss, &index, mapper);
 
     ss << ")";
+    if (root->label) {
+      ss << root->label;
+    }
     ss << ";";
 
     // print the rooted tree by simulating it on the unrooted one
@@ -286,6 +293,10 @@ std::string get_numbered_newick_string( pll_utree_t const * const tree,
       ss << ",";
       get_numbered_newick_string_recursive(root->next->back, ss, &unrooted_idx, mapper);
       ss << ")";
+
+      if (root->label) {
+          ss << root->label;
+      }
 
       // account for the edge connecting the left subtree to the rtree root
       std::tie( edge_id, branch_length ) = mapper.proximal_of_utree_root();
@@ -307,6 +318,10 @@ std::string get_numbered_newick_string( pll_utree_t const * const tree,
         ss << ",";
         get_numbered_newick_string_recursive(right->next->next->back, ss, &unrooted_idx, mapper);
         ss << ")";
+
+        if (right->label) {
+          ss << right->label;
+        }
 
         // and account for the edge connecting to the root
         std::tie( edge_id, branch_length ) = mapper.distal_of_utree_root();
@@ -339,13 +354,23 @@ std::string get_numbered_newick_string( pll_utree_t const * const tree,
       get_numbered_newick_string_recursive(right->next->next->back, ss, &unrooted_idx, mapper);
       ss << ")";
 
+      if (right->label) {
+          ss << right->label;
+      }
+
       // finally account for the edge connecting the right rtree subtree to the root
       std::tie( edge_id, branch_length ) = mapper.proximal_of_utree_root();
       assert( unrooted_idx == edge_id );
       ss << ":" << branch_length << "{" << edge_id << "}";
     }
 
-    ss << ");";
+    ss << ")";
+
+    if (not mapper.root_label().empty()) {
+      ss << mapper.root_label();
+    }
+
+    ss << ";";
 
   }
 
