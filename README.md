@@ -40,9 +40,15 @@ This tool is still in an active development. Suggestions, bug reports and constr
 
 ### With Conda
 
-Thanks to @gavinmdouglas, EPA-ng can now be installed using conda:
+Thanks to [@gavinmdouglas](https://github.com/gavinmdouglas), EPA-ng can now be installed using conda:
 ```
 conda install -c bioconda epa-ng
+```
+
+### With Homebrew
+This one is thanks to [@gaberoo](https://github.com/gaberoo) :)
+```
+brew install brewsci/bio/epa-ng
 ```
 
 ### Building from source
