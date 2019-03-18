@@ -2,35 +2,48 @@
 
 #include "util/logging.hpp"
 
+static genesis::sequence::SequenceSet read_any_seqfile(std::string const& file)
+{
+    genesis::sequence::SequenceSet out_set;
+
+    auto reader = genesis::sequence::PhylipReader();
+    try {
+        reader.read( genesis::utils::from_file( file ), out_set );
+    } catch(std::exception& e) {
+        out_set.clear();
+        reader.mode( genesis::sequence::PhylipReader::Mode::kInterleaved );
+        try {
+            reader.read( genesis::utils::from_file( file ), out_set );
+        } catch(std::exception& e) {
+            out_set.clear();
+            try {
+                genesis::sequence::FastaReader().read( genesis::utils::from_file( file ), out_set );
+            } catch(std::exception& e) {
+                throw std::invalid_argument{"Cannot parse sequence file(s): Invalid file format? (only phylip and fasta allowed)"};
+            }
+        }
+    }
+
+    return out_set;
+}
+
 void split(std::string ref_msa, std::vector<std::string> query_files, std::string outdir="")
 {
     auto outfile = outdir + "query.fasta";
 
-    if (genesis::utils::file_exists(outfile)) {
-      throw std::runtime_error{outfile + " already exists!"};
-    }
-
-    genesis::sequence::SequenceSet ref_set;
-
-    auto reader = genesis::sequence::PhylipReader();
-    try {
-        reader.read( genesis::utils::from_file( ref_msa ), ref_set );
-    } catch(std::exception& e) {
-	ref_set.clear();
-        reader.mode( genesis::sequence::PhylipReader::Mode::kInterleaved );
-	reader.read( genesis::utils::from_file( ref_msa ), ref_set );
-    }
+    auto ref_set = read_any_seqfile(ref_msa);
     auto ref_labels = labels( ref_set );
 
-    genesis::sequence::SequenceSet qry_set;
-    for (const auto& f : query_files) {
-      LOG_INFO << "File: " << f;
-      reader.read( genesis::utils::from_file( f ), qry_set );
-    }
 
-    genesis::sequence::filter_by_label_list( qry_set, ref_labels );
+    std::ofstream outstream;
+    genesis::utils::file_output_stream(outfile, outstream);
 
     auto writer = genesis::sequence::FastaWriter();
-    LOG_INFO << "Writing output: " << outfile;
-    writer.to_file( qry_set, outfile );
+    for (auto const& qry_file : query_files) {
+
+        auto qry_set = read_any_seqfile(qry_file);
+        genesis::sequence::filter_by_label_list( qry_set, ref_labels );
+
+        writer.to_stream( qry_set, outstream );
+    }
 }
