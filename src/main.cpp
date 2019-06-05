@@ -207,12 +207,10 @@ int main(int argc, char** argv)
                 )->group("Output");
 
   std::string preserve_rooting_option("on");
-  app.add_set( "--preserve-rooting",
+  app.add_option( "--preserve-rooting",
                 preserve_rooting_option,
-                {"off", "on"},
-                "Preserve the rooting of rooted trees. When disabled, EPA-ng will print the result as an unrooted tree.",
-                true
-                )->group("Output");
+                "Preserve the rooting of rooted trees. When disabled, EPA-ng will print the result as an unrooted tree."
+                )->group("Output")->check(CLI::IsMember({"off", "on"}, CLI::ignore_case));
 
   //  ============== COMPUTE OPTIONS ==============
 
@@ -261,12 +259,11 @@ int main(int argc, char** argv)
                 )->group("Compute");
 
   std::string rate_scalers_option("auto");
-  app.add_set_ignore_case( "--rate-scalers",
+  app.add_option( "--rate-scalers",
                 rate_scalers_option,
-                {"off", "on", "auto"},
-                "Use individual rate scalers. Important to avoid numerical underflow in taxa rich trees.",
-                true
-                )->group("Compute");
+                "Use individual rate scalers. Important to avoid numerical underflow in taxa rich trees."
+                )->group("Compute")
+                ->check(CLI::IsMember({"off", "on", "auto"}, CLI::ignore_case));
 
   #ifdef __OMP
   auto threads =
@@ -397,7 +394,7 @@ int main(int argc, char** argv)
     LOG_INFO << "Selected: Prescoring by accumulated LWR threshold: " << options.prescoring_threshold;
   }
 
-  if (*baseball_heur) {
+  if ( *baseball_heur ) {
     LOG_INFO << "Selected: Prescoring using the baseball heuristic";
   }
 
