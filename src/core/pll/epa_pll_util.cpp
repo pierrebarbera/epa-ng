@@ -13,7 +13,7 @@ void link_tree_msa( pll_utree_t * tree,
                     const MSA& msa,
                     const unsigned int num_tip_nodes)
 {
-  assert( num_tip_nodes == msa.size() );
+  // assert( num_tip_nodes == msa.size() );
 
   // associate the sequences from the MSA file with the correct tips
   /* create a hash table of size num_tip_nodes */
@@ -31,12 +31,24 @@ void link_tree_msa( pll_utree_t * tree,
     // failure tolerance: the MSA may also contain query sequences
     if (map_value == map.end()) {
       continue;
-      // throw runtime_error{std::string("Sequence with header does not appear in the tree: ") + s.header()};
+      // throw std::runtime_error{std::string("Sequence with header does not appear in the tree: ") + s.header()};
     }
 
     auto clv_index = map_value->second;
     // associates the sequence with the tip by calculating the tips clv buffers
     pll_set_tip_states(partition, clv_index, model.charmap(), s.sequence().c_str());
+
+    // clear this ref taxon from the map
+    map.erase(map_value);
+  }
+
+  // if map still contains entries, then some taxa were missing from the ref MSA. Fail and report!
+  if ( not map.empty() ) {
+    LOG_ERR << "The reference Tree contained taxa that could not be found in the reference MSA: ";
+    for ( auto const& n : map ) {
+      LOG_ERR << "Failed to find: " << n.first;
+    }
+    throw std::invalid_argument{"Bad tree/ref msa combination (see errors above)"};
   }
 
   if ( model.empirical_base_freqs() ) {
