@@ -9,7 +9,7 @@
 5. **[Citing EPA-ng](#citing-epa-ng)**
 
 ## WARNING v0.3.0 - v0.3.3!
-Please note that versions v0.3.0 through v0.3.3 are affected by a result breaking bug if the input tree is rooted! If you think this may be the case for you, we urgently insist you update to at least version v0.3.4! 
+Please note that versions v0.3.0 through v0.3.3 are affected by a result breaking bug if the input tree is rooted! If you think this may be the case for you, we urgently insist you update to at least version v0.3.4!
 
 ### SUPPORT
 There is now a short tutorial available that covers the basic steps of a placement project. [You can find it here](https://github.com/Pbdas/epa-ng/wiki/Full-Stack-Example)
@@ -101,7 +101,7 @@ For a full overview of command line options either run `EPA-ng` with no input, o
 On a single computer, an example execution might look like this:
 
 ```
-epa-ng --ref-msa $REF_MSA --tree $TREE --query $QRY_MSA --outdir $OUT
+epa-ng --ref-msa $REF_MSA --tree $TREE --query $QRY_MSA --model $MODEL
 ```
 
 Note that this will use as many threads as specified by the environment variable `OMP_NUM_THREADS`.
@@ -118,20 +118,21 @@ epa-ng <...> --model GTR{0.7/1.8/1.2/0.6/3.0/1.0}+FU{0.25/0.23/0.30/0.22}+G4{0.4
 
 ... or pass a file containing the relevant information, coming from one of the supported tree inference programs.
 
-For RAxML8.x: pass a RAxML_info-file to the program, where the info file was generated from a call to RAxML option `-f e`:
-```
-raxmlHPC-AVX -f e -s $REF_MSA -t $TREE -n file -m GTRGAMMAX
-```
-This generates a RAxML_info file containing the model parameters, called RAxML_info.file, which can be passed to EPA-ng like so:
-```
-epa-ng <...> --model RAxML_info.file
-```
-
-Alternatively the same can be achieved with raxml-ng, just that then the resulting `[...].bestModel` file has to be passed to EPA-ng:
+*RECOMMENDED* In the case of raxml-ng, pass the `[...].bestModel` file resulting from an evaluation run to EPA-ng:
 ```
 raxml-ng --evaluate --msa $REF_MSA --tree $TREE --prefix info --model GTR+G+F
 epa-ng <...> --model info.raxml.bestModel
 ```
+This method has support for pretty much every model that raxml-ng supports, so it is highly recommended you do it this way.
+
+Alternatively we also support parsing the model parameters either from RAxML 8.x info files, or from IQ-TREE report files, though there may be parsing problems as not all models are covered.
+
+For RAxML8.x: pass a RAxML_info-file to the program, where the info file was generated from a call to RAxML option `-f e`:
+```
+raxmlHPC-AVX -f e -s $REF_MSA -t $TREE -n file -m GTRGAMMAX
+epa-ng <...> --model RAxML_info.file
+```
+
 
 ### Advanced
 
