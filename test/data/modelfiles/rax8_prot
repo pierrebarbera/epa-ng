@@ -1,0 +1,310 @@
+
+
+This is RAxML version 8.2.10 released by Alexandros Stamatakis on March 2017.
+
+With greatly appreciated code contributions by:
+Andre Aberer      (HITS)
+Simon Berger      (HITS)
+Alexey Kozlov     (HITS)
+Kassian Kobert    (HITS)
+David Dao         (KIT and HITS)
+Sarah Lutteropp   (KIT and HITS)
+Nick Pattengale   (Sandia)
+Wayne Pfeiffer    (SDSC)
+Akifumi S. Tanabe (NRIFS)
+Charlie Taylor    (UF)
+
+
+Alignment has 816 distinct alignment patterns
+
+Proportion of gaps and completely undetermined characters in this alignment: 17.79%
+
+RAxML Model Optimization up to an accuracy of 0.100000 log likelihood units
+
+Using 1 distinct models/data partitions with joint branch length optimization
+
+
+All free model parameters will be estimated by RAxML
+GAMMA model of rate heterogeneity, ML estimate of alpha-parameter
+
+GAMMA Model parameters will be estimated up to an accuracy of 0.1000000000 Log Likelihood units
+
+Partition: 0
+Alignment Patterns: 816
+Name: No Name Provided
+DataType: AA
+Substitution Matrix: GTR
+Using ML estimate of base frequencies
+
+
+
+
+RAxML was called as follows:
+
+raxml -f e -s reference.fasta -t tree.newick -n herpes -m PROTGAMMAGTRX 
+
+
+
+Printed linked AA GTR matrix that achieved an overall improvement of 1162.409807 log likelihood units for partition No Name Provided to file /home/barbera/repos/epa/test/data/prot/RAxML_proteinGTRmodel.herpes_Partition_No Name Provided
+
+
+Printed linked AA GTR matrix that achieved an overall improvement of 114.533737 log likelihood units for partition No Name Provided to file /home/barbera/repos/epa/test/data/prot/RAxML_proteinGTRmodel.herpes_Partition_No Name Provided
+
+
+Printed linked AA GTR matrix that achieved an overall improvement of 42.778421 log likelihood units for partition No Name Provided to file /home/barbera/repos/epa/test/data/prot/RAxML_proteinGTRmodel.herpes_Partition_No Name Provided
+
+
+Printed linked AA GTR matrix that achieved an overall improvement of 17.183499 log likelihood units for partition No Name Provided to file /home/barbera/repos/epa/test/data/prot/RAxML_proteinGTRmodel.herpes_Partition_No Name Provided
+
+
+Printed linked AA GTR matrix that achieved an overall improvement of 6.784636 log likelihood units for partition No Name Provided to file /home/barbera/repos/epa/test/data/prot/RAxML_proteinGTRmodel.herpes_Partition_No Name Provided
+
+
+Printed linked AA GTR matrix that achieved an overall improvement of 3.192729 log likelihood units for partition No Name Provided to file /home/barbera/repos/epa/test/data/prot/RAxML_proteinGTRmodel.herpes_Partition_No Name Provided
+
+
+Printed linked AA GTR matrix that achieved an overall improvement of 1.735021 log likelihood units for partition No Name Provided to file /home/barbera/repos/epa/test/data/prot/RAxML_proteinGTRmodel.herpes_Partition_No Name Provided
+
+
+Printed linked AA GTR matrix that achieved an overall improvement of 0.941999 log likelihood units for partition No Name Provided to file /home/barbera/repos/epa/test/data/prot/RAxML_proteinGTRmodel.herpes_Partition_No Name Provided
+
+
+Printed linked AA GTR matrix that achieved an overall improvement of 0.491004 log likelihood units for partition No Name Provided to file /home/barbera/repos/epa/test/data/prot/RAxML_proteinGTRmodel.herpes_Partition_No Name Provided
+
+
+Printed linked AA GTR matrix that achieved an overall improvement of 0.251312 log likelihood units for partition No Name Provided to file /home/barbera/repos/epa/test/data/prot/RAxML_proteinGTRmodel.herpes_Partition_No Name Provided
+
+
+Printed linked AA GTR matrix that achieved an overall improvement of 0.128874 log likelihood units for partition No Name Provided to file /home/barbera/repos/epa/test/data/prot/RAxML_proteinGTRmodel.herpes_Partition_No Name Provided
+
+
+Printed linked AA GTR matrix that achieved an overall improvement of 0.066464 log likelihood units for partition No Name Provided to file /home/barbera/repos/epa/test/data/prot/RAxML_proteinGTRmodel.herpes_Partition_No Name Provided
+
+
+Model parameters (binary file format) written to: /home/barbera/repos/epa/test/data/prot/RAxML_binaryModelParameters.herpes
+
+
+Overall Time for Tree Evaluation 801.756643
+Final GAMMA  likelihood: -38196.098992
+
+Number of free parameters for AIC-TEST(BR-LEN): 326
+Number of free parameters for AIC-TEST(NO-BR-LEN): 209
+
+
+Model Parameters of Partition 0, Name: No Name Provided, Type of Data: AA
+alpha: 0.563473
+Tree-Length: 19.766746
+rate A <-> R: 1.003440
+rate A <-> N: 0.000100
+rate A <-> D: 2.196009
+rate A <-> C: 5.059275
+rate A <-> Q: 4.560130
+rate A <-> E: 5.912979
+rate A <-> G: 5.272299
+rate A <-> H: 0.699779
+rate A <-> I: 0.020243
+rate A <-> L: 0.457291
+rate A <-> K: 2.383670
+rate A <-> M: 3.120039
+rate A <-> F: 0.000100
+rate A <-> P: 5.403822
+rate A <-> S: 22.495228
+rate A <-> T: 10.091005
+rate A <-> W: 0.000100
+rate A <-> Y: 0.854092
+rate A <-> V: 7.486708
+rate R <-> N: 2.797232
+rate R <-> D: 0.000100
+rate R <-> C: 3.336754
+rate R <-> Q: 14.440424
+rate R <-> E: 0.699469
+rate R <-> G: 2.876841
+rate R <-> H: 6.187008
+rate R <-> I: 0.146659
+rate R <-> L: 1.306731
+rate R <-> K: 40.784484
+rate R <-> M: 2.932864
+rate R <-> F: 0.000100
+rate R <-> P: 0.546610
+rate R <-> S: 4.283376
+rate R <-> T: 1.721473
+rate R <-> W: 7.351827
+rate R <-> Y: 0.000100
+rate R <-> V: 0.242215
+rate N <-> D: 19.432567
+rate N <-> C: 2.883241
+rate N <-> Q: 4.941582
+rate N <-> E: 0.000100
+rate N <-> G: 10.033898
+rate N <-> H: 16.079424
+rate N <-> I: 0.091909
+rate N <-> L: 0.223185
+rate N <-> K: 8.114498
+rate N <-> M: 0.000100
+rate N <-> F: 0.000100
+rate N <-> P: 0.019247
+rate N <-> S: 13.487358
+rate N <-> T: 4.159476
+rate N <-> W: 0.965976
+rate N <-> Y: 0.907212
+rate N <-> V: 0.159272
+rate D <-> C: 0.000100
+rate D <-> Q: 0.519077
+rate D <-> E: 19.701531
+rate D <-> G: 3.251195
+rate D <-> H: 1.851635
+rate D <-> I: 0.000100
+rate D <-> L: 0.000100
+rate D <-> K: 0.019268
+rate D <-> M: 0.609953
+rate D <-> F: 0.022740
+rate D <-> P: 0.773217
+rate D <-> S: 1.163731
+rate D <-> T: 1.169671
+rate D <-> W: 0.000100
+rate D <-> Y: 0.396903
+rate D <-> V: 0.096786
+rate C <-> Q: 0.785888
+rate C <-> E: 0.349871
+rate C <-> G: 2.773764
+rate C <-> H: 1.856643
+rate C <-> I: 0.000100
+rate C <-> L: 0.605999
+rate C <-> K: 0.000100
+rate C <-> M: 0.000100
+rate C <-> F: 4.159594
+rate C <-> P: 0.000100
+rate C <-> S: 11.101237
+rate C <-> T: 2.167720
+rate C <-> W: 3.372110
+rate C <-> Y: 6.818292
+rate C <-> V: 2.550358
+rate Q <-> E: 12.631121
+rate Q <-> G: 1.065164
+rate Q <-> H: 22.029064
+rate Q <-> I: 0.057514
+rate Q <-> L: 1.610956
+rate Q <-> K: 15.065560
+rate Q <-> M: 4.472040
+rate Q <-> F: 0.339767
+rate Q <-> P: 4.488237
+rate Q <-> S: 2.790060
+rate Q <-> T: 2.836442
+rate Q <-> W: 0.000100
+rate Q <-> Y: 0.000100
+rate Q <-> V: 0.356764
+rate E <-> G: 1.686983
+rate E <-> H: 0.000100
+rate E <-> I: 0.000100
+rate E <-> L: 0.000100
+rate E <-> K: 2.102531
+rate E <-> M: 0.000100
+rate E <-> F: 0.000100
+rate E <-> P: 1.573639
+rate E <-> S: 1.971493
+rate E <-> T: 1.619030
+rate E <-> W: 0.000100
+rate E <-> Y: 0.000100
+rate E <-> V: 1.136575
+rate G <-> H: 1.577318
+rate G <-> I: 0.000100
+rate G <-> L: 0.000100
+rate G <-> K: 0.346037
+rate G <-> M: 1.243377
+rate G <-> F: 0.000100
+rate G <-> P: 0.593558
+rate G <-> S: 5.343049
+rate G <-> T: 0.040971
+rate G <-> W: 0.000100
+rate G <-> Y: 0.794127
+rate G <-> V: 0.325353
+rate H <-> I: 0.594141
+rate H <-> L: 0.481006
+rate H <-> K: 0.875320
+rate H <-> M: 4.863509
+rate H <-> F: 1.002356
+rate H <-> P: 1.150123
+rate H <-> S: 5.988620
+rate H <-> T: 0.463365
+rate H <-> W: 5.112361
+rate H <-> Y: 26.224851
+rate H <-> V: 1.003883
+rate I <-> L: 19.731303
+rate I <-> K: 1.177304
+rate I <-> M: 17.282051
+rate I <-> F: 2.032055
+rate I <-> P: 0.000100
+rate I <-> S: 0.090724
+rate I <-> T: 4.148174
+rate I <-> W: 0.000100
+rate I <-> Y: 0.000100
+rate I <-> V: 46.061900
+rate L <-> K: 0.088576
+rate L <-> M: 34.484594
+rate L <-> F: 9.718744
+rate L <-> P: 1.963249
+rate L <-> S: 0.441787
+rate L <-> T: 0.376570
+rate L <-> W: 3.032150
+rate L <-> Y: 1.205978
+rate L <-> V: 4.791255
+rate K <-> M: 4.618257
+rate K <-> F: 0.000100
+rate K <-> P: 0.902389
+rate K <-> S: 0.765214
+rate K <-> T: 3.363404
+rate K <-> W: 0.000100
+rate K <-> Y: 0.000100
+rate K <-> V: 0.339229
+rate M <-> F: 0.085804
+rate M <-> P: 0.000100
+rate M <-> S: 0.901420
+rate M <-> T: 4.051803
+rate M <-> W: 0.000100
+rate M <-> Y: 2.292349
+rate M <-> V: 5.894876
+rate F <-> P: 0.252951
+rate F <-> S: 0.069199
+rate F <-> T: 0.141572
+rate F <-> W: 4.900860
+rate F <-> Y: 33.781619
+rate F <-> V: 1.583086
+rate P <-> S: 4.310457
+rate P <-> T: 2.531992
+rate P <-> W: 1.573469
+rate P <-> Y: 0.000100
+rate P <-> V: 0.510724
+rate S <-> T: 16.587826
+rate S <-> W: 2.264213
+rate S <-> Y: 0.442391
+rate S <-> V: 0.311316
+rate T <-> W: 1.683277
+rate T <-> Y: 0.672040
+rate T <-> V: 5.904625
+rate W <-> Y: 10.245562
+rate W <-> V: 1.330998
+rate Y <-> V: 1.000000
+
+freq pi(A): 0.065149
+freq pi(R): 0.054231
+freq pi(N): 0.041608
+freq pi(D): 0.058452
+freq pi(C): 0.023965
+freq pi(Q): 0.036826
+freq pi(E): 0.069410
+freq pi(G): 0.052618
+freq pi(H): 0.030732
+freq pi(I): 0.067906
+freq pi(L): 0.092164
+freq pi(K): 0.051878
+freq pi(M): 0.022917
+freq pi(F): 0.045111
+freq pi(P): 0.040413
+freq pi(S): 0.069908
+freq pi(T): 0.072135
+freq pi(W): 0.004367
+freq pi(Y): 0.029144
+freq pi(V): 0.071068
+
+Final tree written to:                 /home/barbera/repos/epa/test/data/prot/RAxML_result.herpes
+Execution Log File written to:         /home/barbera/repos/epa/test/data/prot/RAxML_log.herpes

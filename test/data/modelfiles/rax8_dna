@@ -1,0 +1,76 @@
+
+
+Using BFGS method to optimize GTR rate parameters, to disable this specify "--no-bfgs" 
+
+
+
+This is RAxML version 8.2.4 released by Alexandros Stamatakis on October 02 2015.
+
+With greatly appreciated code contributions by:
+Andre Aberer      (HITS)
+Simon Berger      (HITS)
+Alexey Kozlov     (HITS)
+Kassian Kobert    (HITS)
+David Dao         (KIT and HITS)
+Nick Pattengale   (Sandia)
+Wayne Pfeiffer    (SDSC)
+Akifumi S. Tanabe (NRIFS)
+
+Alignment has 2041 distinct alignment patterns
+
+Proportion of gaps and completely undetermined characters in this alignment: 51.47%
+
+RAxML Model Optimization up to an accuracy of 0.100000 log likelihood units
+
+Using 1 distinct models/data partitions with joint branch length optimization
+
+
+All free model parameters will be estimated by RAxML
+GAMMA model of rate heteorgeneity, ML estimate of alpha-parameter
+
+GAMMA Model parameters will be estimated up to an accuracy of 0.1000000000 Log Likelihood units
+
+Partition: 0
+Alignment Patterns: 2041
+Name: No Name Provided
+DataType: DNA
+Substitution Matrix: GTR
+
+
+
+
+RAxML was called as follows:
+
+raxml -f e -t /home/pierre/repos/epa/test/data/bv/vaginal.phylip.newick -n bv -w /home/pierre/repos/epa/test/data/bv/info -m GTRGAMMA -s /home/pierre/repos/epa/test/data/bv/Ref.fasta.reduced 
+
+
+
+Model parameters (binary file format) written to: /home/pierre/repos/epa/test/data/bv/info/RAxML_binaryModelParameters.bv
+
+
+Overall Time for Tree Evaluation 41.109705
+Final GAMMA  likelihood: -107393.756892
+
+Number of free parameters for AIC-TEST(BR-LEN): 1600
+Number of free parameters for AIC-TEST(NO-BR-LEN): 9
+
+
+Inference[0]: Time 123.456000 GAMMA-based likelihood -107393.756892, best rearrangement setting 10
+alpha[0]: 0.478218 rates[0] ac ag at cg ct gt: 0.787874 1.821672 1.294006 0.698421 3.034135 1.000000 
+Model Parameters of Partition 0, Name: No Name Provided, Type of Data: DNA
+alpha: 0.478218
+Tree-Length: 44.286174
+rate A <-> C: 0.787874
+rate A <-> G: 1.821672
+rate A <-> T: 1.294006
+rate C <-> G: 0.698421
+rate C <-> T: 3.034135
+rate G <-> T: 1.000000
+
+freq pi(A): 0.256465
+freq pi(C): 0.222535
+freq pi(G): 0.308594
+freq pi(T): 0.212406
+
+Final tree written to:                 /home/pierre/repos/epa/test/data/bv/info/RAxML_result.bv
+Execution Log File written to:         /home/pierre/repos/epa/test/data/bv/info/RAxML_log.bv
