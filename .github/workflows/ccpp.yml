@@ -9,8 +9,8 @@ jobs:
     
     steps:
     - uses: actions/checkout@v1
-	- name: get flex/bison
-	  run: apt install flex bison
+    - name: get flex/bison
+      run: apt-get install flex bison
     - name: make
       run: make
     - name: run tests
