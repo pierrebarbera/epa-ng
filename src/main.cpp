@@ -113,10 +113,11 @@ int main(int argc, char** argv)
                   options.dump_binary_mode,
                   "Binary Dump mode: write ref. tree in binary format then exit. NOTE: not compatible with premasking!"
                 )->group("Convert");
+  auto split_option =
   app.add_option( "--split",
                   split_files,
-                  "Takes a reference MSA (phylip) and combined ref +"
-                  " query MSA(s) (phylip) and outputs one pure query file (fasta). "
+                  "Takes a reference MSA (phylip/fasta/fasta.gz) and combined ref +"
+                  " query MSA(s) (phylip/fasta/fasta.gz) and outputs one pure query file (fasta). "
                   "Usage: epa-ng --split ref_alignment query_alignments+"
                 )->group("Convert")->check(CLI::ExistingFile);
 
@@ -206,12 +207,10 @@ int main(int argc, char** argv)
                 )->group("Output");
 
   std::string preserve_rooting_option("on");
-  app.add_set( "--preserve-rooting",
+  app.add_option( "--preserve-rooting",
                 preserve_rooting_option,
-                {"off", "on"},
-                "Preserve the rooting of rooted trees. When disabled, EPA-ng will print the result as an unrooted tree.",
-                true
-                )->group("Output");
+                "Preserve the rooting of rooted trees. When disabled, EPA-ng will print the result as an unrooted tree."
+                )->group("Output")->check(CLI::IsMember({"off", "on"}, CLI::ignore_case));
 
   //  ============== COMPUTE OPTIONS ==============
 
@@ -260,12 +259,11 @@ int main(int argc, char** argv)
                 )->group("Compute");
 
   std::string rate_scalers_option("auto");
-  app.add_set_ignore_case( "--rate-scalers",
+  app.add_option( "--rate-scalers",
                 rate_scalers_option,
-                {"off", "on", "auto"},
-                "Use individual rate scalers. Important to avoid numerical underflow in taxa rich trees.",
-                true
-                )->group("Compute");
+                "Use individual rate scalers. Important to avoid numerical underflow in taxa rich trees."
+                )->group("Compute")
+                ->check(CLI::IsMember({"off", "on", "auto"}, CLI::ignore_case));
 
   #ifdef __OMP
   auto threads =
@@ -305,7 +303,11 @@ int main(int argc, char** argv)
     exit_epa();
   }
 
-  if (split_files.size()) {
+  if ( redo ) {
+    genesis::utils::Options::get().allow_file_overwriting( true );
+  }
+
+  if (*split_option) {
     if (split_files.size() < 2) {
       LOG_ERR << "Incorrect number of inputs! Usage: epa-ng --split ref_alignment query_alignments+";
       exit_epa();
@@ -315,10 +317,6 @@ int main(int argc, char** argv)
     LOG_INFO << "Splitting files based on reference: " << ref_msa;
     split(ref_msa, split_files, work_dir);
     exit_epa();
-  }
-
-  if ( redo ) {
-    genesis::utils::Options::get().allow_file_overwriting( true );
   }
 
   std::string log_file;
@@ -396,7 +394,7 @@ int main(int argc, char** argv)
     LOG_INFO << "Selected: Prescoring by accumulated LWR threshold: " << options.prescoring_threshold;
   }
 
-  if (*baseball_heur) {
+  if ( *baseball_heur ) {
     LOG_INFO << "Selected: Prescoring using the baseball heuristic";
   }
 

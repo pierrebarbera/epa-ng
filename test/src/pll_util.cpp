@@ -105,9 +105,9 @@ static int cb_set_branchlengths_one(pll_unode_t * node)
   return 1;
 };
 
-TEST( pll_util, get_numbered_newick_string )
+static void test_newick_string( std::string const& tree_file, std::string const& valid )
 {
-  // buildup
+    // buildup
   auto msa = build_MSA_from_file(env->reference_file, MSA_Info(env->reference_file), true);
   Tree_Numbers nums = Tree_Numbers();
   pll_partition_t * part;
@@ -118,16 +118,12 @@ TEST( pll_util, get_numbered_newick_string )
 
   ASSERT_TRUE( (not dummy) );
 
-  tree = build_tree_from_file( env->tree_file, nums, dummy );
+  tree = build_tree_from_file( tree_file, nums, dummy );
   part = make_partition( env->model, nums, msa.num_sites(), Options() );
   // auto valid_map = vector<Range>(nums.tip_nodes);
   link_tree_msa(tree, part, model, msa, nums.tip_nodes);
 
   // tests
-  // valid output as returned by RAxML, with reset branch lengths, as we only want to test format
-  string valid(
-  "(A:1.00{0},(B:1.00{1},(C:1.00{2},(D:1.00{3},(E:1.00{4},(F:1.00{5},G:1.00{6}):1.00{7}):1.00{8}):1.00{9}):1.00{10}):1.00{11},H:1.00{12});");
-
   vector<pll_unode_t*> travbuffer(nums.nodes);
   unsigned int traversal_size;
   pll_utree_traverse( get_root(tree),
@@ -144,6 +140,19 @@ TEST( pll_util, get_numbered_newick_string )
 
   pll_partition_destroy(part);
   pll_utree_destroy(tree, nullptr);
+}
+
+TEST( pll_util, get_numbered_newick_string )
+{
+  test_newick_string(
+    env->tree_file,
+    "(A:1.00{0},(B:1.00{1},(C:1.00{2},(D:1.00{3},(E:1.00{4},(F:1.00{5},G:1.00{6}):1.00{7}):1.00{8}):1.00{9}):1.00{10}):1.00{11},H:1.00{12});"
+  );
+
+  test_newick_string(
+    env->data_dir + "ref_innerlabels.tre",
+    "(A:1.00{0},(B:1.00{1},(C:1.00{2},(D:1.00{3},(E:1.00{4},(F:1.00{5},G:1.00{6})FG:1.00{7})EFG:1.00{8})DEFG:1.00{9})CDEFG:1.00{10})BCDEFG:1.00{11},H:1.00{12})ABCDEFGH;"
+  );
 }
 
 static void test_rooted_preserve( std::string const& tree_file, std::string const& valid )
@@ -180,6 +189,22 @@ TEST( pll_util, get_numbered_newick_string_rooted )
     env->tree_file_rooted_3,
     "(((A:1.34{0},(B:1.66{1},(C:1.08{2},D:1.26{3}):1.12{4}):1.00{5}):1.01{6},G:1.08{7}):1.90{8},H:0.01{9});"
   );
+
+  test_rooted_preserve(
+    env->data_dir + "ref_rooted_innerlabels.tre",
+    "((((G:1.01{0},H:1.08{1})GH:0.01{2},A:1.34{3})GHA:1.00{4},B:1.66{5})GHAB:1.01{6},(C:1.08{7},D:1.26{8})CD:1.12{9})GHABCD;"
+  );
+
+  test_rooted_preserve(
+    env->data_dir + "ref_rooted_2_innerlabels.tre",
+    "(A:1.34{0},((B:1.66{1},(C:1.08{2},D:1.26{3})CD:1.12{4})BCD:1.00{5},(G:1.01{6},H:1.08{7})GH:1.90{8})BCDGH:0.01{9})ABCDGH;"
+  );
+
+  test_rooted_preserve(
+    env->data_dir + "ref_rooted_3_innerlabels.tre",
+    "(((A:1.34{0},(B:1.66{1},(C:1.08{2},D:1.26{3})CD:1.12{4})BCD:1.00{5})ABCD:1.01{6},G:1.08{7})ABCDG:1.90{8},H:0.01{9})ABCDGH;"
+  );
+
 }
 
 TEST(pll_util, sum_branch_lengths)

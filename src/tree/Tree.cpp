@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <iostream>
 #include <cstdio>
+#include <numeric>
 
 #include "core/pll/epa_pll_util.hpp"
 #include "io/file_io.hpp"
@@ -58,8 +59,14 @@ Tree::Tree( const std::string &tree_file,
 
   precompute_clvs(tree_.get(), partition_.get(), nums_);
 
+  auto logl = this->ref_tree_logl();
+
+  if ( logl == -std::numeric_limits<double>::infinity() ) {
+    throw std::runtime_error{"Tree Log-Likelihood -INF!"};
+  }
+
   LOG_DBG << "Reference tree log-likelihood: "
-          << std::to_string(this->ref_tree_logl());
+          << std::to_string(logl);
 
 }
 
@@ -142,7 +149,7 @@ double Tree::ref_tree_logl()
   this->get_clv(root);
   this->get_clv(root->back);
 
-  return pll_compute_edge_loglikelihood(partition_.get(),
+  auto logl = pll_compute_edge_loglikelihood(partition_.get(),
                                         root->clv_index,
                                         root->scaler_index,
                                         root->back->clv_index,
@@ -150,4 +157,10 @@ double Tree::ref_tree_logl()
                                         root->pmatrix_index,
                                         &param_indices[0],
                                         nullptr);
+
+  // if ( logl == -std::numeric_limits<double>::infinity() ) {
+  //   throw std::runtime_error{pll_errmsg};
+  // }
+
+  return logl;
 }

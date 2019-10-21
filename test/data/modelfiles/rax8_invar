@@ -1,0 +1,84 @@
+
+You are using a proportion of Invariable sites estimate, although I don't
+like it. The likelihood epsilon "-f e" will be automatically lowered to 0.001
+to avoid unfavorable effects caused by simultaneous optimization of alpha and P-Invar
+
+
+Using BFGS method to optimize GTR rate parameters, to disable this specify "--no-bfgs" 
+
+
+
+This is RAxML version 8.2.12 released by Alexandros Stamatakis on May 2018.
+
+With greatly appreciated code contributions by:
+Andre Aberer      (HITS)
+Simon Berger      (HITS)
+Alexey Kozlov     (HITS)
+Kassian Kobert    (HITS)
+David Dao         (KIT and HITS)
+Sarah Lutteropp   (KIT and HITS)
+Nick Pattengale   (Sandia)
+Wayne Pfeiffer    (SDSC)
+Akifumi S. Tanabe (NRIFS)
+Charlie Taylor    (UF)
+
+
+Alignment has 3508 distinct alignment patterns
+
+Found 0 invariant alignment patterns that correspond to 0 columns 
+Proportion of gaps and completely undetermined characters in this alignment: 62.31%
+
+RAxML Model Optimization up to an accuracy of 0.001000 log likelihood units
+
+Using 1 distinct models/data partitions with joint branch length optimization
+
+
+All free model parameters will be estimated by RAxML
+GAMMA+P-Invar model of rate heterogeneity, ML estimate of alpha-parameter
+
+GAMMA+P-Invar Model parameters will be estimated up to an accuracy of 0.0010000000 Log Likelihood units
+
+Partition: 0
+Alignment Patterns: 3508
+Name: No Name Provided
+DataType: DNA
+Substitution Matrix: GTR
+Base frequencies: ML estimate
+
+
+
+
+RAxML was called as follows:
+
+raxmlHPC-PTHREADS-AVX2 -f e -s 1k_reference.phy -t tree.newick -n invar_log -m GTRGAMMAIX 
+
+
+
+Model parameters (binary file format) written to: /home/barbera/repos/epa/test/data/lucas/RAxML_binaryModelParameters.invar_log
+
+
+Overall Time for Tree Evaluation 89.247034
+Final GAMMA  likelihood: -331512.430297
+
+Number of free parameters for AIC-TEST(BR-LEN): 1031
+Number of free parameters for AIC-TEST(NO-BR-LEN): 10
+
+
+Model Parameters of Partition 0, Name: No Name Provided, Type of Data: DNA
+alpha: 0.532224
+invar: 0.051355
+Tree-Length: 122.772986
+rate A <-> C: 1.217620
+rate A <-> G: 2.720208
+rate A <-> T: 1.342850
+rate C <-> G: 1.115245
+rate C <-> T: 3.313319
+rate G <-> T: 1.000000
+
+freq pi(A): 0.222438
+freq pi(C): 0.209333
+freq pi(G): 0.259930
+freq pi(T): 0.308299
+
+Final tree written to:                 /home/barbera/repos/epa/test/data/lucas/RAxML_result.invar_log
+Execution Log File written to:         /home/barbera/repos/epa/test/data/lucas/RAxML_log.invar_log

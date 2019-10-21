@@ -1,0 +1,1288 @@
+IQ-TREE 1.6.5 built May  8 2018
+
+Input file name: Archaeal_all_REFs_of_OTUs_between_70_80pciden_enviro.auto.ali.trimal
+Type of analysis: tree reconstruction + ultrafast bootstrap (1000 replicates)
+Random seed number: 269072
+
+REFERENCES
+----------
+
+To cite IQ-TREE please use:
+
+Lam-Tung Nguyen, Heiko A. Schmidt, Arndt von Haeseler, and Bui Quang Minh
+(2015) IQ-TREE: A fast and effective stochastic algorithm for estimating
+maximum likelihood phylogenies. Mol Biol Evol, 32:268-274.
+https://doi.org/10.1093/molbev/msu300
+
+Since you used ultrafast bootstrap (UFBoot) please also cite: 
+
+Diep Thi Hoang, Olga Chernomor, Arndt von Haeseler, Bui Quang Minh,
+and Le Sy Vinh (2017) UFBoot2: Improving the ultrafast bootstrap
+approximation. Mol Biol Evol, in press.
+https://doi.org/10.1093/molbev/msx281
+
+SEQUENCE ALIGNMENT
+------------------
+
+Input data: 294 sequences with 1388 nucleotide sites
+Number of constant sites: 186 (= 13.4006% of all sites)
+Number of invariant (constant or ambiguous constant) sites: 186 (= 13.4006% of all sites)
+Number of parsimony informative sites: 1118
+Number of distinct site patterns: 1289
+
+SUBSTITUTION PROCESS
+--------------------
+
+Model of substitution: GTR+F+I+G4
+
+Rate parameter R:
+
+  A-C: 0.9467
+  A-G: 3.2100
+  A-T: 1.8644
+  C-G: 0.8054
+  C-T: 5.5442
+  G-T: 1.0000
+
+State frequencies: (empirical counts from alignment)
+
+  pi(A) = 0.2415
+  pi(C) = 0.2465
+  pi(G) = 0.3237
+  pi(T) = 0.1884
+
+Rate matrix Q:
+
+  A    -1.048    0.1506    0.6705    0.2267
+  C    0.1475     -0.99    0.1682    0.6742
+  G    0.5002    0.1281   -0.7499    0.1216
+  T    0.2905    0.8819    0.2089    -1.381
+
+Model of rate heterogeneity: Invar+Gamma with 4 categories
+Proportion of invariable sites: 0.1257
+Gamma shape alpha: 0.8042
+
+ Category  Relative_rate  Proportion
+  0         0              0.1257
+  1         0.1103         0.2186
+  2         0.4676         0.2186
+  3         1.096          0.2186
+  4         2.901          0.2186
+Relative rates are computed as MEAN of the portion of the Gamma distribution falling in the category.
+
+MAXIMUM LIKELIHOOD TREE
+-----------------------
+
+Log-likelihood of the tree: -104683.2076 (s.e. 2479.7908)
+Unconstrained log-likelihood (without tree): -9827.4527
+Number of free parameters (#branches + #model parameters): 589
+Akaike information criterion (AIC) score: 210544.4152
+Corrected Akaike information criterion (AICc) score: 211415.3676
+Bayesian information criterion (BIC) score: 213628.1949
+
+Total tree length (sum of branch lengths): 31.8147
+Sum of internal branch lengths: 13.3567 (41.9828% of tree length)
+
+WARNING: 4 near-zero internal branches (<0.0007) should be treated with caution
+         Such branches are denoted by '**' in the figure below
+
+NOTE: Tree is UNROOTED although outgroup taxon 'JWKQ01000002_Root_Archaea_Aenigmarchaeota_Deep_Sea_Euryarchaeotic_Group_archaeon_GW2011_AR5' is drawn at root
+Numbers in parentheses are  ultrafast bootstrap support (%)
+
++**JWKQ01000002_Root_Archaea_Aenigmarchaeota_Deep_Sea_Euryarchaeotic_Group_archaeon_GW2011_AR5
+|
++--Archaea_DPANN_Aenigmarchaeota_AR5_
+|
+|      +----AB019743_Root_Archaea_Aenigmarchaeota_Deep_Sea_Euryarchaeotic_Group_unidentified_archaeon
+|   +--| (100)
+|   |  |     +--------AGBK01001752_Root_Archaea_Aenigmarchaeota_Deep_Sea_Euryarchaeotic_Group_hypersaline_lake_metagenome
+|   |  |  +--| (55)
+|   |  |  |  |         +**ASMO01000004_Root_Archaea_Aenigmarchaeota_Deep_Sea_Euryarchaeotic_Group_Candidatus_Aenigmarchaeota_archaeon_JGI_0000106-F11
+|   |  |  |  |  +------| (100)
+|   |  |  |  |  |      +--Archaea_Aenigmarchaeota_archaeon_JGI_0000106-F11_GBS-C_001_281_JGI-named_Eury_DHVEG
+|   |  |  |  +--| (59)
+|   |  |  |     |          +--ASMQ01000007_Root_Archaea_Aenigmarchaeota_Aenigmarchaeota_Incertae_Sedis_Unknown_Order_Unknown_Family_Candidatus_Aenigmarchaeum_Candidatus_Aenigmarchaeum_subterraneum_SCGC_AAA011-O16
+|   |  |  |     +----------| (100)
+|   |  |  |                +**Archaea_Aenigmarchaeota_Candidatus_Aenigmarchaeum_subterraneum_archaeon-SAG-AAA011-O16_Dusel_001_271
+|   |  +--| (100)
+|   |     |                    +----AB019754_Root_Archaea_Marine_Benthic_Group_E_unidentified_archaeon
+|   |     |                 +--| (100)
+|   |     |                 |  +-----CESR01131454_Root_Archaea_Marine_Benthic_Group_E_marine_metagenome
+|   |     |              +--| (63)
+|   |     |              |  |                  +--AB269873_Root_Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Thermoplasmatales_Incertae_Sedis_Thermogymnomonas_Thermogymnomonas_acidicola
+|   |     |              |  |               +--| (100)
+|   |     |              |  |               |  |  +--ACXJ01010163_Root_Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Thermoplasmataceae_Thermoplasma_mine_drainage_metagenome
+|   |     |              |  |               |  +--| (100)
+|   |     |              |  |               |     +--ACXJ01011147_Root_Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Thermoplasmataceae_Thermoplasma_mine_drainage_metagenome
+|   |     |              |  |            +--| (97)
+|   |     |              |  |            |  |     +**M38637_Root_Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Thermoplasmataceae_Thermoplasma_Thermoplasma_acidophilum
+|   |     |              |  |            |  |  +--| (100)
+|   |     |              |  |            |  |  |  +**Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Thermoplasmataceae_Thermoplasma_acidophilum_DSM_1728
+|   |     |              |  |            |  +--| (100)
+|   |     |              |  |            |     +--AF339746_Root_Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Thermoplasmataceae_Thermoplasma_Thermoplasma_volcanium
+|   |     |              |  |         +--| (100)
+|   |     |              |  |         |  |     +**AE017261_Root_Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Picrophilaceae_Picrophilus_Picrophilus_torridus_DSM_9790
+|   |     |              |  |         |  |  +--| (100)
+|   |     |              |  |         |  |  |  +**Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Picrophilaceae_Picrophilus_torridus_DSM_9790
+|   |     |              |  |         |  +--| (100)
+|   |     |              |  |         |     +---Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Ferroplasmaceae_Ferroplasma_acidarmanus_Fer1
+|   |     |              |  |      +--| (100)
+|   |     |              |  |      |  +-----ACXM01000006_Root_Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_BSLdp215_Thermoplasmatales_archaeon_I-plasma
+|   |     |              |  |   +--| (100)
+|   |     |              |  |   |  |  +--AB019742_Root_Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Deep_Sea_Hydrothermal_Vent_Gp_2_Candidatus_Aciduliprofundum_unidentified_archaeon
+|   |     |              |  |   |  +--| (100)
+|   |     |              |  |   |     +--Archaea_Euryarchaeotaunclassified_Euryarchaeota_Aciduliprofundum_Aciduliprofundum_boonei_T469
+|   |     |              |  +---| (100)
+|   |     |              |      |                    +--KF697737_Root_Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Thermoplasmatales_Incertae_Sedis_Candidatus_Methanomethylophilus_methanogenic_archaeon_mixed_culture_ISO4-G11
+|   |     |              |      |                 +--| (100)
+|   |     |              |      |                 |  +--Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Thermoplasmatales_archaeon_BRNA1
+|   |     |              |      |              +--| (100)
+|   |     |              |      |              |  +--KJ522703_Root_Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Thermoplasmatales_Incertae_Sedis_Candidatus_Methanomethylophilus_Candidatus_Methanomethylophilus_alvus
+|   |     |              |      |           +--| (100)
+|   |     |              |      |           |  +--GQ339877_Root_Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Thermoplasmatales_Incertae_Sedis_methanogenic_archaeon_WGK1
+|   |     |              |      |        +--| (100)
+|   |     |              |      |        |  +--Archaea_Euryarchaeota_Methanomicrobiaunclassified_Methanomicrobia_Methanomassiliicoccus_Candidatus_Methanomassiliicoccus_intestinalis_Issoire-Mx1
+|   |     |              |      |     +--| (98)
+|   |     |              |      |     |  +--------AUZY01010495_Root_Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Terrestrial_Miscellaneous_Gp_mine_drainage_metagenome
+|   |     |              |      |  +--| (96)
+|   |     |              |      |  |  |          +--Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_archaeon_SCGC_AB-540-F20
+|   |     |              |      |  |  |       +--| (100)
+|   |     |              |      |  |  |       |  +--Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Thermoplasmatales_archaeon_SCGC_AB-539-C06
+|   |     |              |      |  |  |  +----| (100)
+|   |     |              |      |  |  |  |    +--Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Thermoplasmatales_archaeon_SCGC_AB-539-N05
+|   |     |              |      |  |  +--| (100)
+|   |     |              |      |  |     +-------Archaea_Thaumarchaeota_unclassified_Thaumarchaeota_Marine_Group_I_Marine_Group_III_euryarchaeote_sp._SCGC_AAA288-E19
+|   |     |              |      +--| (97)
+|   |     |              |         |    +-----Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmata_archaeon_JGI_0000113-B15
+|   |     |              |         +----| (100)
+|   |     |              |              +---Archaea_Euryarchaeota_unclassified_Euryarchaeota_Marine_Group_II_uncultured_marine_group_II_euryarchaeote
+|   |     |           +--| (63)
+|   |     |           |  |                        +--HI592314_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanomicrobiaceae_Methanoculleus_Methanoculleus_marisnigri
+|   |     |           |  |                     +--| (100)
+|   |     |           |  |                     |  |  +--AJ831069_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanomicrobiaceae_Methanoculleus_unidentified_archaeon
+|   |     |           |  |                     |  +--| (100)
+|   |     |           |  |                     |     +--Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanomicrobiaceae_Methanoculleus_Methanoculleus_bourgensis_MS2
+|   |     |           |  |                  +--| (100)
+|   |     |           |  |                  |  |  +--DQ787475_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanomicrobiaceae_Methanoculleus_Methanoculleus_receptaculi
+|   |     |           |  |                  |  +--| (100)
+|   |     |           |  |                  |     +--GU129124_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanomicrobiaceae_Methanoculleus_Methanomicrobiaceae_archaeon_29aM
+|   |     |           |  |               +--| (100)
+|   |     |           |  |               |  +--KM111599_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanomicrobiaceae_Methanoculleus_Methanoculleus_taiwanensis
+|   |     |           |  |            +--| (100)
+|   |     |           |  |            |  |  +--Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanomicrobiaceae_Methanomicrobium_mobile_BP
+|   |     |           |  |            |  +--| (100)
+|   |     |           |  |            |     +--Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanomicrobiaceae_Methanoplanus_Methanoplanus_petrolearius_DSM_11571
+|   |     |           |  |        +---| (100)
+|   |     |           |  |        |   |              +--AB479390_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanoregulaceae_Methanoregula_Methanoregula_formicica_SMSP
+|   |     |           |  |        |   |           +--| (100)
+|   |     |           |  |        |   |           |  +--EU887810_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanoregulaceae_Methanoregula_Methanoregula_boonei
+|   |     |           |  |        |   |        +--| (100)
+|   |     |           |  |        |   |        |  +--Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanoregulaceae_Methanoregula_Candidatus_Methanoregula_boonei_6A8
+|   |     |           |  |        |   |     +--| (98)
+|   |     |           |  |        |   |     |  |     +--LNQE01001524_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanoregulaceae_Methanolinea_hydrocarbon_metagenome
+|   |     |           |  |        |   |     |  |  +--| (100)
+|   |     |           |  |        |   |     |  |  |  +--Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanoregulaceae_Methanolinea_tarda_NOBI-1
+|   |     |           |  |        |   |     |  +--| (98)
+|   |     |           |  |        |   |     |     +---Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanospirillaceae_Methanospirillum_hungatei_JF-1
+|   |     |           |  |        |   |  +--| (100)
+|   |     |           |  |        |   |  |  |  +--Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanoregulaceae_Methanosphaerula_Candidatus_Methanosphaerula_palustris_E1-9c
+|   |     |           |  |        |   |  |  +--| (68)
+|   |     |           |  |        |   |  |     +------Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanocorpusculaceae_Methanocorpusculum_Methanocorpusculum_labreanum_Z
+|   |     |           |  |        |   +--| (100)
+|   |     |           |  |        |      +--Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanomicrobiaceae_Methanofollis_liminatans_GKZPZ
+|   |     |           |  |     +--| (90)
+|   |     |           |  |     |  +---Archaea_Euryarchaeota_Methanomicrobia_Methanocellales_Methanoflorens_stordalenmirensis_Draft_v4.3.2
+|   |     |           |  |  +--| (97)
+|   |     |           |  |  |  |     +------JAHE01027406_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_Methanosaetaceae_Methanosaeta_sediment_metagenome
+|   |     |           |  |  |  |  +--| (98)
+|   |     |           |  |  |  |  |  |           +--DQ787474_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_Methermicoccaceae_Methermicoccus_Methermicoccus_shengliensis
+|   |     |           |  |  |  |  |  |        +--| (100)
+|   |     |           |  |  |  |  |  |        |  +--Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_Methermicoccaceae_Methermicoccus_shengliensis_DSM_18856
+|   |     |           |  |  |  |  |  |     +--| (37)
+|   |     |           |  |  |  |  |  |     |  |                 +**CP003083_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_Methanosarcinaceae_Methanolobus_Methanolobus_psychrophilus_R15
+|   |     |           |  |  |  |  |  |     |  |              +--| (100)
+|   |     |           |  |  |  |  |  |     |  |              |  +**Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_Methanosarcinaceae_Methanolobus_Methanolobus_psychrophilus_R15
+|   |     |           |  |  |  |  |  |     |  |           +--| (67)
+|   |     |           |  |  |  |  |  |     |  |           |  +--Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_Methanosarcinaceae_Methanosarcina_barkeri_Fusaro
+|   |     |           |  |  |  |  |  |     |  |        +--| (95)
+|   |     |           |  |  |  |  |  |     |  |        |  +--Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_Methanosarcinaceae_Methanomethylovorans_hollandica_DSM_15978
+|   |     |           |  |  |  |  |  |     |  |     +--| (95)
+|   |     |           |  |  |  |  |  |     |  |     |  |  +--Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_Methanosarcinaceae_Methanococcoides_burtonii_DSM_6242
+|   |     |           |  |  |  |  |  |     |  |     |  +--| (100)
+|   |     |           |  |  |  |  |  |     |  |     |     +--Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_Methanosarcinaceae_Methanohalophilus_Methanohalophilus_mahii_DSM_5219
+|   |     |           |  |  |  |  |  |     |  |  +--| (32)
+|   |     |           |  |  |  |  |  |     |  |  |  +--Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_Methanosarcinaceae_Methanosalsum_zhilinae_WeN5
+|   |     |           |  |  |  |  |  |     |  +--| (100)
+|   |     |           |  |  |  |  |  |     |     +--Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_Methanosarcinaceae_Methanohalobium_Methanohalobium_evestigatum_Z-7303
+|   |     |           |  |  |  |  |  |  +--| (75)
+|   |     |           |  |  |  |  |  |  |  +---Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_Methanosaetaceae_Methanosaeta_Methanosaeta_thermophila_PT
+|   |     |           |  |  |  |  |  +--| (92)
+|   |     |           |  |  |  |  |     +---Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_ANME2D
+|   |     |           |  |  |  +--| (77)
+|   |     |           |  |  |     |        +--AB196288_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanocellales_Methanocellaceae_Methanocella_Methanocella_paludicola_SANAE
+|   |     |           |  |  |     |     +--| (100)
+|   |     |           |  |  |     |     |  +--JN048683_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanocellales_Methanocellaceae_Methanocella_Methanocella_conradii_HZ254
+|   |     |           |  |  |     +-----| (100)
+|   |     |           |  |  |           |  +--AM114193_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanocellales_Methanocellaceae_Methanocella_Methanocella_arvoryzae_MRE50
+|   |     |           |  |  |           +--| (100)
+|   |     |           |  |  |              +--Archaea_Euryarchaeota_Methanomicrobia_Methanocellales_Methanocellaceae_Methanocella_sp._RC-I_Manual_curation_by_Zhe_Lv
+|   |     |           |  +--| (97)
+|   |     |           |     |     +--AB019759_Root_Archaea_Euryarchaeota_Methanomicrobia_ANME-1_ANME-1a_unidentified_archaeon
+|   |     |           |     +-----| (100)
+|   |     |           |           +--AB019758_Root_Archaea_Euryarchaeota_Methanomicrobia_ANME-1_ANME-1a_unidentified_archaeon
+|   |     |        +--| (54)
+|   |     |        |  +------------------Archaea_Lokiarchaeota_SMTZ-76-7
+|   |     |     +--| (35)
+|   |     |     |  |                    +--X15364_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanothermobacter_Methanothermobacter_marburgensis
+|   |     |     |  |                 +--| (100)
+|   |     |     |  |                 |  +--Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanothermobacter_thermautotrophicus_Delta_H
+|   |     |     |  |              +--| (100)
+|   |     |     |  |              |  |  +--GU129103_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanobacteriaceae_archaeon_15aZ
+|   |     |     |  |              |  +--| (98)
+|   |     |     |  |              |     |           +--HQ110085_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanobacterium_Methanobacterium_lacus
+|   |     |     |  |              |     |        +--| (92)
+|   |     |     |  |              |     |        |  +--GQ906568_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanobacterium_Methanobacterium_bryantii
+|   |     |     |  |              |     |     +--| (92)
+|   |     |     |  |              |     |     |  |  +--JF812256_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanobacterium_Methanobacterium_movilense
+|   |     |     |  |              |     |     |  +--| (82)
+|   |     |     |  |              |     |     |     +--Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanobacterium_Methanobacterium_sp_SWAN-1
+|   |     |     |  |              |     |  +--| (29)
+|   |     |     |  |              |     |  |  +--AY386124_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanobacterium_Methanobacterium_aarhusense
+|   |     |     |  |              |     +--| (100)
+|   |     |     |  |              |        |        +--KC608769_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanobrevibacter_Methanobrevibacter_boviskoreani_JH1
+|   |     |     |  |              |        |     +--| (100)
+|   |     |     |  |              |        |     |  +--Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanobrevibacter_Methanobrevibacter_smithii_PS_ATCC_35061
+|   |     |     |  |              |        |  +--| (94)
+|   |     |     |  |              |        |  |  |  +--LWMW01000084_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanobrevibacter_Methanobrevibacter_cuticularis
+|   |     |     |  |              |        |  |  +--| (91)
+|   |     |     |  |              |        |  |     |  +--LWMT01000072_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanobrevibacter_Methanobrevibacter_filiformis
+|   |     |     |  |              |        |  |     +--| (89)
+|   |     |     |  |              |        |  |        |  +--HK556489_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanobrevibacter_unidentified
+|   |     |     |  |              |        |  |        +--| (89)
+|   |     |     |  |              |        |  |           +--D64027_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanobrevibacter_unidentified_Methanobacteriales
+|   |     |     |  |              |        +--| (94)
+|   |     |     |  |              |           |  +--AF029202_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanosphaera_unidentified_methanogen_ARC17
+|   |     |     |  |              |           +--| (100)
+|   |     |     |  |              |              +--Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanosphaera_stadtmanae_DSM_3091
+|   |     |     |  |           +--| (100)
+|   |     |     |  |           |  |  +--HE654004_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanothermaceae_Methanothermus_Methanothermus_sociabilis
+|   |     |     |  |           |  +--| (100)
+|   |     |     |  |           |     +--Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanothermaceae_Methanothermus_Methanothermus_fervidus_DSM_2088
+|   |     |     |  |        +--| (48)
+|   |     |     |  |        |  |               +**AB546258_Root_Archaea_Euryarchaeota_Methanococci_Methanococcales_Methanococcaceae_Methanococcus_Methanococcus_maripaludis
+|   |     |     |  |        |  |            +--| (100)
+|   |     |     |  |        |  |            |  +**Archaea_Euryarchaeota_Methanococci_Methanococcales_Methanococcaceae_Methanococcus_Methanococcus_maripaludis_S2
+|   |     |     |  |        |  |         +--| (100)
+|   |     |     |  |        |  |         |  +--Archaea_Euryarchaeota_Methanococci_Methanococcales_Methanococcaceae_Methanothermococcus_Methanothermococcus_okinawensis_IH1
+|   |     |     |  |        |  |      +--| (100)
+|   |     |     |  |        |  |      |  +--Archaea_Euryarchaeota_Methanococci_Methanococcales_Methanocaldococcaceae_Methanotorris_Methanotorris_igneus_Kol_5
+|   |     |     |  |        |  |  +---| (100)
+|   |     |     |  |        |  |  |   +--Archaea_Euryarchaeota_Methanococci_Methanococcales_Methanocaldococcaceae_Methanocaldococcus_jannaschii_DSM_2661
+|   |     |     |  |        |  +--| (55)
+|   |     |     |  |        |     +------Archaea_Euryarchaeota_Methanopyri_Methanopyrales_Methanopyraceae_Methanopyrus_kandleri_AV19
+|   |     |     |  |     +--| (94)
+|   |     |     |  |     |  |                 +--AJ291811_Root_Archaea_Euryarchaeota_Thermococci_Thermococcales_Thermococcaceae_Thermococcus_Thermococcus_pacificus
+|   |     |     |  |     |  |              +--| (98)
+|   |     |     |  |     |  |              |  +--Archaea_Euryarchaeota_Thermococci_Thermococcales_Thermococcaceae_Thermococcus_kodakarensis_KOD1
+|   |     |     |  |     |  |           +--| (98)
+|   |     |     |  |     |  |           |  +--Archaea_Euryarchaeota_Thermococci_Thermococcales_Thermococcaceae_Pyrococcus_furiosus_DSM_3638
+|   |     |     |  |     |  |        +--| (100)
+|   |     |     |  |     |  |        |  |  +--LANF01000002_Root_Archaea_Euryarchaeota_Thermococci_Thermococcales_Thermococcaceae_Palaeococcus_Palaeococcus_ferrophilus_DSM_13482
+|   |     |     |  |     |  |        |  +--| (100)
+|   |     |     |  |     |  |        |     |  +--HQ696462_Root_Archaea_Euryarchaeota_Thermococci_Thermococcales_Thermococcaceae_Palaeococcus_Palaeococcus_pacificus_DY20341
+|   |     |     |  |     |  |        |     +--| (100)
+|   |     |     |  |     |  |        |        +--Archaea_Euryarchaeota_Thermococci_Thermococcales_Thermococcaceae_Palaeococcus_Palaeococcus_pacificus_DY20341
+|   |     |     |  |     |  |     +--| (88)
+|   |     |     |  |     |  |     |  +-------------Archaea_Nanoarchaeota_Nanoarchaeum_equitans_Kin4-M
+|   |     |     |  |     |  |  +--| (76)
+|   |     |     |  |     |  |  |  |          +--CP006577_Root_Archaea_Euryarchaeota_Archaeoglobi_Archaeoglobales_Archaeoglobaceae_Archaeoglobus_Archaeoglobus_fulgidus_DSM_8774
+|   |     |     |  |     |  |  |  |       +--| (94)
+|   |     |     |  |     |  |  |  |       |  +**Archaea_Euryarchaeota_Archaeoglobi_Archaeoglobales_Archaeoglobaceae_Archaeoglobus_Archaeoglobus_fulgidus_DSM_8774
+|   |     |     |  |     |  |  |  |    +--| (100)
+|   |     |     |  |     |  |  |  |    |  +--AB274307_Root_Archaea_Euryarchaeota_Archaeoglobi_Archaeoglobales_Archaeoglobaceae_Archaeoglobus_Archaeoglobus_infectus
+|   |     |     |  |     |  |  |  +----| (100)
+|   |     |     |  |     |  |  |       +--Archaea_Euryarchaeota_Archaeoglobi_Archaeoglobales_Archaeoglobaceae_Ferroglobus_Ferroglobus_placidus_DSM_10642
+|   |     |     |  |     |  +--| (57)
+|   |     |     |  |     |     |              +--JRER01000597_Root_Archaea_Bathyarchaeota_marine_sediment_metagenome
+|   |     |     |  |     |     |           +--| (100)
+|   |     |     |  |     |     |           |  +------LFWY01000019_Root_Archaea_Bathyarchaeota_miscellaneous_Crenarchaeota_group_archaeon_SMTZ-80
+|   |     |     |  |     |     |        +--| (99)
+|   |     |     |  |     |     |        |  +-------Archaea_Thaumarchaeota_Thaumarcheon_SCGC_AB-539-E09
+|   |     |     |  |     |     |     +--| (65)
+|   |     |     |  |     |     |     |  |           +--EU239960_Root_Archaea_Thaumarchaeota_Thaumarchaeota_Incertae_Sedis_Unknown_Order_Unknown_Family_Candidatus_Nitrosocaldus_Candidatus_Nitrosocaldus_yellowstonii
+|   |     |     |  |     |     |     |  |        +--| (100)
+|   |     |     |  |     |     |     |  |        |  |  +--Archaea_Thaumarchaeota_Nitrososphaerales_Nitrososphaeraceae_Nitrososphaera_Nitrososphaera_viennensis_EN76
+|   |     |     |  |     |     |     |  |        |  +--| (100)
+|   |     |     |  |     |     |     |  |        |     |                    +--AB019722_Root_Archaea_Thaumarchaeota_Marine_Group_I_Unknown_Order_Unknown_Family_Candidatus_Nitrosopumilus_unidentified_archaeon
+|   |     |     |  |     |     |     |  |        |     |                 +--| (99)
+|   |     |     |  |     |     |     |  |        |     |                 |  |  +**Archaea_Thaumarchaeota_Thaumarchaeota_archaeon_SCGC_AB-661-L21
+|   |     |     |  |     |     |     |  |        |     |                 |  +--| (100)
+|   |     |     |  |     |     |     |  |        |     |                 |     +**Archaea_Thaumarchaeota_unclassified_Thaumarchaeota_Marine_Group_I_Marine_Group_I_thaumarchaeote_SCGC_AAA160-J20
+|   |     |     |  |     |     |     |  |        |     |              +--| (100)
+|   |     |     |  |     |     |     |  |        |     |              |  |           +--AB019725_Root_Archaea_Thaumarchaeota_Marine_Group_I_Unknown_Order_Unknown_Family_Candidatus_Nitrosopumilus_unidentified_archaeon
+|   |     |     |  |     |     |     |  |        |     |              |  |        +--| (96)
+|   |     |     |  |     |     |     |  |        |     |              |  |        |  +--Archaea_Thaumarchaeota_Thaumarchaeota_archaeon_SCGC_AAA282-K18
+|   |     |     |  |     |     |     |  |        |     |              |  |     +--| (96)
+|   |     |     |  |     |     |     |  |        |     |              |  |     |  +--Archaea_Thaumarchaeota_unclassified_Thaumarchaeota_Marine_Group_I_Marine_Group_I_thaumarchaeote_SCGC_AAA799_N04
+|   |     |     |  |     |     |     |  |        |     |              |  |  +--| (96)
+|   |     |     |  |     |     |     |  |        |     |              |  |  |  +--Archaea_Thaumarchaeota_Nitrosopumilales_Nitrosopumilaceae_Nitrosopumilus_Candidatus_Nitrosopumilus_koreensis_AR1
+|   |     |     |  |     |     |     |  |        |     |              |  +--| (95)
+|   |     |     |  |     |     |     |  |        |     |              |     +--AB019723_Root_Archaea_Thaumarchaeota_Marine_Group_I_Unknown_Order_Unknown_Family_Candidatus_Nitrosopumilus_unidentified_archaeon
+|   |     |     |  |     |     |     |  |        |     |           +--| (80)
+|   |     |     |  |     |     |     |  |        |     |           |  +--Archaea_Thaumarchaeota_Cenarchaeales_Cenarchaeaceae_Cenarchaeum_Cenarchaeum_symbiosum_A_
+|   |     |     |  |     |     |     |  |        |     |        +--| (94)
+|   |     |     |  |     |     |     |  |        |     |        |  |        +--Archaea_Thaumarchaeota_Thaumarchaeota_archaeon_SCGC_AB-663-F14
+|   |     |     |  |     |     |     |  |        |     |        |  |     +--| (100)
+|   |     |     |  |     |     |     |  |        |     |        |  |     |  +--Archaea_Thaumarchaeota_unclassified_Thaumarchaeota_Marine_Group_I_Marine_Group_I_thaumarchaeote_sp._SCGC_AAA288-P18
+|   |     |     |  |     |     |     |  |        |     |        |  |  +--| (100)
+|   |     |     |  |     |     |     |  |        |     |        |  |  |  |     +--Archaea_Thaumarchaeota_Thaumarchaeota_archaeon_SCGC_AB-663-G14
+|   |     |     |  |     |     |     |  |        |     |        |  |  |  |  +--| (92)
+|   |     |     |  |     |     |     |  |        |     |        |  |  |  |  |  +--Archaea_Thaumarchaeota_unclassified_Thaumarchaeota_Marine_Group_I_Marine_Group_I_thaumarchaeote_sp._SCGC_AAA008-P02
+|   |     |     |  |     |     |     |  |        |     |        |  |  |  +--| (100)
+|   |     |     |  |     |     |     |  |        |     |        |  |  |     |     +**Archaea_Thaumarchaeota_unclassified_Thaumarchaeota_Marine_Group_I_Marine_Group_I_crenarchaeon_SCGC_AB-629-I23
+|   |     |     |  |     |     |     |  |        |     |        |  |  |     |  +**| (72)
+|   |     |     |  |     |     |     |  |        |     |        |  |  |     |  |  +--Archaea_Thaumarchaeota_unclassified_Thaumarchaeota_Marine_Group_I_Marine_Group_I_thaumarchaeote_SCGC_AAA007-O23_TG_002_783
+|   |     |     |  |     |     |     |  |        |     |        |  |  |     +**| (76)
+|   |     |     |  |     |     |     |  |        |     |        |  |  |        +**Archaea_Thaumarchaeota_unclassified_Thaumarchaeota_Marine_Group_I_Marine_Group_I_crenarchaeote_sp._SCGC_AAA288-I14
+|   |     |     |  |     |     |     |  |        |     |        |  +--| (100)
+|   |     |     |  |     |     |     |  |        |     |        |     +--Archaea_Thaumarchaeota_unclassified_Thaumarchaeota_Marine_Group_I_Marine_Group_I_thaumarchaeote_sp._SCGC_AAA008-M21
+|   |     |     |  |     |     |     |  |        |     |     +--| (75)
+|   |     |     |  |     |     |     |  |        |     |     |  +--Archaea_Thaumarchaeota_CSP1-1
+|   |     |     |  |     |     |     |  |        |     +-----| (100)
+|   |     |     |  |     |     |     |  |        |           |  +--AVSQ01000019_Root_Archaea_Thaumarchaeota_Marine_Group_I_Thaumarchaeota_archaeon_MY2
+|   |     |     |  |     |     |     |  |        |           +--| (100)
+|   |     |     |  |     |     |     |  |        |              +**Archaea_Thaumarchaeota_Thaumarchaeota_archaeon_MY2
+|   |     |     |  |     |     |     |  |     +--| (100)
+|   |     |     |  |     |     |     |  |     |  |  +--Archaea_Thaumarchaeota_Thaumarchaeota_archaeon_SCGC_AB-179-E04_GBS-N_001_221
+|   |     |     |  |     |     |     |  |     |  +--| (100)
+|   |     |     |  |     |     |     |  |     |     +----Archaea_Thaumarchaeota_Thaumarchaeota_archaeon_strain_BS4
+|   |     |     |  |     |     |     |  |  +--| (79)
+|   |     |     |  |     |     |     |  |  |  |  +-----Archaea_Thaumarchaeota_Thaumarchaeota_archaeon_strain_DS1_Dragon_Thaumarchaeon
+|   |     |     |  |     |     |     |  |  |  +--| (79)
+|   |     |     |  |     |     |     |  |  |     +--------------Archaea_Archaea_Lokiarchaeaota_archeaon_Loki
+|   |     |     |  |     |     |     |  +--| (62)
+|   |     |     |  |     |     |     |     |  +----AB019733_Root_Archaea_Aigarchaeota_Terrestrial_Hot_Spring_Gp_unidentified_archaeon
+|   |     |     |  |     |     |     |     +--| (83)
+|   |     |     |  |     |     |     |        |            +--Archaea_Aigarchaeota_candidate_division_pSL4_archaeon_JGI_0000001-A7_GBS-A_001_112
+|   |     |     |  |     |     |     |        |         +--| (100)
+|   |     |     |  |     |     |     |        |         |  +**Archaea_Aigarchaeota_candidate_division_pSL4_archaeon_SCGC_AAA471-E14_Combined_Assembly_pSL4_3__pSL4
+|   |     |     |  |     |     |     |        |      +--| (100)
+|   |     |     |  |     |     |     |        |      |  |        +**Archaea_Aigarchaeota_candidate_division_pSL4_archaeon_SCGC_AAA471-B22_Combined_Assembly_pSL4_1__pSL4
+|   |     |     |  |     |     |     |        |      |  |     +**| (60)
+|   |     |     |  |     |     |     |        |      |  |     |  +**Archaea_CP_pSL4_candidate_division_pSL4_archaeon_JGI_0000001-H6_GBS-A_001_118
+|   |     |     |  |     |     |     |        |      |  |  +--| (99)
+|   |     |     |  |     |     |     |        |      |  |  |  +--Archaea_Aigarchaeota_candidate_division_pSL4_archaeon_SCGC_AAA471-B22_GBS-N_002_4
+|   |     |     |  |     |     |     |        |      |  +--| (100)
+|   |     |     |  |     |     |     |        |      |     +**Archaea_CP_pSL4_candidate_division_pSL4_archaeon_SCGC_AAA471-G05_GBS-N_001_14
+|   |     |     |  |     |     |     |        |   +--| (99)
+|   |     |     |  |     |     |     |        |   |  +--Archaea_Thaumarchaeota_unclassified_Thaumarchaeota_Candidatus_Caldiarchaeum_subterraneum
+|   |     |     |  |     |     |     |        +---| (100)
+|   |     |     |  |     |     |     |            |                      +--ASPF01000030_Root_Archaea_Aigarchaeota_Aigarchaeota_Incertae_Sedis_Unknown_Order_Unknown_Family_Candidatus_Caldiarchaeum_Aigarchaeota_archaeon_JGI_0000106-J15
+|   |     |     |  |     |     |     |            +----------------------| (100)
+|   |     |     |  |     |     |     |                                   +--Archaea_Aigarchaeota_candidate_division_pSL4_archaeon_JGI_0000106-J15_GBS-C_001_288
+|   |     |     |  |     |     |  +--| (70)
+|   |     |     |  |     |     |  |  |     +------ADKI01000120_Root_Archaea_Bathyarchaeota_hot_springs_metagenome
+|   |     |     |  |     |     |  |  |  +--| (91)
+|   |     |     |  |     |     |  |  |  |  |        +**HK242026_Root_Archaea_Crenarchaeota_Thermoprotei_Thermoproteales_Thermofilaceae_Thermofilum_unidentified
+|   |     |     |  |     |     |  |  |  |  |     +--| (100)
+|   |     |     |  |     |     |  |  |  |  |     |  +**Archaea_Crenarchaeota_Thermoprotei_Thermoproteales_Thermofilaceae_Thermofilum_Thermofilum_pendens_Hrk_5
+|   |     |     |  |     |     |  |  |  |  |  +--| (97)
+|   |     |     |  |     |     |  |  |  |  |  |  |           +--Archaea_Crenarchaeota_Thermoprotei_Thermoproteales_Archaea_Crenarchaeota_Thermoprotei_Thermoproteales_YNP_Site_4_Thermoproteales_Type_II
+|   |     |     |  |     |     |  |  |  |  |  |  |        +--| (100)
+|   |     |     |  |     |     |  |  |  |  |  |  |        |  |  +--Archaea_Crenarchaeota_Thermoprotei_Thermoproteales_Thermoproteaceae_Pyrobaculum_aerophilum_IM2
+|   |     |     |  |     |     |  |  |  |  |  |  |        |  +--| (100)
+|   |     |     |  |     |     |  |  |  |  |  |  |        |     +--Archaea_Crenarchaeota_Thermoprotei_Thermoproteales_Thermoproteaceae_Thermoproteus_Thermoproteus_neutrophilus_V24Sta
+|   |     |     |  |     |     |  |  |  |  |  |  |     +--| (100)
+|   |     |     |  |     |     |  |  |  |  |  |  |     |  +--Archaea_Crenarchaeota_Thermoprotei_Thermoproteales_Thermoproteaceae_Thermoproteus_Thermoproteus_uzoniensis_768-20
+|   |     |     |  |     |     |  |  |  |  |  |  |  +--| (99)
+|   |     |     |  |     |     |  |  |  |  |  |  |  |  +--Archaea_Crenarchaeota_Thermoprotei_Thermoproteales_Thermoproteaceae_Vulcanisaeta_Vulcanisaeta_distributa_DSM_14429
+|   |     |     |  |     |     |  |  |  |  |  |  +--| (100)
+|   |     |     |  |     |     |  |  |  |  |  |     +--Archaea_Crenarchaeota_Thermoprotei_Thermoproteales_Thermoproteaceae_Caldivirga_Caldivirga_maquilingensis_IC-167
+|   |     |     |  |     |     |  |  |  |  +--| (94)
+|   |     |     |  |     |     |  |  |  |     |                    +--Archaea_Crenarchaeota_Thermoprotei_Acidilobales_Acidilobaceae_Acidilobus_Acidilobus_saccharovorans_345-15
+|   |     |     |  |     |     |  |  |  |     |                 +--| (99)
+|   |     |     |  |     |     |  |  |  |     |                 |  +----Archaea_Crenarchaeota_Thermoprotei_Acidilobales_Caldisphaeraceae_Caldisphaera_lagunensis_IC-154
+|   |     |     |  |     |     |  |  |  |     |              +--| (100)
+|   |     |     |  |     |     |  |  |  |     |              |  |     +--Archaea_Crenarchaeota_Thermoprotei_Desulfurococcales_Site_03_Desulfuro
+|   |     |     |  |     |     |  |  |  |     |              |  |  +--| (99)
+|   |     |     |  |     |     |  |  |  |     |              |  |  |  +--Archaea_Crenarchaeota_Thermoprotei_Desulfurococcales_Site_19_Desulfuro
+|   |     |     |  |     |     |  |  |  |     |              |  +--| (99)
+|   |     |     |  |     |     |  |  |  |     |              |     +--Archaea_Crenarchaeota_Thermoprotei_Desulfurococcales_Site_04_Desulfuro
+|   |     |     |  |     |     |  |  |  |     |           +--| (97)
+|   |     |     |  |     |     |  |  |  |     |           |  |  +--Archaea_Crenarchaeota_Thermoprotei_Desulfurococcales_Pyrodictiaceae_Hyperthermus_Hyperthermus_butylicus_DSM_5456
+|   |     |     |  |     |     |  |  |  |     |           |  +--| (100)
+|   |     |     |  |     |     |  |  |  |     |           |     +--Archaea_Crenarchaeota_Thermoprotei_Desulfurococcales_Pyrodictiaceae_Pyrolobus_fumarii_1A
+|   |     |     |  |     |     |  |  |  |     |        +--| (48)
+|   |     |     |  |     |     |  |  |  |     |        |  |           +--Archaea_Crenarchaeota_Thermoprotei_Desulfurococcales_Desulfurococcaceae_Desulfurococcus_fermentans_Z-1312
+|   |     |     |  |     |     |  |  |  |     |        |  |        +--| (100)
+|   |     |     |  |     |     |  |  |  |     |        |  |        |  +--Archaea_Crenarchaeota_Thermoprotei_Desulfurococcales_Desulfurococcaceae_Thermosphaera_Thermosphaera_aggregans_DSM_11486
+|   |     |     |  |     |     |  |  |  |     |        |  |     +--| (99)
+|   |     |     |  |     |     |  |  |  |     |        |  |     |  +--Archaea_Crenarchaeota_Thermoprotei_Desulfurococcales_Desulfurococcaceae_Thermogladius_Thermogladius_cellulolyticus_1633
+|   |     |     |  |     |     |  |  |  |     |        |  |  +--| (100)
+|   |     |     |  |     |     |  |  |  |     |        |  |  |  +--Archaea_Crenarchaeota_Thermoprotei_Desulfurococcales_Desulfurococcaceae_Staphylothermus_Staphylothermus_hellenicus_DSM_12710
+|   |     |     |  |     |     |  |  |  |     |        |  +--| (100)
+|   |     |     |  |     |     |  |  |  |     |        |     +--Archaea_Crenarchaeota_Thermoprotei_Desulfurococcales_Desulfurococcaceae_Ignicoccus_Ignicoccus_hospitalis_KIN4_I
+|   |     |     |  |     |     |  |  |  |     |     +--| (48)
+|   |     |     |  |     |     |  |  |  |     |     |  |  +--Archaea_Crenarchaeota_Thermoprotei_Desulfurococcales_Desulfurococcaceae_Ignisphaera_Ignisphaera_aggregans_DSM_17230
+|   |     |     |  |     |     |  |  |  |     |     |  +--| (100)
+|   |     |     |  |     |     |  |  |  |     |     |     +--Archaea_Crenarchaeota_Thermoprotei_Desulfurococcales_Desulfurococcaceae_Ingnisphaeroid_species
+|   |     |     |  |     |     |  |  |  |     |  +--| (68)
+|   |     |     |  |     |     |  |  |  |     |  |  |        +--Archaea_Crenarchaeota_Thermoprotei_Sulfolobales_Sulfolobaceae_Acidianus_Acidianus_hospitalis_W1
+|   |     |     |  |     |     |  |  |  |     |  |  |     +--| (100)
+|   |     |     |  |     |     |  |  |  |     |  |  |     |  |  +--Archaea_Crenarchaeota_Thermoprotei_Sulfolobales_Sulfolobales_archaeon_AZ1
+|   |     |     |  |     |     |  |  |  |     |  |  |     |  +--| (93)
+|   |     |     |  |     |     |  |  |  |     |  |  |     |     |  +--Archaea_Crenarchaeota_Thermoprotei_Sulfolobales_Sulfolobaceae_Metallosphaera_Metallosphaera_sedula_DSM_5348
+|   |     |     |  |     |     |  |  |  |     |  |  |     |     +--| (100)
+|   |     |     |  |     |     |  |  |  |     |  |  |     |        +--Archaea_Crenarchaeota_Thermoprotei_Thermoproteales_YNP_14_mk1_myell_like
+|   |     |     |  |     |     |  |  |  |     |  |  |  +--| (99)
+|   |     |     |  |     |     |  |  |  |     |  |  |  |  +--Archaea_Crenarchaeota_Thermoprotei_Sulfolobales_Sulfolobaceae_Sulfolobus_solfataricus_P2
+|   |     |     |  |     |     |  |  |  |     |  |  +--| (100)
+|   |     |     |  |     |     |  |  |  |     |  |     +--Archaea_Crenarchaeota_Thermoprotei_Sulfolobales_Sulfolobales_archaeon_Acd1
+|   |     |     |  |     |     |  |  |  |     +--| (100)
+|   |     |     |  |     |     |  |  |  |        +----Archaea_Crenarchaeota_Thermoprotei_Fervidicoccales_Fervidicoccaceae_Fervidicoccus_Fervidicoccus_fontis_Kam940
+|   |     |     |  |     |     |  |  +--| (90)
+|   |     |     |  |     |     |  |     |          +**Archaea_CP_YNPFFA_candidate_division_YNPFFA_archaeon_SCGC_AAA471-B05_Combined_Assembly_YNPFFA_1__YNPFFA
+|   |     |     |  |     |     |  |     |       +--| (100)
+|   |     |     |  |     |     |  |     |       |  +**Archaea_CP_YNPFFA_candidate_division_YNPFFA_archaeon_SCGC_AAA471-B23_GBS-N_001_5
+|   |     |     |  |     |     |  |     +-------| (100)
+|   |     |     |  |     |     |  |             +--Archaea_Crenarchaeota_Thermoprotei_Sulfolobales_Sulfolobaceae_YNP_08_cren1_8_best_scaffolds
+|   |     |     |  |     |     +--| (100)
+|   |     |     |  |     |        +----------Archaea_Korarchaeota_Candidatus_Korarchaeum_cryptofilum_OPF8
+|   |     |     |  |  +--| (91)
+|   |     |     |  |  |  |  +-----AZIF01000273_Root_Archaea_WSA2_Z7ME43_marine_sediment_metagenome
+|   |     |     |  |  |  +--| (100)
+|   |     |     |  |  |     +---LNJD01000004_Root_Archaea_WSA2_WCHA1-57_Arc_I_group_archaeon_ADurb1113_Bin01801
+|   |     |     |  +--| (89)
+|   |     |     |     |          +--LHYJ01000009_Root_Archaea_MSBL1_candidate_divison_MSBL1_archaeon_SCGC-AAA382N08
+|   |     |     |     |       +--| (100)
+|   |     |     |     |       |  +--LHXV01000006_Root_Archaea_MSBL1_candidate_divison_MSBL1_archaeon_SCGC-AAA259O05
+|   |     |     |     |  +----| (100)
+|   |     |     |     |  |    +--LHYF01000011_Root_Archaea_MSBL1_candidate_divison_MSBL1_archaeon_SCGC-AAA382C18
+|   |     |     |     +--| (100)
+|   |     |     |        |  +--Archaea_Hadesarchaea_archaeon_YNP_45
+|   |     |     |        +--| (100)
+|   |     |     |           +--Archaea_Hadesarchaea_archaeon_YNP_N21
+|   |     |  +--| (32)
+|   |     |  |  |                                       +**CP002988_Root_Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halolamina_halophilic_archaeon_DL31
+|   |     |  |  |                                   +---| (100)
+|   |     |  |  |                                   |   +**Archaea_Euryarchaeota_Halobacteria_halophilic_archaeon_sp._DL31_
+|   |     |  |  |                                +--| (98)
+|   |     |  |  |                                |  |        +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halonotius_sp._A07HN63
+|   |     |  |  |                                |  |     +--| (100)
+|   |     |  |  |                                |  |     |  +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halonotius_sp._J07ABHN4_version_2
+|   |     |  |  |                                |  |  +--| (100)
+|   |     |  |  |                                |  |  |  +--Archaea_uncultured_archaeon_J07ABHN6_version_2
+|   |     |  |  |                                |  +--| (100)
+|   |     |  |  |                                |     +--Archaea_Euryarchaeota_Halobacteria_Haloferacales_Haloferacaceae_Halohasta_litchfieldiae_tADL_
+|   |     |  |  |                             +--| (73)
+|   |     |  |  |                             |  +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Haloplanus_natans_RE_101
+|   |     |  |  |                          +--| (72)
+|   |     |  |  |                          |  |  +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halogeometricum_Halogeometricum_borinquense_DSM_11551
+|   |     |  |  |                          |  +--| (100)
+|   |     |  |  |                          |     +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Haloquadratum_walsbyi_HBSQ001
+|   |     |  |  |                       +--| (96)
+|   |     |  |  |                       |  |        +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_haloarchaeon_3A1_DGR
+|   |     |  |  |                       |  |     +--| (99)
+|   |     |  |  |                       |  |     |  +---Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halorubrum_sp._A07HR60
+|   |     |  |  |                       |  |  +--| (100)
+|   |     |  |  |                       |  |  |  |  +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halorubrum_Halorubrum_lacusprofundi_ATCC_49239
+|   |     |  |  |                       |  |  |  +--| (100)
+|   |     |  |  |                       |  |  |     +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halorubrum_sp._A07HR67
+|   |     |  |  |                       |  +--| (75)
+|   |     |  |  |                       |     +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halogranum_Halogranum_salarium_B-1
+|   |     |  |  |                    +--| (100)
+|   |     |  |  |                    |  |  +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halobaculum_sp._A07HB70
+|   |     |  |  |                    |  +--| (99)
+|   |     |  |  |                    |     +--Archaea_uncultured_halophilic_archaeon_J07ABHX67_version_2
+|   |     |  |  |                 +--| (89)
+|   |     |  |  |                 |  |  +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Haladaptatus_paucihalophilus_DX253
+|   |     |  |  |                 |  +--| (84)
+|   |     |  |  |                 |     |  +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halalkalicoccus_Halalkalicoccus_jeotgali_B3
+|   |     |  |  |                 |     +--| (95)
+|   |     |  |  |                 |        |     +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halopiger_Halopiger_xanaduensis_SH-6
+|   |     |  |  |                 |        |  +--| (97)
+|   |     |  |  |                 |        |  |  |        +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Haloterrigena_Haloterrigena_turkmenica_DSM_5511
+|   |     |  |  |                 |        |  |  |     +--| (100)
+|   |     |  |  |                 |        |  |  |     |  +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Natrinema_pellirubrum_157
+|   |     |  |  |                 |        |  |  |  +--| (100)
+|   |     |  |  |                 |        |  |  |  |  +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Natrialba_Natrialba_magadii_ATCC_43099
+|   |     |  |  |                 |        |  |  +--| (99)
+|   |     |  |  |                 |        |  |     |     +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halostagnicola_larsenii_XH-48
+|   |     |  |  |                 |        |  |     |  +--| (99)
+|   |     |  |  |                 |        |  |     |  |  +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halovivax_ruber_XH-70
+|   |     |  |  |                 |        |  |     +--| (99)
+|   |     |  |  |                 |        |  |        +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Natronococcus_occultus_SP4
+|   |     |  |  |                 |        +--| (100)
+|   |     |  |  |                 |           +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Natronobacterium_gregoryi_SP2
+|   |     |  |  |              +--| (87)
+|   |     |  |  |              |  +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halobacterium_sp._NRC-1
+|   |     |  |  |           +--| (88)
+|   |     |  |  |           |  |        +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halomicrobium_Halomicrobium_mukohataei_DSM_12286
+|   |     |  |  |           |  |     +--| (73)
+|   |     |  |  |           |  |     |  +---Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Haloarcula_marismortui_ATCC_43049
+|   |     |  |  |           |  |  +--| (72)
+|   |     |  |  |           |  |  |  |  +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halorhabdus_Halorhabdus_utahensis_DSM_12940
+|   |     |  |  |           |  |  |  +--| (100)
+|   |     |  |  |           |  |  |     +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halosimplex_Halosimplex_carlsbadense_2-9-1
+|   |     |  |  |           |  +--| (86)
+|   |     |  |  |           |     |     +--Archaea_uncultured_halophilic_archaeon_J07HX5
+|   |     |  |  |           |     |  +--| (100)
+|   |     |  |  |           |     |  |  +--Archaea_uncultured_halophilic_archaeon_J07ABHX64
+|   |     |  |  |           |     +--| (98)
+|   |     |  |  |           |        +---Archaea_Euryarchaeota_Halobacteria_Natrialbales_Natrialbaceae_Salinarchaeum_sp._Harcht-Bsk1
+|   |     |  |  |    +------| (100)
+|   |     |  |  |    |      +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Natronomonas_pharaonis_Gabara
+|   |     |  |  +----| (84)
+|   |     |  |       |             +--Archaea_Nanohaloarchaeota_Nanohaloarchaea_SW_7_Nanohaloarchaea_43_15
+|   |     |  |       |          +--| (100)
+|   |     |  |       |          |  |   +--Archaea_uncultured_halophilic_archaeon_J07A43
+|   |     |  |       |          |  +---| (100)
+|   |     |  |       |          |      +--Archaea_uncultured_halophilic_archaeon_J07AB43_J07NFR43
+|   |     |  |       +----------| (100)
+|   |     |  |                  +--Archaea_Nanohaloarchaeota_Nanohaloarchaea_uncultured_halophilic_archaeon_J0756AB_J07NFR56
+|   |     +--| (100)
+|   |        |        +---------CEPX01004092_Root_Archaea_WSA2_20a-9_marine_metagenome
+|   |        |     +--| (84)
+|   |        |     |  |                            +**JWKX01000012_Root_Archaea_Woesearchaeota_archaeon_GW2011_AR18
+|   |        |     |  |                       +----| (100)
+|   |        |     |  |                       |    +**Archaea_DPANN_Woesearchaeota_AR18_gwa2_scaffold_3934
+|   |        |     |  |                    +--| (96)
+|   |        |     |  |                    |  |          +**AWOH01000005_Root_Archaea_Woesearchaeota_Nanoarchaeota_archaeon_JGI_OTU-2
+|   |        |     |  |                    |  |       +**| (96)
+|   |        |     |  |                    |  |       |  +**Archaea_Nanoarchaeota_candidate_division_DUSEL4_archaeon_SCGC_AAA011-J02_DUSEL_001_207
+|   |        |     |  |                    |  |  +----| (100)
+|   |        |     |  |                    |  |  |    |  +**Archaea_Nanoarchaeota_candidate_division_DUSEL4_archaeon_SCGC_AAA011-G17_DUSEL_001_198
+|   |        |     |  |                    |  |  |    +--| (100)
+|   |        |     |  |                    |  |  |       +**Archaea_Nanoarchaeota_candidate_division_DUSEL4_archaeon_SCGC_AAA011-L22_Combined_Assembly_DUSEL4_1__DUSEL4
+|   |        |     |  |                    |  +--| (96)
+|   |        |     |  |                    |     +------LBSQ01000033_Root_Archaea_Woesearchaeota_Parcubacteria_group_bacterium_GW2011_GWA2_37_10
+|   |        |     |  |                 +--| (91)
+|   |        |     |  |                 |  |      +**CP010426_Root_Archaea_Woesearchaeota_archaeon_GW2011_AR20
+|   |        |     |  |                 |  |  +---| (100)
+|   |        |     |  |                 |  |  |   +--Archaea_DPANN_Woesearchaeota_AR20_gwa2_scaffold_226
+|   |        |     |  |                 |  +--| (100)
+|   |        |     |  |                 |     +------CEPZ01081926_Root_Archaea_Woesearchaeota_marine_metagenome
+|   |        |     |  |              +--| (90)
+|   |        |     |  |              |  |  +----CEQE01026067_Root_Archaea_Woesearchaeota_marine_metagenome
+|   |        |     |  |              |  +--| (82)
+|   |        |     |  |              |     +------CEPZ01014827_Root_Archaea_Woesearchaeota_marine_metagenome
+|   |        |     |  |           +--| (80)
+|   |        |     |  |           |  |     +---AB019750_Root_Archaea_Woesearchaeota_unidentified_archaeon
+|   |        |     |  |           |  |  +--| (100)
+|   |        |     |  |           |  |  |  +--AB019751_Root_Archaea_Woesearchaeota_unidentified_archaeon
+|   |        |     |  |           |  +--| (96)
+|   |        |     |  |           |     |     +**JWKW01000011_Root_Archaea_Woesearchaeota_archaeon_GW2011_AR17
+|   |        |     |  |           |     +-----| (100)
+|   |        |     |  |           |           +**Archaea_DPANN_Woesearchaeota_AR17_gwa2_scaffold_3211
+|   |        |     |  |        +--| (88)
+|   |        |     |  |        |  +----------------AXWI01000002_Root_Archaea_Woesearchaeota_Euryarchaeota_archaeon_SCGC_AAA286-E23
+|   |        |     |  |     +--| (82)
+|   |        |     |  |     |  |           +-----AACY023798300_Root_Archaea_Woesearchaeota_marine_metagenome
+|   |        |     |  |     |  |        +--| (66)
+|   |        |     |  |     |  |        |  |     +**AACY020521239_Root_Archaea_Woesearchaeota_marine_metagenome
+|   |        |     |  |     |  |        |  +-----| (100)
+|   |        |     |  |     |  |        |        +**EK523682_Root_Archaea_Woesearchaeota_marine_metagenome
+|   |        |     |  |     |  |     +--| (64)
+|   |        |     |  |     |  |     |  |               +**JWKV01000003_Root_Archaea_Woesearchaeota_archaeon_GW2011_AR16
+|   |        |     |  |     |  |     |  |           +---| (100)
+|   |        |     |  |     |  |     |  |           |   +**Archaea_DPANN_Woesearchaeota_AR16
+|   |        |     |  |     |  |     |  |        +--| (34)
+|   |        |     |  |     |  |     |  |        |  |      +**JWKT01000043_Root_Archaea_Woesearchaeota_archaeon_GW2011_AR11
+|   |        |     |  |     |  |     |  |        |  +------| (100)
+|   |        |     |  |     |  |     |  |        |         +**Archaea_DPANN_Woesearchaeota_AR11_gwa2_scaffold_153050
+|   |        |     |  |     |  |     |  |     +--| (30)
+|   |        |     |  |     |  |     |  |     |  |  +----Archaea_DPANN_Woesearchaeota_AR4_gwa2_scaffold_3467
+|   |        |     |  |     |  |     |  |     |  +--| (32)
+|   |        |     |  |     |  |     |  |     |     +-------CEQE01050924_Root_Archaea_Woesearchaeota_marine_metagenome
+|   |        |     |  |     |  |     |  |  +--| (25)
+|   |        |     |  |     |  |     |  |  |  |  +---CEPZ01029485_Root_Archaea_Woesearchaeota_marine_metagenome
+|   |        |     |  |     |  |     |  |  |  +--| (97)
+|   |        |     |  |     |  |     |  |  |     +--CEUC01139520_Root_Archaea_Woesearchaeota_marine_metagenome
+|   |        |     |  |     |  |     |  +--| (68)
+|   |        |     |  |     |  |     |     |  +---AACY023772431_Root_Archaea_Woesearchaeota_marine_metagenome
+|   |        |     |  |     |  |     |     +--| (85)
+|   |        |     |  |     |  |     |        +------CEPX01003170_Root_Archaea_Woesearchaeota_marine_metagenome
+|   |        |     |  |     |  |  +--| (97)
+|   |        |     |  |     |  |  |  |     +**CP010425_Root_Archaea_Woesearchaeota_archaeon_GW2011_AR15
+|   |        |     |  |     |  |  |  +-----| (100)
+|   |        |     |  |     |  |  |        +**Archaea_DPANN_Woesearchaeota_AR15_gwa2_scaffold_75
+|   |        |     |  |     |  +--| (96)
+|   |        |     |  |     |     +------AB019749_Root_Archaea_Woesearchaeota_unidentified_archaeon
+|   |        |     |  |  +--| (60)
+|   |        |     |  |  |  |           +--CEPZ01054346_Root_Archaea_Woesearchaeota_marine_metagenome
+|   |        |     |  |  |  +-----------| (100)
+|   |        |     |  |  |              +--Archaea_Euryarchaeota_Euryarchaeota_archaeon_SCGC_AC-312-F18
+|   |        |     |  +--| (100)
+|   |        |     |     |                     +--LAZR01058673_Root_Archaea_Woesearchaeota_marine_sediment_metagenome
+|   |        |     |     |                  +--| (99)
+|   |        |     |     |                  |  |  +--AB019756_Root_Archaea_Woesearchaeota_unidentified_archaeon
+|   |        |     |     |                  |  +--| (97)
+|   |        |     |     |                  |     |  +--JWKU01000011_Root_Archaea_Woesearchaeota_archaeon_GW2011_AR13
+|   |        |     |     |                  |     +--| (100)
+|   |        |     |     |                  |        +**Archaea_DPANN_Pacearchaeota_AR13_gwa2_scaffold_11204
+|   |        |     |     |               +--| (100)
+|   |        |     |     |               |  |   +**ASMP01000002_Root_Archaea_Woesearchaeota_Nanoarchaeota_archaeon_SCGC_AAA011-D5
+|   |        |     |     |               |  +---| (100)
+|   |        |     |     |               |      +--Archaea_CP_DUSEL1_candidate_division_DUSEL1_archaeon_SAG-AAA011-D5_Dusel_001_270
+|   |        |     |     |            +--| (100)
+|   |        |     |     |            |  |     +--LWDU01000111_Root_Archaea_Woesearchaeota_hydrothermal_vent_metagenome
+|   |        |     |     |            |  |  +--| (100)
+|   |        |     |     |            |  |  |  +--AB019753_Root_Archaea_Woesearchaeota_unidentified_archaeon
+|   |        |     |     |            |  +--| (100)
+|   |        |     |     |            |     |   +**LCNU01000021_Root_Archaea_Woesearchaeota_Candidatus_Amesbacteria_bacterium_GW2011_GWC1_47_15
+|   |        |     |     |            |     +---| (100)
+|   |        |     |     |            |         +--LBZX01000012_Root_Archaea_Woesearchaeota_Microgenomates_group_bacterium_GW2011_GWB1_40_9
+|   |        |     |     |       +----| (100)
+|   |        |     |     |       |    |   +--CEUC01125807_Root_Archaea_Woesearchaeota_marine_metagenome
+|   |        |     |     |       |    +---| (100)
+|   |        |     |     |       |        +--AB019752_Root_Archaea_Woesearchaeota_unidentified_archaeon
+|   |        |     |     +-------| (100)
+|   |        |     |             +------Archaea_DPANN_Pacearchaeota_AR6_gwa2_scaffold_2785
+|   |        |  +--| (87)
+|   |        |  |  |                     +--CP010424_Root_Archaea_Diapherotrites_Diapherotrites_Incertae_Sedis_Unknown_Order_Unknown_Family_Candidatus_Iainarchaeum_archaeon_GW2011_AR10
+|   |        |  |  |                 +---| (100)
+|   |        |  |  |                 |   +--Archaea_DPANN_Diapherotrites_AR10_gwa2_scaffold_4532
+|   |        |  |  |              +--| (97)
+|   |        |  |  |              |  |    +**AQRS01000026_Root_Archaea_Diapherotrites_Diapherotrites_Incertae_Sedis_Unknown_Order_Unknown_Family_Candidatus_Iainarchaeum_Candidatus_Iainarchaeum_andersonii_SCGC_AAA011-E11
+|   |        |  |  |              |  +----| (100)
+|   |        |  |  |              |       +**Archaea_Diapherotrites_candidate_division_DUSEL3_archaeon_SCGC_AAA011-E11_DUSEL_001_206
+|   |        |  |  |     +--------| (100)
+|   |        |  |  |     |        |        +**ASMR01000001_Root_Archaea_Diapherotrites_Diapherotrites_Incertae_Sedis_Unknown_Order_Unknown_Family_Candidatus_Iainarchaeum_Diapherotrites_archaeon_SCGC_AAA011-K09
+|   |        |  |  |     |        |  +-----| (100)
+|   |        |  |  |     |        |  |     +**Archaea_Diapherotrites_candidate_division_DUSEL3_archaeon_SCGC_AAA011-K09_DUSEL_001_199
+|   |        |  |  |     |        +--| (97)
+|   |        |  |  |     |           |         +--ASMS01000005_Root_Archaea_Diapherotrites_Diapherotrites_Incertae_Sedis_Unknown_Order_Unknown_Family_Candidatus_Iainarchaeum_Diapherotrites_archaeon_SCGC_AAA011-N19
+|   |        |  |  |     |           +---------| (100)
+|   |        |  |  |     |                     +--Archaea_Diapherotrites_candidate_division_DUSEL3_archaeon-SAG-AAA011-N19_DUSEL_002_272
+|   |        |  |  |  +--| (100)
+|   |        |  |  |  |  |  +------AB019748_Root_Archaea_Diapherotrites_unidentified_archaeon
+|   |        |  |  |  |  +--| (100)
+|   |        |  |  |  |     +------AB019734_Root_Archaea_Diapherotrites_unidentified_archaeon
+|   |        |  |  +--| (87)
+|   |        |  |     |  +----------AB019747_Root_Archaea_Miscellaneous_Euryarchaeotic_Group_unidentified_archaeon
+|   |        |  |     +--| (100)
+|   |        |  |        +--------------AUZZ01000673_Root_Archaea_Parvarchaeota_Parvarchaeota_Incertae_Sedis_Unknown_Order_Unknown_Family_Candidatus_Micrarchaeum_mine_drainage_metagenome
+|   |        +--| (35)
+|   |           |               +--Archaea_Euryarchaeota_Altiarchaeales_Altiarchaeum_BJP_IG2157_Altiarchaeum_SM1_33_3500
+|   |           |    +----------| (100)
+|   |           |    |          +--Archaea_Euryarchaeota_Altiarchaeales_Altiarchaeum_hamiconexum
+|   |           +----| (100)
+|   |                +-----Archaea_Euryarchaeota_Altiarchaeales_Altiarchaeum_IMC4
++---| (100)
+    +--------CEPX01178203_Root_Archaea_Aenigmarchaeota_Deep_Sea_Euryarchaeotic_Group_marine_metagenome
+
+Tree in newick format:
+
+(JWKQ01000002_Root_Archaea_Aenigmarchaeota_Deep_Sea_Euryarchaeotic_Group_archaeon_GW2011_AR5:0.0000022281,Archaea_DPANN_Aenigmarchaeota_AR5_:0.0121380797,((AB019743_Root_Archaea_Aenigmarchaeota_Deep_Sea_Euryarchaeotic_Group_unidentified_archaeon:0.1258649832,((AGBK01001752_Root_Archaea_Aenigmarchaeota_Deep_Sea_Euryarchaeotic_Group_hypersaline_lake_metagenome:0.2426794049,((ASMO01000004_Root_Archaea_Aenigmarchaeota_Deep_Sea_Euryarchaeotic_Group_Candidatus_Aenigmarchaeota_archaeon_JGI_0000106-F11:0.0001032628,Archaea_Aenigmarchaeota_archaeon_JGI_0000106-F11_GBS-C_001_281_JGI-named_Eury_DHVEG:0.0019850693)100:0.1914079696,(ASMQ01000007_Root_Archaea_Aenigmarchaeota_Aenigmarchaeota_Incertae_Sedis_Unknown_Order_Unknown_Family_Candidatus_Aenigmarchaeum_Candidatus_Aenigmarchaeum_subterraneum_SCGC_AAA011-O16:0.0039417791,Archaea_Aenigmarchaeota_Candidatus_Aenigmarchaeum_subterraneum_archaeon-SAG-AAA011-O16_Dusel_001_271:0.0000026816)100:0.2913298998)59:0.0494622749)55:0.0130994180,(((((((AB019754_Root_Archaea_Marine_Benthic_Group_E_unidentified_archaeon:0.1433159339,CESR01131454_Root_Archaea_Marine_Benthic_Group_E_marine_metagenome:0.1567777976)100:0.0890023198,((((((AB269873_Root_Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Thermoplasmatales_Incertae_Sedis_Thermogymnomonas_Thermogymnomonas_acidicola:0.0579262944,(ACXJ01010163_Root_Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Thermoplasmataceae_Thermoplasma_mine_drainage_metagenome:0.0477578700,ACXJ01011147_Root_Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Thermoplasmataceae_Thermoplasma_mine_drainage_metagenome:0.0682557498)100:0.0194763599)100:0.0119734531,((M38637_Root_Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Thermoplasmataceae_Thermoplasma_Thermoplasma_acidophilum:0.0000024056,Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Thermoplasmataceae_Thermoplasma_acidophilum_DSM_1728:0.0000024056)100:0.0093965184,AF339746_Root_Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Thermoplasmataceae_Thermoplasma_Thermoplasma_volcanium:0.0113302980)100:0.0692290906)97:0.0083314527,((AE017261_Root_Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Picrophilaceae_Picrophilus_Picrophilus_torridus_DSM_9790:0.0000024056,Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Picrophilaceae_Picrophilus_torridus_DSM_9790:0.0000024056)100:0.0348035293,Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Ferroplasmaceae_Ferroplasma_acidarmanus_Fer1:0.1122703772)100:0.0475420489)100:0.0833521621,ACXM01000006_Root_Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_BSLdp215_Thermoplasmatales_archaeon_I-plasma:0.1657762140)100:0.0598985845,(AB019742_Root_Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Deep_Sea_Hydrothermal_Vent_Gp_2_Candidatus_Aciduliprofundum_unidentified_archaeon:0.0101734865,Archaea_Euryarchaeotaunclassified_Euryarchaeota_Aciduliprofundum_Aciduliprofundum_boonei_T469:0.0233019206)100:0.0996312168)100:0.0884445502,(((((((KF697737_Root_Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Thermoplasmatales_Incertae_Sedis_Candidatus_Methanomethylophilus_methanogenic_archaeon_mixed_culture_ISO4-G11:0.0373564666,Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Thermoplasmatales_archaeon_BRNA1:0.0115253572)100:0.0173749535,KJ522703_Root_Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Thermoplasmatales_Incertae_Sedis_Candidatus_Methanomethylophilus_Candidatus_Methanomethylophilus_alvus:0.0861573666)100:0.0444733212,GQ339877_Root_Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Thermoplasmatales_Incertae_Sedis_methanogenic_archaeon_WGK1:0.0406839498)100:0.0766404752,Archaea_Euryarchaeota_Methanomicrobiaunclassified_Methanomicrobia_Methanomassiliicoccus_Candidatus_Methanomassiliicoccus_intestinalis_Issoire-Mx1:0.0835260156)100:0.0514381967,AUZY01010495_Root_Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Terrestrial_Miscellaneous_Gp_mine_drainage_metagenome:0.2407214274)98:0.0243766908,(((Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_archaeon_SCGC_AB-540-F20:0.0414706438,Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Thermoplasmatales_archaeon_SCGC_AB-539-C06:0.0273356489)100:0.0190347727,Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Thermoplasmatales_archaeon_SCGC_AB-539-N05:0.0468672689)100:0.1437363444,Archaea_Thaumarchaeota_unclassified_Thaumarchaeota_Marine_Group_I_Marine_Group_III_euryarchaeote_sp._SCGC_AAA288-E19:0.2114148956)100:0.0368244826)96:0.0240998955,(Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmata_archaeon_JGI_0000113-B15:0.1526056043,Archaea_Euryarchaeota_unclassified_Euryarchaeota_Marine_Group_II_uncultured_marine_group_II_euryarchaeote:0.1186889833)100:0.1427726313)97:0.0480840885)100:0.1029683647)63:0.0270948963,((((((((HI592314_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanomicrobiaceae_Methanoculleus_Methanoculleus_marisnigri:0.0336999555,(AJ831069_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanomicrobiaceae_Methanoculleus_unidentified_archaeon:0.0164137310,Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanomicrobiaceae_Methanoculleus_Methanoculleus_bourgensis_MS2:0.0074856675)100:0.0064635087)100:0.0070490828,(DQ787475_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanomicrobiaceae_Methanoculleus_Methanoculleus_receptaculi:0.0066286199,GU129124_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanomicrobiaceae_Methanoculleus_Methanomicrobiaceae_archaeon_29aM:0.0074402068)100:0.0074391058)100:0.0138626649,KM111599_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanomicrobiaceae_Methanoculleus_Methanoculleus_taiwanensis:0.0197092028)100:0.0124325777,(Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanomicrobiaceae_Methanomicrobium_mobile_BP:0.0477662296,Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanomicrobiaceae_Methanoplanus_Methanoplanus_petrolearius_DSM_11571:0.0358582972)100:0.0451283860)100:0.0096762221,(((((AB479390_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanoregulaceae_Methanoregula_Methanoregula_formicica_SMSP:0.0170164002,EU887810_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanoregulaceae_Methanoregula_Methanoregula_boonei:0.0290676969)100:0.0103561346,Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanoregulaceae_Methanoregula_Candidatus_Methanoregula_boonei_6A8:0.0218677868)100:0.0359453085,((LNQE01001524_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanoregulaceae_Methanolinea_hydrocarbon_metagenome:0.0194421518,Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanoregulaceae_Methanolinea_tarda_NOBI-1:0.0298843532)100:0.0111285076,Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanospirillaceae_Methanospirillum_hungatei_JF-1:0.1088551346)98:0.0094802911)98:0.0130519198,(Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanoregulaceae_Methanosphaerula_Candidatus_Methanosphaerula_palustris_E1-9c:0.0286134880,Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanocorpusculaceae_Methanocorpusculum_Methanocorpusculum_labreanum_Z:0.1921176021)68:0.0130217508)100:0.0230887279,Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanomicrobiaceae_Methanofollis_liminatans_GKZPZ:0.0714389031)100:0.0103685802)100:0.1186723116,Archaea_Euryarchaeota_Methanomicrobia_Methanocellales_Methanoflorens_stordalenmirensis_Draft_v4.3.2:0.1148559118)90:0.0289504172,((JAHE01027406_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_Methanosaetaceae_Methanosaeta_sediment_metagenome:0.1991579393,((((DQ787474_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_Methermicoccaceae_Methermicoccus_Methermicoccus_shengliensis:0.0039846210,Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_Methermicoccaceae_Methermicoccus_shengliensis_DSM_18856:0.0014633125)100:0.0875778383,((((((CP003083_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_Methanosarcinaceae_Methanolobus_Methanolobus_psychrophilus_R15:0.0000021916,Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_Methanosarcinaceae_Methanolobus_Methanolobus_psychrophilus_R15:0.0000024056)100:0.0314886281,Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_Methanosarcinaceae_Methanosarcina_barkeri_Fusaro:0.0662880725)67:0.0129940746,Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_Methanosarcinaceae_Methanomethylovorans_hollandica_DSM_15978:0.0303212604)95:0.0157889455,(Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_Methanosarcinaceae_Methanococcoides_burtonii_DSM_6242:0.0351334261,Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_Methanosarcinaceae_Methanohalophilus_Methanohalophilus_mahii_DSM_5219:0.0396309792)100:0.0136019527)95:0.0202699245,Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_Methanosarcinaceae_Methanosalsum_zhilinae_WeN5:0.0287215908)32:0.0115900708,Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_Methanosarcinaceae_Methanohalobium_Methanohalobium_evestigatum_Z-7303:0.0537889626)100:0.0625409381)37:0.0086766723,Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_Methanosaetaceae_Methanosaeta_Methanosaeta_thermophila_PT:0.1244604398)75:0.0166699959,Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_ANME2D:0.1190964655)92:0.0341529589)98:0.0248892719,((AB196288_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanocellales_Methanocellaceae_Methanocella_Methanocella_paludicola_SANAE:0.0326711646,JN048683_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanocellales_Methanocellaceae_Methanocella_Methanocella_conradii_HZ254:0.0335855499)100:0.0433495955,(AM114193_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanocellales_Methanocellaceae_Methanocella_Methanocella_arvoryzae_MRE50:0.0009821685,Archaea_Euryarchaeota_Methanomicrobia_Methanocellales_Methanocellaceae_Methanocella_sp._RC-I_Manual_curation_by_Zhe_Lv:0.0036390205)100:0.0367029183)100:0.1528896350)77:0.0171454732)97:0.0580949325,(AB019759_Root_Archaea_Euryarchaeota_Methanomicrobia_ANME-1_ANME-1a_unidentified_archaeon:0.0526212466,AB019758_Root_Archaea_Euryarchaeota_Methanomicrobia_ANME-1_ANME-1a_unidentified_archaeon:0.0177874104)100:0.1730158730)97:0.0743865400)63:0.0060853234,Archaea_Lokiarchaeota_SMTZ-76-7:0.4779731563)54:0.0173946288,(((((((X15364_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanothermobacter_Methanothermobacter_marburgensis:0.0088581239,Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanothermobacter_thermautotrophicus_Delta_H:0.0045376880)100:0.0141796911,(GU129103_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanobacteriaceae_archaeon_15aZ:0.0142238366,((((HQ110085_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanobacterium_Methanobacterium_lacus:0.0140965504,GQ906568_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanobacterium_Methanobacterium_bryantii:0.0417740547)92:0.0068863390,(JF812256_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanobacterium_Methanobacterium_movilense:0.0164450851,Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanobacterium_Methanobacterium_sp_SWAN-1:0.0233070198)82:0.0049332373)92:0.0217791242,AY386124_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanobacterium_Methanobacterium_aarhusense:0.0186542868)29:0.0096416490,(((KC608769_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanobrevibacter_Methanobrevibacter_boviskoreani_JH1:0.0594697718,Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanobrevibacter_Methanobrevibacter_smithii_PS_ATCC_35061:0.0358706538)100:0.0193758230,(LWMW01000084_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanobrevibacter_Methanobrevibacter_cuticularis:0.0162945265,(LWMT01000072_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanobrevibacter_Methanobrevibacter_filiformis:0.0300600149,(HK556489_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanobrevibacter_unidentified:0.0201682636,D64027_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanobrevibacter_unidentified_Methanobacteriales:0.0575622385)89:0.0067107662)89:0.0068391898)91:0.0077949942)94:0.0182220766,(AF029202_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanosphaera_unidentified_methanogen_ARC17:0.0225154015,Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanosphaera_stadtmanae_DSM_3091:0.0258923469)100:0.0846834158)94:0.0277303157)100:0.0277114214)98:0.0166814817)100:0.0979000044,(HE654004_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanothermaceae_Methanothermus_Methanothermus_sociabilis:0.0085445050,Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanothermaceae_Methanothermus_Methanothermus_fervidus_DSM_2088:0.0025492555)100:0.0562973398)100:0.0791052671,(((((AB546258_Root_Archaea_Euryarchaeota_Methanococci_Methanococcales_Methanococcaceae_Methanococcus_Methanococcus_maripaludis:0.0000024056,Archaea_Euryarchaeota_Methanococci_Methanococcales_Methanococcaceae_Methanococcus_Methanococcus_maripaludis_S2:0.0000024056)100:0.0580750429,Archaea_Euryarchaeota_Methanococci_Methanococcales_Methanococcaceae_Methanothermococcus_Methanothermococcus_okinawensis_IH1:0.0339235192)100:0.0863497681,Archaea_Euryarchaeota_Methanococci_Methanococcales_Methanocaldococcaceae_Methanotorris_Methanotorris_igneus_Kol_5:0.0126473604)100:0.0360161870,Archaea_Euryarchaeota_Methanococci_Methanococcales_Methanocaldococcaceae_Methanocaldococcus_jannaschii_DSM_2661:0.0472900982)100:0.1145862575,Archaea_Euryarchaeota_Methanopyri_Methanopyrales_Methanopyraceae_Methanopyrus_kandleri_AV19:0.1988764620)55:0.0100213625)48:0.0179588184,((((((AJ291811_Root_Archaea_Euryarchaeota_Thermococci_Thermococcales_Thermococcaceae_Thermococcus_Thermococcus_pacificus:0.0150674570,Archaea_Euryarchaeota_Thermococci_Thermococcales_Thermococcaceae_Thermococcus_kodakarensis_KOD1:0.0072041801)98:0.0115189761,Archaea_Euryarchaeota_Thermococci_Thermococcales_Thermococcaceae_Pyrococcus_furiosus_DSM_3638:0.0220529101)98:0.0091130478,(LANF01000002_Root_Archaea_Euryarchaeota_Thermococci_Thermococcales_Thermococcaceae_Palaeococcus_Palaeococcus_ferrophilus_DSM_13482:0.0357150116,(HQ696462_Root_Archaea_Euryarchaeota_Thermococci_Thermococcales_Thermococcaceae_Palaeococcus_Palaeococcus_pacificus_DY20341:0.0010199382,Archaea_Euryarchaeota_Thermococci_Thermococcales_Thermococcaceae_Palaeococcus_Palaeococcus_pacificus_DY20341:0.0019843299)100:0.0035455478)100:0.0297021146)100:0.0723040850,Archaea_Nanoarchaeota_Nanoarchaeum_equitans_Kin4-M:0.3568756623)88:0.0263175639,(((CP006577_Root_Archaea_Euryarchaeota_Archaeoglobi_Archaeoglobales_Archaeoglobaceae_Archaeoglobus_Archaeoglobus_fulgidus_DSM_8774:0.0040646408,Archaea_Euryarchaeota_Archaeoglobi_Archaeoglobales_Archaeoglobaceae_Archaeoglobus_Archaeoglobus_fulgidus_DSM_8774:0.0000022329)94:0.0157236505,AB274307_Root_Archaea_Euryarchaeota_Archaeoglobi_Archaeoglobales_Archaeoglobaceae_Archaeoglobus_Archaeoglobus_infectus:0.0589005362)100:0.0240211746,Archaea_Euryarchaeota_Archaeoglobi_Archaeoglobales_Archaeoglobaceae_Ferroglobus_Ferroglobus_placidus_DSM_10642:0.0206588583)100:0.1397681883)76:0.0225903396,(((((JRER01000597_Root_Archaea_Bathyarchaeota_marine_sediment_metagenome:0.0896344061,LFWY01000019_Root_Archaea_Bathyarchaeota_miscellaneous_Crenarchaeota_group_archaeon_SMTZ-80:0.1965882253)100:0.0202439631,Archaea_Thaumarchaeota_Thaumarcheon_SCGC_AB-539-E09:0.2202745493)99:0.0370128259,((((EU239960_Root_Archaea_Thaumarchaeota_Thaumarchaeota_Incertae_Sedis_Unknown_Order_Unknown_Family_Candidatus_Nitrosocaldus_Candidatus_Nitrosocaldus_yellowstonii:0.0869131811,(Archaea_Thaumarchaeota_Nitrososphaerales_Nitrososphaeraceae_Nitrososphaera_Nitrososphaera_viennensis_EN76:0.0690310822,((((((AB019722_Root_Archaea_Thaumarchaeota_Marine_Group_I_Unknown_Order_Unknown_Family_Candidatus_Nitrosopumilus_unidentified_archaeon:0.0319640996,(Archaea_Thaumarchaeota_Thaumarchaeota_archaeon_SCGC_AB-661-L21:0.0000024056,Archaea_Thaumarchaeota_unclassified_Thaumarchaeota_Marine_Group_I_Marine_Group_I_thaumarchaeote_SCGC_AAA160-J20:0.0000024056)100:0.0012231769)99:0.0070717158,((((AB019725_Root_Archaea_Thaumarchaeota_Marine_Group_I_Unknown_Order_Unknown_Family_Candidatus_Nitrosopumilus_unidentified_archaeon:0.0131156498,Archaea_Thaumarchaeota_Thaumarchaeota_archaeon_SCGC_AAA282-K18:0.0261785793)96:0.0036185574,Archaea_Thaumarchaeota_unclassified_Thaumarchaeota_Marine_Group_I_Marine_Group_I_thaumarchaeote_SCGC_AAA799_N04:0.0062311837)96:0.0037573319,Archaea_Thaumarchaeota_Nitrosopumilales_Nitrosopumilaceae_Nitrosopumilus_Candidatus_Nitrosopumilus_koreensis_AR1:0.0010685856)96:0.0052922204,AB019723_Root_Archaea_Thaumarchaeota_Marine_Group_I_Unknown_Order_Unknown_Family_Candidatus_Nitrosopumilus_unidentified_archaeon:0.0132103628)95:0.0078807080)100:0.0286396792,Archaea_Thaumarchaeota_Cenarchaeales_Cenarchaeaceae_Cenarchaeum_Cenarchaeum_symbiosum_A_:0.0494629818)80:0.0099241271,(((Archaea_Thaumarchaeota_Thaumarchaeota_archaeon_SCGC_AB-663-F14:0.0021558920,Archaea_Thaumarchaeota_unclassified_Thaumarchaeota_Marine_Group_I_Marine_Group_I_thaumarchaeote_sp._SCGC_AAA288-P18:0.0037702266)100:0.0092474023,((Archaea_Thaumarchaeota_Thaumarchaeota_archaeon_SCGC_AB-663-G14:0.0017002496,Archaea_Thaumarchaeota_unclassified_Thaumarchaeota_Marine_Group_I_Marine_Group_I_thaumarchaeote_sp._SCGC_AAA008-P02:0.0140977998)92:0.0023152146,((Archaea_Thaumarchaeota_unclassified_Thaumarchaeota_Marine_Group_I_Marine_Group_I_crenarchaeon_SCGC_AB-629-I23:0.0000024056,Archaea_Thaumarchaeota_unclassified_Thaumarchaeota_Marine_Group_I_Marine_Group_I_thaumarchaeote_SCGC_AAA007-O23_TG_002_783:0.0039607940)72:0.0000026842,Archaea_Thaumarchaeota_unclassified_Thaumarchaeota_Marine_Group_I_Marine_Group_I_crenarchaeote_sp._SCGC_AAA288-I14:0.0000024072)76:0.0000022421)100:0.0138460871)100:0.0270731753,Archaea_Thaumarchaeota_unclassified_Thaumarchaeota_Marine_Group_I_Marine_Group_I_thaumarchaeote_sp._SCGC_AAA008-M21:0.0349298204)100:0.0283478984)94:0.0096862705,Archaea_Thaumarchaeota_CSP1-1:0.0391547102)75:0.0147818178,(AVSQ01000019_Root_Archaea_Thaumarchaeota_Marine_Group_I_Thaumarchaeota_archaeon_MY2:0.0030429235,Archaea_Thaumarchaeota_Thaumarchaeota_archaeon_MY2:0.0000027618)100:0.0479641888)100:0.1527330760)100:0.0784063442)100:0.0527788923,(Archaea_Thaumarchaeota_Thaumarchaeota_archaeon_SCGC_AB-179-E04_GBS-N_001_221:0.0530020230,Archaea_Thaumarchaeota_Thaumarchaeota_archaeon_strain_BS4:0.1434047010)100:0.0396655233)100:0.0423452940,(Archaea_Thaumarchaeota_Thaumarchaeota_archaeon_strain_DS1_Dragon_Thaumarchaeon:0.1499109127,Archaea_Archaea_Lokiarchaeaota_archeaon_Loki:0.3851751660)79:0.0369864456)79:0.0464550147,(AB019733_Root_Archaea_Aigarchaeota_Terrestrial_Hot_Spring_Gp_unidentified_archaeon:0.1326197584,((((Archaea_Aigarchaeota_candidate_division_pSL4_archaeon_JGI_0000001-A7_GBS-A_001_112:0.0010753922,Archaea_Aigarchaeota_candidate_division_pSL4_archaeon_SCGC_AAA471-E14_Combined_Assembly_pSL4_3__pSL4:0.0000029074)100:0.0306992452,(((Archaea_Aigarchaeota_candidate_division_pSL4_archaeon_SCGC_AAA471-B22_Combined_Assembly_pSL4_1__pSL4:0.0000026898,Archaea_CP_pSL4_candidate_division_pSL4_archaeon_JGI_0000001-H6_GBS-A_001_118:0.0000024056)60:0.0000020601,Archaea_Aigarchaeota_candidate_division_pSL4_archaeon_SCGC_AAA471-B22_GBS-N_002_4:0.0010914542)99:0.0010907416,Archaea_CP_pSL4_candidate_division_pSL4_archaeon_SCGC_AAA471-G05_GBS-N_001_14:0.0000021018)100:0.0432900937)100:0.0674914372,Archaea_Thaumarchaeota_unclassified_Thaumarchaeota_Candidatus_Caldiarchaeum_subterraneum:0.0914606148)99:0.0142716093,(ASPF01000030_Root_Archaea_Aigarchaeota_Aigarchaeota_Incertae_Sedis_Unknown_Order_Unknown_Family_Candidatus_Caldiarchaeum_Aigarchaeota_archaeon_JGI_0000106-J15:0.0106253791,Archaea_Aigarchaeota_candidate_division_pSL4_archaeon_JGI_0000106-J15_GBS-C_001_288:0.0150855783)100:0.5974448002)100:0.1131956702)83:0.0340444430)62:0.0135461492)65:0.0159878495,((ADKI01000120_Root_Archaea_Bathyarchaeota_hot_springs_metagenome:0.1896305197,(((HK242026_Root_Archaea_Crenarchaeota_Thermoprotei_Thermoproteales_Thermofilaceae_Thermofilum_unidentified:0.0000028342,Archaea_Crenarchaeota_Thermoprotei_Thermoproteales_Thermofilaceae_Thermofilum_Thermofilum_pendens_Hrk_5:0.0000024755)100:0.0754420304,((((Archaea_Crenarchaeota_Thermoprotei_Thermoproteales_Archaea_Crenarchaeota_Thermoprotei_Thermoproteales_YNP_Site_4_Thermoproteales_Type_II:0.0104668586,(Archaea_Crenarchaeota_Thermoprotei_Thermoproteales_Thermoproteaceae_Pyrobaculum_aerophilum_IM2:0.0098442522,Archaea_Crenarchaeota_Thermoprotei_Thermoproteales_Thermoproteaceae_Thermoproteus_Thermoproteus_neutrophilus_V24Sta:0.0097370401)100:0.0211503281)100:0.0092366217,Archaea_Crenarchaeota_Thermoprotei_Thermoproteales_Thermoproteaceae_Thermoproteus_Thermoproteus_uzoniensis_768-20:0.0117956773)100:0.0560051956,Archaea_Crenarchaeota_Thermoprotei_Thermoproteales_Thermoproteaceae_Vulcanisaeta_Vulcanisaeta_distributa_DSM_14429:0.0178236977)99:0.0123294506,Archaea_Crenarchaeota_Thermoprotei_Thermoproteales_Thermoproteaceae_Caldivirga_Caldivirga_maquilingensis_IC-167:0.0683812603)100:0.0663151761)97:0.0328692818,(((((((Archaea_Crenarchaeota_Thermoprotei_Acidilobales_Acidilobaceae_Acidilobus_Acidilobus_saccharovorans_345-15:0.0247707341,Archaea_Crenarchaeota_Thermoprotei_Acidilobales_Caldisphaeraceae_Caldisphaera_lagunensis_IC-154:0.1358724969)99:0.0122217512,((Archaea_Crenarchaeota_Thermoprotei_Desulfurococcales_Site_03_Desulfuro:0.0020811093,Archaea_Crenarchaeota_Thermoprotei_Desulfurococcales_Site_19_Desulfuro:0.0040420773)99:0.0023032131,Archaea_Crenarchaeota_Thermoprotei_Desulfurococcales_Site_04_Desulfuro:0.0039026025)99:0.0089029383)100:0.0601900070,(Archaea_Crenarchaeota_Thermoprotei_Desulfurococcales_Pyrodictiaceae_Hyperthermus_Hyperthermus_butylicus_DSM_5456:0.0084318735,Archaea_Crenarchaeota_Thermoprotei_Desulfurococcales_Pyrodictiaceae_Pyrolobus_fumarii_1A:0.0390110323)100:0.0141776601)97:0.0120861912,((((Archaea_Crenarchaeota_Thermoprotei_Desulfurococcales_Desulfurococcaceae_Desulfurococcus_fermentans_Z-1312:0.0323012547,Archaea_Crenarchaeota_Thermoprotei_Desulfurococcales_Desulfurococcaceae_Thermosphaera_Thermosphaera_aggregans_DSM_11486:0.0302950704)100:0.0186123719,Archaea_Crenarchaeota_Thermoprotei_Desulfurococcales_Desulfurococcaceae_Thermogladius_Thermogladius_cellulolyticus_1633:0.0341542555)99:0.0071539758,Archaea_Crenarchaeota_Thermoprotei_Desulfurococcales_Desulfurococcaceae_Staphylothermus_Staphylothermus_hellenicus_DSM_12710:0.0189438912)100:0.0142365510,Archaea_Crenarchaeota_Thermoprotei_Desulfurococcales_Desulfurococcaceae_Ignicoccus_Ignicoccus_hospitalis_KIN4_I:0.0664410991)100:0.0242550360)48:0.0073712842,(Archaea_Crenarchaeota_Thermoprotei_Desulfurococcales_Desulfurococcaceae_Ignisphaera_Ignisphaera_aggregans_DSM_17230:0.0228815729,Archaea_Crenarchaeota_Thermoprotei_Desulfurococcales_Desulfurococcaceae_Ingnisphaeroid_species:0.0338413666)100:0.0293275442)48:0.0106152976,(((Archaea_Crenarchaeota_Thermoprotei_Sulfolobales_Sulfolobaceae_Acidianus_Acidianus_hospitalis_W1:0.0426343399,(Archaea_Crenarchaeota_Thermoprotei_Sulfolobales_Sulfolobales_archaeon_AZ1:0.0584180420,(Archaea_Crenarchaeota_Thermoprotei_Sulfolobales_Sulfolobaceae_Metallosphaera_Metallosphaera_sedula_DSM_5348:0.0308019331,Archaea_Crenarchaeota_Thermoprotei_Thermoproteales_YNP_14_mk1_myell_like:0.0180818720)100:0.0642736807)93:0.0200381359)100:0.0360290405,Archaea_Crenarchaeota_Thermoprotei_Sulfolobales_Sulfolobaceae_Sulfolobus_solfataricus_P2:0.0803357102)99:0.0097572665,Archaea_Crenarchaeota_Thermoprotei_Sulfolobales_Sulfolobales_archaeon_Acd1:0.0591117440)100:0.0855669900)68:0.0078267312,Archaea_Crenarchaeota_Thermoprotei_Fervidicoccales_Fervidicoccaceae_Fervidicoccus_Fervidicoccus_fontis_Kam940:0.1340405023)100:0.0404117843)94:0.0269165539)91:0.0266555118,((Archaea_CP_YNPFFA_candidate_division_YNPFFA_archaeon_SCGC_AAA471-B05_Combined_Assembly_YNPFFA_1__YNPFFA:0.0000024173,Archaea_CP_YNPFFA_candidate_division_YNPFFA_archaeon_SCGC_AAA471-B23_GBS-N_001_5:0.0000024056)100:0.0681657322,Archaea_Crenarchaeota_Thermoprotei_Sulfolobales_Sulfolobaceae_YNP_08_cren1_8_best_scaffolds:0.0804375223)100:0.2054682762)90:0.0186111209)70:0.0349246014,Archaea_Korarchaeota_Candidatus_Korarchaeum_cryptofilum_OPF8:0.2927717598)100:0.0981216205)57:0.0202971613)94:0.0562737154,(AZIF01000273_Root_Archaea_WSA2_Z7ME43_marine_sediment_metagenome:0.1524061459,LNJD01000004_Root_Archaea_WSA2_WCHA1-57_Arc_I_group_archaeon_ADurb1113_Bin01801:0.1167477721)100:0.0869401908)91:0.0215755079,(((LHYJ01000009_Root_Archaea_MSBL1_candidate_divison_MSBL1_archaeon_SCGC-AAA382N08:0.0547510782,LHXV01000006_Root_Archaea_MSBL1_candidate_divison_MSBL1_archaeon_SCGC-AAA259O05:0.0602707542)100:0.0207686074,LHYF01000011_Root_Archaea_MSBL1_candidate_divison_MSBL1_archaeon_SCGC-AAA382C18:0.0480842984)100:0.1474910827,(Archaea_Hadesarchaea_archaeon_YNP_45:0.0847982240,Archaea_Hadesarchaea_archaeon_YNP_N21:0.0807984886)100:0.0492889216)100:0.0919540813)89:0.0390040962)35:0.0226078909,(((((((((((CP002988_Root_Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halolamina_halophilic_archaeon_DL31:0.0000026117,Archaea_Euryarchaeota_Halobacteria_halophilic_archaeon_sp._DL31_:0.0000024056)100:0.1171162580,(((Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halonotius_sp._A07HN63:0.0101757308,Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halonotius_sp._J07ABHN4_version_2:0.0515945581)100:0.0073037269,Archaea_uncultured_archaeon_J07ABHN6_version_2:0.0110999152)100:0.0521447547,Archaea_Euryarchaeota_Halobacteria_Haloferacales_Haloferacaceae_Halohasta_litchfieldiae_tADL_:0.0315493114)100:0.0884097339)98:0.0344490696,Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Haloplanus_natans_RE_101:0.0814554088)73:0.0180995412,(Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halogeometricum_Halogeometricum_borinquense_DSM_11551:0.0426797352,Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Haloquadratum_walsbyi_HBSQ001:0.0882735132)100:0.0332847118)72:0.0225222724,(((Archaea_Euryarchaeota_Halobacteria_Halobacteriales_haloarchaeon_3A1_DGR:0.0524891486,Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halorubrum_sp._A07HR60:0.1155826352)99:0.0143486438,(Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halorubrum_Halorubrum_lacusprofundi_ATCC_49239:0.0311720357,Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halorubrum_sp._A07HR67:0.0382818879)100:0.0309544267)100:0.0728164044,Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halogranum_Halogranum_salarium_B-1:0.0651022119)75:0.0128504203)96:0.0239877417,(Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halobaculum_sp._A07HB70:0.0801407240,Archaea_uncultured_halophilic_archaeon_J07ABHX67_version_2:0.0899701358)99:0.0291791109)100:0.0376928140,(Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Haladaptatus_paucihalophilus_DX253:0.0890815413,(Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halalkalicoccus_Halalkalicoccus_jeotgali_B3:0.0607645781,((Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halopiger_Halopiger_xanaduensis_SH-6:0.0491744487,(((Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Haloterrigena_Haloterrigena_turkmenica_DSM_5511:0.0190936793,Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Natrinema_pellirubrum_157:0.0208111716)100:0.0129830381,Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Natrialba_Natrialba_magadii_ATCC_43099:0.0303233808)100:0.0231999749,((Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halostagnicola_larsenii_XH-48:0.0509692928,Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halovivax_ruber_XH-70:0.0376181840)99:0.0113200777,Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Natronococcus_occultus_SP4:0.0459195085)99:0.0264777062)99:0.0055060746)97:0.0097853713,Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Natronobacterium_gregoryi_SP2:0.0488790708)100:0.0358737169)95:0.0111471450)84:0.0183403357)89:0.0121406870,Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halobacterium_sp._NRC-1:0.0842412903)87:0.0155380376,(((Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halomicrobium_Halomicrobium_mukohataei_DSM_12286:0.0393343684,Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Haloarcula_marismortui_ATCC_43049:0.1222652960)73:0.0187986428,(Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halorhabdus_Halorhabdus_utahensis_DSM_12940:0.0484952548,Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halosimplex_Halosimplex_carlsbadense_2-9-1:0.0535539952)100:0.0196899181)72:0.0091381483,((Archaea_uncultured_halophilic_archaeon_J07HX5:0.0432275208,Archaea_uncultured_halophilic_archaeon_J07ABHX64:0.0694695833)100:0.0222936481,Archaea_Euryarchaeota_Halobacteria_Natrialbales_Natrialbaceae_Salinarchaeum_sp._Harcht-Bsk1:0.1127474466)98:0.0256111288)86:0.0160528550)88:0.0254609834,Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Natronomonas_pharaonis_Gabara:0.0600835494)100:0.1883664926,((Archaea_Nanohaloarchaeota_Nanohaloarchaea_SW_7_Nanohaloarchaea_43_15:0.0759026393,(Archaea_uncultured_halophilic_archaeon_J07A43:0.0086954462,Archaea_uncultured_halophilic_archaeon_J07AB43_J07NFR43:0.0026500865)100:0.1046276541)100:0.0369113328,Archaea_Nanohaloarchaeota_Nanohaloarchaea_uncultured_halophilic_archaeon_J0756AB_J07NFR56:0.0957517342)100:0.2972793749)84:0.1413580910)32:0.0240655771,(((CEPX01004092_Root_Archaea_WSA2_20a-9_marine_metagenome:0.2685223836,(((((((((JWKX01000012_Root_Archaea_Woesearchaeota_archaeon_GW2011_AR18:0.0000023428,Archaea_DPANN_Woesearchaeota_AR18_gwa2_scaffold_3934:0.0000027717)100:0.1359773573,(((AWOH01000005_Root_Archaea_Woesearchaeota_Nanoarchaeota_archaeon_JGI_OTU-2:0.0000020580,Archaea_Nanoarchaeota_candidate_division_DUSEL4_archaeon_SCGC_AAA011-J02_DUSEL_001_207:0.0000022132)96:0.0000023647,(Archaea_Nanoarchaeota_candidate_division_DUSEL4_archaeon_SCGC_AAA011-G17_DUSEL_001_198:0.0000024056,Archaea_Nanoarchaeota_candidate_division_DUSEL4_archaeon_SCGC_AAA011-L22_Combined_Assembly_DUSEL4_1__DUSEL4:0.0000024056)100:0.0009499620)100:0.1384833394,LBSQ01000033_Root_Archaea_Woesearchaeota_Parcubacteria_group_bacterium_GW2011_GWA2_37_10:0.1898899595)96:0.0368765996)96:0.0145971371,((CP010426_Root_Archaea_Woesearchaeota_archaeon_GW2011_AR20:0.0000027626,Archaea_DPANN_Woesearchaeota_AR20_gwa2_scaffold_226:0.0097091553)100:0.1192782612,CEPZ01081926_Root_Archaea_Woesearchaeota_marine_metagenome:0.1763377447)100:0.0695183359)91:0.0190249637,(CEQE01026067_Root_Archaea_Woesearchaeota_marine_metagenome:0.1354620191,CEPZ01014827_Root_Archaea_Woesearchaeota_marine_metagenome:0.1901535562)82:0.0320847803)90:0.0295684348,((AB019750_Root_Archaea_Woesearchaeota_unidentified_archaeon:0.1172562762,AB019751_Root_Archaea_Woesearchaeota_unidentified_archaeon:0.0802988398)100:0.0995162148,(JWKW01000011_Root_Archaea_Woesearchaeota_archaeon_GW2011_AR17:0.0000020349,Archaea_DPANN_Woesearchaeota_AR17_gwa2_scaffold_3211:0.0000024056)100:0.1585589214)96:0.0471599958)80:0.0065570373,AXWI01000002_Root_Archaea_Woesearchaeota_Euryarchaeota_archaeon_SCGC_AAA286-E23:0.4490858520)88:0.0207923281,((((AACY023798300_Root_Archaea_Woesearchaeota_marine_metagenome:0.1627424508,(AACY020521239_Root_Archaea_Woesearchaeota_marine_metagenome:0.0000029046,EK523682_Root_Archaea_Woesearchaeota_marine_metagenome:0.0000024056)100:0.1675073202)66:0.0333879158,(((((JWKV01000003_Root_Archaea_Woesearchaeota_archaeon_GW2011_AR16:0.0000020562,Archaea_DPANN_Woesearchaeota_AR16:0.0000024056)100:0.1166735046,(JWKT01000043_Root_Archaea_Woesearchaeota_archaeon_GW2011_AR11:0.0000024056,Archaea_DPANN_Woesearchaeota_AR11_gwa2_scaffold_153050:0.0000024056)100:0.1895523959)34:0.0342450209,(Archaea_DPANN_Woesearchaeota_AR4_gwa2_scaffold_3467:0.1359443797,CEQE01050924_Root_Archaea_Woesearchaeota_marine_metagenome:0.2242981610)32:0.0418862842)30:0.0201786475,(CEPZ01029485_Root_Archaea_Woesearchaeota_marine_metagenome:0.1247250827,CEUC01139520_Root_Archaea_Woesearchaeota_marine_metagenome:0.0865715845)97:0.0321331433)25:0.0107144043,(AACY023772431_Root_Archaea_Woesearchaeota_marine_metagenome:0.1118665547,CEPX01003170_Root_Archaea_Woesearchaeota_marine_metagenome:0.1988593507)85:0.0370961819)68:0.0125628279)64:0.0097168141,(CP010425_Root_Archaea_Woesearchaeota_archaeon_GW2011_AR15:0.0000026665,Archaea_DPANN_Woesearchaeota_AR15_gwa2_scaffold_75:0.0000024248)100:0.1605003539)97:0.0151075011,AB019749_Root_Archaea_Woesearchaeota_unidentified_archaeon:0.1876864061)96:0.0223721646)82:0.0486646435,(CEPZ01054346_Root_Archaea_Woesearchaeota_marine_metagenome:0.0769173450,Archaea_Euryarchaeota_Euryarchaeota_archaeon_SCGC_AC-312-F18:0.0405324789)100:0.3125745666)60:0.0419687890,(((((LAZR01058673_Root_Archaea_Woesearchaeota_marine_sediment_metagenome:0.0605890025,(AB019756_Root_Archaea_Woesearchaeota_unidentified_archaeon:0.0940017262,(JWKU01000011_Root_Archaea_Woesearchaeota_archaeon_GW2011_AR13:0.0009592140,Archaea_DPANN_Pacearchaeota_AR13_gwa2_scaffold_11204:0.0000025065)100:0.0404133425)97:0.0208029725)99:0.0240862134,(ASMP01000002_Root_Archaea_Woesearchaeota_Nanoarchaeota_archaeon_SCGC_AAA011-D5:0.0000026237,Archaea_CP_DUSEL1_candidate_division_DUSEL1_archaeon_SAG-AAA011-D5_Dusel_001_270:0.0020509376)100:0.1051148973)100:0.0884075068,((LWDU01000111_Root_Archaea_Woesearchaeota_hydrothermal_vent_metagenome:0.0706317731,AB019753_Root_Archaea_Woesearchaeota_unidentified_archaeon:0.0645289556)100:0.0447577135,(LCNU01000021_Root_Archaea_Woesearchaeota_Candidatus_Amesbacteria_bacterium_GW2011_GWC1_47_15:0.0000026927,LBZX01000012_Root_Archaea_Woesearchaeota_Microgenomates_group_bacterium_GW2011_GWB1_40_9:0.0084878051)100:0.1160877804)100:0.0416810880)100:0.0610524634,(CEUC01125807_Root_Archaea_Woesearchaeota_marine_metagenome:0.0594816828,AB019752_Root_Archaea_Woesearchaeota_unidentified_archaeon:0.0635690748)100:0.1095254174)100:0.1480388878,Archaea_DPANN_Pacearchaeota_AR6_gwa2_scaffold_2785:0.1833442850)100:0.2131308592)100:0.0634932273)84:0.0405082165,(((((CP010424_Root_Archaea_Diapherotrites_Diapherotrites_Incertae_Sedis_Unknown_Order_Unknown_Family_Candidatus_Iainarchaeum_archaeon_GW2011_AR10:0.0039751028,Archaea_DPANN_Diapherotrites_AR10_gwa2_scaffold_4532:0.0023727222)100:0.1177899902,(AQRS01000026_Root_Archaea_Diapherotrites_Diapherotrites_Incertae_Sedis_Unknown_Order_Unknown_Family_Candidatus_Iainarchaeum_Candidatus_Iainarchaeum_andersonii_SCGC_AAA011-E11:0.0000027818,Archaea_Diapherotrites_candidate_division_DUSEL3_archaeon_SCGC_AAA011-E11_DUSEL_001_206:0.0000021655)100:0.1301135919)97:0.0329943310,((ASMR01000001_Root_Archaea_Diapherotrites_Diapherotrites_Incertae_Sedis_Unknown_Order_Unknown_Family_Candidatus_Iainarchaeum_Diapherotrites_archaeon_SCGC_AAA011-K09:0.0000023284,Archaea_Diapherotrites_candidate_division_DUSEL3_archaeon_SCGC_AAA011-K09_DUSEL_001_199:0.0000024056)100:0.1589117937,(ASMS01000005_Root_Archaea_Diapherotrites_Diapherotrites_Incertae_Sedis_Unknown_Order_Unknown_Family_Candidatus_Iainarchaeum_Diapherotrites_archaeon_SCGC_AAA011-N19:0.0050176384,Archaea_Diapherotrites_candidate_division_DUSEL3_archaeon-SAG-AAA011-N19_DUSEL_002_272:0.0041263320)100:0.2593335431)97:0.0475953053)100:0.2256838614,(AB019748_Root_Archaea_Diapherotrites_unidentified_archaeon:0.1926089467,AB019734_Root_Archaea_Diapherotrites_unidentified_archaeon:0.1775524023)100:0.0708000519)100:0.0527612945,(AB019747_Root_Archaea_Miscellaneous_Euryarchaeotic_Group_unidentified_archaeon:0.2852962948,AUZZ01000673_Root_Archaea_Parvarchaeota_Parvarchaeota_Incertae_Sedis_Unknown_Order_Unknown_Family_Candidatus_Micrarchaeum_mine_drainage_metagenome:0.3985193649)100:0.0666601889)87:0.0256940757)87:0.0336770693,((Archaea_Euryarchaeota_Altiarchaeales_Altiarchaeum_BJP_IG2157_Altiarchaeum_SM1_33_3500:0.0236535360,Archaea_Euryarchaeota_Altiarchaeales_Altiarchaeum_hamiconexum:0.0154987858)100:0.2751890585,Archaea_Euryarchaeota_Altiarchaeales_Altiarchaeum_IMC4:0.1631863149)100:0.1454665151)35:0.0193742704)100:0.0956545734)100:0.0994947767)100:0.0763742864,CEPX01178203_Root_Archaea_Aenigmarchaeota_Deep_Sea_Euryarchaeotic_Group_marine_metagenome:0.2308652999)100:0.1206484567);
+
+CONSENSUS TREE
+--------------
+
+Consensus tree is constructed from 1000 bootstrap trees
+Log-likelihood of consensus tree: -104683.540787
+Robinson-Foulds distance between ML tree and consensus tree: 14
+
+Branches with support >0.000000% are kept (extended consensus)
+Branch lengths are optimized by maximum likelihood on original alignment
+Numbers in parentheses are bootstrap supports (%)
+
++--JWKQ01000002_Root_Archaea_Aenigmarchaeota_Deep_Sea_Euryarchaeotic_Group_archaeon_GW2011_AR5
+|
++--Archaea_DPANN_Aenigmarchaeota_AR5_
+|
+|      +----AB019743_Root_Archaea_Aenigmarchaeota_Deep_Sea_Euryarchaeotic_Group_unidentified_archaeon
+|   +--| (100)
+|   |  |     +--------AGBK01001752_Root_Archaea_Aenigmarchaeota_Deep_Sea_Euryarchaeotic_Group_hypersaline_lake_metagenome
+|   |  |  +--| (55)
+|   |  |  |  |         +--ASMO01000004_Root_Archaea_Aenigmarchaeota_Deep_Sea_Euryarchaeotic_Group_Candidatus_Aenigmarchaeota_archaeon_JGI_0000106-F11
+|   |  |  |  |  +------| (100)
+|   |  |  |  |  |      +--Archaea_Aenigmarchaeota_archaeon_JGI_0000106-F11_GBS-C_001_281_JGI-named_Eury_DHVEG
+|   |  |  |  +--| (59)
+|   |  |  |     |          +--ASMQ01000007_Root_Archaea_Aenigmarchaeota_Aenigmarchaeota_Incertae_Sedis_Unknown_Order_Unknown_Family_Candidatus_Aenigmarchaeum_Candidatus_Aenigmarchaeum_subterraneum_SCGC_AAA011-O16
+|   |  |  |     +----------| (100)
+|   |  |  |                +--Archaea_Aenigmarchaeota_Candidatus_Aenigmarchaeum_subterraneum_archaeon-SAG-AAA011-O16_Dusel_001_271
+|   |  +--| (100)
+|   |     |                    +----AB019754_Root_Archaea_Marine_Benthic_Group_E_unidentified_archaeon
+|   |     |                 +--| (100)
+|   |     |                 |  +-----CESR01131454_Root_Archaea_Marine_Benthic_Group_E_marine_metagenome
+|   |     |              +--| (63)
+|   |     |              |  |                  +--AB269873_Root_Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Thermoplasmatales_Incertae_Sedis_Thermogymnomonas_Thermogymnomonas_acidicola
+|   |     |              |  |               +--| (100)
+|   |     |              |  |               |  |  +--ACXJ01010163_Root_Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Thermoplasmataceae_Thermoplasma_mine_drainage_metagenome
+|   |     |              |  |               |  +--| (100)
+|   |     |              |  |               |     +--ACXJ01011147_Root_Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Thermoplasmataceae_Thermoplasma_mine_drainage_metagenome
+|   |     |              |  |            +--| (97)
+|   |     |              |  |            |  |     +--M38637_Root_Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Thermoplasmataceae_Thermoplasma_Thermoplasma_acidophilum
+|   |     |              |  |            |  |  +--| (100)
+|   |     |              |  |            |  |  |  +--Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Thermoplasmataceae_Thermoplasma_acidophilum_DSM_1728
+|   |     |              |  |            |  +--| (100)
+|   |     |              |  |            |     +--AF339746_Root_Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Thermoplasmataceae_Thermoplasma_Thermoplasma_volcanium
+|   |     |              |  |         +--| (100)
+|   |     |              |  |         |  |     +--AE017261_Root_Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Picrophilaceae_Picrophilus_Picrophilus_torridus_DSM_9790
+|   |     |              |  |         |  |  +--| (100)
+|   |     |              |  |         |  |  |  +--Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Picrophilaceae_Picrophilus_torridus_DSM_9790
+|   |     |              |  |         |  +--| (100)
+|   |     |              |  |         |     +---Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Ferroplasmaceae_Ferroplasma_acidarmanus_Fer1
+|   |     |              |  |      +--| (100)
+|   |     |              |  |      |  +-----ACXM01000006_Root_Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_BSLdp215_Thermoplasmatales_archaeon_I-plasma
+|   |     |              |  |   +--| (100)
+|   |     |              |  |   |  |  +--AB019742_Root_Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Deep_Sea_Hydrothermal_Vent_Gp_2_Candidatus_Aciduliprofundum_unidentified_archaeon
+|   |     |              |  |   |  +--| (100)
+|   |     |              |  |   |     +--Archaea_Euryarchaeotaunclassified_Euryarchaeota_Aciduliprofundum_Aciduliprofundum_boonei_T469
+|   |     |              |  +---| (100)
+|   |     |              |      |                    +--KF697737_Root_Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Thermoplasmatales_Incertae_Sedis_Candidatus_Methanomethylophilus_methanogenic_archaeon_mixed_culture_ISO4-G11
+|   |     |              |      |                 +--| (100)
+|   |     |              |      |                 |  +--Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Thermoplasmatales_archaeon_BRNA1
+|   |     |              |      |              +--| (100)
+|   |     |              |      |              |  +--KJ522703_Root_Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Thermoplasmatales_Incertae_Sedis_Candidatus_Methanomethylophilus_Candidatus_Methanomethylophilus_alvus
+|   |     |              |      |           +--| (100)
+|   |     |              |      |           |  +--GQ339877_Root_Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Thermoplasmatales_Incertae_Sedis_methanogenic_archaeon_WGK1
+|   |     |              |      |        +--| (100)
+|   |     |              |      |        |  +--Archaea_Euryarchaeota_Methanomicrobiaunclassified_Methanomicrobia_Methanomassiliicoccus_Candidatus_Methanomassiliicoccus_intestinalis_Issoire-Mx1
+|   |     |              |      |     +--| (98)
+|   |     |              |      |     |  +--------AUZY01010495_Root_Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Terrestrial_Miscellaneous_Gp_mine_drainage_metagenome
+|   |     |              |      |  +--| (96)
+|   |     |              |      |  |  |          +--Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_archaeon_SCGC_AB-540-F20
+|   |     |              |      |  |  |       +--| (100)
+|   |     |              |      |  |  |       |  +--Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Thermoplasmatales_archaeon_SCGC_AB-539-C06
+|   |     |              |      |  |  |  +----| (100)
+|   |     |              |      |  |  |  |    +--Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Thermoplasmatales_archaeon_SCGC_AB-539-N05
+|   |     |              |      |  |  +--| (100)
+|   |     |              |      |  |     +-------Archaea_Thaumarchaeota_unclassified_Thaumarchaeota_Marine_Group_I_Marine_Group_III_euryarchaeote_sp._SCGC_AAA288-E19
+|   |     |              |      +--| (97)
+|   |     |              |         |    +-----Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmata_archaeon_JGI_0000113-B15
+|   |     |              |         +----| (100)
+|   |     |              |              +---Archaea_Euryarchaeota_unclassified_Euryarchaeota_Marine_Group_II_uncultured_marine_group_II_euryarchaeote
+|   |     |           +--| (63)
+|   |     |           |  |                        +--HI592314_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanomicrobiaceae_Methanoculleus_Methanoculleus_marisnigri
+|   |     |           |  |                     +--| (100)
+|   |     |           |  |                     |  |  +--AJ831069_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanomicrobiaceae_Methanoculleus_unidentified_archaeon
+|   |     |           |  |                     |  +--| (100)
+|   |     |           |  |                     |     +--Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanomicrobiaceae_Methanoculleus_Methanoculleus_bourgensis_MS2
+|   |     |           |  |                  +--| (100)
+|   |     |           |  |                  |  |  +--DQ787475_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanomicrobiaceae_Methanoculleus_Methanoculleus_receptaculi
+|   |     |           |  |                  |  +--| (100)
+|   |     |           |  |                  |     +--GU129124_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanomicrobiaceae_Methanoculleus_Methanomicrobiaceae_archaeon_29aM
+|   |     |           |  |               +--| (100)
+|   |     |           |  |               |  +--KM111599_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanomicrobiaceae_Methanoculleus_Methanoculleus_taiwanensis
+|   |     |           |  |            +--| (100)
+|   |     |           |  |            |  |  +--Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanomicrobiaceae_Methanomicrobium_mobile_BP
+|   |     |           |  |            |  +--| (100)
+|   |     |           |  |            |     +--Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanomicrobiaceae_Methanoplanus_Methanoplanus_petrolearius_DSM_11571
+|   |     |           |  |        +---| (100)
+|   |     |           |  |        |   |              +--AB479390_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanoregulaceae_Methanoregula_Methanoregula_formicica_SMSP
+|   |     |           |  |        |   |           +--| (100)
+|   |     |           |  |        |   |           |  +--EU887810_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanoregulaceae_Methanoregula_Methanoregula_boonei
+|   |     |           |  |        |   |        +--| (100)
+|   |     |           |  |        |   |        |  +--Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanoregulaceae_Methanoregula_Candidatus_Methanoregula_boonei_6A8
+|   |     |           |  |        |   |     +--| (98)
+|   |     |           |  |        |   |     |  |     +--LNQE01001524_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanoregulaceae_Methanolinea_hydrocarbon_metagenome
+|   |     |           |  |        |   |     |  |  +--| (100)
+|   |     |           |  |        |   |     |  |  |  +--Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanoregulaceae_Methanolinea_tarda_NOBI-1
+|   |     |           |  |        |   |     |  +--| (98)
+|   |     |           |  |        |   |     |     +---Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanospirillaceae_Methanospirillum_hungatei_JF-1
+|   |     |           |  |        |   |  +--| (100)
+|   |     |           |  |        |   |  |  |  +--Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanoregulaceae_Methanosphaerula_Candidatus_Methanosphaerula_palustris_E1-9c
+|   |     |           |  |        |   |  |  +--| (68)
+|   |     |           |  |        |   |  |     +------Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanocorpusculaceae_Methanocorpusculum_Methanocorpusculum_labreanum_Z
+|   |     |           |  |        |   +--| (100)
+|   |     |           |  |        |      +--Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanomicrobiaceae_Methanofollis_liminatans_GKZPZ
+|   |     |           |  |     +--| (90)
+|   |     |           |  |     |  +---Archaea_Euryarchaeota_Methanomicrobia_Methanocellales_Methanoflorens_stordalenmirensis_Draft_v4.3.2
+|   |     |           |  |  +--| (97)
+|   |     |           |  |  |  |     +-------JAHE01027406_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_Methanosaetaceae_Methanosaeta_sediment_metagenome
+|   |     |           |  |  |  |  +--| (98)
+|   |     |           |  |  |  |  |  |           +--DQ787474_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_Methermicoccaceae_Methermicoccus_Methermicoccus_shengliensis
+|   |     |           |  |  |  |  |  |        +--| (100)
+|   |     |           |  |  |  |  |  |        |  +--Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_Methermicoccaceae_Methermicoccus_shengliensis_DSM_18856
+|   |     |           |  |  |  |  |  |     +--| (53)
+|   |     |           |  |  |  |  |  |     |  +---Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_Methanosaetaceae_Methanosaeta_Methanosaeta_thermophila_PT
+|   |     |           |  |  |  |  |  |  +--| (75)
+|   |     |           |  |  |  |  |  |  |  |              +--CP003083_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_Methanosarcinaceae_Methanolobus_Methanolobus_psychrophilus_R15
+|   |     |           |  |  |  |  |  |  |  |           +--| (100)
+|   |     |           |  |  |  |  |  |  |  |           |  +--Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_Methanosarcinaceae_Methanolobus_Methanolobus_psychrophilus_R15
+|   |     |           |  |  |  |  |  |  |  |        +--| (67)
+|   |     |           |  |  |  |  |  |  |  |        |  +--Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_Methanosarcinaceae_Methanosarcina_barkeri_Fusaro
+|   |     |           |  |  |  |  |  |  |  |     +--| (95)
+|   |     |           |  |  |  |  |  |  |  |     |  +--Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_Methanosarcinaceae_Methanomethylovorans_hollandica_DSM_15978
+|   |     |           |  |  |  |  |  |  |  |  +--| (95)
+|   |     |           |  |  |  |  |  |  |  |  |  |  +--Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_Methanosarcinaceae_Methanococcoides_burtonii_DSM_6242
+|   |     |           |  |  |  |  |  |  |  |  |  +--| (100)
+|   |     |           |  |  |  |  |  |  |  |  |     +--Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_Methanosarcinaceae_Methanohalophilus_Methanohalophilus_mahii_DSM_5219
+|   |     |           |  |  |  |  |  |  |  +--| (100)
+|   |     |           |  |  |  |  |  |  |     |  +--Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_Methanosarcinaceae_Methanosalsum_zhilinae_WeN5
+|   |     |           |  |  |  |  |  |  |     +--| (68)
+|   |     |           |  |  |  |  |  |  |        +--Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_Methanosarcinaceae_Methanohalobium_Methanohalobium_evestigatum_Z-7303
+|   |     |           |  |  |  |  |  +--| (92)
+|   |     |           |  |  |  |  |     +---Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_ANME2D
+|   |     |           |  |  |  +--| (77)
+|   |     |           |  |  |     |        +--AB196288_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanocellales_Methanocellaceae_Methanocella_Methanocella_paludicola_SANAE
+|   |     |           |  |  |     |     +--| (100)
+|   |     |           |  |  |     |     |  +--JN048683_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanocellales_Methanocellaceae_Methanocella_Methanocella_conradii_HZ254
+|   |     |           |  |  |     +-----| (100)
+|   |     |           |  |  |           |  +--AM114193_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanocellales_Methanocellaceae_Methanocella_Methanocella_arvoryzae_MRE50
+|   |     |           |  |  |           +--| (100)
+|   |     |           |  |  |              +--Archaea_Euryarchaeota_Methanomicrobia_Methanocellales_Methanocellaceae_Methanocella_sp._RC-I_Manual_curation_by_Zhe_Lv
+|   |     |           |  +--| (97)
+|   |     |           |     |     +--AB019759_Root_Archaea_Euryarchaeota_Methanomicrobia_ANME-1_ANME-1a_unidentified_archaeon
+|   |     |           |     +-----| (100)
+|   |     |           |           +--AB019758_Root_Archaea_Euryarchaeota_Methanomicrobia_ANME-1_ANME-1a_unidentified_archaeon
+|   |     |        +--| (54)
+|   |     |        |  +------------------Archaea_Lokiarchaeota_SMTZ-76-7
+|   |     |     +--| (35)
+|   |     |     |  |                    +--X15364_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanothermobacter_Methanothermobacter_marburgensis
+|   |     |     |  |                 +--| (100)
+|   |     |     |  |                 |  +--Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanothermobacter_thermautotrophicus_Delta_H
+|   |     |     |  |              +--| (100)
+|   |     |     |  |              |  |  +--GU129103_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanobacteriaceae_archaeon_15aZ
+|   |     |     |  |              |  +--| (98)
+|   |     |     |  |              |     |           +--HQ110085_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanobacterium_Methanobacterium_lacus
+|   |     |     |  |              |     |        +--| (92)
+|   |     |     |  |              |     |        |  +--GQ906568_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanobacterium_Methanobacterium_bryantii
+|   |     |     |  |              |     |     +--| (92)
+|   |     |     |  |              |     |     |  |  +--JF812256_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanobacterium_Methanobacterium_movilense
+|   |     |     |  |              |     |     |  +--| (82)
+|   |     |     |  |              |     |     |     +--Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanobacterium_Methanobacterium_sp_SWAN-1
+|   |     |     |  |              |     |  +--| (71)
+|   |     |     |  |              |     |  |  |        +--KC608769_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanobrevibacter_Methanobrevibacter_boviskoreani_JH1
+|   |     |     |  |              |     |  |  |     +--| (100)
+|   |     |     |  |              |     |  |  |     |  +--Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanobrevibacter_Methanobrevibacter_smithii_PS_ATCC_35061
+|   |     |     |  |              |     |  |  |  +--| (94)
+|   |     |     |  |              |     |  |  |  |  |  +--LWMW01000084_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanobrevibacter_Methanobrevibacter_cuticularis
+|   |     |     |  |              |     |  |  |  |  +--| (91)
+|   |     |     |  |              |     |  |  |  |     |  +--LWMT01000072_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanobrevibacter_Methanobrevibacter_filiformis
+|   |     |     |  |              |     |  |  |  |     +--| (89)
+|   |     |     |  |              |     |  |  |  |        |  +--HK556489_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanobrevibacter_unidentified
+|   |     |     |  |              |     |  |  |  |        +--| (89)
+|   |     |     |  |              |     |  |  |  |           +--D64027_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanobrevibacter_unidentified_Methanobacteriales
+|   |     |     |  |              |     |  |  +--| (94)
+|   |     |     |  |              |     |  |     |  +--AF029202_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanosphaera_unidentified_methanogen_ARC17
+|   |     |     |  |              |     |  |     +--| (100)
+|   |     |     |  |              |     |  |        +--Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanosphaera_stadtmanae_DSM_3091
+|   |     |     |  |              |     +--| (100)
+|   |     |     |  |              |        +--AY386124_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanobacterium_Methanobacterium_aarhusense
+|   |     |     |  |           +--| (100)
+|   |     |     |  |           |  |  +--HE654004_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanothermaceae_Methanothermus_Methanothermus_sociabilis
+|   |     |     |  |           |  +--| (100)
+|   |     |     |  |           |     +--Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanothermaceae_Methanothermus_Methanothermus_fervidus_DSM_2088
+|   |     |     |  |        +--| (48)
+|   |     |     |  |        |  |               +--AB546258_Root_Archaea_Euryarchaeota_Methanococci_Methanococcales_Methanococcaceae_Methanococcus_Methanococcus_maripaludis
+|   |     |     |  |        |  |            +--| (100)
+|   |     |     |  |        |  |            |  +--Archaea_Euryarchaeota_Methanococci_Methanococcales_Methanococcaceae_Methanococcus_Methanococcus_maripaludis_S2
+|   |     |     |  |        |  |         +--| (100)
+|   |     |     |  |        |  |         |  +--Archaea_Euryarchaeota_Methanococci_Methanococcales_Methanococcaceae_Methanothermococcus_Methanothermococcus_okinawensis_IH1
+|   |     |     |  |        |  |      +--| (100)
+|   |     |     |  |        |  |      |  +--Archaea_Euryarchaeota_Methanococci_Methanococcales_Methanocaldococcaceae_Methanotorris_Methanotorris_igneus_Kol_5
+|   |     |     |  |        |  |  +---| (100)
+|   |     |     |  |        |  |  |   +--Archaea_Euryarchaeota_Methanococci_Methanococcales_Methanocaldococcaceae_Methanocaldococcus_jannaschii_DSM_2661
+|   |     |     |  |        |  +--| (55)
+|   |     |     |  |        |     +------Archaea_Euryarchaeota_Methanopyri_Methanopyrales_Methanopyraceae_Methanopyrus_kandleri_AV19
+|   |     |     |  |     +--| (94)
+|   |     |     |  |     |  |                 +--AJ291811_Root_Archaea_Euryarchaeota_Thermococci_Thermococcales_Thermococcaceae_Thermococcus_Thermococcus_pacificus
+|   |     |     |  |     |  |              +--| (98)
+|   |     |     |  |     |  |              |  +--Archaea_Euryarchaeota_Thermococci_Thermococcales_Thermococcaceae_Thermococcus_kodakarensis_KOD1
+|   |     |     |  |     |  |           +--| (98)
+|   |     |     |  |     |  |           |  +--Archaea_Euryarchaeota_Thermococci_Thermococcales_Thermococcaceae_Pyrococcus_furiosus_DSM_3638
+|   |     |     |  |     |  |        +--| (100)
+|   |     |     |  |     |  |        |  |  +--LANF01000002_Root_Archaea_Euryarchaeota_Thermococci_Thermococcales_Thermococcaceae_Palaeococcus_Palaeococcus_ferrophilus_DSM_13482
+|   |     |     |  |     |  |        |  +--| (100)
+|   |     |     |  |     |  |        |     |  +--HQ696462_Root_Archaea_Euryarchaeota_Thermococci_Thermococcales_Thermococcaceae_Palaeococcus_Palaeococcus_pacificus_DY20341
+|   |     |     |  |     |  |        |     +--| (100)
+|   |     |     |  |     |  |        |        +--Archaea_Euryarchaeota_Thermococci_Thermococcales_Thermococcaceae_Palaeococcus_Palaeococcus_pacificus_DY20341
+|   |     |     |  |     |  |     +--| (88)
+|   |     |     |  |     |  |     |  +-------------Archaea_Nanoarchaeota_Nanoarchaeum_equitans_Kin4-M
+|   |     |     |  |     |  |  +--| (76)
+|   |     |     |  |     |  |  |  |          +--CP006577_Root_Archaea_Euryarchaeota_Archaeoglobi_Archaeoglobales_Archaeoglobaceae_Archaeoglobus_Archaeoglobus_fulgidus_DSM_8774
+|   |     |     |  |     |  |  |  |       +--| (94)
+|   |     |     |  |     |  |  |  |       |  +--Archaea_Euryarchaeota_Archaeoglobi_Archaeoglobales_Archaeoglobaceae_Archaeoglobus_Archaeoglobus_fulgidus_DSM_8774
+|   |     |     |  |     |  |  |  |    +--| (100)
+|   |     |     |  |     |  |  |  |    |  +--AB274307_Root_Archaea_Euryarchaeota_Archaeoglobi_Archaeoglobales_Archaeoglobaceae_Archaeoglobus_Archaeoglobus_infectus
+|   |     |     |  |     |  |  |  +----| (100)
+|   |     |     |  |     |  |  |       +--Archaea_Euryarchaeota_Archaeoglobi_Archaeoglobales_Archaeoglobaceae_Ferroglobus_Ferroglobus_placidus_DSM_10642
+|   |     |     |  |     |  +--| (57)
+|   |     |     |  |     |     |              +--JRER01000597_Root_Archaea_Bathyarchaeota_marine_sediment_metagenome
+|   |     |     |  |     |     |           +--| (100)
+|   |     |     |  |     |     |           |  +------LFWY01000019_Root_Archaea_Bathyarchaeota_miscellaneous_Crenarchaeota_group_archaeon_SMTZ-80
+|   |     |     |  |     |     |        +--| (99)
+|   |     |     |  |     |     |        |  +-------Archaea_Thaumarchaeota_Thaumarcheon_SCGC_AB-539-E09
+|   |     |     |  |     |     |     +--| (65)
+|   |     |     |  |     |     |     |  |           +--EU239960_Root_Archaea_Thaumarchaeota_Thaumarchaeota_Incertae_Sedis_Unknown_Order_Unknown_Family_Candidatus_Nitrosocaldus_Candidatus_Nitrosocaldus_yellowstonii
+|   |     |     |  |     |     |     |  |        +--| (100)
+|   |     |     |  |     |     |     |  |        |  |  +--Archaea_Thaumarchaeota_Nitrososphaerales_Nitrososphaeraceae_Nitrososphaera_Nitrososphaera_viennensis_EN76
+|   |     |     |  |     |     |     |  |        |  +--| (100)
+|   |     |     |  |     |     |     |  |        |     |                    +--AB019722_Root_Archaea_Thaumarchaeota_Marine_Group_I_Unknown_Order_Unknown_Family_Candidatus_Nitrosopumilus_unidentified_archaeon
+|   |     |     |  |     |     |     |  |        |     |                 +--| (99)
+|   |     |     |  |     |     |     |  |        |     |                 |  |  +--Archaea_Thaumarchaeota_Thaumarchaeota_archaeon_SCGC_AB-661-L21
+|   |     |     |  |     |     |     |  |        |     |                 |  +--| (100)
+|   |     |     |  |     |     |     |  |        |     |                 |     +--Archaea_Thaumarchaeota_unclassified_Thaumarchaeota_Marine_Group_I_Marine_Group_I_thaumarchaeote_SCGC_AAA160-J20
+|   |     |     |  |     |     |     |  |        |     |              +--| (100)
+|   |     |     |  |     |     |     |  |        |     |              |  |           +--AB019725_Root_Archaea_Thaumarchaeota_Marine_Group_I_Unknown_Order_Unknown_Family_Candidatus_Nitrosopumilus_unidentified_archaeon
+|   |     |     |  |     |     |     |  |        |     |              |  |        +--| (96)
+|   |     |     |  |     |     |     |  |        |     |              |  |        |  +--Archaea_Thaumarchaeota_Thaumarchaeota_archaeon_SCGC_AAA282-K18
+|   |     |     |  |     |     |     |  |        |     |              |  |     +--| (96)
+|   |     |     |  |     |     |     |  |        |     |              |  |     |  +--Archaea_Thaumarchaeota_unclassified_Thaumarchaeota_Marine_Group_I_Marine_Group_I_thaumarchaeote_SCGC_AAA799_N04
+|   |     |     |  |     |     |     |  |        |     |              |  |  +--| (96)
+|   |     |     |  |     |     |     |  |        |     |              |  |  |  +--Archaea_Thaumarchaeota_Nitrosopumilales_Nitrosopumilaceae_Nitrosopumilus_Candidatus_Nitrosopumilus_koreensis_AR1
+|   |     |     |  |     |     |     |  |        |     |              |  +--| (95)
+|   |     |     |  |     |     |     |  |        |     |              |     +--AB019723_Root_Archaea_Thaumarchaeota_Marine_Group_I_Unknown_Order_Unknown_Family_Candidatus_Nitrosopumilus_unidentified_archaeon
+|   |     |     |  |     |     |     |  |        |     |           +--| (80)
+|   |     |     |  |     |     |     |  |        |     |           |  +--Archaea_Thaumarchaeota_Cenarchaeales_Cenarchaeaceae_Cenarchaeum_Cenarchaeum_symbiosum_A_
+|   |     |     |  |     |     |     |  |        |     |        +--| (94)
+|   |     |     |  |     |     |     |  |        |     |        |  |        +--Archaea_Thaumarchaeota_Thaumarchaeota_archaeon_SCGC_AB-663-F14
+|   |     |     |  |     |     |     |  |        |     |        |  |     +--| (100)
+|   |     |     |  |     |     |     |  |        |     |        |  |     |  +--Archaea_Thaumarchaeota_unclassified_Thaumarchaeota_Marine_Group_I_Marine_Group_I_thaumarchaeote_sp._SCGC_AAA288-P18
+|   |     |     |  |     |     |     |  |        |     |        |  |  +--| (100)
+|   |     |     |  |     |     |     |  |        |     |        |  |  |  |     +--Archaea_Thaumarchaeota_Thaumarchaeota_archaeon_SCGC_AB-663-G14
+|   |     |     |  |     |     |     |  |        |     |        |  |  |  |  +--| (92)
+|   |     |     |  |     |     |     |  |        |     |        |  |  |  |  |  +--Archaea_Thaumarchaeota_unclassified_Thaumarchaeota_Marine_Group_I_Marine_Group_I_thaumarchaeote_sp._SCGC_AAA008-P02
+|   |     |     |  |     |     |     |  |        |     |        |  |  |  +--| (100)
+|   |     |     |  |     |     |     |  |        |     |        |  |  |     |     +--Archaea_Thaumarchaeota_unclassified_Thaumarchaeota_Marine_Group_I_Marine_Group_I_crenarchaeon_SCGC_AB-629-I23
+|   |     |     |  |     |     |     |  |        |     |        |  |  |     |  +--| (72)
+|   |     |     |  |     |     |     |  |        |     |        |  |  |     |  |  +--Archaea_Thaumarchaeota_unclassified_Thaumarchaeota_Marine_Group_I_Marine_Group_I_thaumarchaeote_SCGC_AAA007-O23_TG_002_783
+|   |     |     |  |     |     |     |  |        |     |        |  |  |     +--| (76)
+|   |     |     |  |     |     |     |  |        |     |        |  |  |        +--Archaea_Thaumarchaeota_unclassified_Thaumarchaeota_Marine_Group_I_Marine_Group_I_crenarchaeote_sp._SCGC_AAA288-I14
+|   |     |     |  |     |     |     |  |        |     |        |  +--| (100)
+|   |     |     |  |     |     |     |  |        |     |        |     +--Archaea_Thaumarchaeota_unclassified_Thaumarchaeota_Marine_Group_I_Marine_Group_I_thaumarchaeote_sp._SCGC_AAA008-M21
+|   |     |     |  |     |     |     |  |        |     |     +--| (75)
+|   |     |     |  |     |     |     |  |        |     |     |  +--Archaea_Thaumarchaeota_CSP1-1
+|   |     |     |  |     |     |     |  |        |     +-----| (100)
+|   |     |     |  |     |     |     |  |        |           |  +--AVSQ01000019_Root_Archaea_Thaumarchaeota_Marine_Group_I_Thaumarchaeota_archaeon_MY2
+|   |     |     |  |     |     |     |  |        |           +--| (100)
+|   |     |     |  |     |     |     |  |        |              +--Archaea_Thaumarchaeota_Thaumarchaeota_archaeon_MY2
+|   |     |     |  |     |     |     |  |     +--| (100)
+|   |     |     |  |     |     |     |  |     |  |  +--Archaea_Thaumarchaeota_Thaumarchaeota_archaeon_SCGC_AB-179-E04_GBS-N_001_221
+|   |     |     |  |     |     |     |  |     |  +--| (100)
+|   |     |     |  |     |     |     |  |     |     +----Archaea_Thaumarchaeota_Thaumarchaeota_archaeon_strain_BS4
+|   |     |     |  |     |     |     |  |  +--| (79)
+|   |     |     |  |     |     |     |  |  |  |  +----Archaea_Thaumarchaeota_Thaumarchaeota_archaeon_strain_DS1_Dragon_Thaumarchaeon
+|   |     |     |  |     |     |     |  |  |  +--| (79)
+|   |     |     |  |     |     |     |  |  |     +--------------Archaea_Archaea_Lokiarchaeaota_archeaon_Loki
+|   |     |     |  |     |     |     |  +--| (62)
+|   |     |     |  |     |     |     |     |  +----AB019733_Root_Archaea_Aigarchaeota_Terrestrial_Hot_Spring_Gp_unidentified_archaeon
+|   |     |     |  |     |     |     |     +--| (83)
+|   |     |     |  |     |     |     |        |            +--Archaea_Aigarchaeota_candidate_division_pSL4_archaeon_JGI_0000001-A7_GBS-A_001_112
+|   |     |     |  |     |     |     |        |         +--| (100)
+|   |     |     |  |     |     |     |        |         |  +--Archaea_Aigarchaeota_candidate_division_pSL4_archaeon_SCGC_AAA471-E14_Combined_Assembly_pSL4_3__pSL4
+|   |     |     |  |     |     |     |        |      +--| (100)
+|   |     |     |  |     |     |     |        |      |  |           +**Archaea_Aigarchaeota_candidate_division_pSL4_archaeon_SCGC_AAA471-B22_Combined_Assembly_pSL4_1__pSL4
+|   |     |     |  |     |     |     |        |      |  |        +--|
+|   |     |     |  |     |     |     |        |      |  |        |  +**Archaea_CP_pSL4_candidate_division_pSL4_archaeon_SCGC_AAA471-J07_GBS-N_001_18
+|   |     |     |  |     |     |     |        |      |  |     +--| (60)
+|   |     |     |  |     |     |     |        |      |  |     |  +--Archaea_CP_pSL4_candidate_division_pSL4_archaeon_JGI_0000001-H6_GBS-A_001_118
+|   |     |     |  |     |     |     |        |      |  |  +--| (99)
+|   |     |     |  |     |     |     |        |      |  |  |  +--Archaea_Aigarchaeota_candidate_division_pSL4_archaeon_SCGC_AAA471-B22_GBS-N_002_4
+|   |     |     |  |     |     |     |        |      |  +--| (100)
+|   |     |     |  |     |     |     |        |      |     +--Archaea_CP_pSL4_candidate_division_pSL4_archaeon_SCGC_AAA471-G05_GBS-N_001_14
+|   |     |     |  |     |     |     |        |   +--| (99)
+|   |     |     |  |     |     |     |        |   |  +--Archaea_Thaumarchaeota_unclassified_Thaumarchaeota_Candidatus_Caldiarchaeum_subterraneum
+|   |     |     |  |     |     |     |        +---| (100)
+|   |     |     |  |     |     |     |            |                      +--ASPF01000030_Root_Archaea_Aigarchaeota_Aigarchaeota_Incertae_Sedis_Unknown_Order_Unknown_Family_Candidatus_Caldiarchaeum_Aigarchaeota_archaeon_JGI_0000106-J15
+|   |     |     |  |     |     |     |            +----------------------| (100)
+|   |     |     |  |     |     |     |                                   +--Archaea_Aigarchaeota_candidate_division_pSL4_archaeon_JGI_0000106-J15_GBS-C_001_288
+|   |     |     |  |     |     |  +--| (70)
+|   |     |     |  |     |     |  |  |     +------ADKI01000120_Root_Archaea_Bathyarchaeota_hot_springs_metagenome
+|   |     |     |  |     |     |  |  |  +--| (91)
+|   |     |     |  |     |     |  |  |  |  |        +--HK242026_Root_Archaea_Crenarchaeota_Thermoprotei_Thermoproteales_Thermofilaceae_Thermofilum_unidentified
+|   |     |     |  |     |     |  |  |  |  |     +--| (100)
+|   |     |     |  |     |     |  |  |  |  |     |  +--Archaea_Crenarchaeota_Thermoprotei_Thermoproteales_Thermofilaceae_Thermofilum_Thermofilum_pendens_Hrk_5
+|   |     |     |  |     |     |  |  |  |  |  +--| (97)
+|   |     |     |  |     |     |  |  |  |  |  |  |           +--Archaea_Crenarchaeota_Thermoprotei_Thermoproteales_Archaea_Crenarchaeota_Thermoprotei_Thermoproteales_YNP_Site_4_Thermoproteales_Type_II
+|   |     |     |  |     |     |  |  |  |  |  |  |        +--| (100)
+|   |     |     |  |     |     |  |  |  |  |  |  |        |  |  +--Archaea_Crenarchaeota_Thermoprotei_Thermoproteales_Thermoproteaceae_Pyrobaculum_aerophilum_IM2
+|   |     |     |  |     |     |  |  |  |  |  |  |        |  +--| (100)
+|   |     |     |  |     |     |  |  |  |  |  |  |        |     +--Archaea_Crenarchaeota_Thermoprotei_Thermoproteales_Thermoproteaceae_Thermoproteus_Thermoproteus_neutrophilus_V24Sta
+|   |     |     |  |     |     |  |  |  |  |  |  |     +--| (100)
+|   |     |     |  |     |     |  |  |  |  |  |  |     |  +--Archaea_Crenarchaeota_Thermoprotei_Thermoproteales_Thermoproteaceae_Thermoproteus_Thermoproteus_uzoniensis_768-20
+|   |     |     |  |     |     |  |  |  |  |  |  |  +--| (99)
+|   |     |     |  |     |     |  |  |  |  |  |  |  |  +--Archaea_Crenarchaeota_Thermoprotei_Thermoproteales_Thermoproteaceae_Vulcanisaeta_Vulcanisaeta_distributa_DSM_14429
+|   |     |     |  |     |     |  |  |  |  |  |  +--| (100)
+|   |     |     |  |     |     |  |  |  |  |  |     +--Archaea_Crenarchaeota_Thermoprotei_Thermoproteales_Thermoproteaceae_Caldivirga_Caldivirga_maquilingensis_IC-167
+|   |     |     |  |     |     |  |  |  |  +--| (94)
+|   |     |     |  |     |     |  |  |  |     |                    +--Archaea_Crenarchaeota_Thermoprotei_Acidilobales_Acidilobaceae_Acidilobus_Acidilobus_saccharovorans_345-15
+|   |     |     |  |     |     |  |  |  |     |                 +--| (99)
+|   |     |     |  |     |     |  |  |  |     |                 |  +----Archaea_Crenarchaeota_Thermoprotei_Acidilobales_Caldisphaeraceae_Caldisphaera_lagunensis_IC-154
+|   |     |     |  |     |     |  |  |  |     |              +--| (100)
+|   |     |     |  |     |     |  |  |  |     |              |  |     +--Archaea_Crenarchaeota_Thermoprotei_Desulfurococcales_Site_03_Desulfuro
+|   |     |     |  |     |     |  |  |  |     |              |  |  +--| (99)
+|   |     |     |  |     |     |  |  |  |     |              |  |  |  +--Archaea_Crenarchaeota_Thermoprotei_Desulfurococcales_Site_19_Desulfuro
+|   |     |     |  |     |     |  |  |  |     |              |  +--| (99)
+|   |     |     |  |     |     |  |  |  |     |              |     +--Archaea_Crenarchaeota_Thermoprotei_Desulfurococcales_Site_04_Desulfuro
+|   |     |     |  |     |     |  |  |  |     |           +--| (97)
+|   |     |     |  |     |     |  |  |  |     |           |  |  +--Archaea_Crenarchaeota_Thermoprotei_Desulfurococcales_Pyrodictiaceae_Hyperthermus_Hyperthermus_butylicus_DSM_5456
+|   |     |     |  |     |     |  |  |  |     |           |  +--| (100)
+|   |     |     |  |     |     |  |  |  |     |           |     +--Archaea_Crenarchaeota_Thermoprotei_Desulfurococcales_Pyrodictiaceae_Pyrolobus_fumarii_1A
+|   |     |     |  |     |     |  |  |  |     |        +--| (48)
+|   |     |     |  |     |     |  |  |  |     |        |  |           +--Archaea_Crenarchaeota_Thermoprotei_Desulfurococcales_Desulfurococcaceae_Desulfurococcus_fermentans_Z-1312
+|   |     |     |  |     |     |  |  |  |     |        |  |        +--| (100)
+|   |     |     |  |     |     |  |  |  |     |        |  |        |  +--Archaea_Crenarchaeota_Thermoprotei_Desulfurococcales_Desulfurococcaceae_Thermosphaera_Thermosphaera_aggregans_DSM_11486
+|   |     |     |  |     |     |  |  |  |     |        |  |     +--| (99)
+|   |     |     |  |     |     |  |  |  |     |        |  |     |  +--Archaea_Crenarchaeota_Thermoprotei_Desulfurococcales_Desulfurococcaceae_Thermogladius_Thermogladius_cellulolyticus_1633
+|   |     |     |  |     |     |  |  |  |     |        |  |  +--| (100)
+|   |     |     |  |     |     |  |  |  |     |        |  |  |  +--Archaea_Crenarchaeota_Thermoprotei_Desulfurococcales_Desulfurococcaceae_Staphylothermus_Staphylothermus_hellenicus_DSM_12710
+|   |     |     |  |     |     |  |  |  |     |        |  +--| (100)
+|   |     |     |  |     |     |  |  |  |     |        |     +--Archaea_Crenarchaeota_Thermoprotei_Desulfurococcales_Desulfurococcaceae_Ignicoccus_Ignicoccus_hospitalis_KIN4_I
+|   |     |     |  |     |     |  |  |  |     |     +--| (48)
+|   |     |     |  |     |     |  |  |  |     |     |  |  +--Archaea_Crenarchaeota_Thermoprotei_Desulfurococcales_Desulfurococcaceae_Ignisphaera_Ignisphaera_aggregans_DSM_17230
+|   |     |     |  |     |     |  |  |  |     |     |  +--| (100)
+|   |     |     |  |     |     |  |  |  |     |     |     +--Archaea_Crenarchaeota_Thermoprotei_Desulfurococcales_Desulfurococcaceae_Ingnisphaeroid_species
+|   |     |     |  |     |     |  |  |  |     |  +--| (68)
+|   |     |     |  |     |     |  |  |  |     |  |  |        +--Archaea_Crenarchaeota_Thermoprotei_Sulfolobales_Sulfolobaceae_Acidianus_Acidianus_hospitalis_W1
+|   |     |     |  |     |     |  |  |  |     |  |  |     +--| (100)
+|   |     |     |  |     |     |  |  |  |     |  |  |     |  |  +--Archaea_Crenarchaeota_Thermoprotei_Sulfolobales_Sulfolobales_archaeon_AZ1
+|   |     |     |  |     |     |  |  |  |     |  |  |     |  +--| (93)
+|   |     |     |  |     |     |  |  |  |     |  |  |     |     |  +--Archaea_Crenarchaeota_Thermoprotei_Sulfolobales_Sulfolobaceae_Metallosphaera_Metallosphaera_sedula_DSM_5348
+|   |     |     |  |     |     |  |  |  |     |  |  |     |     +--| (100)
+|   |     |     |  |     |     |  |  |  |     |  |  |     |        +--Archaea_Crenarchaeota_Thermoprotei_Thermoproteales_YNP_14_mk1_myell_like
+|   |     |     |  |     |     |  |  |  |     |  |  |  +--| (99)
+|   |     |     |  |     |     |  |  |  |     |  |  |  |  +--Archaea_Crenarchaeota_Thermoprotei_Sulfolobales_Sulfolobaceae_Sulfolobus_solfataricus_P2
+|   |     |     |  |     |     |  |  |  |     |  |  +--| (100)
+|   |     |     |  |     |     |  |  |  |     |  |     +--Archaea_Crenarchaeota_Thermoprotei_Sulfolobales_Sulfolobales_archaeon_Acd1
+|   |     |     |  |     |     |  |  |  |     +--| (100)
+|   |     |     |  |     |     |  |  |  |        +----Archaea_Crenarchaeota_Thermoprotei_Fervidicoccales_Fervidicoccaceae_Fervidicoccus_Fervidicoccus_fontis_Kam940
+|   |     |     |  |     |     |  |  +--| (90)
+|   |     |     |  |     |     |  |     |                +**Archaea_CP_YNPFFA_candidate_division_YNPFFA_archaeon_SCGC_AAA471-B05_Combined_Assembly_YNPFFA_1__YNPFFA
+|   |     |     |  |     |     |  |     |             +**|
+|   |     |     |  |     |     |  |     |             |  +**Archaea_CP_YNPFFA_candidate_division_YNPFFA_archaeon_SCGC_AAA471-O08_GBS-N_001_29
+|   |     |     |  |     |     |  |     |          +--|
+|   |     |     |  |     |     |  |     |          |  +**Archaea_CP_YNPFFA_candidate_division_YNPFFA_archaeon_SCGC_AAA471-C03_GBS-N_001_6
+|   |     |     |  |     |     |  |     |       +--| (100)
+|   |     |     |  |     |     |  |     |       |  +--Archaea_CP_YNPFFA_candidate_division_YNPFFA_archaeon_SCGC_AAA471-B23_GBS-N_001_5
+|   |     |     |  |     |     |  |     +-------| (100)
+|   |     |     |  |     |     |  |             +--Archaea_Crenarchaeota_Thermoprotei_Sulfolobales_Sulfolobaceae_YNP_08_cren1_8_best_scaffolds
+|   |     |     |  |     |     +--| (100)
+|   |     |     |  |     |        +----------Archaea_Korarchaeota_Candidatus_Korarchaeum_cryptofilum_OPF8
+|   |     |     |  |  +--| (91)
+|   |     |     |  |  |  |  +-----AZIF01000273_Root_Archaea_WSA2_Z7ME43_marine_sediment_metagenome
+|   |     |     |  |  |  +--| (100)
+|   |     |     |  |  |     +---LNJD01000004_Root_Archaea_WSA2_WCHA1-57_Arc_I_group_archaeon_ADurb1113_Bin01801
+|   |     |     |  +--| (89)
+|   |     |     |     |          +--LHYJ01000009_Root_Archaea_MSBL1_candidate_divison_MSBL1_archaeon_SCGC-AAA382N08
+|   |     |     |     |       +--| (100)
+|   |     |     |     |       |  +--LHXV01000006_Root_Archaea_MSBL1_candidate_divison_MSBL1_archaeon_SCGC-AAA259O05
+|   |     |     |     |  +----| (100)
+|   |     |     |     |  |    +--LHYF01000011_Root_Archaea_MSBL1_candidate_divison_MSBL1_archaeon_SCGC-AAA382C18
+|   |     |     |     +--| (100)
+|   |     |     |        |  +--Archaea_Hadesarchaea_archaeon_YNP_45
+|   |     |     |        +--| (100)
+|   |     |     |           +--Archaea_Hadesarchaea_archaeon_YNP_N21
+|   |     |  +--| (32)
+|   |     |  |  |                                       +--CP002988_Root_Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halolamina_halophilic_archaeon_DL31
+|   |     |  |  |                                   +---| (100)
+|   |     |  |  |                                   |   +--Archaea_Euryarchaeota_Halobacteria_halophilic_archaeon_sp._DL31_
+|   |     |  |  |                                +--| (98)
+|   |     |  |  |                                |  |        +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halonotius_sp._A07HN63
+|   |     |  |  |                                |  |     +--| (100)
+|   |     |  |  |                                |  |     |  +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halonotius_sp._J07ABHN4_version_2
+|   |     |  |  |                                |  |  +--| (100)
+|   |     |  |  |                                |  |  |  +--Archaea_uncultured_archaeon_J07ABHN6_version_2
+|   |     |  |  |                                |  +--| (100)
+|   |     |  |  |                                |     +--Archaea_Euryarchaeota_Halobacteria_Haloferacales_Haloferacaceae_Halohasta_litchfieldiae_tADL_
+|   |     |  |  |                             +--| (73)
+|   |     |  |  |                             |  +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Haloplanus_natans_RE_101
+|   |     |  |  |                          +--| (72)
+|   |     |  |  |                          |  |  +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halogeometricum_Halogeometricum_borinquense_DSM_11551
+|   |     |  |  |                          |  +--| (100)
+|   |     |  |  |                          |     +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Haloquadratum_walsbyi_HBSQ001
+|   |     |  |  |                       +--| (96)
+|   |     |  |  |                       |  |        +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_haloarchaeon_3A1_DGR
+|   |     |  |  |                       |  |     +--| (99)
+|   |     |  |  |                       |  |     |  +---Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halorubrum_sp._A07HR60
+|   |     |  |  |                       |  |  +--| (100)
+|   |     |  |  |                       |  |  |  |  +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halorubrum_Halorubrum_lacusprofundi_ATCC_49239
+|   |     |  |  |                       |  |  |  +--| (100)
+|   |     |  |  |                       |  |  |     +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halorubrum_sp._A07HR67
+|   |     |  |  |                       |  +--| (75)
+|   |     |  |  |                       |     +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halogranum_Halogranum_salarium_B-1
+|   |     |  |  |                    +--| (100)
+|   |     |  |  |                    |  |  +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halobaculum_sp._A07HB70
+|   |     |  |  |                    |  +--| (99)
+|   |     |  |  |                    |     +--Archaea_uncultured_halophilic_archaeon_J07ABHX67_version_2
+|   |     |  |  |                 +--| (89)
+|   |     |  |  |                 |  |  +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Haladaptatus_paucihalophilus_DX253
+|   |     |  |  |                 |  +--| (84)
+|   |     |  |  |                 |     |  +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halalkalicoccus_Halalkalicoccus_jeotgali_B3
+|   |     |  |  |                 |     +--| (95)
+|   |     |  |  |                 |        |     +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halopiger_Halopiger_xanaduensis_SH-6
+|   |     |  |  |                 |        |  +--| (97)
+|   |     |  |  |                 |        |  |  |        +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Haloterrigena_Haloterrigena_turkmenica_DSM_5511
+|   |     |  |  |                 |        |  |  |     +--| (100)
+|   |     |  |  |                 |        |  |  |     |  +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Natrinema_pellirubrum_157
+|   |     |  |  |                 |        |  |  |  +--| (100)
+|   |     |  |  |                 |        |  |  |  |  +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Natrialba_Natrialba_magadii_ATCC_43099
+|   |     |  |  |                 |        |  |  +--| (99)
+|   |     |  |  |                 |        |  |     |     +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halostagnicola_larsenii_XH-48
+|   |     |  |  |                 |        |  |     |  +--| (99)
+|   |     |  |  |                 |        |  |     |  |  +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halovivax_ruber_XH-70
+|   |     |  |  |                 |        |  |     +--| (99)
+|   |     |  |  |                 |        |  |        +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Natronococcus_occultus_SP4
+|   |     |  |  |                 |        +--| (100)
+|   |     |  |  |                 |           +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Natronobacterium_gregoryi_SP2
+|   |     |  |  |              +--| (87)
+|   |     |  |  |              |  +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halobacterium_sp._NRC-1
+|   |     |  |  |           +--| (88)
+|   |     |  |  |           |  |        +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halomicrobium_Halomicrobium_mukohataei_DSM_12286
+|   |     |  |  |           |  |     +--| (73)
+|   |     |  |  |           |  |     |  +---Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Haloarcula_marismortui_ATCC_43049
+|   |     |  |  |           |  |  +--| (72)
+|   |     |  |  |           |  |  |  |  +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halorhabdus_Halorhabdus_utahensis_DSM_12940
+|   |     |  |  |           |  |  |  +--| (100)
+|   |     |  |  |           |  |  |     +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halosimplex_Halosimplex_carlsbadense_2-9-1
+|   |     |  |  |           |  +--| (86)
+|   |     |  |  |           |     |     +--Archaea_uncultured_halophilic_archaeon_J07HX5
+|   |     |  |  |           |     |  +--| (100)
+|   |     |  |  |           |     |  |  +--Archaea_uncultured_halophilic_archaeon_J07ABHX64
+|   |     |  |  |           |     +--| (98)
+|   |     |  |  |           |        +---Archaea_Euryarchaeota_Halobacteria_Natrialbales_Natrialbaceae_Salinarchaeum_sp._Harcht-Bsk1
+|   |     |  |  |    +------| (100)
+|   |     |  |  |    |      +--Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Natronomonas_pharaonis_Gabara
+|   |     |  |  +----| (84)
+|   |     |  |       |             +--Archaea_Nanohaloarchaeota_Nanohaloarchaea_SW_7_Nanohaloarchaea_43_15
+|   |     |  |       |          +--| (100)
+|   |     |  |       |          |  |   +--Archaea_uncultured_halophilic_archaeon_J07A43
+|   |     |  |       |          |  +---| (100)
+|   |     |  |       |          |      +--Archaea_uncultured_halophilic_archaeon_J07AB43_J07NFR43
+|   |     |  |       +----------| (100)
+|   |     |  |                  +--Archaea_Nanohaloarchaeota_Nanohaloarchaea_uncultured_halophilic_archaeon_J0756AB_J07NFR56
+|   |     +--| (100)
+|   |        |        +---------CEPX01004092_Root_Archaea_WSA2_20a-9_marine_metagenome
+|   |        |     +--| (84)
+|   |        |     |  |                            +--JWKX01000012_Root_Archaea_Woesearchaeota_archaeon_GW2011_AR18
+|   |        |     |  |                       +----| (100)
+|   |        |     |  |                       |    +--Archaea_DPANN_Woesearchaeota_AR18_gwa2_scaffold_3934
+|   |        |     |  |                    +--| (96)
+|   |        |     |  |                    |  |          +--AWOH01000005_Root_Archaea_Woesearchaeota_Nanoarchaeota_archaeon_JGI_OTU-2
+|   |        |     |  |                    |  |       +--| (96)
+|   |        |     |  |                    |  |       |  +--Archaea_Nanoarchaeota_candidate_division_DUSEL4_archaeon_SCGC_AAA011-J02_DUSEL_001_207
+|   |        |     |  |                    |  |  +----| (100)
+|   |        |     |  |                    |  |  |    |  +--Archaea_Nanoarchaeota_candidate_division_DUSEL4_archaeon_SCGC_AAA011-G17_DUSEL_001_198
+|   |        |     |  |                    |  |  |    +--| (100)
+|   |        |     |  |                    |  |  |       +--Archaea_Nanoarchaeota_candidate_division_DUSEL4_archaeon_SCGC_AAA011-L22_Combined_Assembly_DUSEL4_1__DUSEL4
+|   |        |     |  |                    |  +--| (96)
+|   |        |     |  |                    |     +------LBSQ01000033_Root_Archaea_Woesearchaeota_Parcubacteria_group_bacterium_GW2011_GWA2_37_10
+|   |        |     |  |                 +--| (91)
+|   |        |     |  |                 |  |      +--CP010426_Root_Archaea_Woesearchaeota_archaeon_GW2011_AR20
+|   |        |     |  |                 |  |  +---| (100)
+|   |        |     |  |                 |  |  |   +--Archaea_DPANN_Woesearchaeota_AR20_gwa2_scaffold_226
+|   |        |     |  |                 |  +--| (100)
+|   |        |     |  |                 |     +------CEPZ01081926_Root_Archaea_Woesearchaeota_marine_metagenome
+|   |        |     |  |              +--| (90)
+|   |        |     |  |              |  |  +----CEQE01026067_Root_Archaea_Woesearchaeota_marine_metagenome
+|   |        |     |  |              |  +--| (82)
+|   |        |     |  |              |     +------CEPZ01014827_Root_Archaea_Woesearchaeota_marine_metagenome
+|   |        |     |  |           +--| (80)
+|   |        |     |  |           |  |     +---AB019750_Root_Archaea_Woesearchaeota_unidentified_archaeon
+|   |        |     |  |           |  |  +--| (100)
+|   |        |     |  |           |  |  |  +--AB019751_Root_Archaea_Woesearchaeota_unidentified_archaeon
+|   |        |     |  |           |  +--| (96)
+|   |        |     |  |           |     |     +--JWKW01000011_Root_Archaea_Woesearchaeota_archaeon_GW2011_AR17
+|   |        |     |  |           |     +-----| (100)
+|   |        |     |  |           |           +--Archaea_DPANN_Woesearchaeota_AR17_gwa2_scaffold_3211
+|   |        |     |  |        +--| (88)
+|   |        |     |  |        |  +----------------AXWI01000002_Root_Archaea_Woesearchaeota_Euryarchaeota_archaeon_SCGC_AAA286-E23
+|   |        |     |  |     +--| (82)
+|   |        |     |  |     |  |           +-----AACY023798300_Root_Archaea_Woesearchaeota_marine_metagenome
+|   |        |     |  |     |  |        +--| (66)
+|   |        |     |  |     |  |        |  |     +--AACY020521239_Root_Archaea_Woesearchaeota_marine_metagenome
+|   |        |     |  |     |  |        |  +-----| (100)
+|   |        |     |  |     |  |        |        +--EK523682_Root_Archaea_Woesearchaeota_marine_metagenome
+|   |        |     |  |     |  |     +--| (64)
+|   |        |     |  |     |  |     |  |             +--JWKV01000003_Root_Archaea_Woesearchaeota_archaeon_GW2011_AR16
+|   |        |     |  |     |  |     |  |        +----| (100)
+|   |        |     |  |     |  |     |  |        |    +--Archaea_DPANN_Woesearchaeota_AR16
+|   |        |     |  |     |  |     |  |     +--| (65)
+|   |        |     |  |     |  |     |  |     |  |        +--JWKT01000043_Root_Archaea_Woesearchaeota_archaeon_GW2011_AR11
+|   |        |     |  |     |  |     |  |     |  |  +-----| (100)
+|   |        |     |  |     |  |     |  |     |  |  |     +--Archaea_DPANN_Woesearchaeota_AR11_gwa2_scaffold_153050
+|   |        |     |  |     |  |     |  |     |  +--| (64)
+|   |        |     |  |     |  |     |  |     |     +--------CEQE01050924_Root_Archaea_Woesearchaeota_marine_metagenome
+|   |        |     |  |     |  |     |  |  +--| (57)
+|   |        |     |  |     |  |     |  |  |  |  +---AACY023772431_Root_Archaea_Woesearchaeota_marine_metagenome
+|   |        |     |  |     |  |     |  |  |  +--| (85)
+|   |        |     |  |     |  |     |  |  |     +------CEPX01003170_Root_Archaea_Woesearchaeota_marine_metagenome
+|   |        |     |  |     |  |     |  +--| (68)
+|   |        |     |  |     |  |     |     |     +----CEPZ01029485_Root_Archaea_Woesearchaeota_marine_metagenome
+|   |        |     |  |     |  |     |     |  +--| (97)
+|   |        |     |  |     |  |     |     |  |  +--CEUC01139520_Root_Archaea_Woesearchaeota_marine_metagenome
+|   |        |     |  |     |  |     |     +--| (47)
+|   |        |     |  |     |  |     |        +------Archaea_DPANN_Woesearchaeota_AR4_gwa2_scaffold_3467
+|   |        |     |  |     |  |  +--| (97)
+|   |        |     |  |     |  |  |  |     +--CP010425_Root_Archaea_Woesearchaeota_archaeon_GW2011_AR15
+|   |        |     |  |     |  |  |  +-----| (100)
+|   |        |     |  |     |  |  |        +--Archaea_DPANN_Woesearchaeota_AR15_gwa2_scaffold_75
+|   |        |     |  |     |  +--| (96)
+|   |        |     |  |     |     +------AB019749_Root_Archaea_Woesearchaeota_unidentified_archaeon
+|   |        |     |  |  +--| (60)
+|   |        |     |  |  |  |           +--CEPZ01054346_Root_Archaea_Woesearchaeota_marine_metagenome
+|   |        |     |  |  |  +-----------| (100)
+|   |        |     |  |  |              +--Archaea_Euryarchaeota_Euryarchaeota_archaeon_SCGC_AC-312-F18
+|   |        |     |  +--| (100)
+|   |        |     |     |                     +--LAZR01058673_Root_Archaea_Woesearchaeota_marine_sediment_metagenome
+|   |        |     |     |                  +--| (99)
+|   |        |     |     |                  |  |  +--AB019756_Root_Archaea_Woesearchaeota_unidentified_archaeon
+|   |        |     |     |                  |  +--| (97)
+|   |        |     |     |                  |     |  +--JWKU01000011_Root_Archaea_Woesearchaeota_archaeon_GW2011_AR13
+|   |        |     |     |                  |     +--| (100)
+|   |        |     |     |                  |        +--Archaea_DPANN_Pacearchaeota_AR13_gwa2_scaffold_11204
+|   |        |     |     |               +--| (100)
+|   |        |     |     |               |  |   +--ASMP01000002_Root_Archaea_Woesearchaeota_Nanoarchaeota_archaeon_SCGC_AAA011-D5
+|   |        |     |     |               |  +---| (100)
+|   |        |     |     |               |      +--Archaea_CP_DUSEL1_candidate_division_DUSEL1_archaeon_SAG-AAA011-D5_Dusel_001_270
+|   |        |     |     |            +--| (100)
+|   |        |     |     |            |  |     +--LWDU01000111_Root_Archaea_Woesearchaeota_hydrothermal_vent_metagenome
+|   |        |     |     |            |  |  +--| (100)
+|   |        |     |     |            |  |  |  +--AB019753_Root_Archaea_Woesearchaeota_unidentified_archaeon
+|   |        |     |     |            |  +--| (100)
+|   |        |     |     |            |     |   +--LCNU01000021_Root_Archaea_Woesearchaeota_Candidatus_Amesbacteria_bacterium_GW2011_GWC1_47_15
+|   |        |     |     |            |     +---| (100)
+|   |        |     |     |            |         +--LBZX01000012_Root_Archaea_Woesearchaeota_Microgenomates_group_bacterium_GW2011_GWB1_40_9
+|   |        |     |     |       +----| (100)
+|   |        |     |     |       |    |   +--CEUC01125807_Root_Archaea_Woesearchaeota_marine_metagenome
+|   |        |     |     |       |    +---| (100)
+|   |        |     |     |       |        +--AB019752_Root_Archaea_Woesearchaeota_unidentified_archaeon
+|   |        |     |     +-------| (100)
+|   |        |     |             +------Archaea_DPANN_Pacearchaeota_AR6_gwa2_scaffold_2785
+|   |        |  +--| (87)
+|   |        |  |  |                     +--CP010424_Root_Archaea_Diapherotrites_Diapherotrites_Incertae_Sedis_Unknown_Order_Unknown_Family_Candidatus_Iainarchaeum_archaeon_GW2011_AR10
+|   |        |  |  |                 +---| (100)
+|   |        |  |  |                 |   +--Archaea_DPANN_Diapherotrites_AR10_gwa2_scaffold_4532
+|   |        |  |  |              +--| (97)
+|   |        |  |  |              |  |    +--AQRS01000026_Root_Archaea_Diapherotrites_Diapherotrites_Incertae_Sedis_Unknown_Order_Unknown_Family_Candidatus_Iainarchaeum_Candidatus_Iainarchaeum_andersonii_SCGC_AAA011-E11
+|   |        |  |  |              |  +----| (100)
+|   |        |  |  |              |       +--Archaea_Diapherotrites_candidate_division_DUSEL3_archaeon_SCGC_AAA011-E11_DUSEL_001_206
+|   |        |  |  |     +--------| (100)
+|   |        |  |  |     |        |        +--ASMR01000001_Root_Archaea_Diapherotrites_Diapherotrites_Incertae_Sedis_Unknown_Order_Unknown_Family_Candidatus_Iainarchaeum_Diapherotrites_archaeon_SCGC_AAA011-K09
+|   |        |  |  |     |        |  +-----| (100)
+|   |        |  |  |     |        |  |     +--Archaea_Diapherotrites_candidate_division_DUSEL3_archaeon_SCGC_AAA011-K09_DUSEL_001_199
+|   |        |  |  |     |        +--| (97)
+|   |        |  |  |     |           |         +--ASMS01000005_Root_Archaea_Diapherotrites_Diapherotrites_Incertae_Sedis_Unknown_Order_Unknown_Family_Candidatus_Iainarchaeum_Diapherotrites_archaeon_SCGC_AAA011-N19
+|   |        |  |  |     |           +---------| (100)
+|   |        |  |  |     |                     +--Archaea_Diapherotrites_candidate_division_DUSEL3_archaeon-SAG-AAA011-N19_DUSEL_002_272
+|   |        |  |  |  +--| (100)
+|   |        |  |  |  |  |  +------AB019748_Root_Archaea_Diapherotrites_unidentified_archaeon
+|   |        |  |  |  |  +--| (100)
+|   |        |  |  |  |     +------AB019734_Root_Archaea_Diapherotrites_unidentified_archaeon
+|   |        |  |  +--| (87)
+|   |        |  |     |  +----------AB019747_Root_Archaea_Miscellaneous_Euryarchaeotic_Group_unidentified_archaeon
+|   |        |  |     +--| (100)
+|   |        |  |        +--------------AUZZ01000673_Root_Archaea_Parvarchaeota_Parvarchaeota_Incertae_Sedis_Unknown_Order_Unknown_Family_Candidatus_Micrarchaeum_mine_drainage_metagenome
+|   |        +--| (35)
+|   |           |              +--Archaea_Euryarchaeota_Altiarchaeales_Altiarchaeum_BJP_IG2157_Altiarchaeum_SM1_33_3500
+|   |           |    +---------| (100)
+|   |           |    |         +--Archaea_Euryarchaeota_Altiarchaeales_Altiarchaeum_hamiconexum
+|   |           +----| (100)
+|   |                +-----Archaea_Euryarchaeota_Altiarchaeales_Altiarchaeum_IMC4
++---| (100)
+    +--------CEPX01178203_Root_Archaea_Aenigmarchaeota_Deep_Sea_Euryarchaeotic_Group_marine_metagenome
+
+
+Consensus tree in newick format: 
+
+(JWKQ01000002_Root_Archaea_Aenigmarchaeota_Deep_Sea_Euryarchaeotic_Group_archaeon_GW2011_AR5:0.0000024075,Archaea_DPANN_Aenigmarchaeota_AR5_:0.0120320722,((AB019743_Root_Archaea_Aenigmarchaeota_Deep_Sea_Euryarchaeotic_Group_unidentified_archaeon:0.1245650553,((AGBK01001752_Root_Archaea_Aenigmarchaeota_Deep_Sea_Euryarchaeotic_Group_hypersaline_lake_metagenome:0.2403983390,((ASMO01000004_Root_Archaea_Aenigmarchaeota_Deep_Sea_Euryarchaeotic_Group_Candidatus_Aenigmarchaeota_archaeon_JGI_0000106-F11:0.0001144920,Archaea_Aenigmarchaeota_archaeon_JGI_0000106-F11_GBS-C_001_281_JGI-named_Eury_DHVEG:0.0019534203)100:0.1893184554,(ASMQ01000007_Root_Archaea_Aenigmarchaeota_Aenigmarchaeota_Incertae_Sedis_Unknown_Order_Unknown_Family_Candidatus_Aenigmarchaeum_Candidatus_Aenigmarchaeum_subterraneum_SCGC_AAA011-O16:0.0039058216,Archaea_Aenigmarchaeota_Candidatus_Aenigmarchaeum_subterraneum_archaeon-SAG-AAA011-O16_Dusel_001_271:0.0000024075)100:0.2887832754)59:0.0486105097)55:0.0129267750,(((((((AB019754_Root_Archaea_Marine_Benthic_Group_E_unidentified_archaeon:0.1417238677,CESR01131454_Root_Archaea_Marine_Benthic_Group_E_marine_metagenome:0.1554264883)100:0.0875586493,((((((AB269873_Root_Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Thermoplasmatales_Incertae_Sedis_Thermogymnomonas_Thermogymnomonas_acidicola:0.0573562610,(ACXJ01010163_Root_Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Thermoplasmataceae_Thermoplasma_mine_drainage_metagenome:0.0473309783,ACXJ01011147_Root_Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Thermoplasmataceae_Thermoplasma_mine_drainage_metagenome:0.0676223758)100:0.0192389645)100:0.0119797101,((M38637_Root_Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Thermoplasmataceae_Thermoplasma_Thermoplasma_acidophilum:0.0000024059,Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Thermoplasmataceae_Thermoplasma_acidophilum_DSM_1728:0.0000024059)100:0.0093173081,AF339746_Root_Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Thermoplasmataceae_Thermoplasma_Thermoplasma_volcanium:0.0112239725)100:0.0685059046)97:0.0082194828,((AE017261_Root_Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Picrophilaceae_Picrophilus_Picrophilus_torridus_DSM_9790:0.0000024059,Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Picrophilaceae_Picrophilus_torridus_DSM_9790:0.0000024059)100:0.0344185146,Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Ferroplasmaceae_Ferroplasma_acidarmanus_Fer1:0.1112589734)100:0.0471782211)100:0.0824480569,ACXM01000006_Root_Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_BSLdp215_Thermoplasmatales_archaeon_I-plasma:0.1642726127)100:0.0591670119,(AB019742_Root_Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Deep_Sea_Hydrothermal_Vent_Gp_2_Candidatus_Aciduliprofundum_unidentified_archaeon:0.0100853338,Archaea_Euryarchaeotaunclassified_Euryarchaeota_Aciduliprofundum_Aciduliprofundum_boonei_T469:0.0230937059)100:0.0989551742)100:0.0874117068,(((((((KF697737_Root_Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Thermoplasmatales_Incertae_Sedis_Candidatus_Methanomethylophilus_methanogenic_archaeon_mixed_culture_ISO4-G11:0.0370454178,Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Thermoplasmatales_archaeon_BRNA1:0.0113677932)100:0.0172877913,KJ522703_Root_Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Thermoplasmatales_Incertae_Sedis_Candidatus_Methanomethylophilus_Candidatus_Methanomethylophilus_alvus:0.0852981027)100:0.0440535542,GQ339877_Root_Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Thermoplasmatales_Incertae_Sedis_methanogenic_archaeon_WGK1:0.0403239668)100:0.0757197471,Archaea_Euryarchaeota_Methanomicrobiaunclassified_Methanomicrobia_Methanomassiliicoccus_Candidatus_Methanomassiliicoccus_intestinalis_Issoire-Mx1:0.0828555735)100:0.0509872747,AUZY01010495_Root_Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Terrestrial_Miscellaneous_Gp_mine_drainage_metagenome:0.2378789268)98:0.0240594332,(((Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_archaeon_SCGC_AB-540-F20:0.0410295553,Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Thermoplasmatales_archaeon_SCGC_AB-539-C06:0.0270939685)100:0.0188720624,Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmatales_Thermoplasmatales_archaeon_SCGC_AB-539-N05:0.0464130654)100:0.1421952826,Archaea_Thaumarchaeota_unclassified_Thaumarchaeota_Marine_Group_I_Marine_Group_III_euryarchaeote_sp._SCGC_AAA288-E19:0.2089638789)100:0.0367784498)96:0.0238306266,(Archaea_Euryarchaeota_Thermoplasmata_Thermoplasmata_archaeon_JGI_0000113-B15:0.1511029184,Archaea_Euryarchaeota_unclassified_Euryarchaeota_Marine_Group_II_uncultured_marine_group_II_euryarchaeote:0.1174288651)100:0.1412926745)97:0.0476534027)100:0.1019352172)63:0.0265598121,((((((((HI592314_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanomicrobiaceae_Methanoculleus_Methanoculleus_marisnigri:0.0334053351,(AJ831069_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanomicrobiaceae_Methanoculleus_unidentified_archaeon:0.0162558619,Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanomicrobiaceae_Methanoculleus_Methanoculleus_bourgensis_MS2:0.0074221963)100:0.0064056114)100:0.0069991927,(DQ787475_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanomicrobiaceae_Methanoculleus_Methanoculleus_receptaculi:0.0065740769,GU129124_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanomicrobiaceae_Methanoculleus_Methanomicrobiaceae_archaeon_29aM:0.0073752464)100:0.0073704443)100:0.0138406434,KM111599_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanomicrobiaceae_Methanoculleus_Methanoculleus_taiwanensis:0.0194473635)100:0.0122847206,(Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanomicrobiaceae_Methanomicrobium_mobile_BP:0.0473031034,Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanomicrobiaceae_Methanoplanus_Methanoplanus_petrolearius_DSM_11571:0.0355613991)100:0.0447997275)100:0.0097312387,(((((AB479390_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanoregulaceae_Methanoregula_Methanoregula_formicica_SMSP:0.0168868399,EU887810_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanoregulaceae_Methanoregula_Methanoregula_boonei:0.0288174322)100:0.0102367676,Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanoregulaceae_Methanoregula_Candidatus_Methanoregula_boonei_6A8:0.0216923847)100:0.0356689663,((LNQE01001524_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanoregulaceae_Methanolinea_hydrocarbon_metagenome:0.0192503891,Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanoregulaceae_Methanolinea_tarda_NOBI-1:0.0296349668)100:0.0110473920,Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanospirillaceae_Methanospirillum_hungatei_JF-1:0.1078816377)98:0.0093987804)98:0.0129238650,(Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanoregulaceae_Methanosphaerula_Candidatus_Methanosphaerula_palustris_E1-9c:0.0283761107,Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanocorpusculaceae_Methanocorpusculum_Methanocorpusculum_labreanum_Z:0.1903284561)68:0.0128856229)100:0.0227902718,Archaea_Euryarchaeota_Methanomicrobia_Methanomicrobiales_Methanomicrobiaceae_Methanofollis_liminatans_GKZPZ:0.0708302024)100:0.0102057121)100:0.1174305684,Archaea_Euryarchaeota_Methanomicrobia_Methanocellales_Methanoflorens_stordalenmirensis_Draft_v4.3.2:0.1141820655)90:0.0288403656,((JAHE01027406_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_Methanosaetaceae_Methanosaeta_sediment_metagenome:0.1987900077,((((DQ787474_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_Methermicoccaceae_Methermicoccus_Methermicoccus_shengliensis:0.0035757556,Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_Methermicoccaceae_Methermicoccus_shengliensis_DSM_18856:0.0017789217)100:0.0892249142,Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_Methanosaetaceae_Methanosaeta_Methanosaeta_thermophila_PT:0.1209072250)53:0.0076484457,(((((CP003083_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_Methanosarcinaceae_Methanolobus_Methanolobus_psychrophilus_R15:0.0000024059,Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_Methanosarcinaceae_Methanolobus_Methanolobus_psychrophilus_R15:0.0000024059)100:0.0299373663,Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_Methanosarcinaceae_Methanosarcina_barkeri_Fusaro:0.0670748924)67:0.0124364302,Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_Methanosarcinaceae_Methanomethylovorans_hollandica_DSM_15978:0.0302538130)95:0.0132482792,(Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_Methanosarcinaceae_Methanococcoides_burtonii_DSM_6242:0.0351673259,Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_Methanosarcinaceae_Methanohalophilus_Methanohalophilus_mahii_DSM_5219:0.0387953770)100:0.0146815726)95:0.0098253306,(Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_Methanosarcinaceae_Methanosalsum_zhilinae_WeN5:0.0258747294,Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_Methanosarcinaceae_Methanohalobium_Methanohalobium_evestigatum_Z-7303:0.0599587897)68:0.0173552589)100:0.0667132753)75:0.0156275114,Archaea_Euryarchaeota_Methanomicrobia_Methanosarcinales_ANME2D:0.1209685217)92:0.0335295354)98:0.0229049009,((AB196288_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanocellales_Methanocellaceae_Methanocella_Methanocella_paludicola_SANAE:0.0322941943,JN048683_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanocellales_Methanocellaceae_Methanocella_Methanocella_conradii_HZ254:0.0334311025)100:0.0428928823,(AM114193_Root_Archaea_Euryarchaeota_Methanomicrobia_Methanocellales_Methanocellaceae_Methanocella_Methanocella_arvoryzae_MRE50:0.0009660293,Archaea_Euryarchaeota_Methanomicrobia_Methanocellales_Methanocellaceae_Methanocella_sp._RC-I_Manual_curation_by_Zhe_Lv:0.0036149635)100:0.0363583178)100:0.1514474740)77:0.0164947887)97:0.0565069007,(AB019759_Root_Archaea_Euryarchaeota_Methanomicrobia_ANME-1_ANME-1a_unidentified_archaeon:0.0522156531,AB019758_Root_Archaea_Euryarchaeota_Methanomicrobia_ANME-1_ANME-1a_unidentified_archaeon:0.0175260839)100:0.1716855599)97:0.0738378302)63:0.0061286625,Archaea_Lokiarchaeota_SMTZ-76-7:0.4729423218)54:0.0171965646,(((((((X15364_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanothermobacter_Methanothermobacter_marburgensis:0.0087703891,Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanothermobacter_thermautotrophicus_Delta_H:0.0044919756)100:0.0143324479,(GU129103_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanobacteriaceae_archaeon_15aZ:0.0150595207,((((HQ110085_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanobacterium_Methanobacterium_lacus:0.0140672570,GQ906568_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanobacterium_Methanobacterium_bryantii:0.0411970199)92:0.0060101472,(JF812256_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanobacterium_Methanobacterium_movilense:0.0172631774,Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanobacterium_Methanobacterium_sp_SWAN-1:0.0220316314)82:0.0060645922)92:0.0186036414,(((KC608769_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanobrevibacter_Methanobrevibacter_boviskoreani_JH1:0.0585685423,Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanobrevibacter_Methanobrevibacter_smithii_PS_ATCC_35061:0.0360725275)100:0.0198820425,(LWMW01000084_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanobrevibacter_Methanobrevibacter_cuticularis:0.0156958283,(LWMT01000072_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanobrevibacter_Methanobrevibacter_filiformis:0.0295160671,(HK556489_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanobrevibacter_unidentified:0.0199714485,D64027_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanobrevibacter_unidentified_Methanobacteriales:0.0569864823)89:0.0069520087)89:0.0070270392)91:0.0070002898)94:0.0202106728,(AF029202_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanosphaera_unidentified_methanogen_ARC17:0.0230368351,Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanosphaera_stadtmanae_DSM_3091:0.0248894742)100:0.0831328480)94:0.0269604139)71:0.0108687524,AY386124_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanobacteriaceae_Methanobacterium_Methanobacterium_aarhusense:0.0161693314)100:0.0311536121)98:0.0151163443)100:0.0966468148,(HE654004_Root_Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanothermaceae_Methanothermus_Methanothermus_sociabilis:0.0084665598,Archaea_Euryarchaeota_Methanobacteria_Methanobacteriales_Methanothermaceae_Methanothermus_Methanothermus_fervidus_DSM_2088:0.0025235745)100:0.0561651630)100:0.0781362085,(((((AB546258_Root_Archaea_Euryarchaeota_Methanococci_Methanococcales_Methanococcaceae_Methanococcus_Methanococcus_maripaludis:0.0000024059,Archaea_Euryarchaeota_Methanococci_Methanococcales_Methanococcaceae_Methanococcus_Methanococcus_maripaludis_S2:0.0000024059)100:0.0576088838,Archaea_Euryarchaeota_Methanococci_Methanococcales_Methanococcaceae_Methanothermococcus_Methanothermococcus_okinawensis_IH1:0.0335591388)100:0.0854271072,Archaea_Euryarchaeota_Methanococci_Methanococcales_Methanocaldococcaceae_Methanotorris_Methanotorris_igneus_Kol_5:0.0126694422)100:0.0356809980,Archaea_Euryarchaeota_Methanococci_Methanococcales_Methanocaldococcaceae_Methanocaldococcus_jannaschii_DSM_2661:0.0467779658)100:0.1135087793,Archaea_Euryarchaeota_Methanopyri_Methanopyrales_Methanopyraceae_Methanopyrus_kandleri_AV19:0.1970113668)55:0.0099262389)48:0.0177514533,((((((AJ291811_Root_Archaea_Euryarchaeota_Thermococci_Thermococcales_Thermococcaceae_Thermococcus_Thermococcus_pacificus:0.0149258501,Archaea_Euryarchaeota_Thermococci_Thermococcales_Thermococcaceae_Thermococcus_kodakarensis_KOD1:0.0071438628)98:0.0114156145,Archaea_Euryarchaeota_Thermococci_Thermococcales_Thermococcaceae_Pyrococcus_furiosus_DSM_3638:0.0218536260)98:0.0090438466,(LANF01000002_Root_Archaea_Euryarchaeota_Thermococci_Thermococcales_Thermococcaceae_Palaeococcus_Palaeococcus_ferrophilus_DSM_13482:0.0354960635,(HQ696462_Root_Archaea_Euryarchaeota_Thermococci_Thermococcales_Thermococcaceae_Palaeococcus_Palaeococcus_pacificus_DY20341:0.0010092641,Archaea_Euryarchaeota_Thermococci_Thermococcales_Thermococcaceae_Palaeococcus_Palaeococcus_pacificus_DY20341:0.0019672241)100:0.0034179898)100:0.0295081909)100:0.0718206295,Archaea_Nanoarchaeota_Nanoarchaeum_equitans_Kin4-M:0.3530788134)88:0.0260247637,(((CP006577_Root_Archaea_Euryarchaeota_Archaeoglobi_Archaeoglobales_Archaeoglobaceae_Archaeoglobus_Archaeoglobus_fulgidus_DSM_8774:0.0040262349,Archaea_Euryarchaeota_Archaeoglobi_Archaeoglobales_Archaeoglobaceae_Archaeoglobus_Archaeoglobus_fulgidus_DSM_8774:0.0000028930)94:0.0155900512,AB274307_Root_Archaea_Euryarchaeota_Archaeoglobi_Archaeoglobales_Archaeoglobaceae_Archaeoglobus_Archaeoglobus_infectus:0.0583399187)100:0.0237869721,Archaea_Euryarchaeota_Archaeoglobi_Archaeoglobales_Archaeoglobaceae_Ferroglobus_Ferroglobus_placidus_DSM_10642:0.0204766570)100:0.1383565397)76:0.0224343996,(((((JRER01000597_Root_Archaea_Bathyarchaeota_marine_sediment_metagenome:0.0887891804,LFWY01000019_Root_Archaea_Bathyarchaeota_miscellaneous_Crenarchaeota_group_archaeon_SMTZ-80:0.1946993174)100:0.0197093003,Archaea_Thaumarchaeota_Thaumarcheon_SCGC_AB-539-E09:0.2177384826)99:0.0369291941,((((EU239960_Root_Archaea_Thaumarchaeota_Thaumarchaeota_Incertae_Sedis_Unknown_Order_Unknown_Family_Candidatus_Nitrosocaldus_Candidatus_Nitrosocaldus_yellowstonii:0.0859086610,(Archaea_Thaumarchaeota_Nitrososphaerales_Nitrososphaeraceae_Nitrososphaera_Nitrososphaera_viennensis_EN76:0.0684705360,((((((AB019722_Root_Archaea_Thaumarchaeota_Marine_Group_I_Unknown_Order_Unknown_Family_Candidatus_Nitrosopumilus_unidentified_archaeon:0.0316691815,(Archaea_Thaumarchaeota_Thaumarchaeota_archaeon_SCGC_AB-661-L21:0.0000024059,Archaea_Thaumarchaeota_unclassified_Thaumarchaeota_Marine_Group_I_Marine_Group_I_thaumarchaeote_SCGC_AAA160-J20:0.0000024059)100:0.0012106599)99:0.0070011292,((((AB019725_Root_Archaea_Thaumarchaeota_Marine_Group_I_Unknown_Order_Unknown_Family_Candidatus_Nitrosopumilus_unidentified_archaeon:0.0129997119,Archaea_Thaumarchaeota_Thaumarchaeota_archaeon_SCGC_AAA282-K18:0.0259313352)96:0.0035813524,Archaea_Thaumarchaeota_unclassified_Thaumarchaeota_Marine_Group_I_Marine_Group_I_thaumarchaeote_SCGC_AAA799_N04:0.0061753484)96:0.0037219293,Archaea_Thaumarchaeota_Nitrosopumilales_Nitrosopumilaceae_Nitrosopumilus_Candidatus_Nitrosopumilus_koreensis_AR1:0.0010577504)96:0.0052445535,AB019723_Root_Archaea_Thaumarchaeota_Marine_Group_I_Unknown_Order_Unknown_Family_Candidatus_Nitrosopumilus_unidentified_archaeon:0.0130871697)95:0.0078154181)100:0.0283880380,Archaea_Thaumarchaeota_Cenarchaeales_Cenarchaeaceae_Cenarchaeum_Cenarchaeum_symbiosum_A_:0.0490274465)80:0.0098041175,(((Archaea_Thaumarchaeota_Thaumarchaeota_archaeon_SCGC_AB-663-F14:0.0021354412,Archaea_Thaumarchaeota_unclassified_Thaumarchaeota_Marine_Group_I_Marine_Group_I_thaumarchaeote_sp._SCGC_AAA288-P18:0.0037344075)100:0.0091631062,((Archaea_Thaumarchaeota_Thaumarchaeota_archaeon_SCGC_AB-663-G14:0.0016840815,Archaea_Thaumarchaeota_unclassified_Thaumarchaeota_Marine_Group_I_Marine_Group_I_thaumarchaeote_sp._SCGC_AAA008-P02:0.0139657281)92:0.0022926019,((Archaea_Thaumarchaeota_unclassified_Thaumarchaeota_Marine_Group_I_Marine_Group_I_crenarchaeon_SCGC_AB-629-I23:0.0000024059,Archaea_Thaumarchaeota_unclassified_Thaumarchaeota_Marine_Group_I_Marine_Group_I_thaumarchaeote_SCGC_AAA007-O23_TG_002_783:0.0039229793)72:0.0000024059,Archaea_Thaumarchaeota_unclassified_Thaumarchaeota_Marine_Group_I_Marine_Group_I_crenarchaeote_sp._SCGC_AAA288-I14:0.0000024075)76:0.0000020582)100:0.0137177171)100:0.0267989592,Archaea_Thaumarchaeota_unclassified_Thaumarchaeota_Marine_Group_I_Marine_Group_I_thaumarchaeote_sp._SCGC_AAA008-M21:0.0346065742)100:0.0280978054)94:0.0095917739,Archaea_Thaumarchaeota_CSP1-1:0.0388119923)75:0.0146046445,(AVSQ01000019_Root_Archaea_Thaumarchaeota_Marine_Group_I_Thaumarchaeota_archaeon_MY2:0.0030134981,Archaea_Thaumarchaeota_Thaumarchaeota_archaeon_MY2:0.0000020564)100:0.0475534432)100:0.1512153256)100:0.0775617939)100:0.0524883246,(Archaea_Thaumarchaeota_Thaumarchaeota_archaeon_SCGC_AB-179-E04_GBS-N_001_221:0.0522908494,Archaea_Thaumarchaeota_Thaumarchaeota_archaeon_strain_BS4:0.1419972140)100:0.0394048743)100:0.0419043317,(Archaea_Thaumarchaeota_Thaumarchaeota_archaeon_strain_DS1_Dragon_Thaumarchaeon:0.1479338873,Archaea_Archaea_Lokiarchaeaota_archeaon_Loki:0.3809248150)79:0.0370899095)79:0.0461204926,(AB019733_Root_Archaea_Aigarchaeota_Terrestrial_Hot_Spring_Gp_unidentified_archaeon:0.1312410228,((((Archaea_Aigarchaeota_candidate_division_pSL4_archaeon_JGI_0000001-A7_GBS-A_001_112:0.0010650750,Archaea_Aigarchaeota_candidate_division_pSL4_archaeon_SCGC_AAA471-E14_Combined_Assembly_pSL4_3__pSL4:0.0000024059)100:0.0304038116,((((Archaea_Aigarchaeota_candidate_division_pSL4_archaeon_SCGC_AAA471-B22_Combined_Assembly_pSL4_1__pSL4:0.0000000000,Archaea_CP_pSL4_candidate_division_pSL4_archaeon_SCGC_AAA471-J07_GBS-N_001_18:0.0000000000):0.0000024059,Archaea_CP_pSL4_candidate_division_pSL4_archaeon_JGI_0000001-H6_GBS-A_001_118:0.0000024059)60:0.0000024059,Archaea_Aigarchaeota_candidate_division_pSL4_archaeon_SCGC_AAA471-B22_GBS-N_002_4:0.0010807605)99:0.0010799489,Archaea_CP_pSL4_candidate_division_pSL4_archaeon_SCGC_AAA471-G05_GBS-N_001_14:0.0000024059)100:0.0428810818)100:0.0666518237,Archaea_Thaumarchaeota_unclassified_Thaumarchaeota_Candidatus_Caldiarchaeum_subterraneum:0.0907638136)99:0.0140726971,(ASPF01000030_Root_Archaea_Aigarchaeota_Aigarchaeota_Incertae_Sedis_Unknown_Order_Unknown_Family_Candidatus_Caldiarchaeum_Aigarchaeota_archaeon_JGI_0000106-J15:0.0104836834,Archaea_Aigarchaeota_candidate_division_pSL4_archaeon_JGI_0000106-J15_GBS-C_001_288:0.0149838888)100:0.5923916334)100:0.1120289047)83:0.0338268283)62:0.0133842986)65:0.0159184726,((ADKI01000120_Root_Archaea_Bathyarchaeota_hot_springs_metagenome:0.1878216202,(((HK242026_Root_Archaea_Crenarchaeota_Thermoprotei_Thermoproteales_Thermofilaceae_Thermofilum_unidentified:0.0000024059,Archaea_Crenarchaeota_Thermoprotei_Thermoproteales_Thermofilaceae_Thermofilum_Thermofilum_pendens_Hrk_5:0.0000024059)100:0.0747736408,((((Archaea_Crenarchaeota_Thermoprotei_Thermoproteales_Archaea_Crenarchaeota_Thermoprotei_Thermoproteales_YNP_Site_4_Thermoproteales_Type_II:0.0103815491,(Archaea_Crenarchaeota_Thermoprotei_Thermoproteales_Thermoproteaceae_Pyrobaculum_aerophilum_IM2:0.0097516757,Archaea_Crenarchaeota_Thermoprotei_Thermoproteales_Thermoproteaceae_Thermoproteus_Thermoproteus_neutrophilus_V24Sta:0.0096508890)100:0.0209394120)100:0.0091169639,Archaea_Crenarchaeota_Thermoprotei_Thermoproteales_Thermoproteaceae_Thermoproteus_Thermoproteus_uzoniensis_768-20:0.0117311504)100:0.0554988629,Archaea_Crenarchaeota_Thermoprotei_Thermoproteales_Thermoproteaceae_Vulcanisaeta_Vulcanisaeta_distributa_DSM_14429:0.0176494639)99:0.0121952205,Archaea_Crenarchaeota_Thermoprotei_Thermoproteales_Thermoproteaceae_Caldivirga_Caldivirga_maquilingensis_IC-167:0.0677839451)100:0.0656216755)97:0.0325742562,(((((((Archaea_Crenarchaeota_Thermoprotei_Acidilobales_Acidilobaceae_Acidilobus_Acidilobus_saccharovorans_345-15:0.0245553684,Archaea_Crenarchaeota_Thermoprotei_Acidilobales_Caldisphaeraceae_Caldisphaera_lagunensis_IC-154:0.1345177405)99:0.0121098366,((Archaea_Crenarchaeota_Thermoprotei_Desulfurococcales_Site_03_Desulfuro:0.0020624617,Archaea_Crenarchaeota_Thermoprotei_Desulfurococcales_Site_19_Desulfuro:0.0040060276)99:0.0022831299,Archaea_Crenarchaeota_Thermoprotei_Desulfurococcales_Site_04_Desulfuro:0.0038681860)99:0.0088338276)100:0.0596239651,(Archaea_Crenarchaeota_Thermoprotei_Desulfurococcales_Pyrodictiaceae_Hyperthermus_Hyperthermus_butylicus_DSM_5456:0.0083590553,Archaea_Crenarchaeota_Thermoprotei_Desulfurococcales_Pyrodictiaceae_Pyrolobus_fumarii_1A:0.0386456438)100:0.0140360208)97:0.0119788705,((((Archaea_Crenarchaeota_Thermoprotei_Desulfurococcales_Desulfurococcaceae_Desulfurococcus_fermentans_Z-1312:0.0319926544,Archaea_Crenarchaeota_Thermoprotei_Desulfurococcales_Desulfurococcaceae_Thermosphaera_Thermosphaera_aggregans_DSM_11486:0.0300231427)100:0.0184405971,Archaea_Crenarchaeota_Thermoprotei_Desulfurococcales_Desulfurococcaceae_Thermogladius_Thermogladius_cellulolyticus_1633:0.0338140749)99:0.0071089777,Archaea_Crenarchaeota_Thermoprotei_Desulfurococcales_Desulfurococcaceae_Staphylothermus_Staphylothermus_hellenicus_DSM_12710:0.0187663111)100:0.0141100517,Archaea_Crenarchaeota_Thermoprotei_Desulfurococcales_Desulfurococcaceae_Ignicoccus_Ignicoccus_hospitalis_KIN4_I:0.0657926947)100:0.0240368463)48:0.0073154531,(Archaea_Crenarchaeota_Thermoprotei_Desulfurococcales_Desulfurococcaceae_Ignisphaera_Ignisphaera_aggregans_DSM_17230:0.0227049718,Archaea_Crenarchaeota_Thermoprotei_Desulfurococcales_Desulfurococcaceae_Ingnisphaeroid_species:0.0335006894)100:0.0290311220)48:0.0104806627,(((Archaea_Crenarchaeota_Thermoprotei_Sulfolobales_Sulfolobaceae_Acidianus_Acidianus_hospitalis_W1:0.0421955032,(Archaea_Crenarchaeota_Thermoprotei_Sulfolobales_Sulfolobales_archaeon_AZ1:0.0578227409,(Archaea_Crenarchaeota_Thermoprotei_Sulfolobales_Sulfolobaceae_Metallosphaera_Metallosphaera_sedula_DSM_5348:0.0305041272,Archaea_Crenarchaeota_Thermoprotei_Thermoproteales_YNP_14_mk1_myell_like:0.0179294225)100:0.0636223040)93:0.0199018478)100:0.0356875677,Archaea_Crenarchaeota_Thermoprotei_Sulfolobales_Sulfolobaceae_Sulfolobus_solfataricus_P2:0.0795468573)99:0.0096911175,Archaea_Crenarchaeota_Thermoprotei_Sulfolobales_Sulfolobales_archaeon_Acd1:0.0584797057)100:0.0847564020)68:0.0078494116,Archaea_Crenarchaeota_Thermoprotei_Fervidicoccales_Fervidicoccaceae_Fervidicoccus_Fervidicoccus_fontis_Kam940:0.1327090887)100:0.0399065546)94:0.0266157036)91:0.0263833766,((((Archaea_CP_YNPFFA_candidate_division_YNPFFA_archaeon_SCGC_AAA471-B05_Combined_Assembly_YNPFFA_1__YNPFFA:0.0000000000,Archaea_CP_YNPFFA_candidate_division_YNPFFA_archaeon_SCGC_AAA471-O08_GBS-N_001_29:0.0000000000):0.0000000000,Archaea_CP_YNPFFA_candidate_division_YNPFFA_archaeon_SCGC_AAA471-C03_GBS-N_001_6:0.0000000000):0.0000024059,Archaea_CP_YNPFFA_candidate_division_YNPFFA_archaeon_SCGC_AAA471-B23_GBS-N_001_5:0.0000024059)100:0.0674927644,Archaea_Crenarchaeota_Thermoprotei_Sulfolobales_Sulfolobaceae_YNP_08_cren1_8_best_scaffolds:0.0796912418)100:0.2031206477)90:0.0184986325)70:0.0342098780,Archaea_Korarchaeota_Candidatus_Korarchaeum_cryptofilum_OPF8:0.2899847153)100:0.0973340409)57:0.0201395364)94:0.0562295399,(AZIF01000273_Root_Archaea_WSA2_Z7ME43_marine_sediment_metagenome:0.1510691202,LNJD01000004_Root_Archaea_WSA2_WCHA1-57_Arc_I_group_archaeon_ADurb1113_Bin01801:0.1154607205)100:0.0860158687)91:0.0206613084,(((LHYJ01000009_Root_Archaea_MSBL1_candidate_divison_MSBL1_archaeon_SCGC-AAA382N08:0.0543025037,LHXV01000006_Root_Archaea_MSBL1_candidate_divison_MSBL1_archaeon_SCGC-AAA259O05:0.0597230304)100:0.0205022756,LHYF01000011_Root_Archaea_MSBL1_candidate_divison_MSBL1_archaeon_SCGC-AAA382C18:0.0476892526)100:0.1458532328,(Archaea_Hadesarchaea_archaeon_YNP_45:0.0841592906,Archaea_Hadesarchaea_archaeon_YNP_N21:0.0798489515)100:0.0490043474)100:0.0918277302)89:0.0393139093)35:0.0223661710,(((((((((((CP002988_Root_Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halolamina_halophilic_archaeon_DL31:0.0000024059,Archaea_Euryarchaeota_Halobacteria_halophilic_archaeon_sp._DL31_:0.0000024059)100:0.1160665513,(((Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halonotius_sp._A07HN63:0.0100812174,Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halonotius_sp._J07ABHN4_version_2:0.0511257407)100:0.0072465396,Archaea_uncultured_archaeon_J07ABHN6_version_2:0.0109929338)100:0.0516635550,Archaea_Euryarchaeota_Halobacteria_Haloferacales_Haloferacaceae_Halohasta_litchfieldiae_tADL_:0.0312811836)100:0.0875809413)98:0.0341179894,Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Haloplanus_natans_RE_101:0.0807622392)73:0.0179360740,(Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halogeometricum_Halogeometricum_borinquense_DSM_11551:0.0423132559,Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Haloquadratum_walsbyi_HBSQ001:0.0874825819)100:0.0329791600)72:0.0223756380,(((Archaea_Euryarchaeota_Halobacteria_Halobacteriales_haloarchaeon_3A1_DGR:0.0520300091,Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halorubrum_sp._A07HR60:0.1145179252)99:0.0142336214,(Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halorubrum_Halorubrum_lacusprofundi_ATCC_49239:0.0308530334,Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halorubrum_sp._A07HR67:0.0379801673)100:0.0306865790)100:0.0721763778,Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halogranum_Halogranum_salarium_B-1:0.0645171247)75:0.0127457152)96:0.0238157756,(Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halobaculum_sp._A07HB70:0.0794493498,Archaea_uncultured_halophilic_archaeon_J07ABHX67_version_2:0.0891506318)99:0.0288262692)100:0.0373672064,(Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Haladaptatus_paucihalophilus_DX253:0.0882062117,(Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halalkalicoccus_Halalkalicoccus_jeotgali_B3:0.0602192695,((Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halopiger_Halopiger_xanaduensis_SH-6:0.0487800715,(((Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Haloterrigena_Haloterrigena_turkmenica_DSM_5511:0.0189318517,Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Natrinema_pellirubrum_157:0.0206243701)100:0.0128965133,Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Natrialba_Natrialba_magadii_ATCC_43099:0.0300452052)100:0.0230234550,((Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halostagnicola_larsenii_XH-48:0.0504711017,Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halovivax_ruber_XH-70:0.0373099018)99:0.0112230564,Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Natronococcus_occultus_SP4:0.0455141270)99:0.0262744932)99:0.0053910279)97:0.0096780331,Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Natronobacterium_gregoryi_SP2:0.0484499156)100:0.0356183532)95:0.0110558621)84:0.0182048461)89:0.0120358234,Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halobacterium_sp._NRC-1:0.0834926398)87:0.0154010395,(((Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halomicrobium_Halomicrobium_mukohataei_DSM_12286:0.0390206789,Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Haloarcula_marismortui_ATCC_43049:0.1212109517)73:0.0186562725,(Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halorhabdus_Halorhabdus_utahensis_DSM_12940:0.0480609093,Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Halosimplex_Halosimplex_carlsbadense_2-9-1:0.0530860291)100:0.0194906519)72:0.0090580154,((Archaea_uncultured_halophilic_archaeon_J07HX5:0.0428216838,Archaea_uncultured_halophilic_archaeon_J07ABHX64:0.0688903155)100:0.0220355817,Archaea_Euryarchaeota_Halobacteria_Natrialbales_Natrialbaceae_Salinarchaeum_sp._Harcht-Bsk1:0.1117422477)98:0.0254627644)86:0.0159180112)88:0.0248314132,Archaea_Euryarchaeota_Halobacteria_Halobacteriales_Halobacteriaceae_Natronomonas_pharaonis_Gabara:0.0599746867)100:0.1868321900,((Archaea_Nanohaloarchaeota_Nanohaloarchaea_SW_7_Nanohaloarchaea_43_15:0.0750547861,(Archaea_uncultured_halophilic_archaeon_J07A43:0.0086073103,Archaea_uncultured_halophilic_archaeon_J07AB43_J07NFR43:0.0026368563)100:0.1037506952)100:0.0365920742,Archaea_Nanohaloarchaeota_Nanohaloarchaea_uncultured_halophilic_archaeon_J0756AB_J07NFR56:0.0948973347)100:0.2936735768)84:0.1396244103)32:0.0234190915,(((CEPX01004092_Root_Archaea_WSA2_20a-9_marine_metagenome:0.2662902295,(((((((((JWKX01000012_Root_Archaea_Woesearchaeota_archaeon_GW2011_AR18:0.0000020564,Archaea_DPANN_Woesearchaeota_AR18_gwa2_scaffold_3934:0.0000024059)100:0.1345136355,(((AWOH01000005_Root_Archaea_Woesearchaeota_Nanoarchaeota_archaeon_JGI_OTU-2:0.0000020582,Archaea_Nanoarchaeota_candidate_division_DUSEL4_archaeon_SCGC_AAA011-J02_DUSEL_001_207:0.0000024059)96:0.0000020582,(Archaea_Nanoarchaeota_candidate_division_DUSEL4_archaeon_SCGC_AAA011-G17_DUSEL_001_198:0.0000024059,Archaea_Nanoarchaeota_candidate_division_DUSEL4_archaeon_SCGC_AAA011-L22_Combined_Assembly_DUSEL4_1__DUSEL4:0.0000024059)100:0.0009406863)100:0.1371789140,LBSQ01000033_Root_Archaea_Woesearchaeota_Parcubacteria_group_bacterium_GW2011_GWA2_37_10:0.1881666636)96:0.0365977450)96:0.0143063382,((CP010426_Root_Archaea_Woesearchaeota_archaeon_GW2011_AR20:0.0000027627,Archaea_DPANN_Woesearchaeota_AR20_gwa2_scaffold_226:0.0096315417)100:0.1181841359,CEPZ01081926_Root_Archaea_Woesearchaeota_marine_metagenome:0.1748961063)100:0.0689536105)91:0.0186777940,(CEQE01026067_Root_Archaea_Woesearchaeota_marine_metagenome:0.1343935269,CEPZ01014827_Root_Archaea_Woesearchaeota_marine_metagenome:0.1884709545)82:0.0320543812)90:0.0312602646,((AB019750_Root_Archaea_Woesearchaeota_unidentified_archaeon:0.1157773478,AB019751_Root_Archaea_Woesearchaeota_unidentified_archaeon:0.0800108784)100:0.0979714772,(JWKW01000011_Root_Archaea_Woesearchaeota_archaeon_GW2011_AR17:0.0000024059,Archaea_DPANN_Woesearchaeota_AR17_gwa2_scaffold_3211:0.0000024059)100:0.1570146408)96:0.0454467881)80:0.0064974075,AXWI01000002_Root_Archaea_Woesearchaeota_Euryarchaeota_archaeon_SCGC_AAA286-E23:0.4425000448)88:0.0202986911,((((AACY023798300_Root_Archaea_Woesearchaeota_marine_metagenome:0.1598841436,(AACY020521239_Root_Archaea_Woesearchaeota_marine_metagenome:0.0000022192,EK523682_Root_Archaea_Woesearchaeota_marine_metagenome:0.0000024059)100:0.1650084873)66:0.0310884030,((((JWKV01000003_Root_Archaea_Woesearchaeota_archaeon_GW2011_AR16:0.0000024075,Archaea_DPANN_Woesearchaeota_AR16:0.0000024059)100:0.1299315490,((JWKT01000043_Root_Archaea_Woesearchaeota_archaeon_GW2011_AR11:0.0000024059,Archaea_DPANN_Woesearchaeota_AR11_gwa2_scaffold_153050:0.0000024059)100:0.1643830654,CEQE01050924_Root_Archaea_Woesearchaeota_marine_metagenome:0.2242941656)64:0.0354203438)65:0.0280295772,(AACY023772431_Root_Archaea_Woesearchaeota_marine_metagenome:0.1079665835,CEPX01003170_Root_Archaea_Woesearchaeota_marine_metagenome:0.1979032744)85:0.0308980772)57:0.0173156787,((CEPZ01029485_Root_Archaea_Woesearchaeota_marine_metagenome:0.1244852483,CEUC01139520_Root_Archaea_Woesearchaeota_marine_metagenome:0.0844004921)97:0.0221788929,Archaea_DPANN_Woesearchaeota_AR4_gwa2_scaffold_3467:0.1769899932)47:0.0169965767)68:0.0147640637)64:0.0100922647,(CP010425_Root_Archaea_Woesearchaeota_archaeon_GW2011_AR15:0.0000024075,Archaea_DPANN_Woesearchaeota_AR15_gwa2_scaffold_75:0.0000024059)100:0.1599667203)97:0.0153712347,AB019749_Root_Archaea_Woesearchaeota_unidentified_archaeon:0.1866978311)96:0.0223811709)82:0.0484105938,(CEPZ01054346_Root_Archaea_Woesearchaeota_marine_metagenome:0.0761541895,Archaea_Euryarchaeota_Euryarchaeota_archaeon_SCGC_AC-312-F18:0.0402571331)100:0.3105154976)60:0.0411994903,(((((LAZR01058673_Root_Archaea_Woesearchaeota_marine_sediment_metagenome:0.0600694336,(AB019756_Root_Archaea_Woesearchaeota_unidentified_archaeon:0.0931223550,(JWKU01000011_Root_Archaea_Woesearchaeota_archaeon_GW2011_AR13:0.0009498520,Archaea_DPANN_Pacearchaeota_AR13_gwa2_scaffold_11204:0.0000022379)100:0.0400902271)97:0.0204863566)99:0.0239144605,(ASMP01000002_Root_Archaea_Woesearchaeota_Nanoarchaeota_archaeon_SCGC_AAA011-D5:0.0000027672,Archaea_CP_DUSEL1_candidate_division_DUSEL1_archaeon_SAG-AAA011-D5_Dusel_001_270:0.0020304055)100:0.1041139658)100:0.0876364919,((LWDU01000111_Root_Archaea_Woesearchaeota_hydrothermal_vent_metagenome:0.0699992974,AB019753_Root_Archaea_Woesearchaeota_unidentified_archaeon:0.0638797612)100:0.0443548598,(LCNU01000021_Root_Archaea_Woesearchaeota_Candidatus_Amesbacteria_bacterium_GW2011_GWC1_47_15:0.0000027936,LBZX01000012_Root_Archaea_Woesearchaeota_Microgenomates_group_bacterium_GW2011_GWB1_40_9:0.0084066542)100:0.1149124772)100:0.0412086037)100:0.0600313390,(CEUC01125807_Root_Archaea_Woesearchaeota_marine_metagenome:0.0589388887,AB019752_Root_Archaea_Woesearchaeota_unidentified_archaeon:0.0629603426)100:0.1089211262)100:0.1461813514,Archaea_DPANN_Pacearchaeota_AR6_gwa2_scaffold_2785:0.1818051302)100:0.2101291770)100:0.0622994655)84:0.0400715448,(((((CP010424_Root_Archaea_Diapherotrites_Diapherotrites_Incertae_Sedis_Unknown_Order_Unknown_Family_Candidatus_Iainarchaeum_archaeon_GW2011_AR10:0.0039370550,Archaea_DPANN_Diapherotrites_AR10_gwa2_scaffold_4532:0.0023463258)100:0.1169079264,(AQRS01000026_Root_Archaea_Diapherotrites_Diapherotrites_Incertae_Sedis_Unknown_Order_Unknown_Family_Candidatus_Iainarchaeum_Candidatus_Iainarchaeum_andersonii_SCGC_AAA011-E11:0.0000020614,Archaea_Diapherotrites_candidate_division_DUSEL3_archaeon_SCGC_AAA011-E11_DUSEL_001_206:0.0000024059)100:0.1285412325)97:0.0328655274,((ASMR01000001_Root_Archaea_Diapherotrites_Diapherotrites_Incertae_Sedis_Unknown_Order_Unknown_Family_Candidatus_Iainarchaeum_Diapherotrites_archaeon_SCGC_AAA011-K09:0.0000023287,Archaea_Diapherotrites_candidate_division_DUSEL3_archaeon_SCGC_AAA011-K09_DUSEL_001_199:0.0000024059)100:0.1575828923,(ASMS01000005_Root_Archaea_Diapherotrites_Diapherotrites_Incertae_Sedis_Unknown_Order_Unknown_Family_Candidatus_Iainarchaeum_Diapherotrites_archaeon_SCGC_AAA011-N19:0.0049397635,Archaea_Diapherotrites_candidate_division_DUSEL3_archaeon-SAG-AAA011-N19_DUSEL_002_272:0.0041180640)100:0.2564132665)97:0.0468761713)100:0.2232383149,(AB019748_Root_Archaea_Diapherotrites_unidentified_archaeon:0.1902171333,AB019734_Root_Archaea_Diapherotrites_unidentified_archaeon:0.1765188010)100:0.0702680559)100:0.0521902029,(AB019747_Root_Archaea_Miscellaneous_Euryarchaeotic_Group_unidentified_archaeon:0.2819480213,AUZZ01000673_Root_Archaea_Parvarchaeota_Parvarchaeota_Incertae_Sedis_Unknown_Order_Unknown_Family_Candidatus_Micrarchaeum_mine_drainage_metagenome:0.3945109379)100:0.0654536683)87:0.0254101960)87:0.0339254741,((Archaea_Euryarchaeota_Altiarchaeales_Altiarchaeum_BJP_IG2157_Altiarchaeum_SM1_33_3500:0.0237803216,Archaea_Euryarchaeota_Altiarchaeales_Altiarchaeum_hamiconexum:0.0150160085)100:0.2720668921,Archaea_Euryarchaeota_Altiarchaeales_Altiarchaeum_IMC4:0.1617092266)100:0.1441673413)35:0.0191924483)100:0.0947564563)100:0.0988585677)100:0.0754987236,CEPX01178203_Root_Archaea_Aenigmarchaeota_Deep_Sea_Euryarchaeotic_Group_marine_metagenome:0.2283378132)100:0.1195636358);
+
+TIME STAMP
+----------
+
+Date and time: Fri Jun 21 12:33:14 2019
+Total CPU time used: 1568.892 seconds (0h:26m:8s)
+Total wall-clock time used: 790.98523 seconds (0h:13m:10s)
+
