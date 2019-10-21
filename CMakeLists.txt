@@ -122,7 +122,7 @@ include( "${CMAKE_CURRENT_LIST_DIR}/libs/cmake/DownloadDependency.cmake" )
 # Store the commit hashes of our dependencies.
 # These are replaced by libs/cmake/update_dependencies.sh to the hashes that are currently checked out.
 # Thus, do not replace the hashes manually!
-SET( CLI11_COMMIT_HASH "d465414455e01c9e0753efbbf5bde16685bc7b90" ) #CLI11_COMMIT_HASH#
+SET( CLI11_COMMIT_HASH "13becaddb657eacd090537719a669d66d393b8b2" ) #CLI11_COMMIT_HASH#
 SET( genesis_COMMIT_HASH "27a8806aff4dece0348bf7c86e4d0e4d748255f0" ) #genesis_COMMIT_HASH#
 SET( pll-modules_COMMIT_HASH "55dabb9d537b5725179aad13d30ec886e4d7f7e0" ) #pll-modules_COMMIT_HASH#
 SET( libpll_COMMIT_HASH "2afd08f3a2cfefb77577cbfe2c60ec170a457256" ) #libpll_COMMIT_HASH#
