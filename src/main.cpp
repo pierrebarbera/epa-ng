@@ -117,7 +117,7 @@ int main(int argc, char** argv)
   app.add_option( "--split",
                   split_files,
                   "Takes a reference MSA (phylip/fasta/fasta.gz) and combined ref +"
-                  " query MSA(s) (phylip/fasta/fasta.gz) and outputs one pure query file (fasta). "
+                  " query MSA(s) (phylip/fasta/fasta.gz) and outputs a monolithic query file (fasta), as well as a reference file (fasta), ready for use. "
                   "Usage: epa-ng --split ref_alignment query_alignments+"
                 )->group("Convert")->check(CLI::ExistingFile);
 
