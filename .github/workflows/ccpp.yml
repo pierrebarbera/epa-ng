@@ -10,13 +10,13 @@ jobs:
     steps:
     - name: Checkout repo
       uses: actions/checkout@v1
-    - name: Checkout submodules
-      uses: textbook/git-checkout-submodule-action@2.0.0
+      with:
+        submodules: recursive
     - name: get flex/bison
       run: sudo apt-get install flex bison
-    - name: action-gtest
-      uses: CyberZHG/github-action-gtest@0.0.1
     - name: make
       run: make
+    - name: action-gtest
+      uses: CyberZHG/github-action-gtest@0.0.1
     - name: run tests
       run: ./test/bin/epatest
