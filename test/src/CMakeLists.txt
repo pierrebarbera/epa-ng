@@ -1,4 +1,5 @@
-find_package (GTest)
+set( GTEST_ROOT ${PROJECT_SOURCE_DIR}/libs/CLI11/extern/googletest/googletest )
+find_package( GTest )
 
 if(NOT GTEST_FOUND)
     message (STATUS "GTest not found")
@@ -15,7 +16,7 @@ file (GLOB_RECURSE epa_test_sources ${PROJECT_SOURCE_DIR}/test/src/*.cpp ${PROJE
 # sources list now has 2 Main.cpp, old has to be removed
 list(REMOVE_ITEM epa_test_sources "${PROJECT_SOURCE_DIR}/src/main.cpp")
 
-include_directories (${PROJECT_SOURCE_DIR})
+include_directories( ${PROJECT_SOURCE_DIR} )
 
 set (EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/test/bin)
 
@@ -25,7 +26,8 @@ target_link_libraries (epa_test_module ${GENESIS_LINK_LIBRARIES} )
 target_link_libraries (epa_test_module ${PLLMODULES_LIBRARIES})
 target_link_libraries (epa_test_module m)
 
-target_link_libraries (epa_test_module ${GTEST_BOTH_LIBRARIES})
+include_directories( ${GTEST_INCLUDE_DIRS} )
+target_link_libraries( epa_test_module ${GTEST_BOTH_LIBRARIES} )
 
 # if(ENABLE_PREFETCH)
 target_link_libraries (epa_test_module ${CMAKE_THREAD_LIBS_INIT})
