@@ -1,12 +1,10 @@
-name: C/C++ CI
+name: build_test
 
 on: [push]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - name: Checkout repo
       uses: actions/checkout@v1
@@ -19,6 +17,6 @@ jobs:
         cmake libs/CLI11/extern/googletest/googletest/CMakeLists.txt
         make -C libs/CLI11/extern/googletest/googletest/
     - name: make epa
-      run: make
+      run: make -j
     - name: run tests
-      run: ./test/bin/epatest
+      run: ./test/bin/epa_test

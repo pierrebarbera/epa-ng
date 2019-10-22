@@ -1,5 +1,6 @@
 [![Conda install](https://anaconda.org/bioconda/epa-ng/badges/installer/conda.svg)](https://anaconda.org/bioconda/epa-ng)
 [![Conda install](https://anaconda.org/bioconda/epa-ng/badges/downloads.svg)](https://anaconda.org/bioconda/epa-ng)
+[![Actions Status](https://github.com/Pbdas/epa-ng/workflows/build_test/badge.svg)](https://github.com/Pbdas/epa-ng/actions)
 [![Gitter chat](https://badges.gitter.im/Pbdas/epa-ng.png)](https://gitter.im/epa-ng/Lobby)
 
 # EPA-ng
