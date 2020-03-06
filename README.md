@@ -1,6 +1,6 @@
 [![Conda install](https://anaconda.org/bioconda/epa-ng/badges/installer/conda.svg)](https://anaconda.org/bioconda/epa-ng)
 [![Conda install](https://anaconda.org/bioconda/epa-ng/badges/downloads.svg)](https://anaconda.org/bioconda/epa-ng)
-[![Actions Status](https://github.com/Pbdas/epa-ng/workflows/build_test/badge.svg)](https://github.com/Pbdas/epa-ng/actions)
+[![Actions Status](https://github.com/Pbdas/epa-ng/workflows/build&test/badge.svg)](https://github.com/Pbdas/epa-ng/actions)
 [![Softwipe Score](https://img.shields.io/badge/softwipe-e8.0-blue)](https://github.com/adrianzap/softwipe/wiki/Code-Quality-Benchmark)
 [![Gitter chat](https://badges.gitter.im/Pbdas/epa-ng.png)](https://gitter.im/epa-ng/Lobby)
 
