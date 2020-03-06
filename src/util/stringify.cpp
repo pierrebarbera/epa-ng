@@ -18,7 +18,7 @@ std::string stringify(raxml::Model& model)
   return output.str();
 }
 
-std::vector<std::string> split_by_delimiter(const std::string & text, const std::string delim)
+std::vector<std::string> split_by_delimiter(std::string const& text, std::string const& delim)
 {
   std::vector<std::string> parts;
   size_t start = 0;

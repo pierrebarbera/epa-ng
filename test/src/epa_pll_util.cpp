@@ -95,8 +95,8 @@ static void precompute_clvs_test(Options o)
   double log_new;
   unsigned int param_indices[4] = {0};
   size_t id = 0;
-  size_t success = 1;
-  size_t failure = 0;
+  // size_t success = 1;
+  // size_t failure = 0;
   for (auto x : node_list)
   {
     log_new = pll_compute_edge_loglikelihood(part,
@@ -109,11 +109,11 @@ static void precompute_clvs_test(Options o)
     if (!first) {
       EXPECT_DOUBLE_EQ(log_old, log_new);
       if (fabs(log_old - log_new) > 1e-10) {
-        failure++;
+        // failure++;
 
         printf("Failure!\n");
         printf("new logl: %f\n", log_new);
-        printf("IDX is: %lu\n", id);
+        printf("IDX is: %lu\n", static_cast<unsigned long>(id) );
         printf("x->clv_index: \t\t%u\t%p\n", x->clv_index, part->clv[x->clv_index]);
         printf("x->scaler_index: \t%d\t%p\n", x->scaler_index,part->scale_buffer[x->scaler_index]);
         printf("x->back->clv_index: \t%u\t%p\n", x->back->clv_index, part->clv[x->back->clv_index]);
@@ -121,9 +121,10 @@ static void precompute_clvs_test(Options o)
         printf("Is tip? %d\n", (x->next == nullptr));
         printf("Back tip? %d\n", (x->back->next == nullptr));
         printf("\n");
-      } else {
-        success++;
       }
+      // else {
+      //   // success++;
+      // }
     } else {
       log_old = log_new;
     }
@@ -132,6 +133,7 @@ static void precompute_clvs_test(Options o)
     first = false;
     id++;
   }
+
 
   // printf("success vs failue: %lu vs %lu\n", success, failure);
 

@@ -13,13 +13,6 @@
 #include "util/constants.hpp"
 #include "util/logging.hpp"
 
-
-typedef struct fasta_record_s {
-  pll_fasta_t* file;
-  char * sequence = NULL;
-  char * header = NULL;
-} fasta_record_t;
-
 int pll_fasta_fseek(pll_fasta_t* fd, const long int offset, const int whence)
 {
   auto status = fseek(fd->fp, offset, whence);

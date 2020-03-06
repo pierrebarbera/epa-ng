@@ -11,6 +11,11 @@
 #include "util/Options.hpp"
 #include "set_manipulators.hpp"
 
+// class Work;
+// class Sample;
+// class Placement;
+// class Options;
+
 static inline size_t get_num_threads(const Options& options)
 {
   #ifdef __OMP
@@ -34,8 +39,12 @@ static inline size_t get_thread_id()
   #endif
 }
 
-inline Work dynamic_heuristic(Sample<Placement>& sample,
-                              const Options& options)
+using getiter_t = pq_iter_t(PQuery<Placement>&,double const);
+
+template< typename F >
+static Work heuristic_( Sample<Placement>& sample,
+                        const Options& options,
+                        F filterstop)
 {
   Work result;
   compute_and_set_lwr(sample);
@@ -47,14 +56,13 @@ inline Work dynamic_heuristic(Sample<Placement>& sample,
   #ifdef __OMP
   #pragma omp parallel for schedule(dynamic)
   #endif
-  for (size_t i = 0; i < sample.size(); ++i) {
+  for( size_t i = 0; i < sample.size(); ++i ) {
     auto &pq = sample[i];
     const auto tid = get_thread_id();
 
-    auto end = until_accumulated_reached( pq,
-                                          options.prescoring_threshold);
+    auto end = filterstop( pq, options.prescoring_threshold );
 
-    for (auto iter = pq.begin(); iter != end; ++iter) {
+    for( auto iter = pq.begin(); iter != end; ++iter ) {
       workvec[tid].add(iter->branch_id(), pq.sequence_id());
     }
   }
@@ -62,35 +70,19 @@ inline Work dynamic_heuristic(Sample<Placement>& sample,
   return result;
 }
 
-inline Work fixed_heuristic(Sample<Placement>& sample,
-                            const Options& options)
+Work dynamic_heuristic( Sample<Placement>& sample,
+                        const Options& options)
 {
-  Work result;
-  compute_and_set_lwr(sample);
-
-  const auto num_threads = get_num_threads(options);
-
-  std::vector<Work> workvec(num_threads);
-
-  #ifdef __OMP
-  #pragma omp parallel for schedule(dynamic)
-  #endif
-  for (size_t i = 0; i < sample.size(); ++i) {
-    auto &pq = sample[i];
-    const auto tid = get_thread_id();
-
-    auto end = until_top_percent(pq, options.prescoring_threshold);
-
-    for (auto iter = pq.begin(); iter != end; ++iter) {
-      workvec[tid].add(iter->branch_id(), pq.sequence_id());
-    }
-  }
-
-  merge(result, workvec);
-  return result;
+  return heuristic_<getiter_t>( sample, options, until_accumulated_reached );
 }
 
-inline Work baseball_heuristic( Sample<Placement>& sample,
+Work fixed_heuristic( Sample<Placement>& sample,
+                      const Options& options)
+{
+  return heuristic_<getiter_t>( sample, options, until_top_percent );
+}
+
+Work baseball_heuristic( Sample<Placement>& sample,
                                 const Options& options)
 {
   Work result;
@@ -141,7 +133,7 @@ inline Work baseball_heuristic( Sample<Placement>& sample,
   return result;
 }
 
-inline Work apply_heuristic(Sample<Placement>& sample,
+Work apply_heuristic(Sample<Placement>& sample,
                             const Options& options)
 {
   if (options.baseball) {

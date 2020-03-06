@@ -19,7 +19,8 @@
 namespace thrill {
 namespace common {
 
-// taken from: http://stackoverflow.com/questions/7943525/is-it-possible-to-figure-out-the-parameter-type-and-return-type-of-a-lambda
+// taken from:
+// stackoverflow.com/questions/7943525/is-it-possible-to-figure-out-the-parameter-type-and-return-type-of-a-lambda
 template <typename T>
 struct FunctionTraits : public FunctionTraits<decltype(& T::operator ())>{ };
 // For generic types, directly use the result of the signature of its 'operator()'

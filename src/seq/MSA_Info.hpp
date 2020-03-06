@@ -33,8 +33,6 @@ public:
       gap_mask_ = mask_type(sites_, true);
     }
 
-    std::vector<size_t> entry_sizes;
-
     while ( it ) {
       // another sequence!
       ++sequences_;

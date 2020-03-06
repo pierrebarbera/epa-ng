@@ -224,10 +224,7 @@ void simple_mpi(Tree& reference_tree,
 
   Work blo_work;
 
-  size_t chunk_num = 1;
-
   using Sample = Sample<Placement>;
-  std::future<void> prev_gather;
   MSA chunk;
   size_t sequences_done = 0; // not just for info output!
 
@@ -249,7 +246,7 @@ void simple_mpi(Tree& reference_tree,
 
     LOG_DBG << "num_sequences: " << num_sequences << std::endl;
 
-    const size_t seq_id_offset = sequences_done + reader->local_seq_offset();;
+    size_t const seq_id_offset = sequences_done + reader->local_seq_offset();
 
     if (num_sequences < options.chunk_size) {
       all_work = Work(std::make_pair(0, num_branches), std::make_pair(0, num_sequences));
@@ -295,7 +292,6 @@ void simple_mpi(Tree& reference_tree,
 
     sequences_done += num_sequences;
     LOG_INFO << sequences_done  << " Sequences done!";
-    ++chunk_num;
   }
 
   jplace.wait();

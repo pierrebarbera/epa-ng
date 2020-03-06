@@ -15,12 +15,8 @@ using namespace std;
 TEST(file_io, build_MSA_from_file)
 {
   auto msa = build_MSA_from_file(env->reference_file, MSA_Info(env->reference_file), true);
-  int i = 0;
-  for (auto s : msa) {
-    i++;
-  }
 
-  EXPECT_EQ(i, 8);
+  EXPECT_EQ(msa.size(), 8);
   EXPECT_EQ(msa.num_sites(), 705);
 
 }

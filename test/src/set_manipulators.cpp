@@ -112,14 +112,16 @@ TEST(set_manipulators, split_work_equal)
   // printf("\n");
 
   split(work, parts, 2);
-  
+
   auto total_placements = 0;
-  for (auto& pq : sample_1)
-    total_placements+=pq.size();
+  for( auto& pq : sample_1 ) {
+    total_placements += pq.size();
+  }
 
   auto total_work = 0;
-  for (auto& w : parts)
-    total_work+=w.size();
+  for (auto& w : parts) {
+    total_work += w.size();
+  }
 
   EXPECT_EQ(total_placements, total_work);
 
@@ -172,7 +174,7 @@ TEST(set_manipulators, split_work_empty)
 
   for (size_t i = 0; i < stage_size; ++i)
   {
-    ASSERT_EQ(parts[i].size(), 0); 
+    ASSERT_EQ(parts[i].size(), 0);
   }
 }
 
@@ -204,8 +206,8 @@ TEST(set_manipulators, split_work_null_parts)
     }
     else
     {
-      ASSERT_EQ(parts[i].size(), 0); 
-    }  
+      ASSERT_EQ(parts[i].size(), 0);
+    }
   }
 }
 
@@ -252,7 +254,7 @@ TEST(set_manipulators, merge_work)
 
   Work dest;
 
-  for(auto& w : parts) 
+  for(auto& w : parts)
     merge(dest, w);
 
   // printf("\nDest");

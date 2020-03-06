@@ -12,7 +12,7 @@ namespace raxml {
 class SubstitutionModel
 {
 public:
-  SubstitutionModel(const pllmod_subst_model_t& sm) :
+  explicit SubstitutionModel(const pllmod_subst_model_t& sm) :
     _states(sm.states), _name(sm.name)
   {
     if (sm.freqs)
@@ -60,8 +60,9 @@ public:
   void base_freqs(const doubleVector& v)
   {
 //    std::cout << "expected: " << _states << ", got: " << v.size() << std::endl;
-    if (v.size() != _states)
+    if (v.size() != _states) {
       throw std::invalid_argument("Invalid size of base_freqs vector!");
+    }
 
     _base_freqs = v;
   };
@@ -102,49 +103,49 @@ class Model
 {
 public:
   Model (DataType data_type = DataType::autodetect, const std::string &model_string = "GTR+G");
-  Model (const std::string &model_string) : Model(DataType::autodetect, model_string) {};
+  explicit Model (const std::string &model_string) : Model(DataType::autodetect, model_string) {};
 
   Model(const Model& other) = default;
 
   /* getters */
-  DataType data_type() const { return _data_type; };
-  unsigned int num_states() const { return _num_states; };
-  std::string name() const { return _name; };
+  DataType data_type() const { return _data_type; }
+  unsigned int num_states() const { return _num_states; }
+  std::string name() const { return _name; }
 
   const pll_state_t* charmap() const;
-  const SubstitutionModel submodel(size_t i) const { return _submodels.at(i); };
+  const SubstitutionModel submodel(size_t i) const { return _submodels.at(i); }
 
-  unsigned int ratehet_mode() const { return _rate_het; };
-  unsigned int num_ratecats() const { return _num_ratecats; };
-  unsigned int num_submodels() const { return _num_submodels; };
-  const doubleVector& ratecat_rates() const { return _ratecat_rates; };
-  const doubleVector& ratecat_weights() const { return _ratecat_weights; };
-  const std::vector<unsigned int>& ratecat_submodels() const { return _ratecat_submodels; };
-  int gamma_mode() const { return _gamma_mode; };
+  unsigned int ratehet_mode() const { return _rate_het; }
+  unsigned int num_ratecats() const { return _num_ratecats; }
+  unsigned int num_submodels() const { return _num_submodels; }
+  const doubleVector& ratecat_rates() const { return _ratecat_rates; }
+  const doubleVector& ratecat_weights() const { return _ratecat_weights; }
+  const std::vector<unsigned int>& ratecat_submodels() const { return _ratecat_submodels; }
+  int gamma_mode() const { return _gamma_mode; }
 
-  double alpha() const { return _alpha; };
-  double pinv() const { return _pinv; };
-  double brlen_scaler() const { return _brlen_scaler; };
-  const doubleVector& base_freqs(unsigned int i) const { return _submodels.at(i).base_freqs(); };
-  const doubleVector& subst_rates(unsigned int i) const { return _submodels.at(i).subst_rates(); };
+  double alpha() const { return _alpha; }
+  double pinv() const { return _pinv; }
+  double brlen_scaler() const { return _brlen_scaler; }
+  const doubleVector& base_freqs(unsigned int i) const { return _submodels.at(i).base_freqs(); }
+  const doubleVector& subst_rates(unsigned int i) const { return _submodels.at(i).subst_rates(); }
 
   std::string to_string(bool print_params = false) const;
   int params_to_optimize() const;
-  ParamValue param_mode(int param) const { return _param_mode.at(param); };
+  ParamValue param_mode(int param) const { return _param_mode.at(param); }
 
   AscBiasCorrection ascbias_type() const { return _ascbias_type; }
   const WeightVector& ascbias_weights() const { return _ascbias_weights; }
 
   /* setters */
-  void alpha(double value) { _alpha = value; };
-  void pinv(double value) { _pinv = value; };
-  void brlen_scaler(double value) { _brlen_scaler = value; };
-  void base_freqs(size_t i, const doubleVector& value) { _submodels.at(i).base_freqs(value); };
-  void subst_rates(size_t i, const doubleVector& value) { _submodels.at(i).subst_rates(value); };
-  void base_freqs(const doubleVector& value) { for (SubstitutionModel& s: _submodels) s.base_freqs(value); };
-  void subst_rates(const doubleVector& value) { for (SubstitutionModel& s: _submodels) s.subst_rates(value); };
-  void ratecat_rates(doubleVector const& value) { _ratecat_rates = value; };
-  void ratecat_weights(doubleVector const& value) { _ratecat_weights = value; };
+  void alpha(double value) { _alpha = value; }
+  void pinv(double value) { _pinv = value; }
+  void brlen_scaler(double value) { _brlen_scaler = value; }
+  void base_freqs(size_t i, const doubleVector& value) { _submodels.at(i).base_freqs(value); }
+  void subst_rates(size_t i, const doubleVector& value) { _submodels.at(i).subst_rates(value); }
+  void base_freqs(const doubleVector& value) { for (SubstitutionModel& s: _submodels) s.base_freqs(value); }
+  void subst_rates(const doubleVector& value) { for (SubstitutionModel& s: _submodels) s.subst_rates(value); }
+  void ratecat_rates(doubleVector const& value) { _ratecat_rates = value; }
+  void ratecat_weights(doubleVector const& value) { _ratecat_weights = value; }
 
   /* initialization */
   void init_from_string(const std::string& model_string);

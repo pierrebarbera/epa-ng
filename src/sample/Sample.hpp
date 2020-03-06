@@ -26,7 +26,7 @@ public:
       std::is_same<T, Placement>::value
       >
   >
-  Sample(const Sample<Slim_Placement>& other)
+  Sample( Sample<Slim_Placement> const & other)
     : pquerys_(other.size())
     , newick_(other.newick())
   {
@@ -35,7 +35,7 @@ public:
       pquerys_[i] = PQuery<Placement>(other.at(i));
     }
   }
-  Sample(const size_t size)
+  explicit Sample( size_t const size )
   {
     pquerys_.reserve(size);
     for (size_t i = 0; i < size; ++i) {
@@ -43,7 +43,7 @@ public:
     }
   }
 
-  Sample(const size_t size, const size_t depth)
+  Sample( size_t const size, size_t const depth )
     : Sample(size)
   {
     for (size_t i = 0; i < pquerys_.size(); ++i) {
@@ -51,8 +51,8 @@ public:
     }
   }
 
-  Sample(const std::string newick) 
-    : newick_(newick) 
+  explicit Sample( std::string const& newick )
+    : newick_(newick)
   { }
   ~Sample() = default;
 
@@ -87,7 +87,7 @@ public:
       pquerys_.back().emplace_back(std::forward<Args>(args)...);
     }
   }
-  
+
   size_t add_pquery(const size_t seq_id,
                     const std::string& label)
   {
@@ -110,7 +110,7 @@ public:
 
   // serialization
   template <class Archive>
-  void serialize(Archive & ar) 
+  void serialize(Archive & ar)
   { ar( *static_cast<Token*>( this ), pquerys_, newick_ ); }
 
 private:

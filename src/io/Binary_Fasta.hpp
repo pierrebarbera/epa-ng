@@ -95,8 +95,6 @@ static inline void put_encoded(utils::Serializer& ser,
 
 static std::string get_decoded(utils::Deserializer& des)
 {
-  std::string res;
-
   // get the size of characters that were packed
   const auto decoded_size = des.get_int<uint64_t>();
 
@@ -272,7 +270,7 @@ public:
     auto it = sequence::FastaInputIterator( utils::from_file(fasta_file) );
 
     // probe first seq to see if this might be AA data
-    ensure_dna(it->sites());
+    ensure_dna( it->sites() );
 
     while ( it ) {
       ser.put_string(it->label());
@@ -290,10 +288,10 @@ public:
 class Binary_Fasta_Reader : public msa_reader
 {
 public:
-  Binary_Fasta_Reader(const std::string& file_name,
-                      const MSA_Info info,
-                      const bool premasking = false,
-                      const bool split = false)
+  Binary_Fasta_Reader(std::string const& file_name,
+                      MSA_Info const& info,
+                      bool const premasking = false,
+                      bool const split = false)
     : istream_(file_name)
     , des_(istream_)
     , mask_(info.gap_mask())

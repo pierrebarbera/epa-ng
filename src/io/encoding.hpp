@@ -72,11 +72,11 @@ public:
     }
 
     // make the reverse lookup
-    for (size_t i = 0; i < from_fourbit_.max_size() * 2; i+=2) {
+    for( size_t i = 0; i < ( from_fourbit_.max_size() * 2 ); i+=2 ) {
       auto pair = unpack_(i/2);
-      reinterpret_cast<uchar*>(from_fourbit_.data())[i] = 
+      reinterpret_cast<uchar*>(from_fourbit_.data())[i] =
         NT_MAP[pair.first];
-      reinterpret_cast<uchar*>(from_fourbit_.data())[i+1u] = 
+      reinterpret_cast<uchar*>(from_fourbit_.data())[i+1u] =
         NT_MAP[pair.second];
     }
   }
@@ -122,7 +122,7 @@ public:
     // unpack
     size_t i = 0;
     for (; i < s.size() - 1u; ++i) {
-      reinterpret_cast<char16_t*>(&res[0])[i] 
+      reinterpret_cast<char16_t*>(&res[0])[i]
         = from_fourbit_[static_cast<uchar>(s[i])];
     }
 
@@ -140,7 +140,7 @@ public:
 
     return res;
   }
-  
+
 private:
   Matrix<char> to_fourbit_;
   std::array<char16_t, 256> from_fourbit_;

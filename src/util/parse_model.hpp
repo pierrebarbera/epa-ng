@@ -10,7 +10,7 @@
 #include "genesis/utils/text/string.hpp"
 #include "genesis/utils/core/fs.hpp"
 
-static std::string parse( std::string const& full, std::string qry, size_t& pos )
+static std::string parse( std::string const& full, std::string const& qry, size_t& pos )
 {
   std::string result;
   pos = full.find( qry, pos );
@@ -33,8 +33,8 @@ static std::string parse( std::string const& full, std::string qry, size_t& pos 
 }
 
 static std::string parse_between( std::string const& full,
-                                  std::string lhs,
-                                  std::string rhs,
+                                  std::string const& lhs,
+                                  std::string const& rhs,
                                   size_t& pos )
 {
   std::string result;

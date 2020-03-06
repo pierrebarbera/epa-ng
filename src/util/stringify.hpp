@@ -10,7 +10,7 @@
 constexpr char NEWL = '\n';
 
 template <class T, class lambda>
-static std::string stringify_vec_impl( const std::vector<T>& vec, 
+static std::string stringify_vec_impl( const std::vector<T>& vec,
                                 lambda toString)
 {
   std::ostringstream output;
@@ -19,7 +19,7 @@ static std::string stringify_vec_impl( const std::vector<T>& vec,
   for (auto& e : vec) {
     output << toString(e);
     if (++i < vec.size()) {
-      output << ", ";  
+      output << ", ";
     }
   }
 
@@ -44,4 +44,4 @@ std::string stringify(const std::vector<std::vector<T>>& vec)
   });
 }
 
-std::vector<std::string> split_by_delimiter(const std::string & text, const std::string delim);
+std::vector<std::string> split_by_delimiter(const std::string & text, std::string const& delim);

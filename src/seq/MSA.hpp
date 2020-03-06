@@ -12,7 +12,7 @@ public:
   using iterator        = container_type::iterator;
   using const_iterator  = container_type::const_iterator;
 
-  MSA(const size_t num_sites) : num_sites_(num_sites) {};
+  explicit MSA(const size_t num_sites) : num_sites_(num_sites) {};
   MSA() : num_sites_(0) {};
   ~MSA() = default;
 
@@ -30,18 +30,18 @@ public:
   // getters
   size_t size() const {return sequence_list_.size();}
   size_t num_sites() const {return num_sites_;}
-  const Sequence& operator[](const size_t i) const {return sequence_list_[i];};
+  const Sequence& operator[](const size_t i) const {return sequence_list_[i];}
 
   // setters
   void num_sites(const size_t sites) {num_sites_ = sites;}
 
   //Iterator Compatability
-  iterator begin() { return sequence_list_.begin(); };
-  iterator end() { return sequence_list_.end(); };
-  const_iterator begin() const { return sequence_list_.cbegin(); };
-  const_iterator end() const { return sequence_list_.cend(); };
-  const_iterator cbegin() const { return sequence_list_.cbegin(); };
-  const_iterator cend() const { return sequence_list_.cend(); };
+  iterator begin() { return sequence_list_.begin(); }
+  iterator end() { return sequence_list_.end(); }
+  const_iterator begin() const { return sequence_list_.cbegin(); }
+  const_iterator end() const { return sequence_list_.cend(); }
+  const_iterator cbegin() const { return sequence_list_.cbegin(); }
+  const_iterator cend() const { return sequence_list_.cend(); }
 
 private:
   size_t num_sites_;

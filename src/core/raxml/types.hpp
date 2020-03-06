@@ -107,7 +107,7 @@ public:
 
   virtual const char* what() const noexcept { return message().c_str(); }
 
-  virtual const std::string message() const { return _message; };
+  virtual const std::string message() const { return _message; }
 
 protected:
   std::string _message;

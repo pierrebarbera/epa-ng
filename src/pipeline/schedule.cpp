@@ -11,13 +11,13 @@
 void to_difficulty(std::vector<double>& perstage_avg)
 {
   auto min = *std::min_element(perstage_avg.begin(), perstage_avg.end());
-  for_each(perstage_avg.begin(), perstage_avg.end(), 
+  for_each(perstage_avg.begin(), perstage_avg.end(),
     [min](double& x){x /= min;}
   );
 }
 
-std::vector<unsigned int> solve(unsigned int stages, 
-                                unsigned int nodes, 
+std::vector<unsigned int> solve(unsigned int stages,
+                                unsigned int nodes,
                                 const std::vector<double>& difficulty_per_stage)
 {
   assert(difficulty_per_stage.size() == stages);
@@ -32,7 +32,7 @@ std::vector<unsigned int> solve(unsigned int stages,
   // std::advance(constrained_begin, 1);
   auto constrained_end = std::end(difficulty_per_stage);
   // std::advance(constrained_end, -1);
-  
+
   auto x1 = std::accumulate(constrained_begin, constrained_end, 0.0);
   x1 = static_cast<double>(nodes) / x1;
 
@@ -59,7 +59,7 @@ std::vector<unsigned int> solve(unsigned int stages,
 }
 
 void assign(const int local_rank,
-            std::vector<unsigned int>& nodes_per_stage, 
+            std::vector<unsigned int>& nodes_per_stage,
             schedule_type& rank_assignm,
             int* local_stage)
 {
@@ -79,7 +79,7 @@ void assign(const int local_rank,
 }
 
 void reassign(const int local_rank,
-              std::vector<unsigned int>& nodes_per_stage, 
+              std::vector<unsigned int>& nodes_per_stage,
               schedule_type& rank_assignm,
               int* local_stage)
 {
@@ -88,7 +88,7 @@ void reassign(const int local_rank,
   std::vector<int> cut_ranks;
   for (size_t i = 0; i < nodes_per_stage.size(); ++i) {
     auto& cur_stage = rank_assignm[i];
-    int to_rm = (int)cur_stage.size() - nodes_per_stage[i] ;
+    int to_rm = static_cast<int>( cur_stage.size() ) - nodes_per_stage[i];
     auto rm_iter = cur_stage.end();
     for (; to_rm > 0; --to_rm) {
       --rm_iter;

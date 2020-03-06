@@ -14,8 +14,8 @@ int safe_fclose(FILE* fptr);
 class Binary {
 public:
   using file_ptr_type = std::unique_ptr<FILE, int(*)(FILE*)>;
-  
-  Binary(const std::string& bin_file_path);
+
+  explicit Binary(const std::string& bin_file_path);
   Binary() : bin_fptr_(nullptr, safe_fclose) { }
   Binary(Binary && other);
   ~Binary() = default;

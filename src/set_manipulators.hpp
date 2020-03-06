@@ -28,10 +28,15 @@ void discard_by_support_threshold(Sample<Placement>& sample,
                                   const size_t min=1,
                                   const size_t max=std::numeric_limits<size_t>::max());
 
+
 pq_iter_t until_accumulated_reached(  PQuery<Placement>& pq,
                                       const double thresh,
-                                      const size_t min=1,
-                                      const size_t max=std::numeric_limits<size_t>::max());
+                                      const size_t min,
+                                      const size_t max);
+
+pq_iter_t until_accumulated_reached(  PQuery<Placement>& pq,
+                                      const double thresh);
+
 void discard_by_accumulated_threshold(Sample<Placement>& sample,
                                       const double thresh,
                                       const size_t min=1,

@@ -53,16 +53,16 @@ TEST(Binary_Fasta, reader)
   size_t i = skip;
   const size_t chunksize = 5;
   size_t num_sequences = 0;
-  while ( (num_sequences = reader.read_next(read_msa, chunksize)) ) {
+  while ( (num_sequences = reader.read_next(read_msa, chunksize)) != 0 ) {
 
     ASSERT_EQ(num_sequences, read_msa.size()) << "bad size at i=" << i;
 
-    for (size_t k = 0; k < num_sequences; ++k) {
+    for( size_t k = 0; k < num_sequences; ++k ) {
       EXPECT_STREQ(msa[i+k].header().c_str(), read_msa[k].header().c_str());
       EXPECT_STREQ(msa[i+k].sequence().c_str(), read_msa[k].sequence().c_str());
     }
 
-    i+=num_sequences;
+    i += num_sequences;
 
   }
 }

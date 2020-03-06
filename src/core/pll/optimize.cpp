@@ -85,18 +85,13 @@ static double opt_branch_lengths_pplacer( pll_partition_t * partition,
                                           unsigned int smoothings,
                                           const double tolerance)
 {
-  const int max_iters = 30;
-  double loglikelihood = 0.0, new_loglikelihood;
-  double xmin,    /* min branch length */
-         xguess,  /* initial guess */
-         xmax,    /* max branch length */
-         xtol,    /* tolerance */
-         xres;    /* optimal found branch length */
+  int const max_iters = 30;
+
   std::vector<unsigned int> param_indices(partition->rate_cats, 0);
 
-  const auto score_node   = inner;
-  const auto blo_node     = inner->next->back;
-  const auto blo_antinode = inner->next->next->back;
+  auto const score_node   = inner;
+  auto const blo_node     = inner->next->back;
+  auto const blo_antinode = inner->next->next->back;
 
   pll_operation_t toward_score;
   toward_score.parent_clv_index    = score_node->clv_index;
@@ -118,7 +113,7 @@ static double opt_branch_lengths_pplacer( pll_partition_t * partition,
   toward_blo_node.child2_scaler_index = blo_antinode->scaler_index;
   toward_blo_node.child2_matrix_index = blo_antinode->pmatrix_index;
 
-  const auto original_length = blo_node->length * 2;
+  auto const original_length = blo_node->length * 2;
 
   bool opt_proximal = true;
 
@@ -144,7 +139,7 @@ static double opt_branch_lengths_pplacer( pll_partition_t * partition,
   nr_params.sumtable          = nullptr;
 
   /* get the initial likelihood score */
-  loglikelihood = -pll_compute_edge_loglikelihood (partition,
+  double loglikelihood = -pll_compute_edge_loglikelihood (partition,
                                                   score_node->back->clv_index,
                                                   score_node->back->scaler_index,
                                                   score_node->clv_index,
@@ -159,13 +154,14 @@ static double opt_branch_lengths_pplacer( pll_partition_t * partition,
     sites_alloc += partition->states;
   }
 
-  if ((nr_params.sumtable = static_cast<double *> (
+  nr_params.sumtable = static_cast<double *> (
       pll_aligned_alloc(sites_alloc
                         * partition->rate_cats
                         * partition->states_padded
                         * sizeof(double),
-                        partition->alignment)))
-        == nullptr) {
+                        partition->alignment));
+
+  if( nr_params.sumtable == nullptr ) {
     throw std::runtime_error{"Cannot allocate memory for bl opt variables"};
   }
 
@@ -177,10 +173,11 @@ static double opt_branch_lengths_pplacer( pll_partition_t * partition,
             NR for Pendant
      =============================================================*/
 
-    xmin = PLLMOD_OPT_MIN_BRANCH_LEN;
-    xmax = PLLMOD_OPT_MAX_BRANCH_LEN;
-    xtol = xmin/10.0;
-    xguess = score_node->length;
+    double xmin = PLLMOD_OPT_MIN_BRANCH_LEN;
+    double xmax = PLLMOD_OPT_MAX_BRANCH_LEN;
+    double xtol = xmin/10.0;
+    double xguess = score_node->length;
+
     if ( (xguess < xmin) or( xguess > xmax) ) {
       xguess = PLLMOD_OPT_DEFAULT_BRANCH_LEN;
     }
@@ -200,7 +197,7 @@ static double opt_branch_lengths_pplacer( pll_partition_t * partition,
     nr_params.tolerance         = xtol;
 
     // minimize newton for pendant length
-    xres = pllmod_opt_minimize_newton(xmin,
+    double xres = pllmod_opt_minimize_newton(xmin,
                                       xguess,
                                       xmax,
                                       xtol,
@@ -275,7 +272,7 @@ static double opt_branch_lengths_pplacer( pll_partition_t * partition,
 
     pll_update_partials(partition, &toward_score, 1);
 
-    new_loglikelihood = -pll_compute_edge_loglikelihood(partition,
+    double new_loglikelihood = -pll_compute_edge_loglikelihood(partition,
                                         score_node->back->clv_index,
                                         score_node->back->scaler_index,
                                         score_node->clv_index,

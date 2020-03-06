@@ -117,7 +117,8 @@ int main(int argc, char** argv)
   app.add_option( "--split",
                   split_files,
                   "Takes a reference MSA (phylip/fasta/fasta.gz) and combined ref +"
-                  " query MSA(s) (phylip/fasta/fasta.gz) and outputs a monolithic query file (fasta), as well as a reference file (fasta), ready for use. "
+                  " query MSA(s) (phylip/fasta/fasta.gz) and outputs a monolithic query file (fasta), as well as a "
+                  "reference file (fasta), ready for use. "
                   "Usage: epa-ng --split ref_alignment query_alignments+"
                 )->group("Convert")->check(CLI::ExistingFile);
 
@@ -250,7 +251,8 @@ int main(int argc, char** argv)
                 )->group("Compute");
   app.add_flag( "--raxml-blo",
                   raxml_blo,
-                  "Employ old style of branch length optimization during thorough insertion as opposed to sliding approach. "
+                  "Employ old style of branch length optimization during thorough insertion as opposed"
+                  " to sliding approach. "
                   "WARNING: may significantly slow down computation."
                 )->group("Compute");
   app.add_flag( "--no-pre-mask",
@@ -493,7 +495,8 @@ int main(int argc, char** argv)
 
   if (ref_info.sites() != qry_info.sites()) {
     LOG_ERR << "The reference and query alignment files do not seem to have the same alignment width! ("
-            << ref_info.sites() << " vs. " << qry_info.sites() << "). Are the query sequences not aligned?" << std::endl;
+            << ref_info.sites() << " vs. " << qry_info.sites() << "). Are the query sequences not aligned?"
+            << std::endl;
     exit_epa(EXIT_FAILURE);
   }
 
@@ -521,7 +524,8 @@ int main(int argc, char** argv)
                   "You may specify it generically (GTR+G), however parameters will not be optimized. \n"
                   "Instead we reccommend to use RAxML to re-evaluate the parameters and then pass the resulting \n"
                   "RAxML_info file to the epa-ng --model argument. epa-ng will then auto-parse the parameters.\n"
-                  "( raxmlHPC -f e -s " << reference_file << " -t " << tree_file << " -n info -m GTRGAMMAX )" << std::endl;
+                  "( raxmlHPC -f e -s " << reference_file << " -t " << tree_file << " -n info -m GTRGAMMAX )"
+                  << std::endl;
       exit_epa(EXIT_FAILURE);
     }
     tree = Tree(tree_file, ref_msa, model, options);
@@ -529,7 +533,8 @@ int main(int argc, char** argv)
 
   if (not options.dump_binary_mode) {
     if (query_file.empty()) {
-      throw std::runtime_error{"Must supply query file! Combined MSA files not currently supported, please split them and specify using -s and -q."};
+      throw std::runtime_error{"Must supply query file! Combined MSA files not currently supported, please"
+      " split them and specify using -s and -q."};
     }
   } else {
     // dump to binary if specified

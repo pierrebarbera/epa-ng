@@ -1,9 +1,9 @@
-set( GTEST_ROOT ${PROJECT_SOURCE_DIR}/libs/CLI11/extern/googletest/googletest )
+set( GTEST_ROOT ${PROJECT_SOURCE_DIR}/libs/CLI11/extern/googletest/googletest/build )
 find_package( GTest )
 
 if(NOT GTEST_FOUND)
     message (STATUS "GTest not found")
-    message (WARNING "Skipping building tests.")
+    message (WARNING "Skipping building tests. To enable tests: go to deps/CLI11/extern/googletest/googletest and mkdir build && cd build && cmake .. && make")
     return()
 endif()
 

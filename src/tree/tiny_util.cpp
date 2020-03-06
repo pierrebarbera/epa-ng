@@ -23,6 +23,12 @@ static void alloc_and_copy(T& dest, const T src, const size_t size)
 
   dest = static_cast<T>(calloc(size, sizeof(base_t)));
 
+  if( dest == nullptr ) {
+    throw std::runtime_error{"Can't alloc memory."};
+  }
+
+  assert( dest != nullptr );
+
   memcpy( dest,
           src,
           size * sizeof(base_t));

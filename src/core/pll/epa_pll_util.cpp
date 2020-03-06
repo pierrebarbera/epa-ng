@@ -73,19 +73,19 @@ void precompute_clvs( pll_utree_t const * const tree,
 
   utree_free_node_data(root);
 
-  for (size_t i = 0; i < tree->tip_count; ++i) {
+  for( size_t i = 0; i < tree->tip_count; ++i ) {
     const auto node = tree->nodes[i];
     /* perform a partial postorder traversal of the unrooted tree  starting at the current tip
       and returning every node whose clv in the direction of the tip hasn't been calculated yet*/
     unsigned int traversal_size = 0;
     unsigned int num_matrices = 0;
     unsigned int num_ops = 0;
-    if (pll_utree_traverse( node->back,
+    if( pll_utree_traverse( node->back,
                             PLL_TREE_TRAVERSE_POSTORDER,
                             cb_partial_traversal,
                             &travbuffer[0],
                             &traversal_size)
-                != PLL_SUCCESS) {
+                != PLL_SUCCESS ) {
       throw std::runtime_error{"Function pll_unode_traverse() requires inner nodes as parameters"};
     }
 

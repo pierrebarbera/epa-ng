@@ -103,7 +103,7 @@ static int cb_set_branchlengths_one(pll_unode_t * node)
     node->next->next->length = 1;
   }
   return 1;
-};
+}
 
 static void test_newick_string( std::string const& tree_file, std::string const& valid )
 {
@@ -426,7 +426,7 @@ TEST(pll_util, shift_partition_focus_logtest)
 
   pll_update_partials(part, &op, 1);
 
-  false_logl += pll_compute_edge_loglikelihood(part,
+  pll_compute_edge_loglikelihood(part,
                                         0,
                                         PLL_SCALE_BUFFER_NONE,
                                         3,

@@ -896,21 +896,25 @@ static string get_ratehet_mode_str(const Model& m)
 
 ostringstream& raxml::operator<<(ostringstream& stream, const Model& m)
 {
-  if (m.param_mode(PLLMOD_OPT_PARAM_BRANCH_LEN_SCALER) != ParamValue::undefined)
-    stream << "   Speed ("  << get_param_mode_str(m.param_mode(PLLMOD_OPT_PARAM_BRANCH_LEN_SCALER))
-             << "): " << m.brlen_scaler() << endl;
+  if (m.param_mode(PLLMOD_OPT_PARAM_BRANCH_LEN_SCALER) != ParamValue::undefined) {
+    stream  << "   Speed ("  << get_param_mode_str(m.param_mode(PLLMOD_OPT_PARAM_BRANCH_LEN_SCALER))
+            << "): " << m.brlen_scaler() << endl;
+  }
 
   stream << "   Rate heterogeneity: " << get_ratehet_mode_str(m);
-  if (m.num_ratecats() > 1)
-  {
+  if (m.num_ratecats() > 1) {
     stream << " (" << m.num_ratecats() << " cats, " <<
         (m.gamma_mode() == PLL_GAMMA_RATES_MEDIAN ? "median" : "mean") << ")";
-    if (m.ratehet_mode() == PLLMOD_UTIL_MIXTYPE_GAMMA)
-      stream << ",  alpha: " << setprecision(6) << m.alpha() << " ("  << get_param_mode_str(m.param_mode(PLLMOD_OPT_PARAM_ALPHA))
-                 << ")";
+
+    if (m.ratehet_mode() == PLLMOD_UTIL_MIXTYPE_GAMMA) {
+      stream  << ",  alpha: " << setprecision(6) << m.alpha() << " ("
+              << get_param_mode_str(m.param_mode(PLLMOD_OPT_PARAM_ALPHA))
+              << ")";
+    }
     stream << ",  weights&rates: ";
-    for (size_t i = 0; i < m.num_ratecats(); ++i)
+    for (size_t i = 0; i < m.num_ratecats(); ++i) {
       stream << "(" << m.ratecat_weights()[i] << "," << m.ratecat_rates()[i] << ") ";
+    }
   }
   stream << endl;
 

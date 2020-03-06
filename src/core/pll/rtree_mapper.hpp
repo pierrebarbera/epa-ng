@@ -71,7 +71,8 @@ public:
   unsigned int map_at( size_t const i ) const
   {
     if ( is_utree_root_edge( i ) ) {
-      throw std::invalid_argument{std::string("Edge ") + std::to_string(i) + " is the root edge! Please handle separately"};
+      throw std::invalid_argument{std::string("Edge ") + std::to_string(i) +
+       " is the root edge! Please handle separately"};
     }
     return map_.at(i);
   }
@@ -88,7 +89,7 @@ public:
 
   bool is_utree_root_edge( size_t const i ) const { return i == utree_root_edge_; }
 
-  void root_label(std::string s) {root_label_ = s;};
+  void root_label(std::string const& s) {root_label_ = s;}
   std::string const& root_label() const {return root_label_;}
 
 private:

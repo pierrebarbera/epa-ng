@@ -48,3 +48,6 @@ libs/share/
 # project files
 *.sublime-project
 *.sublime-workspace
+
+# softwipe out files
+softwipe_*

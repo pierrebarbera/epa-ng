@@ -60,7 +60,7 @@ endif ()
 
 message (STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
-set (WARN_FLAGS               "-Wall -Wextra")
+set (WARN_FLAGS               "-Wall -Wextra -Wno-unknown-pragmas -pedantic -pedantic-errors")
 set (CMAKE_CXX_FLAGS          "-std=c++14 ${WARN_FLAGS} -DEPA_VERSION='\"${epa_PROJECT_VERSION}\"'")
 
 set (CMAKE_CXX_FLAGS_DEBUG    "-O0 -g -ggdb3 -DDEBUG -D_GLIBCXX_DEBUG")

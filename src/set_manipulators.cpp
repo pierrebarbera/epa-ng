@@ -133,6 +133,11 @@ pq_iter_t until_accumulated_reached( PQuery<Placement>& pq,
   return pq_iter;
 }
 
+pq_iter_t until_accumulated_reached(  PQuery<Placement>& pq,
+                                      const double thresh)
+{
+  return until_accumulated_reached( pq, thresh, 1, std::numeric_limits<size_t>::max() );
+}
 
 void discard_bottom_x_percent(Sample<Placement>& sample, const double x)
 {
