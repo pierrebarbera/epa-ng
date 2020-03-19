@@ -6,6 +6,45 @@
 #include <iterator>
 #include <cmath>
 
+void collapse(Sample& sample)
+{
+  const auto invalid = std::numeric_limits<
+    typename PQuery::seqid_type>::max();
+
+  std::unordered_map< size_t, std::vector<size_t> > collapse_set;
+
+  // build map of all pqueries
+  for (size_t i = 0; i < sample.size(); ++i) {
+    const auto& pq = sample[i];
+    collapse_set[pq.sequence_id()].emplace_back(i);
+  }
+
+  // find all cases of puplicate entries and merge hem
+  for (auto& pair : collapse_set) {
+    auto pqlist = pair.second;
+    // duplicate!
+    if (pqlist.size() > 1) {
+      // move entries from duplicate to original
+      auto& dest = sample[pqlist[0]].data();
+      for (size_t i = 1; i < pqlist.size(); ++i) {
+        auto& src = sample[pqlist[i]].data();
+        dest.reserve(dest.size() + src.size());
+        std::move(std::begin(src), std::end(src), std::back_inserter(dest));
+        // mark invalid in original sample
+        sample[pqlist[i]].sequence_id(invalid);
+      }
+    }
+  }
+
+  // clear the original sample of invalid pqueries
+  sample.erase(
+    std::remove_if( std::begin(sample),
+                    std::end(sample),
+                    [invalid = invalid](auto& e){
+                      return e.sequence_id() == invalid;}),
+    std::end(sample) );
+
+}
 
 void split( const Work& src,
             std::vector<Work>& parts,
@@ -26,6 +65,20 @@ void split( const Work& src,
   }
 }
 
+void split( const Sample& src,
+            std::vector<Sample>& parts,
+            const unsigned int num_parts)
+{
+  parts.clear();
+  // ensure that there are actually as many parts as specified. We want empty parts to enable null messages
+  parts.resize(num_parts);
+
+  for (auto& pq : src) {
+    const auto bucket = pq.sequence_id() % num_parts;
+    parts[bucket].push_back(pq);
+  }
+
+}
 
 void merge(Work& dest, const Work& src)
 {
@@ -45,12 +98,50 @@ void merge(Work& dest, const Work& src)
   }
 }
 
+void merge(Sample& dest, const Sample& src)
+{
+  // merge in every source pquery...
+  for (const auto& pquery : src) {
+    // ... by checking if its sequence already exists in destination
+    auto input_iter = find(dest.begin(), dest.end(), pquery);
+    // if not, create a record
+    if (input_iter == dest.end()) {
+      dest.emplace_back(pquery.sequence_id(), pquery.header());
+      input_iter = --(dest.end());
+    }
+    // then concat their vectors
+    input_iter->insert(input_iter->end(), pquery.begin(), pquery.end());
+  }
+}
+
+/**
+  Merges a Sample <src> into a Sample <dest>. src here is an rvalue,
+  and thus the elements are moved instead of copied
+*/
+// template<class T>
+void merge(Sample& dest, Sample&& src)
+{
+  for (auto& pquery : src) {
+    // create new record
+    dest.emplace_back(std::move(pquery));
+  }
+}
+
+// void merge(Sample& dest, Device_Sample&& src)
+// {
+//   thrust::host_vector<Device_PQuery> tmp = src.pquerys_;
+//   for (auto& pquery : tmp) {
+//     // create new record
+//     dest.emplace_back(std::move(pquery));
+//   }
+// }
+
 void merge(Timer<>& dest, const Timer<>& src)
 {
   dest.insert(dest.end(), src.begin(), src.end());
 }
 
-void compute_and_set_lwr(Sample<Placement>& sample)
+void compute_and_set_lwr(Sample& sample)
 {
   #ifdef __OMP
   #pragma omp parallel for schedule(dynamic)
@@ -80,7 +171,7 @@ void compute_and_set_lwr(Sample<Placement>& sample)
   }
 }
 
-void sort_by_lwr(PQuery<Placement>& pq)
+void sort_by_lwr(PQuery& pq)
 {
   sort(pq.begin(), pq.end(),
     [](const Placement &p_a, const Placement &p_b) -> bool {
@@ -89,7 +180,7 @@ void sort_by_lwr(PQuery<Placement>& pq)
   );
 }
 
-void sort_by_logl(PQuery<Placement>& pq)
+void sort_by_logl(PQuery& pq)
 {
   std::sort(pq.begin(), pq.end(),
     [](const Placement &lhs, const Placement &rhs) -> bool {
@@ -98,7 +189,7 @@ void sort_by_logl(PQuery<Placement>& pq)
   );
 }
 
-pq_iter_t until_top_percent( PQuery<Placement>& pq,
+pq_iter_t until_top_percent( PQuery& pq,
                               const double x)
 {
   sort_by_lwr(pq);
@@ -108,7 +199,7 @@ pq_iter_t until_top_percent( PQuery<Placement>& pq,
   return iter;
 }
 
-pq_iter_t until_accumulated_reached( PQuery<Placement>& pq,
+pq_iter_t until_accumulated_reached( PQuery& pq,
                                       const double thresh,
                                       const size_t min,
                                       const size_t max)
@@ -133,13 +224,13 @@ pq_iter_t until_accumulated_reached( PQuery<Placement>& pq,
   return pq_iter;
 }
 
-pq_iter_t until_accumulated_reached(  PQuery<Placement>& pq,
+pq_iter_t until_accumulated_reached(  PQuery& pq,
                                       const double thresh)
 {
   return until_accumulated_reached( pq, thresh, 1, std::numeric_limits<size_t>::max() );
 }
 
-void discard_bottom_x_percent(Sample<Placement>& sample, const double x)
+void discard_bottom_x_percent(Sample& sample, const double x)
 {
   if (x < 0.0 || x > 1.0) {
     throw std::range_error{"x is not a percentage (outside of [0,1])"};
@@ -155,7 +246,7 @@ void discard_bottom_x_percent(Sample<Placement>& sample, const double x)
   }
 }
 
-void discard_by_support_threshold(Sample<Placement>& sample,
+void discard_by_support_threshold(Sample& sample,
                                   const double thresh,
                                   const size_t min,
                                   const size_t max)
@@ -197,7 +288,7 @@ void discard_by_support_threshold(Sample<Placement>& sample,
   }
 }
 
-void discard_by_accumulated_threshold(Sample<Placement>& sample,
+void discard_by_accumulated_threshold(Sample& sample,
                                       const double thresh,
                                       const size_t min,
                                       const size_t max)
@@ -227,7 +318,7 @@ void discard_by_accumulated_threshold(Sample<Placement>& sample,
   }
 }
 
-void filter(Sample<Placement>& sample, const Options& options)
+void filter(Sample& sample, const Options& options)
 {
     if (options.acc_threshold) {
       LOG_DBG << "Filtering output by accumulated threshold: " << options.support_threshold << std::endl;

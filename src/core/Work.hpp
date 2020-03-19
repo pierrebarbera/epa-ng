@@ -37,8 +37,8 @@ public:
   /**
    * Create work object from a Sample: all entries are seen as placements to be recomputed
    */
-  template<class T>
-  Work(Sample<T>& sample)
+  // template<class T>
+  Work(Sample& sample)
   {
     for (auto& pq : sample)
     {

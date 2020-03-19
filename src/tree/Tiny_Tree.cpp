@@ -27,7 +27,8 @@ static void precompute_sites_static(char nt,
   result.resize(sites);
   std::string seq(sites, nt);
 
-  std::vector<unsigned int> param_indices(partition->rate_cats, 0);
+  // std::vector<unsigned int> param_indices(partition->rate_cats, 0);
+  auto param_indices = static_cast<unsigned int *>(calloc(partition->rate_cats, sizeof(unsigned int)));
 
   auto map = get_char_map(partition);
 
@@ -49,17 +50,18 @@ static void precompute_sites_static(char nt,
                                   inner->clv_index,
                                   inner->scaler_index,
                                   inner->pmatrix_index,
-                                  &param_indices[0],
+                                  param_indices,
                                   &result[0]);
+  free(param_indices);
 }
 
-
+#pragma acc routine seq
 Tiny_Tree::Tiny_Tree( pll_unode_t * edge_node,
                       const unsigned int branch_id,
                       Tree& reference_tree,
                       const bool opt_branches,
                       const Options& options,
-                      std::shared_ptr<Lookup_Store>& lookup_store)
+                      Lookup_Store* lookup_store)
   : partition_(nullptr, tiny_partition_destroy)
   , tree_(nullptr, utree_destroy)
   , opt_branches_(opt_branches)
@@ -120,9 +122,10 @@ Tiny_Tree::Tiny_Tree( pll_unode_t * edge_node,
   unsigned int matrix_indices[3] = {proximal->pmatrix_index, distal->pmatrix_index, inner->pmatrix_index};
 
   // use branch lengths to compute the probability matrices
-  std::vector<unsigned int> param_indices(reference_tree.partition()->rate_cats, 0);
+  // std::vector<unsigned int> param_indices(reference_tree.partition()->rate_cats, 0);
+  auto param_indices = static_cast<unsigned int *>(calloc(partition_->rate_cats, sizeof(unsigned int)));
   pll_update_prob_matrices( partition_.get(),
-                            &param_indices[0],
+                            param_indices,
                             matrix_indices,
                             branch_lengths,
                             3);
@@ -147,9 +150,11 @@ Tiny_Tree::Tiny_Tree( pll_unode_t * edge_node,
       lookup_store->init_branch(branch_id, precomputed_sites);
     }
   }
+  free(param_indices);
 }
 
-Placement Tiny_Tree::place(const Sequence &s)
+#pragma acc routine seq
+Placement Tiny_Tree::place( Sequence const& s )
 {
   assert(partition_);
   assert(tree_);
@@ -162,7 +167,6 @@ Placement Tiny_Tree::place(const Sequence &s)
   auto distal_length = distal->length;
   auto pendant_length = inner->length;
   double logl = 0.0;
-  std::vector<unsigned int> param_indices(partition_->rate_cats, 0);
 
   if ( s.sequence().size() != partition_->sites ) {
     throw std::runtime_error{"Query sequence length not same as reference alignment!"};
@@ -193,7 +197,8 @@ Placement Tiny_Tree::place(const Sequence &s)
     }
 
     if (premasking_){
-      logl = call_focused(optimize_branch_triplet, range, partition_.get(), virtual_root, sliding_blo_);
+      // logl = call_focused(optimize_branch_triplet, range, partition_.get(), virtual_root, sliding_blo_);
+      logl = call_focused_optimize_branch_triplet( range, partition_.get(), virtual_root, sliding_blo_);
     } else {
       logl = optimize_branch_triplet(partition_.get(), virtual_root, sliding_blo_);
     }

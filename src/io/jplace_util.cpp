@@ -36,7 +36,7 @@ void placement_to_jplace_string(Placement const& p,
   os << p.pendant_length() << "]";
 }
 
-void pquery_to_jplace_string( PQuery<Placement> const& pquery,
+void pquery_to_jplace_string( PQuery const& pquery,
                               std::ostream& os,
                               rtree_mapper const& mapper)
 {
@@ -97,7 +97,7 @@ void finalize_jplace_string(const std::string& invocation, std::ostream& os)
   os << "}" << NEWL;
 }
 
-void sample_to_jplace_string(Sample<Placement> const& sample, std::ostream& os, rtree_mapper const& mapper)
+void sample_to_jplace_string(Sample const& sample, std::ostream& os, rtree_mapper const& mapper)
 {
   size_t i = 0;
   for (const auto& p : sample) {
@@ -109,7 +109,7 @@ void sample_to_jplace_string(Sample<Placement> const& sample, std::ostream& os, 
   }
 }
 
-void full_jplace_string(Sample<Placement> const& sample,
+void full_jplace_string(Sample const& sample,
                         std::string const& invocation,
                         std::ostream& os,
                         rtree_mapper const& mapper)

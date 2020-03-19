@@ -15,3 +15,11 @@ void simple_mpi(Tree& tree,
                 const Options& options,
                 const std::string& invocation);
 
+
+// namespace std {
+//   #pragma acc routine seq
+//   void __throw_length_error(char const*) { }
+
+//   #pragma acc routine seq
+//   void __throw_bad_alloc() { }
+// }

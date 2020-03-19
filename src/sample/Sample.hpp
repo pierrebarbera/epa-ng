@@ -12,35 +12,48 @@
 #include "sample/PQuery.hpp"
 #include "pipeline/Token.hpp"
 
-template <class Placement_Type = Placement>
+
+
+// template <class Placement_Type = Placement>
 class Sample : public Token {
 public:
-  using value_type      = PQuery<Placement_Type>;
+  using value_type      = PQuery;
   using iterator        = typename std::vector<value_type>::iterator;
   using const_iterator  = typename std::vector<value_type>::const_iterator;
 
   Sample() = default;
+  // {
+    // #pragma acc enter data copyin(this)
+    // #pragma acc enter data copyin(newick_)
+    // #pragma acc enter data copyin(pquerys_)
+  // }
 
-  template < typename T = Placement_Type,
-    typename = std::enable_if_t<
-      std::is_same<T, Placement>::value
-      >
-  >
-  Sample( Sample<Slim_Placement> const & other)
-    : pquerys_(other.size())
-    , newick_(other.newick())
-  {
-    const auto size = other.size();
-    for (size_t i = 0; i < size; ++i) {
-      pquerys_[i] = PQuery<Placement>(other.at(i));
-    }
-  }
+  // template < typename T = Placement_Type,
+  //   typename = std::enable_if_t<
+  //     std::is_same<T, Placement>::value
+  //     >
+  // >
+  // Sample( Sample<Slim_Placement> const & other)
+  //   : pquerys_(other.size())
+  //   , newick_(other.newick())
+  // {
+  //   const auto size = other.size();
+  //   for (size_t i = 0; i < size; ++i) {
+  //     pquerys_[i] = PQuery(other.at(i));
+  //   }
+  //   // #pragma acc enter data copyin(this)
+  //   // #pragma acc enter data copyin(newick_)
+  //   // #pragma acc enter data copyin(pquerys_)
+  // }
   explicit Sample( size_t const size )
   {
     pquerys_.reserve(size);
     for (size_t i = 0; i < size; ++i) {
       pquerys_.emplace_back(i);
     }
+    // #pragma acc enter data copyin(this)
+    // #pragma acc enter data copyin(newick_)
+    // #pragma acc enter data copyin(pquerys_)
   }
 
   Sample( size_t const size, size_t const depth )
@@ -49,12 +62,25 @@ public:
     for (size_t i = 0; i < pquerys_.size(); ++i) {
       pquerys_[i].resize(depth);
     }
+    // #pragma acc enter data copyin(this)
+    // #pragma acc enter data copyin(newick_)
+    // #pragma acc enter data copyin(pquerys_)
   }
 
   explicit Sample( std::string const& newick )
     : newick_(newick)
-  { }
+  {
+    // #pragma acc enter data copyin(this)
+    // #pragma acc enter data copyin(newick_)
+    // #pragma acc enter data copyin(pquerys_)
+  }
+
   ~Sample() = default;
+  // {
+    // #pragma acc exit data delete(newick_)
+    // #pragma acc exit data delete(pquerys_)
+    // #pragma acc exit data delete(this)
+  // }
 
   // member access
   value_type& back() { return pquerys_.back(); }

@@ -8,38 +8,38 @@
 #include "seq/Sequence.hpp"
 #include "sample/Placement.hpp"
 
-template <class Placement_Type>
+// template <class Placement_Type>
 class PQuery {
 
 public:
   using seqid_type      = size_t;
-  using value_type      = Placement_Type;
+  using value_type      = Placement;
   using iterator        = typename std::vector<value_type>::iterator;
   using const_iterator  = typename std::vector<value_type>::const_iterator;
 
   PQuery() = default;
 
-  template < typename T = Placement_Type,
-    typename = std::enable_if_t<
-      std::is_same<T, Placement>::value
-      >
-  >
-  PQuery(const PQuery<Slim_Placement>& other)
-    : sequence_id_(other.sequence_id())
-    , placements_(other.size())
-  {
-    const auto size = other.size();
-    for (size_t i = 0; i < size; ++i) {
-      placements_[i] = Placement(other.at(i));
-    }
-  }
+  // template < typename T = Placement_Type,
+  //   typename = std::enable_if_t<
+  //     std::is_same<T, Placement>::value
+  //     >
+  // >
+  // PQuery(const PQuery<Slim_Placement>& other)
+  //   : sequence_id_(other.sequence_id())
+  //   , placements_(other.size())
+  // {
+  //   const auto size = other.size();
+  //   for (size_t i = 0; i < size; ++i) {
+  //     placements_[i] = Placement(other.at(i));
+  //   }
+  // }
   PQuery (const seqid_type seq_id,
           const std::string& header)
     : sequence_id_(seq_id)
     , header_(header)
   { }
   PQuery (const seqid_type seq_id)
-    : sequence_id_(seq_id) 
+    : sequence_id_(seq_id)
   { }
   ~PQuery() = default;
 
@@ -73,7 +73,7 @@ public:
 
   inline void append(const_iterator begin, const_iterator end)
   {
-    placements_.insert(placements_.end(), begin, end); 
+    placements_.insert(placements_.end(), begin, end);
   }
 
   inline std::vector<value_type>& data()

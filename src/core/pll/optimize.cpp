@@ -2,7 +2,7 @@
 
 #include <vector>
 #include <cmath>
-#include <cstdlib>
+// #include <stdlib.h>
 #include <cassert>
 #include <stdexcept>
 #include <limits>
@@ -12,6 +12,8 @@
 #include "util/constants.hpp"
 #include "util/logging.hpp"
 
+// #include <openacc.h>
+
 static void traverse_update_partials( pll_unode_t * root,
                                       pll_partition_t * partition,
                                       pll_unode_t ** travbuffer,
@@ -20,7 +22,8 @@ static void traverse_update_partials( pll_unode_t * root,
                                       pll_operation_t * operations)
 {
   unsigned int num_matrices, num_ops;
-  std::vector<unsigned int> param_indices(partition->rate_cats, 0);
+
+  auto param_indices = static_cast<unsigned int *>(calloc(partition->rate_cats ,sizeof(unsigned int)));
   /* perform a full traversal*/
   assert(root->next != nullptr);
   unsigned int traversal_size;
@@ -44,7 +47,7 @@ static void traverse_update_partials( pll_unode_t * root,
                               &num_ops);
 
   pll_update_prob_matrices(partition,
-                           &param_indices[0],
+                           param_indices,
                            matrix_indices,// matrices to update
                            branch_lengths,
                            num_matrices); // how many should be updated
@@ -52,6 +55,8 @@ static void traverse_update_partials( pll_unode_t * root,
   /* use the operations array to compute all num_ops inner CLVs. Operations
      will be carried out sequentially starting from operation 0 towrds num_ops-1 */
   pll_update_partials(partition, operations, num_ops);
+
+  free(param_indices);
 
 }
 
@@ -87,7 +92,8 @@ static double opt_branch_lengths_pplacer( pll_partition_t * partition,
 {
   int const max_iters = 30;
 
-  std::vector<unsigned int> param_indices(partition->rate_cats, 0);
+  // std::vector<unsigned int> param_indices(partition->rate_cats, 0);
+  auto param_indices = static_cast<unsigned int *>(calloc(partition->rate_cats ,sizeof(unsigned int)));
 
   auto const score_node   = inner;
   auto const blo_node     = inner->next->back;
@@ -131,7 +137,7 @@ static double opt_branch_lengths_pplacer( pll_partition_t * partition,
   pll_newton_tree_params_t nr_params;
   nr_params.partition         = partition;
   // nr_params.tree              = score_node;
-  nr_params.params_indices    = &param_indices[0];
+  nr_params.params_indices    = param_indices;
   // nr_params.branch_length_min = PLLMOD_OPT_MIN_BRANCH_LEN;
   // nr_params.branch_length_max = PLLMOD_OPT_MAX_BRANCH_LEN;
   // nr_params.tolerance         = tolerance;
@@ -145,7 +151,7 @@ static double opt_branch_lengths_pplacer( pll_partition_t * partition,
                                                   score_node->clv_index,
                                                   score_node->scaler_index,
                                                   score_node->pmatrix_index,
-                                                  &param_indices[0],
+                                                  param_indices,
                                                   nullptr);
 
   /* allocate the sumtable */
@@ -188,7 +194,7 @@ static double opt_branch_lengths_pplacer( pll_partition_t * partition,
                         score_node->back->clv_index,
                         score_node->scaler_index,
                         score_node->back->scaler_index,
-                        &param_indices[0],
+                        param_indices,
                         nr_params.sumtable);
 
     nr_params.tree              = score_node;
@@ -210,7 +216,7 @@ static double opt_branch_lengths_pplacer( pll_partition_t * partition,
     // update length and pmatrix for pendant
     if ( xres > 0.0 ) {
       lengths[2] = score_node->length = score_node->back->length = xres;
-      pll_update_prob_matrices(partition, &param_indices[0], &p_indices[2], &lengths[2], 1);
+      pll_update_prob_matrices(partition, param_indices, &p_indices[2], &lengths[2], 1);
     }
 
     /*=============================================================
@@ -241,7 +247,7 @@ static double opt_branch_lengths_pplacer( pll_partition_t * partition,
                           blo_node->back->clv_index,
                           blo_node->scaler_index,
                           blo_node->back->scaler_index,
-                          &param_indices[0],
+                          param_indices,
                           nr_params.sumtable);
 
       nr_params.tree              = blo_node;
@@ -262,7 +268,7 @@ static double opt_branch_lengths_pplacer( pll_partition_t * partition,
       if ( xres > 0.0 ) {
         lengths[0] = blo_node->length     = blo_node->back->length      = xres;
         lengths[1] = blo_antinode->length = blo_antinode->back->length  = original_length - xres;
-        pll_update_prob_matrices(partition, &param_indices[0], p_indices, lengths, 2);
+        pll_update_prob_matrices(partition, param_indices, p_indices, lengths, 2);
       }
     }
 
@@ -278,7 +284,7 @@ static double opt_branch_lengths_pplacer( pll_partition_t * partition,
                                         score_node->clv_index,
                                         score_node->scaler_index,
                                         score_node->pmatrix_index,
-                                        &param_indices[0],
+                                        param_indices,
                                         nullptr);
 
 
@@ -307,11 +313,13 @@ static double opt_branch_lengths_pplacer( pll_partition_t * partition,
   /* deallocate sumtable */
   pll_aligned_free(nr_params.sumtable);
 
+  free(param_indices);
+
   return loglikelihood;
 }
 
-#include <sstream>
-#include <iterator>
+// #include <sstream>
+// #include <iterator>
 
 double optimize_branch_triplet( pll_partition_t * partition,
                                 pll_unode_t * root,
@@ -321,19 +329,29 @@ double optimize_branch_triplet( pll_partition_t * partition,
     root = root->back;
   }
 
-  std::vector<pll_unode_t*> travbuffer(4);
-  std::vector<double> branch_lengths(3);
-  std::vector<unsigned int> matrix_indices(3);
-  std::vector<pll_operation_t> operations(4);
+  // auto travbuffer = static_cast<pll_unode_t **>(calloc(4, sizeof(pll_unode_t*)));
+  // auto branch_lengths = static_cast<double *>(calloc(3 ,sizeof(double)));
+  // auto matrix_indices = static_cast<unsigned int *>(calloc(3 ,sizeof(unsigned int)));
+  // auto operations = static_cast<pll_operation_t *>(calloc(4 ,sizeof(pll_operation_t)));
+
+  // std::vector<pll_unode_t*> travbuffer(4);
+  // std::vector<double> branch_lengths(3);
+  // std::vector<unsigned int> matrix_indices(3);
+  // std::vector<pll_operation_t> operations(4);
+
+  pll_unode_t* travbuffer[4];
+  double branch_lengths[3];
+  unsigned int matrix_indices[3];
+  pll_operation_t operations[4];
 
   traverse_update_partials( root,
                             partition,
-                            &travbuffer[0],
-                            &branch_lengths[0],
-                            &matrix_indices[0],
-                            &operations[0]);
+                            travbuffer,
+                            branch_lengths,
+                            matrix_indices,
+                            operations);
 
-  std::vector<unsigned int> param_indices(partition->rate_cats, 0);
+  auto param_indices = static_cast<unsigned int *>(calloc(partition->rate_cats, sizeof(unsigned int)));
 
   auto cur_logl = -std::numeric_limits<double>::infinity();
   const int smoothings = 32;
@@ -347,7 +365,7 @@ double optimize_branch_triplet( pll_partition_t * partition,
     cur_logl = -pllmod_opt_optimize_branch_lengths_local(
                                                 partition,
                                                 root,
-                                                &param_indices[0],
+                                                param_indices,
                                                 PLLMOD_OPT_MIN_BRANCH_LEN,
                                                 PLLMOD_OPT_MAX_BRANCH_LEN,
                                                 OPT_BRANCH_EPSILON,
@@ -362,9 +380,9 @@ double optimize_branch_triplet( pll_partition_t * partition,
                                 root->back->clv_index,
                                 root->back->scaler_index,
                                 root->pmatrix_index,
-                                &param_indices[0],
+                                param_indices,
                                 nullptr);
-
+  free(param_indices);
   return cur_logl;
 }
 
@@ -389,7 +407,7 @@ static double optimize_branch_lengths(pll_unode_t * root,
 
   pll_errno = 0; // hotfix
 
-  std::vector<unsigned int> param_indices(partition->rate_cats, 0);
+  auto param_indices = static_cast<unsigned int *>(calloc(partition->rate_cats, sizeof(unsigned int)));
 
   cur_logl = -1 * pllmod_opt_optimize_branch_lengths_iterative(
     partition,
@@ -428,8 +446,10 @@ static double optimize_branch_lengths(pll_unode_t * root,
                                             root->back->clv_index,
                                             root->back->scaler_index,
                                             root->pmatrix_index,
-                                            &param_indices[0],
+                                            param_indices,
                                             nullptr);
+
+  free(param_indices);
 
   return cur_logl;
 }
@@ -455,7 +475,8 @@ void optimize(raxml::Model& model,
   compute_and_set_empirical_frequencies(partition, model);
 
   std::vector<int> symmetries = model.submodel(0).rate_sym();
-  std::vector<unsigned int> param_indices(model.num_ratecats(), 0);
+
+  auto param_indices = static_cast<unsigned int *>(calloc(partition->rate_cats ,sizeof(unsigned int)));
 
   // sadly we explicitly need these buffers here and in the params structure
   std::vector<pll_unode_t*> travbuffer(nums.nodes);
@@ -477,7 +498,7 @@ void optimize(raxml::Model& model,
                                                   root->back->clv_index,
                                                   root->back->scaler_index,
                                                   root->pmatrix_index,
-                                                  &param_indices[0],
+                                                  param_indices,
                                                   nullptr);
 
   // double cur_logl = -numeric_limits<double>::infinity();
@@ -490,7 +511,7 @@ void optimize(raxml::Model& model,
   params.lk_params.operations = &operations[0];
   params.lk_params.branch_lengths = &branch_lengths[0];
   params.lk_params.matrix_indices = &matrix_indices[0];
-  params.lk_params.params_indices = &param_indices[0];
+  params.lk_params.params_indices = param_indices;
   params.lk_params.alpha_value = model.alpha();
   params.lk_params.rooted = 0;
   params.lk_params.where.unrooted_t.parent_clv_index = root->clv_index;

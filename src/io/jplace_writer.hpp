@@ -62,7 +62,7 @@ public:
     #endif
   }
 
-  void write( Sample<>& chunk )
+  void write( Sample& chunk )
   {
     #ifdef __PREFETCH
     // ensure the last write has finished
@@ -101,7 +101,7 @@ public:
 
 protected:
 
-  void write_( Sample<>& chunk )
+  void write_( Sample& chunk )
   {
     #ifdef __MPI // ========== MPI ==============
 

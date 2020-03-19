@@ -36,14 +36,14 @@ EPABIN=./bin/epa-ng
 TEST=test/data/lucas
 TREE=$(TEST)/tree.newick
 REF=$(TEST)/reference.fasta
-QRY=$(TEST)/query.fasta.bfast
+QRY=$(TEST)/100.fasta
 INFO=$(TEST)/infofile
 BINFILE=$(TEST)/epa_binary_file
 OUTDIR=/tmp/epa
 
 BINARY_WRITE= -t $(TREE) -s $(REF) -B -w $(OUTDIR) --verbose $(F)
 BINARY_READ=-b $(BINFILE) -q $(QRY) -w $(OUTDIR) -g 0.99 --verbose $(F)
-NORM_TEST=-t $(TREE) -s $(REF) -q $(QRY) --model $(INFO)  -w $(OUTDIR)  --verbose $(F)
+NORM_TEST=-t $(TREE) -s $(REF) -q $(QRY) --model $(INFO)  -w $(OUTDIR)  --verbose $(F) --no-heur
 
 test: #update
 	mkdir -p $(OUTDIR)

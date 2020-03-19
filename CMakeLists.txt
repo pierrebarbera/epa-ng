@@ -8,7 +8,7 @@ set(CMAKE_DISABLE_SOURCE_CHANGES  ON)
 
 # main compile alternators and their defaults
 set (ENABLE_MPI       OFF)
-set (ENABLE_OMP       ON)
+set (ENABLE_OMP       OFF)
 set (ENABLE_PREFETCH  ON)
 
 if ( $ENV{EPA_HYBRID} )
@@ -60,12 +60,22 @@ endif ()
 
 message (STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
-set (WARN_FLAGS               "-Wall -Wextra -Wno-unknown-pragmas -pedantic -pedantic-errors")
+if (CMAKE_CXX_COMPILER_ID STREQUAL "PGI")
+  set (WARN_FLAGS               "")
+else()
+  set (WARN_FLAGS               "-Wall -Wextra -Wno-unknown-pragmas -pedantic -pedantic-errors")
+endif()
+
 set (CMAKE_CXX_FLAGS          "-std=c++14 ${WARN_FLAGS} -DEPA_VERSION='\"${epa_PROJECT_VERSION}\"'")
 
 set (CMAKE_CXX_FLAGS_DEBUG    "-O0 -g -ggdb3 -DDEBUG -D_GLIBCXX_DEBUG")
 set (CMAKE_CXX_FLAGS_RELEASE  "-O3 -DNDEBUG")
 
+if (CMAKE_CXX_COMPILER_ID STREQUAL "PGI")
+  set (PGI_COMPILE_FLAGS "-acc -ta=tesla:managed,cc75 -Minfo=accel")
+  set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${PGI_COMPILE_FLAGS}")
+  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${PGI_COMPILE_FLAGS}")
+endif()
 if( ENABLE_PREFETCH )
   set (CMAKE_THREAD_PREFER_PTHREAD ON)
   set (THREADS_PREFER_PTHREAD_FLAG ON)

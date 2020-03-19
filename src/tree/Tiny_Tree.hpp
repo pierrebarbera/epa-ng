@@ -12,6 +12,10 @@
 #include "core/pll/pll_util.hpp"
 #include "core/Lookup_Store.hpp"
 
+// forward declarations
+class Tree;
+class Lookup_Store;
+
 /* Encapsulates a smallest possible unrooted tree (3 tip nodes, 1 inner node)
   for use in edge insertion:
 
@@ -32,14 +36,17 @@
 class Tiny_Tree
 {
 public:
-  Tiny_Tree(pll_unode_t * edge_node, 
-            const unsigned int branch_id, 
+  #pragma acc routine seq
+  Tiny_Tree(pll_unode_t * edge_node,
+            const unsigned int branch_id,
             Tree& reference_tree,
             const bool opt_branches,
             const Options& options,
-            std::shared_ptr<Lookup_Store>& lookup);
+            Lookup_Store* lookup);
 
   Tiny_Tree()   = delete;
+
+  #pragma acc routine seq
   ~Tiny_Tree()  = default;
 
   Tiny_Tree(Tiny_Tree const& other) = delete;
@@ -48,6 +55,7 @@ public:
   Tiny_Tree& operator= (Tiny_Tree const& other) = delete;
   Tiny_Tree& operator= (Tiny_Tree && other)     = default;
 
+  #pragma acc routine seq
   Placement place(const Sequence& s);
 
 private:
@@ -61,6 +69,6 @@ private:
   bool sliding_blo_;
   unsigned int branch_id_;
 
-  std::shared_ptr<Lookup_Store> lookup_;
+  Lookup_Store* lookup_;
 
 };

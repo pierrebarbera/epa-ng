@@ -36,15 +36,16 @@
 #include "net/epa_mpi_util.hpp"
 #endif
 
+#include "sample/Device_Sample.hpp"
+
 using mytimer = Timer<std::chrono::milliseconds>;
 
-template <class T>
 static void place(MSA& msa,
                   Tree& reference_tree,
                   const std::vector<pll_unode_t *>& branches,
-                  Sample<T>& sample,
+                  Sample& sample,
                   const Options& options,
-                  std::shared_ptr<Lookup_Store>& lookup_store,
+                  Lookup_Store* lookup_store,
                   mytimer* time=nullptr)
 {
 
@@ -106,14 +107,13 @@ static void place(MSA& msa,
   }
 }
 
-template <class T>
 static void place_thorough(const Work& to_place,
                   MSA& msa,
                   Tree& reference_tree,
                   const std::vector<pll_unode_t *>& branches,
-                  Sample<T>& sample,
+                  Sample& sample,
                   const Options& options,
-                  std::shared_ptr<Lookup_Store>& lookup_store,
+                  Lookup_Store* lookup_store,
                   const size_t seq_id_offset=0,
                   mytimer* time=nullptr)
 {
@@ -130,7 +130,7 @@ static void place_thorough(const Work& to_place,
 #endif
 
   // split the sample structure such that the parts are thread-local
-  std::vector<Sample<T>> sample_parts(num_threads);
+  std::vector<Sample> sample_parts(num_threads);
 
   // build vector of elements
   std::vector<Work::Work_Pair> id;
@@ -195,6 +195,84 @@ static void place_thorough(const Work& to_place,
   collapse(sample);
 }
 
+static void place_thorough_openacc(const Work& to_place,
+                  MSA& msa,
+                  Tree& reference_tree,
+                  const std::vector<pll_unode_t *>& branches,
+                  Sample& sample,
+                  const Options& options,
+                  Lookup_Store* lookup_store,
+                  const size_t seq_id_offset=0)
+{
+
+  if( options.prescoring ) {
+    throw std::runtime_error{ "OpenACC + prescoring not currently supported " };
+  }
+
+  // build vector of work elements
+  // std::vector<Work::Work_Pair> id;
+  // for(auto it = to_place.begin(); it != to_place.end(); ++it) {
+  //   id.push_back(*it);
+  // }
+
+  size_t const num_seqs = msa.size();
+  size_t const num_branches = branches.size();
+
+  // std::unordered_map<size_t, size_t> seq_lookup;
+  Device_Sample local_sample( num_seqs, num_branches );
+
+  // #pragma acc data copyin( local_sample ), copy( sample )
+  std::vector<Tiny_Tree> branch_trees;
+  for( size_t branch_id = 0; branch_id < num_branches; ++branch_id ) {
+    branch_trees.emplace_back( branches[branch_id],
+                            branch_id,
+                            reference_tree,
+                            true,
+                            options,
+                            lookup_store);
+  }
+
+  #pragma acc parallel loop private( branch_trees )
+  for( size_t branch_id = 0; branch_id < num_branches; ++branch_id ) {
+
+    #pragma acc loop private( branch_trees )
+    for( size_t seq_id = 0; seq_id < num_seqs; ++seq_id ) {
+
+      auto const& seq = msa[seq_id];
+      auto& tiny = branch_trees[ branch_id ];
+      // get a tiny tree representing the current branch
+
+      local_sample[ seq_id ][ branch_id ] = tiny.place( seq );
+    }
+  }
+
+  // #pragma acc parallel loop firstprivate( seq_lookup )
+  // for (size_t i = 0; i < id.size(); ++i) {
+  //   const auto branch_id = id[i].branch_id;
+  //   const auto seq_id = id[i].sequence_id;
+  //   const auto& seq = msa[seq_id];
+
+  //   // get a tiny tree representing the current branch
+  //   auto tiny = Tiny_Tree(branches[branch_id],
+  //              branch_id,
+  //              reference_tree,
+  //              true,
+  //              options,
+  //              lookup_store);
+
+  //   if( seq_lookup.count( seq_id ) == 0 ) {
+  //     auto const new_idx = local_sample.add_pquery( seq_id_offset + seq_id,
+  //                                                   seq.header() );
+  //     seq_lookup[ seq_id ] = new_idx;
+  //   }
+  //   assert( seq_lookup.count( seq_id ) > 0 );
+  //   local_sample[ seq_lookup[ k ] ].emplace_back( tiny.place(seq) );
+  // }
+
+  // merge( sample, std::move(local_sample) );
+  collapse( sample );
+}
+
 void simple_mpi(Tree& reference_tree,
                 const std::string& query_file,
                 const MSA_Info& msa_info,
@@ -212,7 +290,7 @@ void simple_mpi(Tree& reference_tree,
   }
 
   auto lookups =
-    std::make_shared<Lookup_Store>(num_branches, reference_tree.partition()->states);
+    new Lookup_Store(num_branches, reference_tree.partition()->states);
 
   auto reader = make_msa_reader(query_file,
                                 msa_info,
@@ -224,7 +302,7 @@ void simple_mpi(Tree& reference_tree,
 
   Work blo_work;
 
-  using Sample = Sample<Placement>;
+  // using Sample = Sample;
   MSA chunk;
   size_t sequences_done = 0; // not just for info output!
 
@@ -253,7 +331,7 @@ void simple_mpi(Tree& reference_tree,
       preplace = Sample(num_sequences, num_branches);
     }
 
-    if (options.prescoring) {
+    if( options.prescoring ) {
 
       LOG_DBG << "Preplacement." << std::endl;
       place(chunk,
@@ -274,7 +352,7 @@ void simple_mpi(Tree& reference_tree,
     Sample blo_sample;
 
     LOG_DBG << "BLO Placement." << std::endl;
-    place_thorough( blo_work,
+    place_thorough_openacc( blo_work,
                     chunk,
                     reference_tree,
                     branches,

@@ -39,10 +39,10 @@ static inline size_t get_thread_id()
   #endif
 }
 
-using getiter_t = pq_iter_t(PQuery<Placement>&,double const);
+using getiter_t = pq_iter_t(PQuery&,double const);
 
 template< typename F >
-static Work heuristic_( Sample<Placement>& sample,
+static Work heuristic_( Sample& sample,
                         const Options& options,
                         F filterstop)
 {
@@ -70,19 +70,19 @@ static Work heuristic_( Sample<Placement>& sample,
   return result;
 }
 
-Work dynamic_heuristic( Sample<Placement>& sample,
+Work dynamic_heuristic( Sample& sample,
                         const Options& options)
 {
   return heuristic_<getiter_t>( sample, options, until_accumulated_reached );
 }
 
-Work fixed_heuristic( Sample<Placement>& sample,
+Work fixed_heuristic( Sample& sample,
                       const Options& options)
 {
   return heuristic_<getiter_t>( sample, options, until_top_percent );
 }
 
-Work baseball_heuristic( Sample<Placement>& sample,
+Work baseball_heuristic( Sample& sample,
                                 const Options& options)
 {
   Work result;
@@ -133,7 +133,7 @@ Work baseball_heuristic( Sample<Placement>& sample,
   return result;
 }
 
-Work apply_heuristic(Sample<Placement>& sample,
+Work apply_heuristic(Sample& sample,
                             const Options& options)
 {
   if (options.baseball) {

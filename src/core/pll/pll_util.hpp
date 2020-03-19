@@ -54,6 +54,7 @@ pll_unode_t* get_root(pll_utree_t const * const tree);
 pll_utree_t* make_utree_struct(pll_unode_t * root, const unsigned int num_nodes);
 
 // deprecated
+#pragma acc routine seq
 void shift_partition_focus(pll_partition_t * partition, const int offset, const unsigned int span);
 
 // templates
@@ -65,6 +66,21 @@ double call_focused(Func func, Range& range, pll_partition_t * partition, Args &
   shift_partition_focus(partition, range.begin, range.span);
 
   double ret = func(partition, args...);
+
+  // ... and shift back again
+  shift_partition_focus(partition, -range.begin, num_sites);
+
+  return ret;
+}
+
+template<typename ...Args>
+double call_focused_optimize_branch_triplet(Range& range, pll_partition_t * partition, Args && ...args)
+{
+  const auto num_sites = partition->sites;
+  // Shift there...
+  shift_partition_focus(partition, range.begin, range.span);
+
+  double ret = optimize_branch_triplet(partition, args...);
 
   // ... and shift back again
   shift_partition_focus(partition, -range.begin, num_sites);
