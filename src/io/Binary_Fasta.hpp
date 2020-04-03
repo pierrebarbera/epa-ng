@@ -11,6 +11,7 @@
 #include "util/template_magic.hpp"
 #include "util/stringify.hpp"
 #include "util/logging.hpp"
+#include "util/memory.hpp"
 
 #include "genesis/utils/io/serializer.hpp"
 #include "genesis/utils/io/deserializer.hpp"

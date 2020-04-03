@@ -6,7 +6,7 @@ if(NOT GTEST_FOUND)
     message (WARNING "Skipping building tests. To enable tests:"
       "\ncmake libs/CLI11/extern/googletest/googletest/CMakeLists.txt"
       "\nmake -C libs/CLI11/extern/googletest/googletest"
-      "make update")
+      "\nmake update")
     return()
 endif()
 

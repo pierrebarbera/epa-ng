@@ -74,12 +74,12 @@ public:
   ~MSA_Info() = default;
 
   // access
-  const std::string& path() const {return path_;}
-  size_t sites() const {return sites_;}
-  size_t sequences() const {return sequences_;}
-  const mask_type& gap_mask() const {return gap_mask_;}
-  size_t gap_count() const {return gap_mask_.count();}
-
+  const std::string& path() const { return path_; }
+  size_t sites() const { return sites_; }
+  size_t sequences() const { return sequences_; }
+  const mask_type& gap_mask() const { return gap_mask_; }
+  size_t gap_count() const { return gap_mask_.count(); }
+  size_t nongap_count() const { return gap_mask_.size() - gap_mask_.count(); }
 
   static void or_mask(MSA_Info& lhs, MSA_Info& rhs)
   {

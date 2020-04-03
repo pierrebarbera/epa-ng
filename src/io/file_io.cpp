@@ -10,8 +10,10 @@
 #include "core/raxml/Model.hpp"
 #include "io/msa_reader.hpp"
 #include "seq/MSA.hpp"
+#include "seq/MSA_Info.hpp"
 #include "util/constants.hpp"
 #include "util/logging.hpp"
+#include "util/Options.hpp"
 
 int pll_fasta_fseek(pll_fasta_t* fd, const long int offset, const int whence)
 {
@@ -224,10 +226,10 @@ static unsigned int simd_autodetect()
     return PLL_ATTRIB_ARCH_CPU;
 }
 
-pll_partition_t *  make_partition(const raxml::Model& model,
-                                  Tree_Numbers& nums,
-                                  const int num_sites,
-                                  const Options options)
+pll_partition_t *  make_partition(raxml::Model const& model,
+                                  Tree_Numbers const& nums,
+                                  int const num_sites,
+                                  Options const& options)
 {
   assert(nums.tip_nodes); // nums must have been initialized correctly
 

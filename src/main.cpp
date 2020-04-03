@@ -502,6 +502,11 @@ int main(int argc, char** argv)
 
   MSA_Info::or_mask(ref_info, qry_info);
 
+  // use the MSA info data and options to estimate memory footprint
+  auto estimated_mem_bytes = estimate_footprint( ref_info, qry_info, model, options );
+
+  LOG_INFO << "Estimated memory footprint: " << format_byte_num( estimated_mem_bytes );
+
   MSA ref_msa;
   if (reference_file.size()) {
     ref_msa = build_MSA_from_file(reference_file, ref_info, options.premasking);
@@ -526,7 +531,7 @@ int main(int argc, char** argv)
                   "RAxML_info file to the epa-ng --model argument. epa-ng will then auto-parse the parameters.\n"
                   "( raxmlHPC -f e -s " << reference_file << " -t " << tree_file << " -n info -m GTRGAMMAX )"
                   << std::endl;
-      exit_epa(EXIT_FAILURE);
+      exit_epa( EXIT_FAILURE );
     }
     tree = Tree(tree_file, ref_msa, model, options);
   }

@@ -16,15 +16,15 @@
 // forward declarations
 class MSA;
 
-MSA build_MSA_from_file(const std::string& msa_file, const MSA_Info& info, const bool premasking = false);
-pll_utree_s * build_tree_from_file( const std::string& tree_file,
+MSA build_MSA_from_file( std::string const& msa_file, MSA_Info const& info, bool const premasking = false );
+pll_utree_s * build_tree_from_file( std::string const& tree_file,
                                     Tree_Numbers& nums,
                                     rtree_mapper& mapper,
-                                    const bool preserve_rooting = true);
-pll_partition_t * make_partition( const raxml::Model& model,
-                                  Tree_Numbers& nums,
-                                  const int num_sites,
-                                  const Options options);
-void file_check(const std::string& file_path);
-std::vector<size_t> get_offsets(const std::string& file, MSA& msa);
-int pll_fasta_fseek(pll_fasta_t* fd, const long int offset, const int whence);
+                                    bool const preserve_rooting = true );
+pll_partition_t * make_partition( raxml::Model const& model,
+                                  Tree_Numbers const& nums,
+                                  int const num_sites,
+                                  Options const& options );
+void file_check( std::string const& file_path );
+std::vector<size_t> get_offsets( std::string const& file, MSA& msa );
+int pll_fasta_fseek( pll_fasta_t* fd, long int const offset, int const whence );

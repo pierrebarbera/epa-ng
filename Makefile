@@ -33,10 +33,10 @@ clean:
 #===		Test commands follow				===
 #======================================
 EPABIN=./bin/epa-ng
-TEST=test/data/lucas
+TEST=test/data/neotrop
 TREE=$(TEST)/tree.newick
 REF=$(TEST)/reference.fasta
-QRY=$(TEST)/query.fasta.bfast
+QRY=$(TEST)/query_10k.fasta
 INFO=$(TEST)/infofile
 BINFILE=$(TEST)/epa_binary_file
 OUTDIR=/tmp/epa
