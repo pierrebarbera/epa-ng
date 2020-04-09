@@ -13,7 +13,7 @@
 #include "util/constants.hpp"
 #include "util/logging.hpp"
 
-int pll_fasta_fseek(pll_fasta_t* fd, const long int offset, const int whence)
+int pll_fasta_fseek(pll_fasta_t* fd, long int const offset, int const whence)
 {
   auto status = fseek(fd->fp, offset, whence);
 
@@ -34,20 +34,23 @@ int pll_fasta_fseek(pll_fasta_t* fd, const long int offset, const int whence)
   return status;
 }
 
-MSA build_MSA_from_file(const std::string& msa_file,
-                        const MSA_Info& info,
-                        const bool premasking)
+MSA build_MSA_from_file(std::string const& msa_file,
+                        MSA_Info const& info,
+                        bool const premasking)
 {
   MSA msa;
-  auto reader = make_msa_reader(msa_file, info, premasking, false);
+  auto reader = make_msa_reader(msa_file,
+                                info,
+                                premasking,
+                                false);
   reader->read_next(msa, std::numeric_limits<size_t>::max());
 
   return msa;
 }
 
-static void recurse_post_order(pll_unode_t const * const node,
-                        std::vector<unsigned int>& translation,
-                        unsigned int * const rooted_index)
+static void recurse_post_order( pll_unode_t const * const node,
+                                std::vector<unsigned int>& translation,
+                                unsigned int * const rooted_index)
 {
   if ( not node->next ) {
     translation.push_back( *rooted_index );
@@ -62,10 +65,10 @@ static void recurse_post_order(pll_unode_t const * const node,
   *rooted_index = *rooted_index + 1;
 }
 
-static rtree_mapper determine_edge_num_translation(pll_unode_t const * const vroot,
-                                            bool const left,
-                                            double const proximal_length,
-                                            double const distal_length)
+static rtree_mapper determine_edge_num_translation( pll_unode_t const * const vroot,
+                                                    bool const left,
+                                                    double const proximal_length,
+                                                    double const distal_length)
 {
   // map from unrooted edge nums to rooted edge nums
   rtree_mapper::map_type unrooted_to_rooted;
@@ -128,10 +131,10 @@ static rtree_mapper determine_edge_num_translation(pll_unode_t const * const vro
   return mapper;
 }
 
-pll_utree_s * build_tree_from_file( const std::string& tree_file,
+pll_utree_s * build_tree_from_file( std::string const& tree_file,
                                     Tree_Numbers& nums,
                                     rtree_mapper& mapper,
-                                    const bool preserve_rooting)
+                                    bool const preserve_rooting)
 {
   pll_utree_t * tree;
   pll_rtree_t * rtree;
@@ -224,10 +227,10 @@ static unsigned int simd_autodetect()
     return PLL_ATTRIB_ARCH_CPU;
 }
 
-pll_partition_t *  make_partition(const raxml::Model& model,
+pll_partition_t *  make_partition(raxml::Model const& model,
                                   Tree_Numbers& nums,
-                                  const int num_sites,
-                                  const Options options)
+                                  int const num_sites,
+                                  Options const& options )
 {
   assert(nums.tip_nodes); // nums must have been initialized correctly
 
@@ -262,7 +265,7 @@ pll_partition_t *  make_partition(const raxml::Model& model,
 
 }
 
-void file_check(const std::string& file_path)
+void file_check( std::string const& file_path )
 {
   std::ifstream file(file_path.c_str());
   if (!file.good()) {

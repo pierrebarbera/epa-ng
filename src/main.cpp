@@ -264,8 +264,32 @@ int main(int argc, char** argv)
   app.add_option( "--rate-scalers",
                 rate_scalers_option,
                 "Use individual rate scalers. Important to avoid numerical underflow in taxa rich trees."
-                )->group("Compute")
-                ->check(CLI::IsMember({"off", "on", "auto"}, CLI::ignore_case));
+                )->group("Compute")->check(CLI::IsMember({"off", "on", "auto"}, CLI::ignore_case));
+
+  auto recomb_check =
+  app.add_flag( "--recombination-check",
+                options.recomb_check,
+                "Enables recombination check mode: each query is masked by a sliding window, with each k-mer\n"
+                " producing its own placement result. (settings: --recomb-k and --recomb-step)\n"
+                "WARNING: will result in a large number of placements, depending on the setting."
+                )->group("Recombination Check");
+
+  auto recomb_k =
+  app.add_option( "--recomb-k",
+                  options.recomb_k,
+                  "Window size of recombination check sliding window.",
+                  true
+                )->group("Recombination Check");
+
+  auto recomb_step =
+  app.add_option( "--recomb-step",
+                  options.recomb_step,
+                  "Step size of recombination check sliding window iteration.",
+                  true
+                )->group("Recombination Check");
+
+  recomb_k->needs( recomb_check );
+  recomb_step->needs( recomb_check );
 
   #ifdef __OMP
   auto threads =
@@ -422,6 +446,16 @@ int main(int argc, char** argv)
     LOG_INFO << "Selected: Disabling per rate scalers";
   }
 
+  if (*recomb_check) {
+    if (no_pre_mask) {
+      LOG_ERR << "Currently Recombination Check is only available in combination with premasking!";
+      exit_epa(EXIT_FAILURE);
+    }
+    LOG_INFO << "Selected: Recombination check mode, with settings:";
+    LOG_INFO << "\twindow size k: " << std::to_string( options.recomb_k );
+    LOG_INFO << "\tstep size:     " << std::to_string( options.recomb_step );
+  }
+
   if (preserve_rooting_option == "off") {
     options.preserve_rooting = false;
     LOG_INFO << "Selected: Do NOT preserve the root of the input tree";
@@ -466,7 +500,7 @@ int main(int argc, char** argv)
   #endif
 
   //================================================================
-  //============    EPA    =========================================
+  //============    EPA-NG    ======================================
   //================================================================
 
   banner += "    ______ ____   ___           _   __ ______\n";

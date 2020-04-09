@@ -103,15 +103,15 @@ private:
 
 };
 
-inline std::string subset_sequence( const std::string& seq,
-                                    const MSA_Info::mask_type& mask)
+inline std::string subset_sequence( std::string const& seq,
+                                    MSA_Info::mask_type const& mask)
 {
-  const size_t nongap_count = mask.size() - mask.count();
+  size_t const nongap_count = mask.size() - mask.count();
   std::string result(nongap_count, '$');
 
-  if (seq.length() != mask.size()) {
-    throw std::runtime_error{"In subset_sequence: mask and seq incompatible"};
-  }
+  // if (seq.length() != mask.size()) {
+  //   throw std::runtime_error{"In subset_sequence: mask and seq incompatible"};
+  // }
 
   size_t k = 0;
   for (size_t i = 0; i < seq.length(); ++i) {

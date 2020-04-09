@@ -37,4 +37,7 @@ public:
   unsigned int precision        = 10;
   NumericalScaling scaling      = NumericalScaling::kAuto;
   bool preserve_rooting         = true;
+  bool recomb_check             = false;
+  unsigned int recomb_k         = 100;
+  unsigned int recomb_step      = 1;
 };

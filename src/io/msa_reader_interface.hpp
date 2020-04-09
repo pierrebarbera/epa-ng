@@ -11,6 +11,6 @@ public:
 
   virtual size_t num_sequences() const = 0;
   virtual size_t local_seq_offset() const = 0;
-  virtual size_t read_next(MSA& result, const size_t number) = 0;
+  virtual size_t read_next(MSA& result, size_t const number) = 0;
 
 };

@@ -219,6 +219,15 @@ void simple_mpi(Tree& reference_tree,
                                 options.premasking,
                                 true);
 
+  if( options.recomb_check ) {
+    LOG_DBG << "Setting Recombination check MSA_Stream multiplexing";
+    // TODO this is about as dirty as it gets. make the same func for the other reader!
+    dynamic_cast<MSA_Stream*>(reader.get())
+    ->set_multiplex(  options.recomb_check,
+                      options.recomb_k,
+                      options.recomb_step );
+  }
+
   size_t num_sequences = 0;
   Work all_work(std::make_pair(0, num_branches), std::make_pair(0, options.chunk_size));
 

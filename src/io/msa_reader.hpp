@@ -11,16 +11,16 @@
 #include "util/Options.hpp"
 #include "io/msa_reader_interface.hpp"
 
-inline auto make_msa_reader(const std::string& file_name,
-                            const MSA_Info& info,
-                            const bool premasking = true,
-                            const bool split = false)
+inline auto make_msa_reader(std::string const& file_name,
+                            MSA_Info const& info,
+                            bool const premasking = true,
+                            bool const split = false)
 {
   std::unique_ptr<msa_reader> result(nullptr);
 
   try {
     result = std::make_unique<Binary_Fasta_Reader>( file_name, info, premasking, split );
-  } catch(const std::exception& e) {
+  } catch( std::exception const& e ) {
     LOG_DBG << "Failed to parse input as binary fasta (bfast), trying `fasta` instead.";
     result = std::make_unique<MSA_Stream>( file_name, info, premasking, split );
   }
