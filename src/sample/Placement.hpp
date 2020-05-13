@@ -8,10 +8,10 @@ class Placement {
   public:
   Placement() = default;
 
-  Placement( const size_t branch_id,
-             const double likelihood,
-             const double pendant_length,
-             const double distal_length )
+  Placement( size_t const branch_id,
+             double const likelihood,
+             double const pendant_length,
+             double const distal_length )
       : branch_id_( branch_id )
       , likelihood_( likelihood )
       , lwr_( 0.0 )
@@ -20,7 +20,7 @@ class Placement {
   {
   }
 
-  Placement( const Slim_Placement& other );
+  Placement( Slim_Placement const& other );
 
   Placement( Placement const& other ) = default;
   Placement( Placement&& other )      = default;
@@ -59,15 +59,15 @@ class Slim_Placement {
   public:
   Slim_Placement() = default;
 
-  Slim_Placement( const size_t branch_id,
-                  const double likelihood,
-                  const double,
-                  const double )
+  Slim_Placement( size_t const branch_id,
+                  double const likelihood,
+                  double const,
+                  double const )
       : branch_id_( branch_id )
       , likelihood_( likelihood )
   {
   }
-  Slim_Placement( const Placement& other );
+  Slim_Placement( Placement const& other );
 
   ~Slim_Placement() = default;
 

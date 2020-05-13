@@ -32,7 +32,7 @@ static void check_equal( pll_unode_t const* const a, pll_unode_t const* const b 
   }
 }
 
-static void write_( const Options options )
+static void write_( Options const options )
 {
   // setup
   auto msa = build_MSA_from_file( env->reference_file, MSA_Info( env->reference_file ), options.premasking );
@@ -56,7 +56,7 @@ static int full_trav( pll_unode_t* )
 
 static auto create_scaler_to_clv_map( Tree& tree )
 {
-  const auto num_scalers = tree.partition()->scale_buffers;
+  auto const num_scalers = tree.partition()->scale_buffers;
   std::vector< unsigned int > map( num_scalers );
 
   std::vector< pll_unode_t* > travbuffer( tree.nums().nodes );
@@ -195,14 +195,14 @@ static void read_( Options options )
     pll_unode_t node;
     node.clv_index      = i;
     node.scaler_index   = 0;
-    const auto read_clv = static_cast< double* >( read_tree.get_clv( &node ) );
-    const auto clv_size = pll_get_clv_size( part, i );
+    auto const read_clv = static_cast< double* >( read_tree.get_clv( &node ) );
+    auto const clv_size = pll_get_clv_size( part, i );
     for( size_t j = 0; j < clv_size; j++ ) {
       ASSERT_DOUBLE_EQ( part->clv[ i ][ j ], read_clv[ j ] );
     }
   }
 
-  const auto stoc = create_scaler_to_clv_map( read_tree );
+  auto const stoc = create_scaler_to_clv_map( read_tree );
 
   // check scalers
   for( size_t i = 0; i < part->scale_buffers; i++ ) {
@@ -210,7 +210,7 @@ static void read_( Options options )
     node.clv_index    = 0;
     node.scaler_index = i;
     read_tree.get_clv( &node );
-    const auto scaler_size = pll_get_sites_number( read_part, stoc[ i ] );
+    auto const scaler_size = pll_get_sites_number( read_part, stoc[ i ] );
     for( size_t j = 0; j < scaler_size; j++ ) {
       // printf("%u v %u\n",part->scale_buffer[i][j], read_part->scale_buffer[i][j] );
       EXPECT_EQ( part->scale_buffer[ i ][ j ], read_part->scale_buffer[ i ][ j ] );
@@ -218,8 +218,8 @@ static void read_( Options options )
   }
 
   // check repeats specific structures
-  const auto rep      = part->repeats;
-  const auto read_rep = read_part->repeats;
+  auto const rep      = part->repeats;
+  auto const read_rep = read_part->repeats;
   if( rep ) {
     for( size_t i = 0; i < part->scale_buffers; ++i ) {
       EXPECT_EQ( rep->perscale_ids[ i ], read_rep->perscale_ids[ i ] );

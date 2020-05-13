@@ -19,7 +19,7 @@
 
 using namespace std;
 
-static void place_( const Options options )
+static void place_( Options const options )
 {
   // buildup
   auto msa     = build_MSA_from_file( env->reference_file, MSA_Info( env->reference_file ), options.premasking );
@@ -83,7 +83,7 @@ static void compare_samples( Sample<>& orig_samp, Sample<>& read_samp, bool verb
   }
 }
 
-static void place_from_binary( const Options options )
+static void place_from_binary( Options const options )
 {
   // setup
   auto tree_file      = env->tree_file;

@@ -18,7 +18,7 @@ TEST( schedule, solve )
 
   auto nps = solve( stages, nodes, diff );
 
-  // for(const auto& n : nps)
+  // for(auto const& n : nps)
   //   printf("%d, ", n);
 
   // printf("\nTotal: %d\n", accumulate(nps.begin(), nps.end(), 0));

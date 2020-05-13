@@ -22,22 +22,22 @@ class PQuery {
   template< typename T = Placement_Type,
             typename   = std::enable_if_t<
                 std::is_same< T, Placement >::value > >
-  PQuery( const PQuery< Slim_Placement >& other )
+  PQuery( PQuery< Slim_Placement > const& other )
       : sequence_id_( other.sequence_id() )
       , placements_( other.size() )
   {
-    const auto size = other.size();
+    auto const size = other.size();
     for( size_t i = 0; i < size; ++i ) {
       placements_[ i ] = Placement( other.at( i ) );
     }
   }
-  PQuery( const seqid_type seq_id,
-          const std::string& header )
+  PQuery( seqid_type const seq_id,
+          std::string const& header )
       : sequence_id_( seq_id )
       , header_( header )
   {
   }
-  PQuery( const seqid_type seq_id )
+  PQuery( seqid_type const seq_id )
       : sequence_id_( seq_id )
   {
   }
@@ -60,8 +60,8 @@ class PQuery {
   // member access
   value_type& back() { return placements_.back(); }
   inline seqid_type sequence_id() const { return sequence_id_; }
-  inline void sequence_id( const seqid_type seq_id ) { sequence_id_ = seq_id; }
-  const std::string& header() const { return header_; }
+  inline void sequence_id( seqid_type const seq_id ) { sequence_id_ = seq_id; }
+  std::string const& header() const { return header_; }
   size_t size() const { return placements_.size(); }
 
   // manipulators
@@ -91,10 +91,10 @@ class PQuery {
   const_iterator cend() { return placements_.cend(); }
 
   // Operator overloads
-  value_type& operator[]( const size_t index ) { return placements_[ index ]; }
-  const value_type& at( const size_t index ) const { return placements_[ index ]; }
-  bool operator==( const PQuery&& other ) { return sequence_id_ == other.sequence_id_; }
-  bool operator==( const PQuery& other ) { return sequence_id_ == other.sequence_id_; }
+  value_type& operator[]( size_t const index ) { return placements_[ index ]; }
+  value_type const& at( size_t const index ) const { return placements_[ index ]; }
+  bool operator==( PQuery const&& other ) { return sequence_id_ == other.sequence_id_; }
+  bool operator==( PQuery const& other ) { return sequence_id_ == other.sequence_id_; }
 
   // serialization
   template< class Archive >

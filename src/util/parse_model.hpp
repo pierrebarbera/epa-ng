@@ -62,7 +62,7 @@ static bool rest_has( std::string const& full, std::string const& qry, size_t po
   return ( full.find( qry, pos ) != std::string::npos );
 }
 
-static std::string from_raxml_8( const std::string& file )
+static std::string from_raxml_8( std::string const& file )
 {
   std::string model_desc;
   std::ifstream t( file );
@@ -72,7 +72,7 @@ static std::string from_raxml_8( const std::string& file )
 
   // parse data type
   auto type      = parse( full, "DataType: ", pos );
-  const bool dna = ( type == "DNA" );
+  bool const dna = ( type == "DNA" );
 
   std::string sub_mat;
 
@@ -97,7 +97,7 @@ static std::string from_raxml_8( const std::string& file )
     p_inv = "+IU{" + parse( full, "invar: ", pos ) + "}";
   }
 
-  const std::string chars = dna ? std::string( "ACGT" ) : std::string( "ARNDCQEGHILKMFPSTWYV" );
+  std::string const chars = dna ? std::string( "ACGT" ) : std::string( "ARNDCQEGHILKMFPSTWYV" );
 
   // parse rates
   std::string rates;
@@ -145,7 +145,7 @@ static std::string from_raxml_8( const std::string& file )
   return model_desc;
 }
 
-static std::string from_raxml_ng( const std::string& file )
+static std::string from_raxml_ng( std::string const& file )
 {
   std::ifstream fs( file );
   std::string line;
@@ -159,7 +159,7 @@ static std::string from_raxml_ng( const std::string& file )
   return parts.at( 0 );
 }
 
-static std::string from_iqtree( const std::string& file )
+static std::string from_iqtree( std::string const& file )
 {
   std::string model_desc;
   std::ifstream t( file );
@@ -176,7 +176,7 @@ static std::string from_iqtree( const std::string& file )
 
   model_desc.append( sub_mat );
 
-  const std::string chars = dna ? std::string( "ACGT" ) : std::string( "ARNDCQEGHILKMFPSTWYV" );
+  std::string const chars = dna ? std::string( "ACGT" ) : std::string( "ARNDCQEGHILKMFPSTWYV" );
 
   // parse rates
   std::string rates;
@@ -234,14 +234,14 @@ static std::string from_iqtree( const std::string& file )
   return model_desc;
 }
 
-static bool contains( const std::string& file, const std::string& needle )
+static bool contains( std::string const& file, std::string const& needle )
 {
   auto full_file = genesis::utils::file_read( file );
 
   return full_file.find( needle ) != std::string::npos;
 }
 
-static bool begins_with( const std::string& file, const std::string& needle )
+static bool begins_with( std::string const& file, std::string const& needle )
 {
   std::ifstream fs( file );
   std::string line;
@@ -257,7 +257,7 @@ enum class ModelfileType {
   kUnknown
 };
 
-static ModelfileType guess( const std::string& file )
+static ModelfileType guess( std::string const& file )
 {
   if( begins_with( file, "IQ-TREE " ) ) {
     LOG_DBG << "Detected IQ-TREE infofile";
@@ -270,7 +270,7 @@ static ModelfileType guess( const std::string& file )
   }
 }
 
-std::string parse_model( const std::string& file )
+std::string parse_model( std::string const& file )
 {
   auto filetype = guess( file );
 

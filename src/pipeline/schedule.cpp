@@ -17,7 +17,7 @@ void to_difficulty( std::vector< double >& perstage_avg )
 
 std::vector< unsigned int > solve( unsigned int stages,
                                    unsigned int nodes,
-                                   const std::vector< double >& difficulty_per_stage )
+                                   std::vector< double > const& difficulty_per_stage )
 {
   assert( difficulty_per_stage.size() == stages );
   if( nodes < stages ) {
@@ -57,7 +57,7 @@ std::vector< unsigned int > solve( unsigned int stages,
   return nodes_per_stage;
 }
 
-void assign( const int local_rank,
+void assign( int const local_rank,
              std::vector< unsigned int >& nodes_per_stage,
              schedule_type& rank_assignm,
              int* local_stage )
@@ -77,7 +77,7 @@ void assign( const int local_rank,
   }
 }
 
-void reassign( const int local_rank,
+void reassign( int const local_rank,
                std::vector< unsigned int >& nodes_per_stage,
                schedule_type& rank_assignm,
                int* local_stage )

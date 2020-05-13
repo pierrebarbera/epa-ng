@@ -3,10 +3,10 @@
 #include <sstream>
 #include <tuple>
 
-void merge_into( std::ofstream& dest, const std::vector< std::string >& sources )
+void merge_into( std::ofstream& dest, std::vector< std::string > const& sources )
 {
   size_t i = 0;
-  for( const auto& file_n : sources ) {
+  for( auto const& file_n : sources ) {
     std::ifstream file( file_n );
     dest << file.rdbuf();
     dest.clear(); // empty input files silently set failure flags!
@@ -42,7 +42,7 @@ void pquery_to_jplace_string( PQuery< Placement > const& pquery,
   os << "    {\"p\": [" << NEWL; // p for pquery
 
   size_t i = 0;
-  for( const auto& place : pquery ) {
+  for( auto const& place : pquery ) {
     // individual pquery
     os << "      ";
 
@@ -61,7 +61,7 @@ void pquery_to_jplace_string( PQuery< Placement > const& pquery,
   os << "    \"n\": [";
 
   // sequence header
-  const auto& header = pquery.header();
+  auto const& header = pquery.header();
   os << "\"" << header.c_str() << "\"";
 
   os << "]" << NEWL; // close name bracket
@@ -69,7 +69,7 @@ void pquery_to_jplace_string( PQuery< Placement > const& pquery,
   os << "    }"; // final bracket
 }
 
-void init_jplace_string( const std::string& numbered_newick, std::ostream& os )
+void init_jplace_string( std::string const& numbered_newick, std::ostream& os )
 {
   os << "{" << NEWL;
   os << "  \"tree\": \"" << numbered_newick << "\"," << NEWL;
@@ -77,7 +77,7 @@ void init_jplace_string( const std::string& numbered_newick, std::ostream& os )
   os << "  [" << NEWL;
 }
 
-void finalize_jplace_string( const std::string& invocation, std::ostream& os )
+void finalize_jplace_string( std::string const& invocation, std::ostream& os )
 {
   assert( invocation.length() > 0 );
 
@@ -96,7 +96,7 @@ void finalize_jplace_string( const std::string& invocation, std::ostream& os )
 void sample_to_jplace_string( Sample< Placement > const& sample, std::ostream& os, rtree_mapper const& mapper )
 {
   size_t i = 0;
-  for( const auto& p : sample ) {
+  for( auto const& p : sample ) {
     pquery_to_jplace_string( p, os, mapper );
     if( ++i < sample.size() ) {
       os << ",";

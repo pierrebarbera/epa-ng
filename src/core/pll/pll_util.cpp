@@ -57,7 +57,7 @@ static double sum_branch_lengths_recursive( pll_unode_t const* const tree )
 
 double sum_branch_lengths( pll_utree_t const* const tree )
 {
-  const auto root = get_root( tree );
+  auto const root = get_root( tree );
   double length   = sum_branch_lengths_recursive( root );
   length += sum_branch_lengths_recursive( root->back );
   return length - root->length;

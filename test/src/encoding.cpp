@@ -5,7 +5,7 @@
 TEST( encoding, 4bit )
 {
   FourBit converter;
-  const std::string input( "AATGCTTCGTAA---NNNATTCBDAVMKWYR" );
+  std::string const input( "AATGCTTCGTAA---NNNATTCBDAVMKWYR" );
 
   auto packed = converter.to_fourbit( input );
 

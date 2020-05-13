@@ -7,7 +7,7 @@ void MSA::move_sequences( MSA::iterator begin, MSA::iterator end )
   std::move( begin, end, std::back_inserter( sequence_list_ ) );
 }
 
-void MSA::append( const std::string& header, const std::string& sequence )
+void MSA::append( std::string const& header, std::string const& sequence )
 {
   if( num_sites_ && sequence.length() != num_sites_ ) {
     throw std::runtime_error{ std::string( "Tried to insert sequence to MSA of unequal length: " ) + header };

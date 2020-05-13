@@ -7,7 +7,7 @@
 #include <limits>
 #include <utility>
 
-std::pair< size_t, size_t > local_seq_package( const size_t num_seqs )
+std::pair< size_t, size_t > local_seq_package( size_t const num_seqs )
 {
   int local_rank = 0;
   int num_ranks  = 1;

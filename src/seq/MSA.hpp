@@ -11,14 +11,14 @@ class MSA {
   using iterator       = container_type::iterator;
   using const_iterator = container_type::const_iterator;
 
-  explicit MSA( const size_t num_sites )
+  explicit MSA( size_t const num_sites )
       : num_sites_( num_sites ){};
   MSA()
       : num_sites_( 0 ){};
   ~MSA() = default;
 
   void move_sequences( iterator begin, iterator end );
-  void append( const std::string& header, const std::string& sequence );
+  void append( std::string const& header, std::string const& sequence );
   void erase( iterator begin, iterator end ) { sequence_list_.erase( begin, end ); }
   void clear() { sequence_list_.clear(); }
 
@@ -31,10 +31,10 @@ class MSA {
   // getters
   size_t size() const { return sequence_list_.size(); }
   size_t num_sites() const { return num_sites_; }
-  const Sequence& operator[]( const size_t i ) const { return sequence_list_[ i ]; }
+  Sequence const& operator[]( size_t const i ) const { return sequence_list_[ i ]; }
 
   // setters
-  void num_sites( const size_t sites ) { num_sites_ = sites; }
+  void num_sites( size_t const sites ) { num_sites_ = sites; }
 
   //Iterator Compatability
   iterator begin() { return sequence_list_.begin(); }

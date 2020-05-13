@@ -95,7 +95,7 @@ int main( int argc, char** argv )
   bool no_pre_mask     = not options.premasking;
   bool redo            = false;
 
-  const bool empty = argc == 1;
+  bool const empty = argc == 1;
 
   CLI::App app{ "epa-ng - Massively-Parallel Evolutionary Placement Algorithm" };
 

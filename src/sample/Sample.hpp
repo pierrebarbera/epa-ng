@@ -28,7 +28,7 @@ class Sample : public Token {
       : pquerys_( other.size() )
       , newick_( other.newick() )
   {
-    const auto size = other.size();
+    auto const size = other.size();
     for( size_t i = 0; i < size; ++i ) {
       pquerys_[ i ] = PQuery< Placement >( other.at( i ) );
     }
@@ -58,11 +58,11 @@ class Sample : public Token {
   // member access
   value_type& back() { return pquerys_.back(); }
   unsigned int size() const { return pquerys_.size(); }
-  const std::string& newick() const { return newick_; }
+  std::string const& newick() const { return newick_; }
   void clear() { pquerys_.clear(); }
   void push_back( value_type&& pq ) { pquerys_.push_back( pq ); }
   void push_back( value_type& pq ) { pquerys_.push_back( pq ); }
-  void push_back( const value_type& pq ) { pquerys_.push_back( pq ); }
+  void push_back( value_type const& pq ) { pquerys_.push_back( pq ); }
   void erase( iterator begin, iterator end ) { pquerys_.erase( begin, end ); }
 
   // needs to be in the header
@@ -72,8 +72,8 @@ class Sample : public Token {
   void insert( InputIt first, InputIt last ) { pquerys_.insert( pquerys_.end(), first, last ); }
 
   template< typename... Args >
-  void add_placement( const size_t seq_id,
-                      const std::string& label,
+  void add_placement( size_t const seq_id,
+                      std::string const& label,
                       Args&&... args )
   {
     // if seq_id in pquerys_
@@ -87,8 +87,8 @@ class Sample : public Token {
     }
   }
 
-  size_t add_pquery( const size_t seq_id,
-                     const std::string& label )
+  size_t add_pquery( size_t const seq_id,
+                     std::string const& label )
   {
     // Create a new pquery and return its id in the vector.
     pquerys_.emplace_back( seq_id, label );
@@ -104,8 +104,8 @@ class Sample : public Token {
   const_iterator cend() { return pquerys_.cend(); }
 
   // Operator overloads
-  value_type& operator[]( const size_t index ) { return pquerys_[ index ]; }
-  const value_type& at( const size_t index ) const { return pquerys_[ index ]; }
+  value_type& operator[]( size_t const index ) { return pquerys_[ index ]; }
+  value_type const& at( size_t const index ) const { return pquerys_[ index ]; }
 
   // serialization
   template< class Archive >

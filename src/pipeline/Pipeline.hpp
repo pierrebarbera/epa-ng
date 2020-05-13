@@ -42,10 +42,10 @@ class Pipeline {
   public:
   using hook_type = std::function< void() >;
 
-  Pipeline( const stack_type& stages,
-            const hook_type& per_loop_hook,
-            const hook_type& init_hook,
-            const hook_type& final_hook )
+  Pipeline( stack_type const& stages,
+            hook_type const& per_loop_hook,
+            hook_type const& init_hook,
+            hook_type const& final_hook )
       : stages_( stages )
       , per_loop_hook_( per_loop_hook )
       , init_hook_( init_hook )
@@ -58,7 +58,7 @@ class Pipeline {
   ~Pipeline() = default;
 
   template< class Function >
-  auto push( const Function& f ) const
+  auto push( Function const& f ) const
   {
     constexpr size_t num_stages = sizeof...( lambdas ) + 1u;
     constexpr auto new_stage_id = num_stages - 1u;
@@ -92,7 +92,7 @@ class Pipeline {
       // per-loop pre-hook
       per_loop_hook_();
 
-      for_each( stages_, [&]( const auto s ) {
+      for_each( stages_, [&]( auto const s ) {
         if( s.exec() ) {
 
           constexpr auto stage_id = s.id();
@@ -161,7 +161,7 @@ class Pipeline {
     assign_comm_ops_();
   }
 
-  bool rebalance_on_( const size_t chunk )
+  bool rebalance_on_( size_t const chunk )
   {
     return chunk == next_rebalance_chunk_;
   }
@@ -247,7 +247,7 @@ class Pipeline {
 };
 
 template< class stage_f >
-auto make_pipeline( const stage_f& first_stage,
+auto make_pipeline( stage_f const& first_stage,
                     const typename Pipeline< stage_f >::hook_type& per_loop_hook,
                     const typename Pipeline< stage_f >::hook_type& init_hook,
                     const typename Pipeline< stage_f >::hook_type& final_hook )

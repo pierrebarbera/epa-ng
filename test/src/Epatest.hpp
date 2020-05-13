@@ -34,7 +34,7 @@ extern Epatest* env;
 #define COMPL_PRESCORING ( 1 << 3 )
 #define COMPL_MASKING ( 1 << 4 )
 
-static inline Options get_options_config( const unsigned int d )
+static inline Options get_options_config( unsigned int const d )
 {
   Options o;
   if( d & COMPL_REPEATS ) {

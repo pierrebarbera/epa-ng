@@ -6,7 +6,7 @@
 
 #include "genesis/utils/core/options.hpp"
 
-static void compare_msas( const MSA& lhs, const MSA& rhs )
+static void compare_msas( MSA const& lhs, MSA const& rhs )
 {
   ASSERT_EQ( lhs.size(), rhs.size() );
 
@@ -20,8 +20,8 @@ TEST( Binary_Fasta, 4bit_store_and_load )
 {
   genesis::utils::Options::get().allow_file_overwriting( true );
 
-  const std::string orig_file( env->combined_file );
-  const std::string binfile_name( orig_file + ".bin" );
+  std::string const orig_file( env->combined_file );
+  std::string const binfile_name( orig_file + ".bin" );
 
   auto msa = build_MSA_from_file( orig_file, MSA_Info( env->combined_file ) );
 
@@ -36,8 +36,8 @@ TEST( Binary_Fasta, reader )
 {
   genesis::utils::Options::get().allow_file_overwriting( true );
 
-  const std::string orig_file( env->combined_file );
-  const std::string binfile_name( orig_file + ".bin" );
+  std::string const orig_file( env->combined_file );
+  std::string const binfile_name( orig_file + ".bin" );
 
   MSA_Info info( env->combined_file );
 
@@ -47,11 +47,11 @@ TEST( Binary_Fasta, reader )
 
   Binary_Fasta_Reader reader( binfile_name, info );
 
-  const size_t skip = 0;
+  size_t const skip = 0;
 
   MSA read_msa;
   size_t i               = skip;
-  const size_t chunksize = 5;
+  size_t const chunksize = 5;
   size_t num_sequences   = 0;
   while( ( num_sequences = reader.read_next( read_msa, chunksize ) ) != 0 ) {
 

@@ -15,7 +15,7 @@ class Token {
     return ( status_ != token_status::END );
   }
 
-  virtual void status( const token_status& s ) final
+  virtual void status( token_status const& s ) final
   {
     status_ = s;
   }
@@ -25,7 +25,7 @@ class Token {
     return status_;
   }
 
-  virtual void is_last( const bool b ) final
+  virtual void is_last( bool const b ) final
   {
     if( b ) {
       status_ = token_status::END;

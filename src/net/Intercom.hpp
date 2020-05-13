@@ -68,7 +68,7 @@ class Intercom {
    * @param  stage_id the ID of the stage
    * @return          wether that stage ought to be active on the current MPI Rank
    */
-  bool stage_active( const size_t stage_id ) const
+  bool stage_active( size_t const stage_id ) const
   {
     return stage_id == static_cast< size_t >( local_stage_ );
   }
@@ -93,8 +93,8 @@ class Intercom {
     // }
 
     LOG_DBG << "Rebalancing...";
-    const auto foreman    = schedule_[ local_stage_ ][ 0 ];
-    const auto num_stages = schedule_.size();
+    auto const foreman    = schedule_[ local_stage_ ][ 0 ];
+    auto const num_stages = schedule_.size();
     // Step 0: get per node average
     Timer<> per_node_avg( timer.avg_duration() );
     // Step 1: aggregate the runtime statistics, first at the lowest rank per stage
@@ -186,13 +186,13 @@ class Intercom {
 
 class Intercom {
   public:
-  explicit Intercom( const size_t ) {}
+  explicit Intercom( size_t const ) {}
   Intercom()  = default;
   ~Intercom() = default;
 
-  // auto& schedule(const size_t) { }
+  // auto& schedule(size_t const) { }
   // auto& previous_requests() { }
-  bool stage_active( const size_t ) const { return true; }
+  bool stage_active( size_t const ) const { return true; }
   void rebalance( Timer<>& ) {}
   void barrier() const {}
   int rank() { return 0; }

@@ -14,33 +14,33 @@
 using pq_citer_t = PQuery< Placement >::const_iterator;
 using pq_iter_t  = PQuery< Placement >::iterator;
 
-void merge( Work& dest, const Work& src );
-void merge( Timer<>& dest, const Timer<>& src );
+void merge( Work& dest, Work const& src );
+void merge( Timer<>& dest, Timer<> const& src );
 
 void sort_by_lwr( PQuery< Placement >& pq );
 void sort_by_logl( PQuery< Placement >& pq );
 void compute_and_set_lwr( Sample< Placement >& sample );
 pq_iter_t until_top_percent( PQuery< Placement >& pq,
-                             const double x );
-void discard_bottom_x_percent( Sample< Placement >& sample, const double x );
+                             double const x );
+void discard_bottom_x_percent( Sample< Placement >& sample, double const x );
 void discard_by_support_threshold( Sample< Placement >& sample,
-                                   const double thresh,
-                                   const size_t min = 1,
-                                   const size_t max = std::numeric_limits< size_t >::max() );
+                                   double const thresh,
+                                   size_t const min = 1,
+                                   size_t const max = std::numeric_limits< size_t >::max() );
 
 pq_iter_t until_accumulated_reached( PQuery< Placement >& pq,
-                                     const double thresh,
-                                     const size_t min,
-                                     const size_t max );
+                                     double const thresh,
+                                     size_t const min,
+                                     size_t const max );
 
 pq_iter_t until_accumulated_reached( PQuery< Placement >& pq,
-                                     const double thresh );
+                                     double const thresh );
 
 void discard_by_accumulated_threshold( Sample< Placement >& sample,
-                                       const double thresh,
-                                       const size_t min = 1,
-                                       const size_t max = std::numeric_limits< size_t >::max() );
-void filter( Sample< Placement >& sample, const Options& options );
+                                       double const thresh,
+                                       size_t const min = 1,
+                                       size_t const max = std::numeric_limits< size_t >::max() );
+void filter( Sample< Placement >& sample, Options const& options );
 void find_collapse_equal_sequences( MSA& msa );
 
 /**
@@ -49,14 +49,14 @@ void find_collapse_equal_sequences( MSA& msa );
 template< class T >
 void collapse( Sample< T >& sample )
 {
-  const auto invalid = std::numeric_limits<
+  auto const invalid = std::numeric_limits<
       typename PQuery< T >::seqid_type >::max();
 
   std::unordered_map< size_t, std::vector< size_t > > collapse_set;
 
   // build map of all pqueries
   for( size_t i = 0; i < sample.size(); ++i ) {
-    const auto& pq = sample[ i ];
+    auto const& pq = sample[ i ];
     collapse_set[ pq.sequence_id() ].emplace_back( i );
   }
 
@@ -104,16 +104,16 @@ void collapse( T& )
  * @param
  */
 template< class T >
-void split( const Sample< T >& src,
+void split( Sample< T > const& src,
             std::vector< Sample< T > >& parts,
-            const unsigned int num_parts )
+            unsigned int const num_parts )
 {
   parts.clear();
   // ensure that there are actually as many parts as specified. We want empty parts to enable null messages
   parts.resize( num_parts );
 
   for( auto& pq : src ) {
-    const auto bucket = pq.sequence_id() % num_parts;
+    auto const bucket = pq.sequence_id() % num_parts;
     parts[ bucket ].push_back( pq );
   }
 }
@@ -132,9 +132,9 @@ void split( const Sample< T >& src,
  * @param num_parts number of parts
  */
 template< class T >
-void split( const T& src,
+void split( T const& src,
             std::vector< T >& parts,
-            const unsigned int num_parts )
+            unsigned int const num_parts )
 {
   parts.clear();
   unsigned int chunk_size = ceil( src.size() / static_cast< double >( num_parts ) );
@@ -148,18 +148,18 @@ void split( const T& src,
   }
 }
 
-void split( const Work& source,
+void split( Work const& source,
             std::vector< Work >& parts,
-            const unsigned int num_parts );
+            unsigned int const num_parts );
 
 /**
   Merges a Sample <src> into a Sample <dest>. Leaves <src> intact.
 */
 template< class T >
-void merge( Sample< T >& dest, const Sample< T >& src )
+void merge( Sample< T >& dest, Sample< T > const& src )
 {
   // merge in every source pquery...
-  for( const auto& pquery : src ) {
+  for( auto const& pquery : src ) {
     // ... by checking if its sequence already exists in destination
     auto input_iter = find( dest.begin(), dest.end(), pquery );
     // if not, create a record
@@ -196,13 +196,13 @@ void merge( T& dest, std::vector< T >&& parts )
 template< class T >
 void merge( T& dest, std::vector< T >& parts )
 {
-  for( const auto& p : parts ) {
+  for( auto const& p : parts ) {
     merge( dest, p );
   }
 }
 
 template< class T >
-void merge( std::vector< T >& dest, const std::vector< T >& parts )
+void merge( std::vector< T >& dest, std::vector< T > const& parts )
 {
   dest.insert( std::end( dest ), std::begin( parts ), std::end( parts ) );
 }

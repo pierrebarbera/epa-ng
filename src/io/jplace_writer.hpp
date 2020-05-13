@@ -19,10 +19,10 @@
 class jplace_writer {
   public:
   jplace_writer() = default;
-  jplace_writer( const std::string& out_dir,
-                 const std::string& file_name,
-                 const std::string& tree_string,
-                 const std::string& invocation_string,
+  jplace_writer( std::string const& out_dir,
+                 std::string const& file_name,
+                 std::string const& tree_string,
+                 std::string const& invocation_string,
                  rtree_mapper const& mapper )
       : tree_string_( tree_string )
       , invocation_( invocation_string )
@@ -120,7 +120,7 @@ class jplace_writer {
       sample_to_jplace_string( chunk, buffer, mapper_ );
 
       // how much this rank intends to write this turn
-      const auto buffer_str = buffer.str();
+      auto const buffer_str = buffer.str();
       size_t num_bytes      = buffer_str.size();
       buffer.clear();
 
@@ -163,10 +163,10 @@ class jplace_writer {
 #endif
   }
 
-  virtual void init_file_( const std::string& out_dir,
-                           const std::string& file_name )
+  virtual void init_file_( std::string const& out_dir,
+                           std::string const& file_name )
   {
-    const auto file_path = out_dir + file_name;
+    auto const file_path = out_dir + file_name;
 #ifdef __MPI
     MPI_File_open( MPI_COMM_WORLD,
                    file_path.c_str(),

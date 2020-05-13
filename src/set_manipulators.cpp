@@ -6,16 +6,16 @@
 #include <limits>
 #include <stdexcept>
 
-void split( const Work& src,
+void split( Work const& src,
             std::vector< Work >& parts,
-            const unsigned int num_parts )
+            unsigned int const num_parts )
 {
   parts.clear();
   // ensure that there are actually as many parts as specified. We want empty parts to enable null messages
   parts.resize( num_parts );
 
-  const size_t ext_size   = ( src.size() - ( src.size() % num_parts ) ) + num_parts;
-  const size_t chunk_size = ext_size / num_parts;
+  size_t const ext_size   = ( src.size() - ( src.size() % num_parts ) ) + num_parts;
+  size_t const chunk_size = ext_size / num_parts;
 
   size_t i      = 0;
   size_t bucket = 0;
@@ -26,12 +26,12 @@ void split( const Work& src,
   }
 }
 
-void merge( Work& dest, const Work& src )
+void merge( Work& dest, Work const& src )
 {
   if( not src.empty() ) {
     auto prev_branch_id = ( *src.begin() ).branch_id + 1;
     for( auto it : src ) {
-      const auto branch_id = it.branch_id;
+      auto const branch_id = it.branch_id;
       if( prev_branch_id != branch_id ) {
         dest[ branch_id ];
         dest[ branch_id ].insert( dest.at( branch_id ).end(),
@@ -43,7 +43,7 @@ void merge( Work& dest, const Work& src )
   }
 }
 
-void merge( Timer<>& dest, const Timer<>& src )
+void merge( Timer<>& dest, Timer<> const& src )
 {
   dest.insert( dest.end(), src.begin(), src.end() );
 }
@@ -59,7 +59,7 @@ void compute_and_set_lwr( Sample< Placement >& sample )
 
     // find the maximum
     auto max = std::max_element( pq.begin(), pq.end(),
-                                 []( const Placement& lhs, const Placement& rhs ) {
+                                 []( Placement const& lhs, Placement const& rhs ) {
                                    return ( lhs.likelihood() < rhs.likelihood() );
                                  } )
                    ->likelihood();
@@ -81,7 +81,7 @@ void compute_and_set_lwr( Sample< Placement >& sample )
 void sort_by_lwr( PQuery< Placement >& pq )
 {
   sort( pq.begin(), pq.end(),
-        []( const Placement& p_a, const Placement& p_b ) -> bool {
+        []( Placement const& p_a, Placement const& p_b ) -> bool {
           return p_a.lwr() > p_b.lwr();
         } );
 }
@@ -89,13 +89,13 @@ void sort_by_lwr( PQuery< Placement >& pq )
 void sort_by_logl( PQuery< Placement >& pq )
 {
   std::sort( pq.begin(), pq.end(),
-             []( const Placement& lhs, const Placement& rhs ) -> bool {
+             []( Placement const& lhs, Placement const& rhs ) -> bool {
                return lhs.likelihood() > rhs.likelihood();
              } );
 }
 
 pq_iter_t until_top_percent( PQuery< Placement >& pq,
-                             const double x )
+                             double const x )
 {
   sort_by_lwr( pq );
   auto num_keep = static_cast< size_t >( ceil( x * static_cast< double >( pq.size() ) ) );
@@ -105,9 +105,9 @@ pq_iter_t until_top_percent( PQuery< Placement >& pq,
 }
 
 pq_iter_t until_accumulated_reached( PQuery< Placement >& pq,
-                                     const double thresh,
-                                     const size_t min,
-                                     const size_t max )
+                                     double const thresh,
+                                     size_t const min,
+                                     size_t const max )
 {
   sort_by_lwr( pq );
 
@@ -130,12 +130,12 @@ pq_iter_t until_accumulated_reached( PQuery< Placement >& pq,
 }
 
 pq_iter_t until_accumulated_reached( PQuery< Placement >& pq,
-                                     const double thresh )
+                                     double const thresh )
 {
   return until_accumulated_reached( pq, thresh, 1, std::numeric_limits< size_t >::max() );
 }
 
-void discard_bottom_x_percent( Sample< Placement >& sample, const double x )
+void discard_bottom_x_percent( Sample< Placement >& sample, double const x )
 {
   if( x < 0.0 || x > 1.0 ) {
     throw std::range_error{ "x is not a percentage (outside of [0,1])" };
@@ -152,9 +152,9 @@ void discard_bottom_x_percent( Sample< Placement >& sample, const double x )
 }
 
 void discard_by_support_threshold( Sample< Placement >& sample,
-                                   const double thresh,
-                                   const size_t min,
-                                   const size_t max )
+                                   double const thresh,
+                                   size_t const min,
+                                   size_t const max )
 {
   if( thresh < 0.0 or thresh > 1.0 ) {
     throw std::range_error{ "thresh is not a valid likelihood weight ratio (outside of [0,1])" };
@@ -176,15 +176,15 @@ void discard_by_support_threshold( Sample< Placement >& sample,
           return ( p.lwr() > thresh );
         } );
 
-    const auto num_kept = static_cast< size_t >( distance( pq.begin(), erase_iter ) );
+    auto const num_kept = static_cast< size_t >( distance( pq.begin(), erase_iter ) );
 
     if( num_kept < min ) {
-      const auto to_add = min - num_kept;
+      auto const to_add = min - num_kept;
       std::advance( erase_iter, to_add );
     }
 
     if( max and num_kept > max ) {
-      const auto to_remove = num_kept - max;
+      auto const to_remove = num_kept - max;
       std::advance( erase_iter, -to_remove );
     }
 
@@ -193,9 +193,9 @@ void discard_by_support_threshold( Sample< Placement >& sample,
 }
 
 void discard_by_accumulated_threshold( Sample< Placement >& sample,
-                                       const double thresh,
-                                       const size_t min,
-                                       const size_t max )
+                                       double const thresh,
+                                       size_t const min,
+                                       size_t const max )
 {
   if( thresh < 0.0 || thresh > 1.0 ) {
     throw std::range_error{ "thresh is not a valid likelihood weight ratio (outside of [0,1])" };
@@ -222,7 +222,7 @@ void discard_by_accumulated_threshold( Sample< Placement >& sample,
   }
 }
 
-void filter( Sample< Placement >& sample, const Options& options )
+void filter( Sample< Placement >& sample, Options const& options )
 {
   if( options.acc_threshold ) {
     LOG_DBG << "Filtering output by accumulated threshold: " << options.support_threshold << std::endl;
@@ -248,7 +248,7 @@ void find_collapse_equal_sequences( MSA& msa )
   for( auto target_iter = msa.begin(); target_iter != end_merge_range; target_iter++ ) {
     auto target       = *target_iter;
     begin_merge_range = partition( target_iter + 1, end_merge_range,
-                                   [&target]( const Sequence& query ) {
+                                   [&target]( Sequence const& query ) {
                                      return !( target == query );
                                    } );
     // now all sequences in the msa that are equal to the "target" are at the end of the msa

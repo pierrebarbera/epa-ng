@@ -5,7 +5,7 @@
 
 class Range {
   public:
-  Range( const unsigned int begin, const unsigned int span )
+  Range( unsigned int const begin, unsigned int const span )
       : begin( begin )
       , span( span ){};
   Range()  = default;
@@ -34,7 +34,7 @@ inline std::ostream& operator<<( std::ostream& out, Range const& rhs )
  *  0  1  2  3  4  5  6  7  8  9 10
  *  Output: (3,6)
  */
-inline Range get_valid_range( const std::string& sequence )
+inline Range get_valid_range( std::string const& sequence )
 {
   size_t lower = 0;
   size_t upper = sequence.length();

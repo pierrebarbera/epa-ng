@@ -19,8 +19,8 @@ class MSA_Info {
   /**
    * Pass through the given file and generate info
    */
-  MSA_Info( const std::string& file_path,
-            std::function< void( const genesis::sequence::Sequence& ) > fn = nullptr )
+  MSA_Info( std::string const& file_path,
+            std::function< void( genesis::sequence::Sequence const& ) > fn = nullptr )
       : path_( file_path )
   {
     // detect number of sequences in fasta file and generate mask
@@ -36,7 +36,7 @@ class MSA_Info {
       // another sequence!
       ++sequences_;
 
-      const auto& seq = *it;
+      auto const& seq = *it;
 
       // call the supplied lambda, if valid
       if( fn ) {
@@ -59,10 +59,10 @@ class MSA_Info {
     }
   }
 
-  MSA_Info( const std::string& file_path,
-            const size_t sequences,
-            const mask_type& mask,
-            const size_t sites = 0 )
+  MSA_Info( std::string const& file_path,
+            size_t const sequences,
+            mask_type const& mask,
+            size_t const sites = 0 )
       : path_( file_path )
       , sites_( sites )
       , sequences_( sequences )
@@ -74,10 +74,10 @@ class MSA_Info {
   ~MSA_Info() = default;
 
   // access
-  const std::string& path() const { return path_; }
+  std::string const& path() const { return path_; }
   size_t sites() const { return sites_; }
   size_t sequences() const { return sequences_; }
-  const mask_type& gap_mask() const { return gap_mask_; }
+  mask_type const& gap_mask() const { return gap_mask_; }
   size_t gap_count() const { return gap_mask_.count(); }
   size_t nongap_count() const { return gap_mask_.size() - gap_mask_.count(); }
 
@@ -101,10 +101,10 @@ class MSA_Info {
   mask_type gap_mask_;
 };
 
-inline std::string subset_sequence( const std::string& seq,
-                                    const MSA_Info::mask_type& mask )
+inline std::string subset_sequence( std::string const& seq,
+                                    MSA_Info::mask_type const& mask )
 {
-  const size_t nongap_count = mask.size() - mask.count();
+  size_t const nongap_count = mask.size() - mask.count();
   std::string result( nongap_count, '$' );
 
   if( seq.length() != mask.size() ) {
@@ -135,4 +135,4 @@ inline std::ostream& operator<<( std::ostream& out, MSA_Info const& rhs )
   return out;
 }
 
-MSA_Info make_msa_info( const std::string& file_path );
+MSA_Info make_msa_info( std::string const& file_path );

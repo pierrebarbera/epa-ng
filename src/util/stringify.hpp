@@ -10,7 +10,7 @@
 constexpr char NEWL = '\n';
 
 template< class T, class lambda >
-static std::string stringify_vec_impl( const std::vector< T >& vec,
+static std::string stringify_vec_impl( std::vector< T > const& vec,
                                        lambda toString )
 {
   std::ostringstream output;
@@ -29,9 +29,9 @@ static std::string stringify_vec_impl( const std::vector< T >& vec,
 std::string stringify( raxml::Model& model );
 
 template< class T >
-std::string stringify( const std::vector< T >& vec )
+std::string stringify( std::vector< T > const& vec )
 {
-  return stringify_vec_impl( vec, []( const auto& elem ) {
+  return stringify_vec_impl( vec, []( auto const& elem ) {
     return elem;
   } );
 }
@@ -39,9 +39,9 @@ std::string stringify( const std::vector< T >& vec )
 template< class T >
 std::string stringify( const std::vector< std::vector< T > >& vec )
 {
-  return stringify_vec_impl( vec, []( const auto& elem ) {
+  return stringify_vec_impl( vec, []( auto const& elem ) {
     return elem.size();
   } );
 }
 
-std::vector< std::string > split_by_delimiter( const std::string& text, std::string const& delim );
+std::vector< std::string > split_by_delimiter( std::string const& text, std::string const& delim );

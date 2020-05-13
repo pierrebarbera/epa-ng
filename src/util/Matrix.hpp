@@ -128,12 +128,12 @@ class Matrix {
   //     Element Access
   // -------------------------------------------------------------
 
-  inline size_t coord( const size_t row, const size_t col ) const
+  inline size_t coord( size_t const row, size_t const col ) const
   {
     return row * cols_ + col;
   }
 
-  T& at( const size_t row, const size_t col )
+  T& at( size_t const row, size_t const col )
   {
     if( row >= rows_ || col >= cols_ ) {
       throw std::out_of_range( "__FUNCTION__: out_of_range" );
@@ -141,7 +141,7 @@ class Matrix {
     return data_[ row * cols_ + col ];
   }
 
-  const T at( const size_t row, const size_t col ) const
+  T const at( size_t const row, size_t const col ) const
   {
     if( row >= rows_ || col >= cols_ ) {
       throw std::out_of_range( "__FUNCTION__: out_of_range" );
@@ -149,17 +149,17 @@ class Matrix {
     return data_[ row * cols_ + col ];
   }
 
-  T& operator()( const size_t row, const size_t col )
+  T& operator()( size_t const row, size_t const col )
   {
     return data_[ row * cols_ + col ];
   }
 
-  inline const T operator()( const size_t row, const size_t col ) const
+  inline T const operator()( size_t const row, size_t const col ) const
   {
     return data_[ row * cols_ + col ];
   }
 
-  const std::vector< T >& get_array() const
+  std::vector< T > const& get_array() const
   {
     return data_;
   }
@@ -232,14 +232,14 @@ class Matrix {
   //     Operators
   // -------------------------------------------------------------
 
-  bool operator==( const Matrix< T >& rhs ) const
+  bool operator==( Matrix< T > const& rhs ) const
   {
     return rows_ == rhs.rows_
         && cols_ == rhs.cols_
         && data_ == rhs.data_;
   }
 
-  bool operator!=( const Matrix< T >& rhs ) const
+  bool operator!=( Matrix< T > const& rhs ) const
   {
     return !( *this == rhs );
   }

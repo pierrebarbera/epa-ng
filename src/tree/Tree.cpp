@@ -71,9 +71,9 @@ Tree::Tree( std::string const& tree_file,
 /**
   Constructs the structures from binary file.
 */
-Tree::Tree( const std::string& bin_file,
+Tree::Tree( std::string const& bin_file,
             raxml::Model& model,
-            const Options& options )
+            Options const& options )
     : model_( model )
     , options_( options )
     , binary_( bin_file )
@@ -98,13 +98,13 @@ Tree::Tree( const std::string& bin_file,
 */
 void* Tree::get_clv( pll_unode_t const* const node )
 {
-  const auto i = node->clv_index;
+  auto const i = node->clv_index;
 
   // prevent race condition from concurrent access to this function
   Scoped_Mutex lock_by_clv_id( locks_[ i ] );
 
-  const auto scaler       = node->scaler_index;
-  const bool use_tipchars = partition_->attributes & PLL_ATTRIB_PATTERN_TIP;
+  auto const scaler       = node->scaler_index;
+  bool const use_tipchars = partition_->attributes & PLL_ATTRIB_PATTERN_TIP;
 
   if( i >= partition_->tips + partition_->clv_buffers ) {
     throw std::runtime_error{ "Node index out of bounds" };
@@ -142,7 +142,7 @@ void* Tree::get_clv( pll_unode_t const* const node )
 double Tree::ref_tree_logl()
 {
   std::vector< unsigned int > param_indices( partition_->rate_cats, 0 );
-  const auto root = get_root( tree_.get() );
+  auto const root = get_root( tree_.get() );
   // ensure clvs are there
   this->get_clv( root );
   this->get_clv( root->back );

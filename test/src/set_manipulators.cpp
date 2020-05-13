@@ -162,7 +162,7 @@ TEST( set_manipulators, split_work_equal_large )
 
 TEST( set_manipulators, split_work_empty )
 {
-  const size_t stage_size = 10;
+  size_t const stage_size = 10;
 
   Work work;
 
@@ -177,9 +177,9 @@ TEST( set_manipulators, split_work_empty )
 
 TEST( set_manipulators, split_work_null_parts )
 {
-  const size_t num_branches = 2;
-  const size_t stage_size   = 250;
-  const size_t num_seqs     = 100;
+  size_t const num_branches = 2;
+  size_t const stage_size   = 250;
+  size_t const num_seqs     = 100;
 
   assert( num_seqs * num_branches < stage_size );
 

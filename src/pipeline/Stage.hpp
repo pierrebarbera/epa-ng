@@ -22,7 +22,7 @@ class Stage {
     return exec_;
   }
 
-  virtual void exec( const bool b ) final
+  virtual void exec( bool const b ) final
   {
     exec_ = b;
   }

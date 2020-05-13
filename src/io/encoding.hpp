@@ -14,16 +14,16 @@ class FourBit {
   private:
   static constexpr uchar NONE_CHAR = '-';
 
-  uchar pack_( const uchar lhs, const uchar rhs )
+  uchar pack_( uchar const lhs, uchar const rhs )
   {
     assert( lhs < 16 and rhs < 16 );
     return ( lhs << 4 ) | rhs;
   }
 
-  static inline std::pair< uchar, uchar > unpack_( const uchar c )
+  static inline std::pair< uchar, uchar > unpack_( uchar const c )
   {
-    static const uchar upper_mask = 0b11110000;
-    static const uchar lower_mask = 0b00001111;
+    static uchar const upper_mask = 0b11110000;
+    static uchar const lower_mask = 0b00001111;
     return { ( c & upper_mask ) >> 4, c & lower_mask };
   }
 
@@ -34,7 +34,7 @@ class FourBit {
     static_assert( NT_MAP_SIZE == 16, "Weird NT map size, go adjust encoder code!" );
 
     // both chars are valid characters:
-    const auto map_size = static_cast< uchar >( NT_MAP_SIZE );
+    auto const map_size = static_cast< uchar >( NT_MAP_SIZE );
     for( uchar i = 0; i < map_size; ++i ) {
       assert( NT_MAP[ i ] == std::toupper( NT_MAP[ i ] ) );
       for( uchar j = 0; j < map_size; ++j ) {
@@ -78,15 +78,15 @@ class FourBit {
   }
   ~FourBit() = default;
 
-  inline size_t packed_size( const size_t size )
+  inline size_t packed_size( size_t const size )
   {
     return std::ceil( size / 2.0 );
   }
 
   // conversion functions
-  inline std::basic_string< char > to_fourbit( const std::string& s )
+  inline std::basic_string< char > to_fourbit( std::string const& s )
   {
-    const size_t p_size = packed_size( s.size() );
+    size_t const p_size = packed_size( s.size() );
     std::basic_string< char > res;
     res.reserve( p_size );
 
@@ -103,7 +103,7 @@ class FourBit {
     return res;
   }
 
-  std::string from_fourbit( const std::basic_string< char >& s, const size_t n )
+  std::string from_fourbit( std::basic_string< char > const& s, size_t const n )
   {
     assert( s.size() > 0 );
     assert( n > 0 );
@@ -113,7 +113,7 @@ class FourBit {
     res.resize( n );
 
     // determine whether the packed string has padding
-    const bool padded = ( s.size() * 2 < n );
+    bool const padded = ( s.size() * 2 < n );
 
     // unpack
     size_t i = 0;

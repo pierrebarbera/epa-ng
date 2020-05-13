@@ -1,6 +1,6 @@
 #include "sample/Placement.hpp"
 
-Placement::Placement( const Slim_Placement& other )
+Placement::Placement( Slim_Placement const& other )
     : branch_id_( other.branch_id() )
     , likelihood_( other.likelihood() )
     , lwr_( 0.0 )
@@ -9,7 +9,7 @@ Placement::Placement( const Slim_Placement& other )
 {
 }
 
-Slim_Placement::Slim_Placement( const Placement& other )
+Slim_Placement::Slim_Placement( Placement const& other )
     : branch_id_( other.branch_id() )
     , likelihood_( other.likelihood() )
 {

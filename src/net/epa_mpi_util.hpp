@@ -4,7 +4,7 @@
 #include <cstddef>
 #include <utility>
 
-std::pair< size_t, size_t > local_seq_package( const size_t num_seqs );
+std::pair< size_t, size_t > local_seq_package( size_t const num_seqs );
 
 #ifdef __MPI
 
@@ -90,8 +90,8 @@ inline void epa_mpi_waitall( previous_request_storage_t& reqs )
 
 template< typename T >
 void epa_mpi_send( T& obj,
-                   const int dest_rank,
-                   const MPI_Comm comm )
+                   int const dest_rank,
+                   MPI_Comm const comm )
 {
   // serialize the obj
   std::stringstream ss;
@@ -113,8 +113,8 @@ void epa_mpi_send( T& obj,
 
 template< typename T >
 void epa_mpi_isend( T& obj,
-                    const int dest_rank,
-                    const MPI_Comm comm,
+                    int const dest_rank,
+                    MPI_Comm const comm,
                     request_tuple& prev_req,
                     Timer<>& timer )
 {
@@ -153,8 +153,8 @@ void epa_mpi_isend( T& obj,
 
 template< typename T >
 void epa_mpi_receive( T& obj,
-                      const int src_rank,
-                      const MPI_Comm comm,
+                      int const src_rank,
+                      MPI_Comm const comm,
                       Timer<>& timer )
 {
   // probe to find out the message size
@@ -202,9 +202,9 @@ void epa_mpi_receive( T& obj,
 }
 
 template< typename T >
-static inline void isend_all( const std::vector< T >& parts,
-                              const std::vector< int >& dest_ranks,
-                              const MPI_Comm comm,
+static inline void isend_all( std::vector< T > const& parts,
+                              std::vector< int > const& dest_ranks,
+                              MPI_Comm const comm,
                               previous_request_storage_t& prev_reqs,
                               Timer<>& timer )
 {
@@ -220,8 +220,8 @@ static inline void isend_all( const std::vector< T >& parts,
 
 template< typename T >
 void epa_mpi_split_send( T& obj,
-                         const std::vector< int >& dest_ranks,
-                         const MPI_Comm comm,
+                         std::vector< int > const& dest_ranks,
+                         MPI_Comm const comm,
                          previous_request_storage_t& prev_reqs,
                          Timer<>& timer )
 {
@@ -242,11 +242,11 @@ void epa_mpi_split_send( T& obj,
 
 template< typename T >
 void epa_mpi_receive_merge( T& obj,
-                            const std::vector< int >& src_ranks,
-                            const MPI_Comm comm,
+                            std::vector< int > const& src_ranks,
+                            MPI_Comm const comm,
                             Timer<>& timer )
 {
-  for( const auto rank : src_ranks ) {
+  for( auto const rank : src_ranks ) {
     T remote_obj;
     epa_mpi_receive( remote_obj, rank, comm, timer );
     merge( obj, remote_obj );
@@ -258,13 +258,13 @@ void epa_mpi_receive_merge( T& obj,
 
 template< typename T >
 void epa_mpi_gather( T& obj,
-                     const int dest_rank,
-                     const std::vector< int >& src_ranks,
-                     const int local_rank,
+                     int const dest_rank,
+                     std::vector< int > const& src_ranks,
+                     int const local_rank,
                      Timer<>& timer )
 {
   if( local_rank == dest_rank ) {
-    for( const auto src_rank : src_ranks ) {
+    for( auto const src_rank : src_ranks ) {
       if( local_rank == src_rank ) {
         continue;
       }
@@ -286,9 +286,9 @@ void epa_mpi_gather( T& obj,
 
 template< typename T >
 void epa_mpi_bcast( T& obj,
-                    const int src_rank,
-                    const std::vector< int >& dest_ranks,
-                    const int local_rank,
+                    int const src_rank,
+                    std::vector< int > const& dest_ranks,
+                    int const local_rank,
                     Timer<>& timer )
 {
   if( src_rank == local_rank ) {

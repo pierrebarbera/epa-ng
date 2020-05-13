@@ -21,10 +21,10 @@ class MSA_Stream : public msa_reader {
   using container_type = MSA;
   using file_type      = genesis::sequence::FastaInputIterator;
 
-  MSA_Stream( const std::string& msa_file,
-              const MSA_Info& info,
-              const bool premasking = true,
-              const bool split      = false );
+  MSA_Stream( std::string const& msa_file,
+              MSA_Info const& info,
+              bool const premasking = true,
+              bool const split      = false );
   MSA_Stream() = default;
   ~MSA_Stream();
 
@@ -34,12 +34,12 @@ class MSA_Stream : public msa_reader {
   MSA_Stream& operator=( MSA_Stream const& other ) = delete;
   MSA_Stream& operator=( MSA_Stream&& other ) = default;
 
-  size_t read_next( container_type& result, const size_t number ) override;
+  size_t read_next( container_type& result, size_t const number ) override;
   size_t num_sequences() const override { return info_.sequences(); }
   size_t local_seq_offset() const override { return local_seq_offset_; }
 
   private:
-  void skip_to_sequence( const size_t );
+  void skip_to_sequence( size_t const );
 
   private:
   MSA_Info info_;

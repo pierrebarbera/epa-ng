@@ -6,11 +6,11 @@
 #include "util/logging.hpp"
 
 static void read_chunk( MSA_Stream::file_type& iter,
-                        const MSA_Info& info,
-                        const bool premasking,
-                        const size_t number,
+                        MSA_Info const& info,
+                        bool const premasking,
+                        size_t const number,
                         MSA_Stream::container_type& prefetch_buffer,
-                        const size_t max_read,
+                        size_t const max_read,
                         size_t& num_read )
 {
   prefetch_buffer.clear();
@@ -19,7 +19,7 @@ static void read_chunk( MSA_Stream::file_type& iter,
   size_t number_left = std::min( number, max_read - num_read );
 
   while( number_left > 0 and iter ) {
-    const auto sequence_length = iter->length();
+    auto const sequence_length = iter->length();
     if( length and ( length != sequence_length ) ) {
       throw std::runtime_error{ "MSA file does not contain equal size sequences" };
     }
@@ -40,10 +40,10 @@ static void read_chunk( MSA_Stream::file_type& iter,
   num_read += prefetch_buffer.size();
 }
 
-MSA_Stream::MSA_Stream( const std::string& msa_file,
-                        const MSA_Info& info,
-                        const bool premasking,
-                        const bool split )
+MSA_Stream::MSA_Stream( std::string const& msa_file,
+                        MSA_Info const& info,
+                        bool const premasking,
+                        bool const split )
     : info_( info )
     , premasking_( premasking )
 {
@@ -71,7 +71,7 @@ MSA_Stream::MSA_Stream( const std::string& msa_file,
 }
 
 size_t MSA_Stream::read_next( MSA_Stream::container_type& result,
-                              const size_t number )
+                              size_t const number )
 {
   if( first_ ) { //...this is the first chunk
     // then read the first chunk and kick off the next asynchronously
@@ -115,7 +115,7 @@ MSA_Stream::~MSA_Stream()
 #endif
 }
 
-void MSA_Stream::skip_to_sequence( const size_t n )
+void MSA_Stream::skip_to_sequence( size_t const n )
 {
   // this function is too dirty, disallow usage after first read
   if( not first_ ) {
