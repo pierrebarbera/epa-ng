@@ -1,0 +1,18 @@
+﻿---
+BasedOnStyle: WebKit
+AlignAfterOpenBracket: Align
+AlignConsecutiveAssignments: 'true'
+BinPackArguments: 'true'
+BinPackParameters: 'true'
+IndentWidth: '2'
+Language: Cpp
+SpaceAfterTemplateKeyword: 'false'
+SpaceBeforeParens: Never
+SpaceInEmptyParentheses: 'false'
+SpacesInAngles: 'true'
+SpacesInParentheses: 'true'
+SpacesInSquareBrackets: 'true'
+Standard: Cpp11
+UseTab: Never
+
+...

@@ -5,7 +5,7 @@
 
 class Options {
 
-public:
+  public:
   enum class NumericalScaling {
     kOn,
     kOff,
@@ -34,7 +34,7 @@ public:
   bool premasking               = true;
   bool baseball                 = false;
   std::string tmp_dir;
-  unsigned int precision        = 10;
-  NumericalScaling scaling      = NumericalScaling::kAuto;
-  bool preserve_rooting         = true;
+  unsigned int precision   = 10;
+  NumericalScaling scaling = NumericalScaling::kAuto;
+  bool preserve_rooting    = true;
 };

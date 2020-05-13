@@ -87,15 +87,15 @@ static size_t partition_footprint( raxml::Model const& model,
       + num_clvs * sizeof( double* ); // account for top level array
 
   // hypothetical size with log(n) optimization
-  auto const log_clv_buffer = log2(num_clvs)
+  auto const log_clv_buffer = log2( num_clvs )
           * sites_alloc
           * partition->states_padded
           * partition->rate_cats
           * sizeof( double )
-      + log2(num_clvs) * sizeof( double* ); // account for top level array
+      + log2( num_clvs ) * sizeof( double* ); // account for top level array
 
-  LOG_DBG << "\t\t" << format_byte_num(clv_buffer) << "\tCLV Buffer"
-          << " (with log(n) opt: " << format_byte_num(log_clv_buffer) << ")";
+  LOG_DBG << "\t\t" << format_byte_num( clv_buffer ) << "\tCLV Buffer"
+          << " (with log(n) opt: " << format_byte_num( log_clv_buffer ) << ")";
 
   size += clv_buffer;
 
@@ -207,7 +207,6 @@ size_t estimate_footprint( MSA_Info const& ref_info,
 
   // account for the overhead induced by the tinytree-encapsulated partitions, which are one per thread
 
-
   // size of the fasta input stream buffers
   // currently only one: the query MSA_Stream
   auto const input_stream_buffer_size = genesis::utils::InputStream::BlockLength * 3;
@@ -238,5 +237,5 @@ std::string format_byte_num( double size )
 
 std::string format_byte_num( size_t size )
 {
-  return format_byte_num( static_cast<double>(size) );
+  return format_byte_num( static_cast< double >( size ) );
 }

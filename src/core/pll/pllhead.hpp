@@ -5,7 +5,7 @@ extern "C" {
 #include "pll_optimize.h"
 #include "pllmod_util.h"
 // #include "pll_tree.h"
-#include "pll_msa.h"
 #include "pll_binary.h"
+#include "pll_msa.h"
 }
 #endif

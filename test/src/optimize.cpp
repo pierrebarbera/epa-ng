@@ -2,12 +2,12 @@
 
 #include <vector>
 
-#include "core/pll/optimize.hpp"
 #include "core/pll/epa_pll_util.hpp"
+#include "core/pll/optimize.hpp"
 #include "io/file_io.hpp"
-#include "util/Options.hpp"
 #include "tree/Tree.hpp"
 #include "tree/Tree_Numbers.hpp"
+#include "util/Options.hpp"
 
 // TEST(optimize, repeats)
 // {
@@ -22,19 +22,19 @@
 //   auto ref_msa = build_MSA_from_file(env->reference_file, MSA_Info(env->reference_file), false);
 //   auto utree = build_tree_from_file(tree_file, nums);
 //   auto part = build_partition_from_file(model, nums, ref_msa.num_sites(), true);
-//   link_tree_msa(utree, 
-//                 part, 
-//                 model, 
-//                 ref_msa, 
+//   link_tree_msa(utree,
+//                 part,
+//                 model,
+//                 ref_msa,
 //                 nums.tip_nodes);
 
 //   set_unique_clv_indices(get_root(utree), nums.tip_nodes);
 
-//   optimize( model, 
-//             utree, 
-//             part, 
-//             nums, 
-//             true, 
+//   optimize( model,
+//             utree,
+//             part,
+//             nums,
+//             true,
 //             true);
 
 //   // Test: check all possible edge logl and throw if the variance is above some threshold
@@ -51,16 +51,15 @@
 
 //   precompute_clvs(utree, part, nums);
 
-
 //   for (auto& n : node_list) {
 
 //   //   unsigned int traversal_size = 0;
-//   //   unsigned int num_matrices = 0; 
+//   //   unsigned int num_matrices = 0;
 //   //   unsigned int num_ops = 0;
-//   //   pll_utree_traverse( n->back, 
+//   //   pll_utree_traverse( n->back,
 //   //                       PLL_TREE_TRAVERSE_POSTORDER,
 //   //                       cb_full_traversal,
-//   //                       &travbuffer[0], 
+//   //                       &travbuffer[0],
 //   //                       &traversal_size);
 
 //   //   pll_utree_create_operations(&travbuffer[0],

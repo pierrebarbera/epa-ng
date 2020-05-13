@@ -1,13 +1,13 @@
 #pragma once
 
-#include <numeric>
-#include <map>
+#include <cereal/types/base_class.hpp>
 #include <cereal/types/map.hpp>
 #include <cereal/types/vector.hpp>
-#include <cereal/types/base_class.hpp>
+#include <map>
+#include <numeric>
 
-#include "sample/Sample.hpp"
 #include "pipeline/Token.hpp"
+#include "sample/Sample.hpp"
 
 // forward declaration
 class WorkIterator;
@@ -18,35 +18,31 @@ class WorkIterator;
  *
  * Meant as a structure that can be used by nodes to figure out what to compute.
  */
-class Work : public Token
-{
-public:
-  using key_type              = size_t;
-  using value_type            = size_t;
-  using container_value_type  = std::vector<value_type>;
-  using container_type        = std::map<key_type, container_value_type>;
-  using const_iterator        = WorkIterator;
+class Work : public Token {
+  public:
+  using key_type             = size_t;
+  using value_type           = size_t;
+  using container_value_type = std::vector< value_type >;
+  using container_type       = std::map< key_type, container_value_type >;
+  using const_iterator       = WorkIterator;
   // typedef typename container_type::iterator         iterator;
 
-  struct Work_Pair
-  {
-      key_type    branch_id;
-      value_type  sequence_id;
+  struct Work_Pair {
+    key_type branch_id;
+    value_type sequence_id;
   };
 
   /**
    * Create work object from a Sample: all entries are seen as placements to be recomputed
    */
-  template<class T>
-  Work(Sample<T>& sample)
+  template< class T >
+  Work( Sample< T >& sample )
   {
-    for (auto& pq : sample)
-    {
-      const auto seq_id = pq.sequence_id();
-      for (auto& placement : pq)
-      {
-        const auto branch_id = placement.branch_id();
-        work_set_[branch_id].push_back(seq_id);
+    for( auto& pq : sample ) {
+      auto const seq_id = pq.sequence_id();
+      for( auto& placement : pq ) {
+        auto const branch_id = placement.branch_id();
+        work_set_[ branch_id ].push_back( seq_id );
       }
     }
   }
@@ -55,42 +51,41 @@ public:
    * Create a work object covering all sequences in [seq_range.first, seq_range.second)
    * for every branch ID in [branch_range.first, branch_range.second).
    */
-  Work(std::pair<key_type, key_type>&& branch_range, std::pair<value_type, value_type>&& seq_range)
+  Work( std::pair< key_type, key_type >&& branch_range, std::pair< value_type, value_type >&& seq_range )
   {
-    for (key_type branch_id = branch_range.first; branch_id < branch_range.second; ++branch_id) {
-      for (value_type seq_id = seq_range.first; seq_id < seq_range.second; ++seq_id) {
-        work_set_[branch_id].push_back(seq_id);
+    for( key_type branch_id = branch_range.first; branch_id < branch_range.second; ++branch_id ) {
+      for( value_type seq_id = seq_range.first; seq_id < seq_range.second; ++seq_id ) {
+        work_set_[ branch_id ].push_back( seq_id );
       }
     }
   }
 
-  Work(Work const& other) = default;
-  Work(Work && other) = default;
+  Work( Work const& other ) = default;
+  Work( Work&& other )      = default;
 
-  Work& operator=(Work const&) = default;
-  Work& operator=(Work &&) = default;
+  Work& operator=( Work const& ) = default;
+  Work& operator=( Work&& ) = default;
 
-  Work() = default;
+  Work()  = default;
   ~Work() = default;
 
   // methods
-  void clear() {work_set_.clear();}
+  void clear() { work_set_.clear(); }
 
   size_t size() const
   {
-    return std::accumulate(work_set_.begin(), work_set_.end(), 0,
-      [](size_t a, std::pair<key_type, container_value_type> b){return a + b.second.size();}
-      );
+    return std::accumulate( work_set_.begin(), work_set_.end(), 0,
+                            []( size_t a, std::pair< key_type, container_value_type > b ) { return a + b.second.size(); } );
   }
 
-  bool empty() const { return work_set_.empty();}
+  bool empty() const { return work_set_.empty(); }
 
-  inline void add(key_type branch_id, value_type seq_id)
+  inline void add( key_type branch_id, value_type seq_id )
   {
-    work_set_[branch_id].emplace_back(seq_id);
+    work_set_[ branch_id ].emplace_back( seq_id );
   }
 
-  inline void add(Work_Pair& it);
+  inline void add( Work_Pair& it );
 
   // template< class InputIt >
   // void insert(InputIt first, InputIt last) {work_set_.insert(first, last);}
@@ -106,145 +101,143 @@ public:
   // const_iterator cend() { return work_set_.cend(); }
 
   // Operator overloads
-  const container_value_type& at (const key_type index) const { return work_set_.at(index); }
-  container_value_type& operator[] (const key_type index) { return work_set_[index]; }
+  container_value_type const& at( key_type const index ) const { return work_set_.at( index ); }
+  container_value_type& operator[]( key_type const index ) { return work_set_[ index ]; }
 
   // serialization
-  template <class Archive>
-  void serialize(Archive & ar)
-  { ar( *static_cast<Token*>( this ), work_set_ ); }
+  template< class Archive >
+  void serialize( Archive& ar )
+  {
+    ar( *static_cast< Token* >( this ), work_set_ );
+  }
 
-
-private:
+  private:
   container_type work_set_;
 };
 
-class WorkIterator
-{
-public:
-    // -----------------------------------------------------
-    //     Typedefs
-    // -----------------------------------------------------
-    using WorkType      = Work::container_type;
-    using MapItType     = typename WorkType::const_iterator;
-    using VecItType     = typename WorkType::mapped_type::const_iterator;
-    using self_type     = WorkIterator;
-    using element_type  = Work::Work_Pair;
-    using iterator_tag  = std::forward_iterator_tag;
+class WorkIterator {
+  public:
+  // -----------------------------------------------------
+  //     Typedefs
+  // -----------------------------------------------------
+  using WorkType     = Work::container_type;
+  using MapItType    = typename WorkType::const_iterator;
+  using VecItType    = typename WorkType::mapped_type::const_iterator;
+  using self_type    = WorkIterator;
+  using element_type = Work::Work_Pair;
+  using iterator_tag = std::forward_iterator_tag;
 
-    // -----------------------------------------------------
-    //     Constructors and Rule of Five
-    // -----------------------------------------------------
+  // -----------------------------------------------------
+  //     Constructors and Rule of Five
+  // -----------------------------------------------------
 
-    WorkIterator() = delete;
+  WorkIterator() = delete;
 
-    WorkIterator( WorkType const& target, bool is_end )
-        : map_it( std::begin( target ) )
-        , end_it( std::end( target ) )
-        , vec_it()
-    {
-        if( is_end ) {
-            map_it = end_it;
+  WorkIterator( WorkType const& target, bool is_end )
+      : map_it( std::begin( target ) )
+      , end_it( std::end( target ) )
+      , vec_it()
+  {
+    if( is_end ) {
+      map_it = end_it;
+    }
+    if( map_it != end_it && !target.empty() ) {
+      while( map_it != end_it && map_it->second.empty() ) {
+        ++map_it;
+      }
+      if( map_it != end_it && !map_it->second.empty() ) {
+        vec_it = std::begin( map_it->second );
+      }
+    }
+  }
+
+  ~WorkIterator() = default;
+
+  WorkIterator( WorkIterator const& ) = default;
+  WorkIterator( WorkIterator&& )      = default;
+  WorkIterator& operator=( WorkIterator const& ) = default;
+  WorkIterator& operator=( WorkIterator&& ) = default;
+
+  // -----------------------------------------------------
+  //     Operators
+  // -----------------------------------------------------
+
+  element_type operator*()
+  {
+    return { map_it->first, *vec_it };
+  }
+
+  // self_type const* operator -> ()
+  // {
+  //     return this;
+  // }
+
+  size_t current_branch_id()
+  {
+
+    return map_it->first;
+  }
+
+  size_t current_sequence_id()
+  {
+    return *vec_it;
+  }
+
+  self_type operator++()
+  {
+    ++vec_it;
+    if( vec_it == map_it->second.end() ) {
+      do {
+        ++map_it;
+        if( map_it == end_it ) {
+          break;
+        } else {
+          vec_it = std::begin( map_it->second );
         }
-        if( map_it != end_it && ! target.empty() ) {
-            while( map_it != end_it && map_it->second.empty() ) {
-                ++map_it;
-            }
-            if( map_it != end_it && ! map_it->second.empty() ) {
-                vec_it = std::begin( map_it->second );
-            }
-        }
+      } while( vec_it == std::end( map_it->second ) );
     }
+    return *this;
+  }
 
-    ~WorkIterator() = default;
+  self_type operator++( int )
+  {
+    self_type tmp = *this;
+    ++( *this );
+    return tmp;
+  }
 
-    WorkIterator( WorkIterator const& ) = default;
-    WorkIterator( WorkIterator&& ) = default;
-    WorkIterator& operator= ( WorkIterator const& ) = default;
-    WorkIterator& operator= ( WorkIterator&& ) = default;
+  bool operator==( self_type const& other ) const
+  {
+    return ( other.map_it == map_it && other.end_it == end_it ) && ( map_it == end_it || other.vec_it == vec_it );
+  }
 
-    // -----------------------------------------------------
-    //     Operators
-    // -----------------------------------------------------
+  bool operator!=( self_type const& other ) const
+  {
+    return !( other == *this );
+  }
 
-    element_type operator * ()
-    {
-        return { map_it->first, *vec_it };
-    }
+  // -----------------------------------------------------
+  //     Data Members
+  // -----------------------------------------------------
 
-    // self_type const* operator -> ()
-    // {
-    //     return this;
-    // }
+  private:
+  MapItType map_it;
+  MapItType end_it;
 
-    size_t current_branch_id()
-    {
-
-      return map_it->first;
-    }
-
-    size_t current_sequence_id()
-    {
-        return *vec_it;
-    }
-
-    self_type operator ++ ()
-    {
-        ++vec_it;
-        if( vec_it == map_it->second.end() ) {
-            do {
-                ++map_it;
-                if( map_it == end_it ) {
-                    break;
-                } else {
-                    vec_it = std::begin( map_it->second );
-                }
-            } while( vec_it == std::end( map_it->second ) );
-        }
-        return *this;
-    }
-
-    self_type operator ++ (int)
-    {
-        self_type tmp = *this;
-        ++(*this);
-        return tmp;
-    }
-
-    bool operator == (const self_type &other) const
-    {
-        return ( other.map_it == map_it && other.end_it == end_it ) &&
-               ( map_it == end_it || other.vec_it == vec_it );
-    }
-
-    bool operator != (const self_type &other) const
-    {
-        return !(other == *this);
-    }
-
-    // -----------------------------------------------------
-    //     Data Members
-    // -----------------------------------------------------
-
-private:
-
-    MapItType map_it;
-    MapItType end_it;
-
-    VecItType vec_it;
+  VecItType vec_it;
 };
 
-inline void Work::add(Work_Pair& it)
+inline void Work::add( Work_Pair& it )
 {
-  add(it.branch_id, it.sequence_id);
+  add( it.branch_id, it.sequence_id );
 }
 
 inline Work::const_iterator Work::begin() const
 {
-    return WorkIterator( work_set_, false );
+  return WorkIterator( work_set_, false );
 }
 
 inline Work::const_iterator Work::end() const
 {
-    return WorkIterator( work_set_, true );
+  return WorkIterator( work_set_, true );
 }

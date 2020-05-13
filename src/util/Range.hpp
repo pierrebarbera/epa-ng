@@ -1,28 +1,28 @@
 #pragma once
 
-#include <string>
 #include <cassert>
+#include <string>
 
 class Range {
-public:
-  Range (const unsigned int begin, const unsigned int span)
-    : begin(begin), span(span) {};
-  Range() = default;
-  ~Range () = default;
+  public:
+  Range( const unsigned int begin, const unsigned int span )
+      : begin( begin )
+      , span( span ){};
+  Range()  = default;
+  ~Range() = default;
 
-  operator bool() const { return span > 0;}
+  operator bool() const { return span > 0; }
 
   size_t begin;
   size_t span;
 
-private:
-
+  private:
 };
 
-inline std::ostream& operator << (std::ostream& out, Range const& rhs)
+inline std::ostream& operator<<( std::ostream& out, Range const& rhs )
 {
-  out << " begin " + std::to_string(rhs.begin);
-  out << " span " + std::to_string(rhs.span);
+  out << " begin " + std::to_string( rhs.begin );
+  out << " span " + std::to_string( rhs.span );
   return out;
 }
 
@@ -34,22 +34,20 @@ inline std::ostream& operator << (std::ostream& out, Range const& rhs)
  *  0  1  2  3  4  5  6  7  8  9 10
  *  Output: (3,6)
  */
-inline Range get_valid_range(const std::string& sequence)
+inline Range get_valid_range( const std::string& sequence )
 {
   size_t lower = 0;
   size_t upper = sequence.length();
 
-  assert(upper);
+  assert( upper );
 
-  while(lower < upper and sequence.c_str()[lower] == '-') {
+  while( lower < upper and sequence.c_str()[ lower ] == '-' ) {
     lower++;
   }
 
-  while(upper > lower and sequence.c_str()[upper - 1u] == '-') {
+  while( upper > lower and sequence.c_str()[ upper - 1u ] == '-' ) {
     upper--;
   }
 
-  return Range(lower, upper - lower);
+  return Range( lower, upper - lower );
 }
-
-

@@ -1,15 +1,14 @@
 #pragma once
 
-#include <vector>
-#include <utility>
 #include <cassert>
 #include <stdexcept>
 #include <string>
+#include <utility>
+#include <vector>
 
-class rtree_mapper
-{
-public:
-  using map_type = std::vector<unsigned int>;
+class rtree_mapper {
+  public:
+  using map_type = std::vector< unsigned int >;
 
   rtree_mapper() = default;
   rtree_mapper( unsigned int root_edge,
@@ -18,13 +17,14 @@ public:
                 double proximal_length,
                 double distal_length,
                 bool left )
-    : utree_root_edge_(root_edge)
-    , rtree_proximal_edge_(proximal_edge)
-    , rtree_distal_edge_(distal_edge)
-    , proximal_edge_length_(proximal_length)
-    , distal_edge_length_(distal_length)
-    , left_(left)
-    {}
+      : utree_root_edge_( root_edge )
+      , rtree_proximal_edge_( proximal_edge )
+      , rtree_distal_edge_( distal_edge )
+      , proximal_edge_length_( proximal_length )
+      , distal_edge_length_( distal_length )
+      , left_( left )
+  {
+  }
 
   ~rtree_mapper() = default;
 
@@ -41,15 +41,15 @@ public:
     Transforms a branch_id and distal length of a placement in the utree
     into its equivalent in the rtree
    */
-  auto in_rtree(  unsigned int branch_id,
-                  double distal_length ) const
+  auto in_rtree( unsigned int branch_id,
+                 double distal_length ) const
   {
     assert( not map_.empty() );
     assert( branch_id < map_.size() );
 
-    if ( branch_id == utree_root_edge_ ) {
+    if( branch_id == utree_root_edge_ ) {
       // determine if it should land on proximal or distal rtree edge
-      if ( distal_length > distal_edge_length_ ) {
+      if( distal_length > distal_edge_length_ ) {
         branch_id = rtree_proximal_edge_;
         // in this case we also need to adjust the distal length, as it is now on an edge
         // that had its direction to root flipped
@@ -70,11 +70,10 @@ public:
 
   unsigned int map_at( size_t const i ) const
   {
-    if ( is_utree_root_edge( i ) ) {
-      throw std::invalid_argument{std::string("Edge ") + std::to_string(i) +
-       " is the root edge! Please handle separately"};
+    if( is_utree_root_edge( i ) ) {
+      throw std::invalid_argument{ std::string( "Edge " ) + std::to_string( i ) + " is the root edge! Please handle separately" };
     }
-    return map_.at(i);
+    return map_.at( i );
   }
 
   auto distal_of_utree_root() const
@@ -89,10 +88,10 @@ public:
 
   bool is_utree_root_edge( size_t const i ) const { return i == utree_root_edge_; }
 
-  void root_label(std::string const& s) {root_label_ = s;}
-  std::string const& root_label() const {return root_label_;}
+  void root_label( std::string const& s ) { root_label_ = s; }
+  std::string const& root_label() const { return root_label_; }
 
-private:
+  private:
   /*
     needed to identify and deal with the special case of the root edge
    */
@@ -104,13 +103,13 @@ private:
   /*
     needed to correctly translate the distal lengths and to which rtree edge the placement goes
    */
-  double proximal_edge_length_  = -1.0;
-  double distal_edge_length_    = -1.0;
+  double proximal_edge_length_ = -1.0;
+  double distal_edge_length_   = -1.0;
 
   bool left_ = true;
 
   /*
     maps from utree edge nums to rtree edge nums
    */
-   map_type map_;
+  map_type map_;
 };

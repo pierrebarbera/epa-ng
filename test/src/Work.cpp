@@ -5,11 +5,11 @@
 
 using namespace std;
 
-TEST(Work, create_from_range)
+TEST( Work, create_from_range )
 {
-  size_t upper_branch = 10;
+  size_t upper_branch    = 10;
   size_t upper_sequences = 12;
-  Work work(make_pair(0,10), make_pair(0,12));
+  Work work( make_pair( 0, 10 ), make_pair( 0, 12 ) );
 
   // printf("\nWork");
   // for (auto i = work.begin(); i != work.end(); ++i)

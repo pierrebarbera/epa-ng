@@ -7,8 +7,7 @@
 
 // The testing environment
 class Epatest : public ::testing::Environment {
-public:
-
+  public:
   // Objects declared here can be used by all tests in the test case for Foo.
   std::string data_dir;
   std::string out_dir;
@@ -21,57 +20,56 @@ public:
   std::string query_file;
   std::string binary_file;
   std::string info_file;
-  raxml::Model model = raxml::Model("GTR+G");
+  raxml::Model model = raxml::Model( "GTR+G" );
   Options options;
-
 };
 
 extern Epatest* env;
 
 #include <cmath>
 
-#define COMPL_REPEATS       (1 << 0)
-#define COMPL_OPTIMIZE      (1 << 1)
-#define COMPL_SLIDING_BLO   (1 << 2)
-#define COMPL_PRESCORING    (1 << 3)
-#define COMPL_MASKING       (1 << 4)
+#define COMPL_REPEATS ( 1 << 0 )
+#define COMPL_OPTIMIZE ( 1 << 1 )
+#define COMPL_SLIDING_BLO ( 1 << 2 )
+#define COMPL_PRESCORING ( 1 << 3 )
+#define COMPL_MASKING ( 1 << 4 )
 
-static inline Options get_options_config(const unsigned int d)
+static inline Options get_options_config( const unsigned int d )
 {
   Options o;
-  if (d & COMPL_REPEATS) {
+  if( d & COMPL_REPEATS ) {
     o.repeats = not o.repeats;
   }
-  if (d & COMPL_OPTIMIZE) {
+  if( d & COMPL_OPTIMIZE ) {
     o.opt_branches = not o.opt_branches;
-    o.opt_model = not o.opt_model;
+    o.opt_model    = not o.opt_model;
   }
-  if (d & COMPL_SLIDING_BLO) {
+  if( d & COMPL_SLIDING_BLO ) {
     o.sliding_blo = not o.sliding_blo;
   }
-  if (d & COMPL_PRESCORING) {
+  if( d & COMPL_PRESCORING ) {
     o.prescoring = not o.prescoring;
   }
-  if (d & COMPL_MASKING) {
+  if( d & COMPL_MASKING ) {
     o.premasking = not o.premasking;
   }
   return o;
 }
 
-template <class Func>
-void all_combinations(Func f, bool verbose=false)
+template< class Func >
+void all_combinations( Func f, bool verbose = false )
 {
-  for (size_t i = 0; i < pow(2, 4); ++i) {
-    auto o = get_options_config(i);
-    if (verbose) {
-      printf("\nrepeats\toptim\tsliding\tprescore\tmasking\n");
+  for( size_t i = 0; i < pow( 2, 4 ); ++i ) {
+    auto o = get_options_config( i );
+    if( verbose ) {
+      printf( "\nrepeats\toptim\tsliding\tprescore\tmasking\n" );
       printf( "%d\t%d\t%d\t%d\t%d\n",
               o.repeats,
               o.opt_model,
               o.sliding_blo,
               o.prescoring,
-              o.premasking);
+              o.premasking );
     }
-    f(o);
+    f( o );
   }
 }

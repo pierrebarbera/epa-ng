@@ -4,49 +4,48 @@
 #include "core/pll/rtree_mapper.hpp"
 #include "core/raxml/Model.hpp"
 #include "io/file_io.hpp"
-#include "tree/Tree_Numbers.hpp"
 #include "seq/MSA.hpp"
+#include "tree/Tree_Numbers.hpp"
 
 #include <string>
 #include <tuple>
 
 using namespace std;
 
-TEST(file_io, build_MSA_from_file)
+TEST( file_io, build_MSA_from_file )
 {
-  auto msa = build_MSA_from_file(env->reference_file, MSA_Info(env->reference_file), true);
+  auto msa = build_MSA_from_file( env->reference_file, MSA_Info( env->reference_file ), true );
 
-  EXPECT_EQ(msa.size(), 8);
-  EXPECT_EQ(msa.num_sites(), 705);
-
+  EXPECT_EQ( msa.size(), 8 );
+  EXPECT_EQ( msa.num_sites(), 705 );
 }
 
-TEST(file_io, make_partition)
+TEST( file_io, make_partition )
 {
-  auto msa = build_MSA_from_file(env->reference_file, MSA_Info(env->reference_file), true);
+  auto msa          = build_MSA_from_file( env->reference_file, MSA_Info( env->reference_file ), true );
   Tree_Numbers nums = Tree_Numbers();
-  pll_partition_t * part;
-  pll_utree_t * tree;
+  pll_partition_t* part;
+  pll_utree_t* tree;
 
   rtree_mapper dummy;
-  tree = build_tree_from_file(env->tree_file, nums, dummy );
+  tree = build_tree_from_file( env->tree_file, nums, dummy );
   part = make_partition( env->model, nums, msa.num_sites(), Options() );
 
-  EXPECT_EQ(nums.tip_nodes, 8);
-  EXPECT_EQ(nums.nodes, 14);
-  EXPECT_EQ(nums.inner_nodes, 6);
-  EXPECT_EQ(nums.branches, 13);
+  EXPECT_EQ( nums.tip_nodes, 8 );
+  EXPECT_EQ( nums.nodes, 14 );
+  EXPECT_EQ( nums.inner_nodes, 6 );
+  EXPECT_EQ( nums.branches, 13 );
 
-  pll_partition_destroy(part);
-  pll_utree_destroy(tree, nullptr);
+  pll_partition_destroy( part );
+  pll_utree_destroy( tree, nullptr );
 }
 
-TEST(file_io, file_check)
+TEST( file_io, file_check )
 {
-  EXPECT_ANY_THROW(file_check("asjbjibvi.hhs"));
+  EXPECT_ANY_THROW( file_check( "asjbjibvi.hhs" ) );
 
-  EXPECT_NO_THROW(file_check(env->combined_file));
-  EXPECT_NO_THROW(file_check(env->query_file));
-  EXPECT_NO_THROW(file_check(env->reference_file));
-  EXPECT_NO_THROW(file_check(env->tree_file));
+  EXPECT_NO_THROW( file_check( env->combined_file ) );
+  EXPECT_NO_THROW( file_check( env->query_file ) );
+  EXPECT_NO_THROW( file_check( env->reference_file ) );
+  EXPECT_NO_THROW( file_check( env->tree_file ) );
 }
