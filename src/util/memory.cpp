@@ -85,6 +85,18 @@ static size_t partition_footprint( raxml::Model const& model,
           * partition->rate_cats
           * sizeof( double )
       + num_clvs * sizeof( double* ); // account for top level array
+
+  // hypothetical size with log(n) optimization
+  auto const log_clv_buffer = log2(num_clvs)
+          * sites_alloc
+          * partition->states_padded
+          * partition->rate_cats
+          * sizeof( double )
+      + log2(num_clvs) * sizeof( double* ); // account for top level array
+
+  LOG_DBG << "\t\t" << format_byte_num(clv_buffer) << "\tCLV Buffer"
+          << " (with log(n) opt: " << format_byte_num(log_clv_buffer) << ")";
+
   size += clv_buffer;
 
   // p matrices, they are allocated in a memory saving way (consult pll.c)
@@ -185,13 +197,16 @@ size_t estimate_footprint( MSA_Info const& ref_info,
   LOG_DBG << "Memory footprint breakdown:";
 
   size += partition_footprint( model, tree_nums, num_sites, options );
-  LOG_DBG << "\t" << format_byte_num( size ) << "\tPartition";
+  LOG_DBG << "\t" << format_byte_num( size ) << "\tPartition Total";
 
   if( options.prescoring ) {
     auto const lookup_size = lookuptable_footprint( tree_nums.branches, model.num_states(), num_sites );
     LOG_DBG << "\t" << format_byte_num( lookup_size ) << "\tPreplacement Lookup";
     size += lookup_size;
   }
+
+  // account for the overhead induced by the tinytree-encapsulated partitions, which are one per thread
+
 
   // size of the fasta input stream buffers
   // currently only one: the query MSA_Stream
@@ -202,23 +217,26 @@ size_t estimate_footprint( MSA_Info const& ref_info,
   return size;
 }
 
-std::string format_byte_num( size_t size )
+std::string format_byte_num( double size )
 {
   constexpr std::array< char const*, 6 > magnitude = { { "", "KiB", "MiB", "GiB", "TiB", "PiB" } };
 
-  double size_d = size;
-
   size_t lvl = 0;
-  while( size_d > 1024 ) {
-    size_d /= 1024.0;
+  while( size > 1024 ) {
+    size /= 1024.0;
     lvl++;
   }
 
   std::ostringstream ret;
 
   ret << std::setprecision( 1 ) << std::fixed;
-  ret << size_d;
+  ret << size;
   ret << magnitude[ lvl ];
 
   return ret.str();
+}
+
+std::string format_byte_num( size_t size )
+{
+  return format_byte_num( static_cast<double>(size) );
 }
