@@ -41,9 +41,9 @@ using mytimer = Timer<std::chrono::milliseconds>;
 template <class T>
 static void place(MSA& msa,
                   Tree& reference_tree,
-                  const std::vector<pll_unode_t *>& branches,
+                  std::vector<pll_unode_t *> const& branches,
                   Sample<T>& sample,
-                  const Options& options,
+                  Options const& options,
                   std::shared_ptr<Lookup_Store>& lookup_store,
                   mytimer* time=nullptr)
 {
@@ -219,13 +219,13 @@ void simple_mpi(Tree& reference_tree,
                                 options.premasking,
                                 true);
 
-  size_t num_sequences = 0;
-  Work all_work(std::make_pair(0, num_branches), std::make_pair(0, options.chunk_size));
-
-  Work blo_work;
-
   using Sample = Sample<Placement>;
+  size_t num_sequences = 0;
+  bool first = true;
+  Work all_work;
+  Work blo_work;
   MSA chunk;
+  Sample preplace;
   size_t sequences_done = 0; // not just for info output!
 
   // prepare output file
@@ -238,22 +238,24 @@ void simple_mpi(Tree& reference_tree,
                         reference_tree.mapper());
   jplace.set_precision( options.precision );
 
-  Sample preplace(options.chunk_size, num_branches);
+  while( (num_sequences = reader->read_next(chunk, options.chunk_size)) ) {
 
-  while ( (num_sequences = reader->read_next(chunk, options.chunk_size)) ) {
-
-    assert(chunk.size() == num_sequences);
+    assert( chunk.size() == num_sequences );
 
     LOG_DBG << "num_sequences: " << num_sequences << std::endl;
 
     size_t const seq_id_offset = sequences_done + reader->local_seq_offset();
 
-    if (num_sequences < options.chunk_size) {
+    if( first or num_sequences < options.chunk_size ) {
       all_work = Work(std::make_pair(0, num_branches), std::make_pair(0, num_sequences));
-      preplace = Sample(num_sequences, num_branches);
+
+      if( options.prescoring ) {
+        preplace = Sample(num_sequences, num_branches);
+      }
+      first = false;
     }
 
-    if (options.prescoring) {
+    if( options.prescoring ) {
 
       LOG_DBG << "Preplacement." << std::endl;
       place(chunk,
