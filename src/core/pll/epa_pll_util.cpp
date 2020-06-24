@@ -35,8 +35,12 @@ void link_tree_msa( pll_utree_t * tree,
     }
 
     auto clv_index = map_value->second;
-    // associates the sequence with the tip by calculating the tips clv buffers
-    pll_set_tip_states(partition, clv_index, model.charmap(), s.sequence().c_str());
+    // associate the sequence with the tip by calculating the tips clv buffers
+    if ( not pll_set_tip_states(partition, clv_index, model.charmap(), s.sequence().c_str()) ) {
+      LOG_ERR << "Setting tip states failed for sequence: " << s.header();
+      LOG_ERR << "message: " << pll_errmsg;
+      throw std::invalid_argument{"Bad sequence (see errors above)"};
+    }
 
     // clear this ref taxon from the map
     map.erase(map_value);
