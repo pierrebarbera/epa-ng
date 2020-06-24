@@ -27,7 +27,7 @@ project ( epa CXX C )
 
 set (epa_VERSION_MAJOR 0)
 set (epa_VERSION_MINOR 3)
-set (epa_VERSION_PATCH 6)
+set (epa_VERSION_PATCH 7)
 # set (epa_VERSION_BETA "beta")
 
 set (epa_PROJECT_VERSION "${epa_VERSION_MAJOR}")
@@ -64,7 +64,10 @@ set (WARN_FLAGS               "-Wall -Wextra -Wno-unknown-pragmas -pedantic -ped
 set (CMAKE_CXX_FLAGS          "-std=c++14 ${WARN_FLAGS} -DEPA_VERSION='\"${epa_PROJECT_VERSION}\"'")
 
 set (CMAKE_CXX_FLAGS_DEBUG    "-O0 -g -ggdb3 -DDEBUG -D_GLIBCXX_DEBUG")
+set (CMAKE_C_FLAGS_DEBUG      "-O0 -g -ggdb3 -D_GLIBCXX_DEBUG")
 set (CMAKE_CXX_FLAGS_RELEASE  "-O3 -DNDEBUG")
+set (CMAKE_C_FLAGS_RELEASE    "-O3")
+
 
 if( ENABLE_PREFETCH )
   set (CMAKE_THREAD_PREFER_PTHREAD ON)
