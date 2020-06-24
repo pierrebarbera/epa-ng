@@ -43,14 +43,18 @@ static void precompute_sites_static(char nt,
     };
   }
 
-  pll_compute_edge_loglikelihood( partition,
-                                  new_tip->clv_index,
-                                  PLL_SCALE_BUFFER_NONE,
-                                  inner->clv_index,
-                                  inner->scaler_index,
-                                  inner->pmatrix_index,
-                                  &param_indices[0],
-                                  &result[0]);
+  auto logl = pll_compute_edge_loglikelihood( partition,
+                                              new_tip->clv_index,
+                                              PLL_SCALE_BUFFER_NONE,
+                                              inner->clv_index,
+                                              inner->scaler_index,
+                                              inner->pmatrix_index,
+                                              &param_indices[ 0 ],
+                                              &result[ 0 ] );
+
+  if( logl == -std::numeric_limits< double >::infinity() ) {
+    throw std::runtime_error { "Tree Log-Likelihood -INF!" };
+  }
 }
 
 
@@ -121,11 +125,13 @@ Tiny_Tree::Tiny_Tree( pll_unode_t * edge_node,
 
   // use branch lengths to compute the probability matrices
   std::vector<unsigned int> param_indices(reference_tree.partition()->rate_cats, 0);
-  pll_update_prob_matrices( partition_.get(),
-                            &param_indices[0],
-                            matrix_indices,
-                            branch_lengths,
-                            3);
+  if( not pll_update_prob_matrices( partition_.get(),
+                                    &param_indices[ 0 ],
+                                    matrix_indices,
+                                    branch_lengths,
+                                    3 ) ) {
+    throw std::runtime_error { std::string( pll_errmsg ) };
+  }
 
   // use update_partials to compute the clv pointing toward the new tip
   pll_update_partials(partition_.get(), &op, 1);

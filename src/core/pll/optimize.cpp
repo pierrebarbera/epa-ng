@@ -603,15 +603,21 @@ void optimize(raxml::Model& model,
   }
 }
 
-void compute_and_set_empirical_frequencies(pll_partition_t * partition, raxml::Model& model)
+void compute_and_set_empirical_frequencies( pll_partition_t* partition, raxml::Model& model )
 {
   auto empirical_freqs = pllmod_msa_empirical_frequencies( partition );
 
+  if( not empirical_freqs ) {
+    throw std::runtime_error { std::string( pll_errmsg ) };
+  }
+
   pll_set_frequencies( partition, 0, empirical_freqs );
 
-  for ( size_t i = 0; i < model.num_submodels(); ++i ) {
-    model.base_freqs(i, std::vector<double>(partition->frequencies[i],
-                                            partition->frequencies[i] + partition->states));
+  for( size_t i = 0; i < model.num_submodels(); ++i ) {
+    model.base_freqs( i,
+                      std::vector< double >( partition->frequencies[ i ],
+                                             partition->frequencies[ i ] + partition->states )
+                    );
   }
 
   free( empirical_freqs );

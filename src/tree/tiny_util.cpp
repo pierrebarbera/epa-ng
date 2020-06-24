@@ -120,7 +120,9 @@ pll_partition_t * make_tiny_partition(Tree& reference_tree,
     3, // number of scale buffers (one per possible inner node)
     old_partition->attributes);
 
-  assert(tiny);
+  if( not tiny ) {
+    throw std::runtime_error { std::string( pll_errmsg ) };
+  }
 
   unsigned int i;
   free(tiny->rates);

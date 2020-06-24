@@ -36,10 +36,10 @@ void link_tree_msa( pll_utree_t * tree,
 
     auto clv_index = map_value->second;
     // associate the sequence with the tip by calculating the tips clv buffers
-    if ( not pll_set_tip_states(partition, clv_index, model.charmap(), s.sequence().c_str()) ) {
+    if( not pll_set_tip_states( partition, clv_index, model.charmap(), s.sequence().c_str() ) ) {
       LOG_ERR << "Setting tip states failed for sequence: " << s.header();
       LOG_ERR << "message: " << pll_errmsg;
-      throw std::invalid_argument{"Bad sequence (see errors above)"};
+      throw std::invalid_argument { "Bad sequence (see errors above)" };
     }
 
     // clear this ref taxon from the map
@@ -104,11 +104,15 @@ void precompute_clvs( pll_utree_t const * const tree,
                                 &num_matrices,
                                 &num_ops);
 
-    pll_update_prob_matrices(partition,
-                             &param_indices[0],             // use model 0
-                             &matrix_indices[0],// matrices to update
-                             &branch_lengths[0],
-                             num_matrices); // how many should be updated
+    if( not pll_update_prob_matrices(
+            partition,
+            &param_indices[ 0 ], // use model 0
+            &matrix_indices[ 0 ], // matrices to update
+            &branch_lengths[ 0 ],
+            num_matrices ) // how many should be updated
+    ) {
+      throw std::runtime_error { std::string( pll_errmsg ) };
+    }
 
     /* use the operations array to compute all num_ops inner CLVs. Operations
        will be carried out sequentially starting from operation 0 towrds num_ops-1 */

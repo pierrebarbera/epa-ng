@@ -405,11 +405,14 @@ void reset_triplet_lengths( pll_unode_t * toward_pendant,
     double branch_lengths[3] = {half_original, half_original, DEFAULT_BRANCH_LENGTH};
     unsigned int matrix_indices[3] = {0, 1, 2};
     std::vector<unsigned int> param_indices(partition->rate_cats, 0);
-    pll_update_prob_matrices( partition,
-                              &param_indices[0],
-                              matrix_indices,
-                              branch_lengths,
-                              3);
+
+    if( not pll_update_prob_matrices( partition,
+                                      &param_indices[ 0 ],
+                                      matrix_indices,
+                                      branch_lengths,
+                                      3 ) ) {
+      throw std::runtime_error { std::string( pll_errmsg ) };
+    }
   }
 }
 
@@ -511,11 +514,14 @@ pll_utree_t* make_utree_struct(pll_unode_t * root, const unsigned int num_nodes)
 
 
   unsigned int inner_count = 0;
-  pll_utree_traverse( root,
-                      PLL_TREE_TRAVERSE_POSTORDER,
-                      cb_trav_no_tips,
-                      nodes + tip_count,
-                      &inner_count);
+
+  if( not pll_utree_traverse( root,
+                              PLL_TREE_TRAVERSE_POSTORDER,
+                              cb_trav_no_tips,
+                              nodes + tip_count,
+                              &inner_count ) ) {
+    throw std::runtime_error { std::string( pll_errmsg ) };
+  }
 
   assert(num_nodes == tip_count + inner_count);
 

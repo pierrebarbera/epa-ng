@@ -159,9 +159,5 @@ double Tree::ref_tree_logl()
                                         &param_indices[0],
                                         nullptr);
 
-  // if ( logl == -std::numeric_limits<double>::infinity() ) {
-  //   throw std::runtime_error{pll_errmsg};
-  // }
-
   return logl;
 }
