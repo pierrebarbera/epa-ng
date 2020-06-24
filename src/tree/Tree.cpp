@@ -54,7 +54,8 @@ Tree::Tree( const std::string &tree_file,
 
   set_unique_clv_indices(get_root(tree_.get()), nums_.tip_nodes);
 
-  LOG_DBG << model_;
+  LOG_INFO << "Using model parameters:";
+  LOG_INFO << model_;
   LOG_DBG << "Tree length: " << sum_branch_lengths(tree_.get());
 
   precompute_clvs(tree_.get(), partition_.get(), nums_);
