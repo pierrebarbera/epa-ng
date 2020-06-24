@@ -454,7 +454,8 @@ int main(int argc, char** argv)
 
   model = raxml::Model(model_desc);
 
-  LOG_INFO << model;
+  LOG_DBG << "Model after parse:"
+  LOG_DBG << model;
 
   if (*chunk_size) {
     LOG_INFO << "Selected: Reading queries in chunks of: " << options.chunk_size;
