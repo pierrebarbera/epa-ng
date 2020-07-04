@@ -290,6 +290,20 @@ void simple_mpi(Tree& reference_tree,
     // pass the result chunk to the writer
     jplace.write( blo_sample );
 
+    // print the persite loglhs
+    std::ofstream persite_file( outdir +  "persite.csv" );
+    for( auto const& pq : blo_sample ) {
+      persite_file << pq.header() << ",";
+      for( auto const& p : pq ) {
+        persite_file << std::to_string(p.lwr()) << ",";
+        persite_file << std::to_string(p.branch_id()) << ",";
+        for( auto const lh : p.persite_loglh_ ) {
+          persite_file << std::to_string(lh) << ",";
+        }
+      }
+      persite_file << "\n";
+    }
+
     sequences_done += num_sequences;
     LOG_INFO << sequences_done  << " Sequences done!";
   }

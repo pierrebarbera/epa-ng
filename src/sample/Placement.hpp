@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <vector>
 
 class Slim_Placement;
 
@@ -11,12 +12,14 @@ public:
   Placement(const size_t branch_id,
             const double likelihood,
             const double pendant_length,
-            const double distal_length)
+            const double distal_length,
+            std::vector<double>& persite_loglh)
     : branch_id_(branch_id)
     , likelihood_(likelihood)
     , lwr_(0.0)
     , pendant_length_(pendant_length)
     , distal_length_(distal_length)
+    , persite_loglh_(persite_loglh)
   { }
 
   Placement(const Slim_Placement& other);
@@ -46,12 +49,15 @@ public:
   template<class Archive>
   void serialize(Archive& ar) { ar(branch_id_, likelihood_, lwr_, pendant_length_, distal_length_); }
 
+
 private:
   size_t branch_id_;
   double likelihood_;
   double lwr_;
   double pendant_length_;
   double distal_length_;
+public:
+  std::vector< double > persite_loglh_;
 };
 
 class Slim_Placement

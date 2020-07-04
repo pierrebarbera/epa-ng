@@ -26,4 +26,5 @@ void compute_and_set_empirical_frequencies( pll_partition_t * partition,
 
 double optimize_branch_triplet( pll_partition_t * partition,
                                 pll_unode_t * inner,
-                                const bool sliding);
+                                const bool sliding,
+                                double* persite_lnl);

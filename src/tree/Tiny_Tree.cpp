@@ -183,8 +183,13 @@ Placement Tiny_Tree::place(const Sequence &s)
         + "' does not appear to have any non-gap sites!"};
     }
   }
+  std::vector< double > persite_loglh;
 
   if (opt_branches_) {
+
+    persite_loglh.resize( range.span );
+
+    double* persite_loglh_ptr = &persite_loglh[ 0 ];
 
     auto virtual_root = inner;
 
@@ -199,9 +204,9 @@ Placement Tiny_Tree::place(const Sequence &s)
     }
 
     if (premasking_){
-      logl = call_focused(optimize_branch_triplet, range, partition_.get(), virtual_root, sliding_blo_);
+      logl = call_focused(optimize_branch_triplet, range, partition_.get(), virtual_root, sliding_blo_, persite_loglh_ptr);
     } else {
-      logl = optimize_branch_triplet(partition_.get(), virtual_root, sliding_blo_);
+      logl = optimize_branch_triplet(partition_.get(), virtual_root, sliding_blo_, persite_loglh_ptr);
     }
 
     assert(inner->length >= 0);
@@ -248,5 +253,5 @@ Placement Tiny_Tree::place(const Sequence &s)
   assert(distal_length <= original_branch_length_);
   assert(distal_length >= 0.0);
 
-  return Placement(branch_id_, logl, pendant_length, distal_length);
+  return Placement(branch_id_, logl, pendant_length, distal_length, persite_loglh);
 }

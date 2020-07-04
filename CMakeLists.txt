@@ -192,5 +192,10 @@ include_directories(${PROJECT_SOURCE_DIR}/libs/CLI11/include)
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/src)
 
-enable_testing()
-add_subdirectory(${PROJECT_SOURCE_DIR}/test/src)
+
+if ( $ENV{EPA_NO_TEST} )
+
+else()
+  enable_testing()
+  add_subdirectory(${PROJECT_SOURCE_DIR}/test/src)
+endif ()

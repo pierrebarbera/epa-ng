@@ -315,7 +315,8 @@ static double opt_branch_lengths_pplacer( pll_partition_t * partition,
 
 double optimize_branch_triplet( pll_partition_t * partition,
                                 pll_unode_t * root,
-                                const bool sliding)
+                                const bool sliding,
+                                double* persite_lnl)
 {
   if (!root->next) {
     root = root->back;
@@ -363,7 +364,7 @@ double optimize_branch_triplet( pll_partition_t * partition,
                                 root->back->scaler_index,
                                 root->pmatrix_index,
                                 &param_indices[0],
-                                nullptr);
+                                persite_lnl);
 
   return cur_logl;
 }
