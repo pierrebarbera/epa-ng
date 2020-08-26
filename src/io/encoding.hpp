@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <array>
 
 #include "util/Matrix.hpp"
 #include "util/maps.hpp"
