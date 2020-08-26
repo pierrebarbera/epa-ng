@@ -11,7 +11,7 @@ jobs:
       with:
         submodules: recursive
     - name: get flex/bison
-      run: brew install flex bison
+      run: brew install flex bison libomp
     - name: Compile GTest
       run: |
         cmake libs/CLI11/extern/googletest/googletest/CMakeLists.txt
