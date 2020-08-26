@@ -1,6 +1,7 @@
 [![Conda install](https://anaconda.org/bioconda/epa-ng/badges/installer/conda.svg)](https://anaconda.org/bioconda/epa-ng)
 [![Conda install](https://anaconda.org/bioconda/epa-ng/badges/downloads.svg)](https://anaconda.org/bioconda/epa-ng)
-[![Actions Status](https://github.com/Pbdas/epa-ng/workflows/build&test/badge.svg)](https://github.com/Pbdas/epa-ng/actions)
+[![ubuntu CI status](https://github.com/Pbdas/epa-ng/workflows/build&test_ubuntu/badge.svg)](https://github.com/Pbdas/epa-ng/actions)
+[![macOS CI status](https://github.com/Pbdas/epa-ng/workflows/build&test_macos/badge.svg)](https://github.com/Pbdas/epa-ng/actions)
 [![Softwipe Score](https://img.shields.io/badge/softwipe-e8.0-blue)](https://github.com/adrianzap/softwipe/wiki/Code-Quality-Benchmark)
 [![Gitter chat](https://badges.gitter.im/Pbdas/epa-ng.png)](https://gitter.im/epa-ng/Lobby)
 
@@ -83,11 +84,11 @@ Thats it! If all goes well, the build process will fetch any missing `git submod
 
 ### Apple
 
-Supported in theory, but currently work in progress. In principle same procedure as under Linux.
+In principle same procedure as under Linux, but I recommend installing `libomp` (`brew install libomp`) before building.
 
 ### Windows
 
-No support yet, will gaugue interest first.
+Not supported at this time, though I highly recommend looking into the ubuntu subsystem if you're using Windows 10!
 
 ## Usage
 
