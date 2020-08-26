@@ -1,17 +1,17 @@
-name: build&test_ubuntu
+name: build&test_macos
 
 on: [push]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
     - name: Checkout repo
       uses: actions/checkout@v2
       with:
         submodules: recursive
     - name: get flex/bison
-      run: sudo apt-get install flex bison
+      run: brew install flex bison
     - name: Compile GTest
       run: |
         cmake libs/CLI11/extern/googletest/googletest/CMakeLists.txt
