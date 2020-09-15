@@ -124,8 +124,8 @@ include( "${CMAKE_CURRENT_LIST_DIR}/libs/cmake/DownloadDependency.cmake" )
 # Thus, do not replace the hashes manually!
 SET( CLI11_COMMIT_HASH "13becaddb657eacd090537719a669d66d393b8b2" ) #CLI11_COMMIT_HASH#
 SET( genesis_COMMIT_HASH "f6f4ac01f8495a1f4380a8f420e84dfce44cd3d2" ) #genesis_COMMIT_HASH#
-SET( pll-modules_COMMIT_HASH "3a8805ea552261329b605fd5cef4029154d6726a" ) #pll-modules_COMMIT_HASH#
-SET( libpll_COMMIT_HASH "6f8e1a92c5e501a58d94ee47763f55d4bfb1ab6f" ) #libpll_COMMIT_HASH#
+SET( pll-modules_COMMIT_HASH "6b3ba7260fa8b9c3a40ddf194f981c0eea6fc99b" ) #pll-modules_COMMIT_HASH#
+SET( libpll_COMMIT_HASH "102dc297df3a9014f7ba1be98390e1f5e26e04e6" ) #libpll_COMMIT_HASH#
 SET( cereal_COMMIT_HASH "51cbda5f30e56c801c07fe3d3aba5d7fb9e6cca4" ) #cereal_COMMIT_HASH#
 
 # Call the github download function, which takes four arguments:
@@ -136,9 +136,9 @@ SET( cereal_COMMIT_HASH "51cbda5f30e56c801c07fe3d3aba5d7fb9e6cca4" ) #cereal_COM
 #  - COMMITHASH : Hash of the commit to check out
 DOWNLOAD_GITHUB_DEPENDENCY( "${PROJECT_SOURCE_DIR}/libs" "CLI11"        "CMakeLists.txt"  "CLIUtils/CLI11"        ${CLI11_COMMIT_HASH} )
 DOWNLOAD_GITHUB_DEPENDENCY( "${PROJECT_SOURCE_DIR}/libs" "genesis"      "CMakeLists.txt"  "lczech/genesis"        ${genesis_COMMIT_HASH} )
-DOWNLOAD_GITHUB_DEPENDENCY( "${PROJECT_SOURCE_DIR}/libs" "pll-modules"  "README.md"       "ddarriba/pll-modules"  ${pll-modules_COMMIT_HASH} )
+DOWNLOAD_GITHUB_DEPENDENCY( "${PROJECT_SOURCE_DIR}/libs" "pll-modules"  "README.md"       "Pbdas/pll-modules"  ${pll-modules_COMMIT_HASH} )
 DOWNLOAD_GITHUB_DEPENDENCY( "${PROJECT_SOURCE_DIR}/libs/pll-modules/libs"
-                                                         "libpll"       "README.md"       "xflouris/libpll-2"     ${libpll_COMMIT_HASH} )
+                                                         "libpll"       "README.md"       "Pbdas/libpll-2"     ${libpll_COMMIT_HASH} )
 DOWNLOAD_GITHUB_DEPENDENCY( "${PROJECT_SOURCE_DIR}/libs" "cereal"       "README.md"       "USCiLab/cereal"        ${cereal_COMMIT_HASH} )
 
 # =============================================
