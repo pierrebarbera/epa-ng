@@ -19,6 +19,11 @@ void link_tree_msa( pll_utree_t* tree,
 void precompute_clvs( pll_utree_t const* const tree,
                       pll_partition_t* partition,
                       Tree_Numbers const& nums );
+void partial_compute_clvs(pll_utree_t* const tree,
+                          Tree_Numbers const& nums,
+                          unsigned int const * const subtree_sizes,
+                          pll_unode_t const* const node,
+                          pll_partition_t* partition);
 void split_combined_msa( MSA& source,
                          MSA& target,
                          Tree& tree );

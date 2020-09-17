@@ -113,6 +113,123 @@ void precompute_clvs( pll_utree_t const* const tree,
   utree_free_node_data( root );
 }
 
+/* a callback function for traversing only down nodes with non-slotted CLVs
+ * Assumes the node data pointer points to the partition!
+ */
+static int cb_traverse_unslotted( pll_unode_t* node )
+{
+  auto partition = static_cast< pll_partition_t* >( node->data );
+  assert(partition);
+
+  pll_clv_manager_t * clv_man = partition->clv_man;
+  assert(clv_man);
+
+  if( clv_man->slot_of_clvid[ node->clv_index ] != PLL_CLV_CLV_UNSLOTTED ) {
+    // the CLV is slotted, so we:
+    // 1) pin the clv in its slot
+    clv_man->is_pinned[ node->clv_index ] = true;
+    // 2) do not traverse down the subtree of this node. The way is shut.
+    return 0;
+  } else {
+    // not slotted = traverse (and thus recompute)!
+    return 1;
+  }
+}
+
+/**
+ * Compute all partials toward the branch defined by the given node, ending up
+ * with valid CLVs at node->clv_index and node->back->clv_index.
+ *
+ * When using memory saver, saves recomputation by pinning already slotted CLVs
+ * in place, such that they don't have to be computed. This is the intended use
+ * of this function.
+ *
+ * @param tree          the overarching tree structure
+ * @param nums          numbers associated with the tree
+ * @param subtree_sizes the tree-associated subtree sizes information
+ * @param node          node defining the target branch
+ * @param partition     the partition
+ */
+void partial_compute_clvs(pll_utree_t* const tree,
+                          Tree_Numbers const& nums,
+                          unsigned int const * const subtree_sizes,
+                          pll_unode_t* const node,
+                          pll_partition_t* partition)
+{
+  // set vroot to selected node (and reverse this at the end)
+  pll_unode_t* old_root = tree->vroot;
+  tree->vroot = node;
+
+  /*
+   * Basic idea: set the data pointer of each node to point to the partition.
+   * Then we do a largest-subtree-first traversal, with
+   * a custom traversal callback that stops the traversal if a node's CLV is
+   * currently slotted. The callback then also pins that CLV in place.
+   */
+  
+  // go through all inner nodes, set data pointer to point to the partition
+  size_t const nodes_count = tree->tip_count + tree->inner_count;
+  for (size_t i = 0; i < nodes_count; ++i)
+  {
+    tree->nodes[ i ]->data = partition;
+  }
+
+  // traverse!
+  /* various buffers for creating a postorder traversal and operations structures */
+  std::vector< unsigned int > param_indices( partition->rate_cats, 0 );
+  std::vector< pll_unode_t* > travbuffer( nums.nodes );
+  std::vector< double > branch_lengths( nums.branches );
+  std::vector< unsigned int > matrix_indices( nums.branches );
+  std::vector< pll_operation_t > operations( nums.nodes );
+
+  unsigned int traversal_size = 0;
+  unsigned int num_matrices   = 0;
+  unsigned int num_ops        = 0;
+
+  if( pll_utree_traverse_lsf( tree,
+                              subtree_sizes,
+                              PLL_TREE_TRAVERSE_POSTORDER,
+                              cb_traverse_unslotted,
+                              &travbuffer[ 0 ],
+                              &traversal_size )
+      != PLL_SUCCESS ) {
+    throw std::runtime_error{ std::string("pll_utree_traverse_lsf failed: ")
+                              + pll_errmsg };
+  }
+
+  /* given the computed traversal descriptor, generate the operations
+   structure, and the corresponding probability matrix indices that
+   may need recomputing */
+  pll_utree_create_operations( &travbuffer[ 0 ],
+                               traversal_size,
+                               &branch_lengths[ 0 ],
+                               &matrix_indices[ 0 ],
+                               &operations[ 0 ],
+                               &num_matrices,
+                               &num_ops );
+
+  pll_update_prob_matrices( partition,
+                            &param_indices[ 0 ], // use model 0
+                            &matrix_indices[ 0 ], // matrices to update
+                            &branch_lengths[ 0 ],
+                            num_matrices ); // how many should be updated
+
+  /* use the operations array to compute all num_ops inner CLVs. Operations
+     will be carried out sequentially starting from operation 0 towrds num_ops-1 */
+  pll_update_partials( partition, &operations[ 0 ], num_ops );
+
+
+
+  // cleanup
+  // unset the data pointers juuust incase some free() gets called
+  for (size_t i = 0; i < nodes_count; ++i)
+  {
+    tree->nodes[ i ]->data = nullptr;
+  }
+
+  tree->vroot = old_root;
+}
+
 void split_combined_msa( MSA& source,
                          MSA& target,
                          Tree& tree )
