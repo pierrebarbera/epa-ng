@@ -11,7 +11,6 @@
 #include "io/msa_reader.hpp"
 #include "seq/MSA.hpp"
 #include "seq/MSA_Info.hpp"
-#include "util/Options.hpp"
 #include "util/constants.hpp"
 #include "util/logging.hpp"
 
@@ -209,54 +208,6 @@ pll_utree_s* build_tree_from_file( std::string const& tree_file,
   set_missing_branch_lengths( tree, DEFAULT_BRANCH_LENGTH );
 
   return tree;
-}
-
-static unsigned int simd_autodetect()
-{
-  if( PLL_STAT( avx2_present ) )
-    return PLL_ATTRIB_ARCH_AVX2;
-  else if( PLL_STAT( avx_present ) )
-    return PLL_ATTRIB_ARCH_AVX;
-  else if( PLL_STAT( sse3_present ) )
-    return PLL_ATTRIB_ARCH_SSE;
-  else
-    return PLL_ATTRIB_ARCH_CPU;
-}
-
-pll_partition_t* make_partition( raxml::Model const& model,
-                                 Tree_Numbers const& nums,
-                                 int const num_sites,
-                                 Options const& options )
-{
-  assert( nums.tip_nodes ); // nums must have been initialized correctly
-
-  auto attributes = simd_autodetect();
-
-  if( ( options.scaling == Options::NumericalScaling::kOn ) or ( ( options.scaling == Options::NumericalScaling::kAuto ) and nums.large_tree() ) ) {
-    attributes = PLL_ATTRIB_RATE_SCALERS;
-  }
-
-  if( options.repeats ) {
-    attributes |= PLL_ATTRIB_SITE_REPEATS;
-  } else {
-    attributes |= PLL_ATTRIB_PATTERN_TIP;
-  }
-
-  auto partition = pll_partition_create( nums.tip_nodes,
-                                         nums.inner_nodes * 3, //number of extra clv buffers: 3 for every direction on the node
-                                         model.num_states(),
-                                         num_sites,
-                                         1,
-                                         nums.branches,
-                                         model.num_ratecats(),
-                                         ( nums.inner_nodes * 3 ) + nums.tip_nodes, /* number of scaler buffers */
-                                         attributes );
-
-  if( not partition ) {
-    throw std::runtime_error { std::string( "Could not create partition (make_partition). pll_errmsg: " ) + pll_errmsg };
-  }
-
-  return partition;
 }
 
 void file_check( std::string const& file_path )

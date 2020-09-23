@@ -21,10 +21,6 @@ pll_utree_s* build_tree_from_file( std::string const& tree_file,
                                    Tree_Numbers& nums,
                                    rtree_mapper& mapper,
                                    bool const preserve_rooting = true );
-pll_partition_t* make_partition( raxml::Model const& model,
-                                 Tree_Numbers const& nums,
-                                 int const num_sites,
-                                 Options const& options );
 void file_check( std::string const& file_path );
 std::vector< size_t > get_offsets( std::string const& file, MSA& msa );
 int pll_fasta_fseek( pll_fasta_t* fd, long int const offset, int const whence );

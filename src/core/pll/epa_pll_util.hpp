@@ -10,7 +10,13 @@
 #include "seq/Sequence.hpp"
 #include "tree/Tree.hpp"
 #include "tree/Tree_Numbers.hpp"
+#include "util/Options.hpp"
 
+pll_partition_t* make_partition( raxml::Model const& model,
+                                 Tree_Numbers const& nums,
+                                 int const num_sites,
+                                 Options const& options,
+                                 unsigned int* subtree_sizes = nullptr );
 void link_tree_msa( pll_utree_t* tree,
                     pll_partition_t* partition,
                     raxml::Model& model,

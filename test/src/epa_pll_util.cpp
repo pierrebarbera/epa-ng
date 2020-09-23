@@ -16,6 +16,26 @@
 
 using namespace std;
 
+TEST( epa_pll_util, make_partition )
+{
+  auto msa          = build_MSA_from_file( env->reference_file, MSA_Info( env->reference_file ), true );
+  Tree_Numbers nums = Tree_Numbers();
+  pll_partition_t* part;
+  pll_utree_t* tree;
+
+  rtree_mapper dummy;
+  tree = build_tree_from_file( env->tree_file, nums, dummy );
+  part = make_partition( env->model, nums, msa.num_sites(), Options() );
+
+  EXPECT_EQ( nums.tip_nodes, 8 );
+  EXPECT_EQ( nums.nodes, 14 );
+  EXPECT_EQ( nums.inner_nodes, 6 );
+  EXPECT_EQ( nums.branches, 13 );
+
+  pll_partition_destroy( part );
+  pll_utree_destroy( tree, nullptr );
+}
+
 TEST( epa_pll_util, link_tree_msa )
 {
   // buildup

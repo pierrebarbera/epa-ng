@@ -6,6 +6,7 @@
 #include "core/pll/optimize.hpp"
 #include "core/pll/pll_util.hpp"
 #include "set_manipulators.hpp"
+#include "util/Options.hpp"
 
 void link_tree_msa( pll_utree_t* tree,
                     pll_partition_t* partition,
@@ -119,10 +120,10 @@ void precompute_clvs( pll_utree_t const* const tree,
 static int cb_traverse_unslotted( pll_unode_t* node )
 {
   auto partition = static_cast< pll_partition_t* >( node->data );
-  assert(partition);
+  assert( partition );
 
-  pll_clv_manager_t * clv_man = partition->clv_man;
-  assert(clv_man);
+  pll_clv_manager_t* clv_man = partition->clv_man;
+  assert( clv_man );
 
   if( clv_man->slot_of_clvid[ node->clv_index ] != PLL_CLV_CLV_UNSLOTTED ) {
     // the CLV is slotted, so we:
@@ -150,15 +151,15 @@ static int cb_traverse_unslotted( pll_unode_t* node )
  * @param node          node defining the target branch
  * @param partition     the partition
  */
-void partial_compute_clvs(pll_utree_t* const tree,
-                          Tree_Numbers const& nums,
-                          unsigned int const * const subtree_sizes,
-                          pll_unode_t* const node,
-                          pll_partition_t* partition)
+void partial_compute_clvs( pll_utree_t* const tree,
+                           Tree_Numbers const& nums,
+                           unsigned int const* const subtree_sizes,
+                           pll_unode_t* const node,
+                           pll_partition_t* partition )
 {
   // set vroot to selected node (and reverse this at the end)
   pll_unode_t* old_root = tree->vroot;
-  tree->vroot = node;
+  tree->vroot           = node;
 
   /*
    * Basic idea: set the data pointer of each node to point to the partition.
@@ -166,11 +167,10 @@ void partial_compute_clvs(pll_utree_t* const tree,
    * a custom traversal callback that stops the traversal if a node's CLV is
    * currently slotted. The callback then also pins that CLV in place.
    */
-  
+
   // go through all inner nodes, set data pointer to point to the partition
   size_t const nodes_count = tree->tip_count + tree->inner_count;
-  for (size_t i = 0; i < nodes_count; ++i)
-  {
+  for( size_t i = 0; i < nodes_count; ++i ) {
     tree->nodes[ i ]->data = partition;
   }
 
@@ -193,7 +193,7 @@ void partial_compute_clvs(pll_utree_t* const tree,
                               &travbuffer[ 0 ],
                               &traversal_size )
       != PLL_SUCCESS ) {
-    throw std::runtime_error{ std::string("pll_utree_traverse_lsf failed: ")
+    throw std::runtime_error{ std::string( "pll_utree_traverse_lsf failed: " )
                               + pll_errmsg };
   }
 
@@ -218,12 +218,9 @@ void partial_compute_clvs(pll_utree_t* const tree,
      will be carried out sequentially starting from operation 0 towrds num_ops-1 */
   pll_update_partials( partition, &operations[ 0 ], num_ops );
 
-
-
   // cleanup
   // unset the data pointers juuust incase some free() gets called
-  for (size_t i = 0; i < nodes_count; ++i)
-  {
+  for( size_t i = 0; i < nodes_count; ++i ) {
     tree->nodes[ i ]->data = nullptr;
   }
 
@@ -276,4 +273,81 @@ raxml::Model get_model( pll_partition_t* partition )
   assign( model, partition );
 
   return model;
+}
+
+static unsigned int simd_autodetect()
+{
+  if( PLL_STAT( avx2_present ) )
+    return PLL_ATTRIB_ARCH_AVX2;
+  else if( PLL_STAT( avx_present ) )
+    return PLL_ATTRIB_ARCH_AVX;
+  else if( PLL_STAT( sse3_present ) )
+    return PLL_ATTRIB_ARCH_SSE;
+  else
+    return PLL_ATTRIB_ARCH_CPU;
+}
+
+pll_partition_t* make_partition( raxml::Model const& model,
+                                 Tree_Numbers const& nums,
+                                 int const num_sites,
+                                 Options const& options,
+                                 unsigned int* subtree_sizes = nullptr )
+{
+  assert( nums.tip_nodes ); // nums must have been initialized correctly
+
+  auto attributes = simd_autodetect();
+
+  if( ( options.scaling == Options::NumericalScaling::kOn )
+      or ( ( options.scaling == Options::NumericalScaling::kAuto )
+           and nums.large_tree() ) ) {
+    attributes = PLL_ATTRIB_RATE_SCALERS;
+  }
+
+  if( options.repeats ) {
+    attributes |= PLL_ATTRIB_SITE_REPEATS;
+  } else {
+    attributes |= PLL_ATTRIB_PATTERN_TIP;
+  }
+
+  if( options.memsave ) {
+    if( options.repeats ) {
+      throw std::runtime_error{ "Repeats + memsave not supported" };
+    }
+
+    attributes |= PLL_ATTRIB_PATTERN_TIP;
+    attributes |= PLL_ATTRIB_LIMIT_MEMORY;
+  }
+
+  auto partition = pll_partition_create( nums.tip_nodes,
+                                         nums.inner_nodes * 3, //number of extra clv buffers: 3 for every direction on the node
+                                         model.num_states(),
+                                         num_sites,
+                                         1,
+                                         nums.branches,
+                                         model.num_ratecats(),
+                                         ( nums.inner_nodes * 3 ) + nums.tip_nodes, /* number of scaler buffers */
+                                         attributes );
+
+  if( not partition ) {
+    throw std::runtime_error{
+      std::string( "Could not create partition (make_partition). pll_errmsg: " )
+      + pll_errmsg
+    };
+  }
+
+  if( options.memsave ) {
+    const size_t low_clv_num = ceil( log2( nums.tip_nodes - 1 ) ) + 2;
+    if( !pll_clv_manager_init( partition, low_clv_num, NULL, NULL, NULL ) ) {
+      throw std::runtime_error{ std::string( pll_errmsg ) };
+    }
+
+    assert( subtree_sizes );
+
+    if( !pll_clv_manager_MRC_strategy_init( partition->clv_man,
+                                            tree,
+                                            subtree_sizes ) ) {
+      throw std::runtime_error{ std::string( pll_errmsg ) };
+    }
+  }
+  return partition;
 }
