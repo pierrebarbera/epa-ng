@@ -13,6 +13,41 @@
 #include "tree/Tree_Numbers.hpp"
 #include "util/Options.hpp"
 
+/**
+ * Extra structures needed when using the pll partition memory saving mode
+ */
+class Memsaver {
+  public:
+  Memsaver() = default;
+  Memsaver( pll_utree_t* tree )
+      : subtree_sizes_( pll_utree_get_subtree_sizes( tree ) )
+      , traversal_{ tree->edge_count, nullptr }
+  {
+    // temporarily set the virtual root to one extreme of the tree (any leaf)
+    pll_unode_t* old_root = tree->vroot;
+    tree->vroot           = tree->nodes[ 0 ];
+
+    // get the traversal, hopefully one that minimizes overall recomputations
+    utree_query_branches( tree, &traversal_[ 0 ] );
+
+    tree->vroot = old_root;
+  }
+
+  ~Memsaver() = default;
+
+  operator bool() const { return subtree_sizes_
+                          and not traversal_order.empty(); }
+
+  unsigned int const * subtree_sizes() const { return subtree_sizes_.get(); }
+  std::vector< pll_unode_t* > const& traversal() const { return traversal_; }
+  pll_unode_t const*  traversal( size_t i ) const { return traversal_[ i ]; }
+  pll_unode_t*  traversal( size_t i ) { return traversal_[ i ]; }
+
+  private:
+  std::unique_ptr< unsigned int* > subtree_sizes_{ nullptr };
+  std::vector< pll_unode_t* > traversal_;
+};
+
 /* Encapsulates the pll data structures for ML computation */
 class Tree {
   public:
@@ -51,9 +86,11 @@ class Tree {
 
   private:
   // pll structures
-
   partition_ptr partition_{ nullptr, pll_partition_destroy };
   utree_ptr tree_{ nullptr, utree_destroy }; // must be top level node as parsed in newick! (for jplace)
+
+  // Object holding memory saving related structures
+  Memsaver memsave_;
 
   // tree related numbers
   Tree_Numbers nums_;

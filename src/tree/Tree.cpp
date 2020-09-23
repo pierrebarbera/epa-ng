@@ -34,13 +34,19 @@ Tree::Tree( std::string const& tree_file,
   }
 
   if( ref_msa_.size() != nums_.tip_nodes ) {
-    LOG_WARN << "The reference MSA and tree have differing number of taxa! " << ref_msa_.size() << " vs. " << nums_.tip_nodes;
+    LOG_WARN << "The reference MSA and tree have differing number of taxa! "
+             << ref_msa_.size() << " vs. " << nums_.tip_nodes;
+  }
+
+  if( options_.memsave ) {
+    memsave_ = Memsaver( tree_.get() );
   }
 
   partition_ = partition_ptr( make_partition( model_,
                                               nums_,
                                               ref_msa_.num_sites(),
-                                              options_ ),
+                                              options_,
+                                              subtree_sizes_ ),
                               pll_partition_destroy );
 
   locks_ = Mutex_List( partition_->tips + partition_->clv_buffers );
@@ -56,7 +62,20 @@ Tree::Tree( std::string const& tree_file,
   LOG_DBG << model_;
   LOG_DBG << "Tree length: " << sum_branch_lengths( tree_.get() );
 
-  precompute_clvs( tree_.get(), partition_.get(), nums_ );
+  if( not memsave_ ) {
+    precompute_clvs( tree_.get(), partition_.get(), nums_ );
+  } else {
+    // set the virtual root to where the traversal through the tree will later
+    // (during the parallelized placement) start
+    tree_.get()->vroot = memsave_.traversal( 0 );
+
+    // compute the CLVs toward that root
+    partial_compute_clvs( tree_.get(),
+                          nums_,
+                          subtree_sizes_.get(),
+                          traversal[ 0 ],
+                          partition_.get() )
+  }
 
   auto logl = this->ref_tree_logl();
 
@@ -155,10 +174,6 @@ double Tree::ref_tree_logl()
                                               root->pmatrix_index,
                                               &param_indices[ 0 ],
                                               nullptr );
-
-  // if ( logl == -std::numeric_limits<double>::infinity() ) {
-  //   throw std::runtime_error{pll_errmsg};
-  // }
 
   return logl;
 }
