@@ -37,14 +37,17 @@
 
 using mytimer = Timer< std::chrono::milliseconds >;
 
+/**
+ * Placement using default pendant lengths, center insertion point
+ * (preplacement), done via explicit CLV computation (no lookup table).
+ */
 template< class T >
-static void place( MSA& msa,
-                   Tree& reference_tree,
-                   std::vector< pll_unode_t* > const& branches,
-                   Sample< T >& sample,
-                   Options const& options,
-                   std::shared_ptr< Lookup_Store >& lookup_store,
-                   mytimer* time = nullptr )
+static void preplace( MSA& msa,
+                      Tree& reference_tree,
+                      std::vector< pll_unode_t* > const& branches,
+                      Sample< T >& sample,
+                      Options const& options,
+                      mytimer* time = nullptr )
 {
 
 #ifdef __OMP
@@ -75,7 +78,7 @@ static void place( MSA& msa,
 #ifdef __OMP
     auto const tid = omp_get_thread_num();
 #else
-    auto const tid = 0;
+    auto const tid               = 0;
 #endif
     // reference to the threadlocal branch
     auto& branch = branch_ptrs[ tid ];
@@ -92,8 +95,7 @@ static void place( MSA& msa,
                                               branch_id,
                                               reference_tree,
                                               false,
-                                              options,
-                                              lookup_store );
+                                              options );
     }
 
     sample[ seq_id ][ branch_id ] = branch->place( msa[ seq_id ] );
@@ -105,16 +107,63 @@ static void place( MSA& msa,
   }
 }
 
+/**
+ * Lookup-based placement using default pendant lengths, center insertion point
+ * (preplacement).
+ */
 template< class T >
-static void place_thorough( Work const& to_place,
-                            MSA& msa,
-                            Tree& reference_tree,
-                            std::vector< pll_unode_t* > const& branches,
-                            Sample< T >& sample,
-                            Options const& options,
-                            std::shared_ptr< Lookup_Store >& lookup_store,
-                            size_t const seq_id_offset = 0,
-                            mytimer* time              = nullptr )
+static void preplace( MSA& msa,
+                      LookupPlacement const& lookup,
+                      Sample< T >& sample,
+                      Options const& options,
+                      mytimer* time = nullptr )
+{
+
+#ifdef __OMP
+  unsigned int const num_threads = options.num_threads
+      ? options.num_threads
+      : omp_get_max_threads();
+  omp_set_num_threads( num_threads );
+  LOG_DBG << "Using threads: " << num_threads;
+  LOG_DBG << "Max threads: " << omp_get_max_threads();
+#endif
+
+  auto const num_sequences = msa.size();
+  auto const num_branches  = lookup.num_branches();
+
+  if( time ) {
+    time->start();
+  }
+
+// TODO: currently uses the old way of accessing "Work" packages, double for
+// loop would be easier to undersand, possibly more efficient by OMP
+#ifdef __OMP
+#pragma omp parallel for schedule( guided, 10000 )
+#endif
+  for( size_t i = 0; i < num_sequences * num_branches; ++i ) {
+
+    auto const branch_id = static_cast< size_t >( i ) / num_sequences;
+    auto const seq_id    = i % num_sequences;
+
+    sample[ seq_id ][ branch_id ] = lookup->place( branch_id,
+                                                   msa[ seq_id ],
+                                                   options.premasking );
+  }
+  if( time ) {
+    time->stop();
+  }
+}
+
+template< class T >
+static void blo_place( Work const& to_place,
+                       MSA& msa,
+                       Tree& reference_tree,
+                       std::vector< pll_unode_t* > const& branches,
+                       Sample< T >& sample,
+                       Options const& options
+                           size_t const seq_id_offset
+                       = 0,
+                       mytimer* time = nullptr )
 {
 
 #ifdef __OMP
@@ -155,7 +204,7 @@ static void place_thorough( Work const& to_place,
 #ifdef __OMP
     auto const tid = omp_get_thread_num();
 #else
-    auto const tid = 0;
+    auto const tid               = 0;
 #endif
     auto& local_sample = sample_parts[ tid ];
     auto& seq_lookup   = seq_lookup_vec[ tid ];
@@ -173,8 +222,7 @@ static void place_thorough( Work const& to_place,
                                                           branch_id,
                                                           reference_tree,
                                                           true,
-                                                          options,
-                                                          lookup_store );
+                                                          options );
     }
 
     if( seq_lookup.count( seq_id ) == 0 ) {
@@ -207,10 +255,12 @@ void simple_mpi( Tree& reference_tree,
   std::vector< pll_unode_t* > branches( num_branches );
   auto num_traversed_branches = utree_query_branches( reference_tree.tree(), &branches[ 0 ] );
   if( num_traversed_branches != num_branches ) {
-    throw std::runtime_error { "Traversing the utree went wrong during pipeline startup!" };
+    throw std::runtime_error{ "Traversing the utree went wrong during pipeline startup!" };
   }
 
-  auto lookups = std::make_shared< Lookup_Store >( num_branches, reference_tree.partition()->states );
+  std::unique_ptr< LookupPlacement > lookup_handler = ( options.preplacement_lookup )
+      ? std::make_unique< LookupPlacement >( reference_tree, branches )
+      : nullptr;
 
   auto reader = make_msa_reader( query_file,
                                  msa_info,
@@ -256,12 +306,20 @@ void simple_mpi( Tree& reference_tree,
     if( options.prescoring ) {
 
       LOG_DBG << "Preplacement." << std::endl;
-      place( chunk,
-             reference_tree,
-             branches,
-             preplace,
-             options,
-             lookups );
+      if( lookup_handler ) {
+        // if we have a preplacement lookup, use that
+        place( chunk,
+               lookup_handler,
+               preplace,
+               options );
+      } else {
+        // otherwise do placement the hard way: through CLV calculation
+        place( chunk,
+               reference_tree,
+               branches,
+               preplace,
+               options );
+      }
 
       LOG_DBG << "Selecting candidates." << std::endl;
 
@@ -274,14 +332,13 @@ void simple_mpi( Tree& reference_tree,
     Sample blo_sample;
 
     LOG_DBG << "BLO Placement." << std::endl;
-    place_thorough( blo_work,
-                    chunk,
-                    reference_tree,
-                    branches,
-                    blo_sample,
-                    options,
-                    lookups,
-                    seq_id_offset );
+    blo_place( blo_work,
+               chunk,
+               reference_tree,
+               branches,
+               blo_sample,
+               options,
+               seq_id_offset );
 
     // Output
     compute_and_set_lwr( blo_sample );

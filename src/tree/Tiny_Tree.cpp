@@ -9,29 +9,38 @@
 
 #include "core/pll/optimize.hpp"
 #include "core/pll/pll_util.hpp"
+#include "core/pll/pllhead.hpp"
 #include "core/raxml/Model.hpp"
 #include "set_manipulators.hpp"
 #include "tree/Tree_Numbers.hpp"
 #include "tree/tiny_util.hpp"
 #include "util/logging.hpp"
 
-static void precompute_sites_static( char nt,
-                                     std::vector< double >& result,
-                                     pll_partition_t* const partition,
-                                     pll_utree_t const* const tree )
+/**
+ * Calculate the persite log-likelihoods for a given character, defining a
+ * full-length sequence of only that character.
+ *
+ * Used exclusively to build the util/LookupStore, a performance shortcut for
+ * pre-placement
+ *
+ * @param nt     character defining the artificial sequence
+ * @param result per-site log-likelihood vector
+ */
+void Tiny_Tree::get_persite_logl( char const nt,
+                                  std::vector< double >& result )
 {
-  size_t const sites = partition->sites;
-  auto const new_tip = tree->nodes[ 2 ];
+  size_t const sites = partition_->sites;
+  auto const new_tip = tree_.get()->nodes[ 2 ];
   auto const inner   = new_tip->back;
   result.clear();
   result.resize( sites );
   std::string seq( sites, nt );
 
-  std::vector< unsigned int > param_indices( partition->rate_cats, 0 );
+  std::vector< unsigned int > param_indices( partition_->rate_cats, 0 );
 
-  auto map = get_char_map( partition );
+  auto map = get_char_map( partition_.get() );
 
-  auto err_check = pll_set_tip_states( partition,
+  auto err_check = pll_set_tip_states( partition_.get(),
                                        new_tip->clv_index,
                                        map,
                                        seq.c_str() );
@@ -43,7 +52,7 @@ static void precompute_sites_static( char nt,
     };
   }
 
-  pll_compute_edge_loglikelihood( partition,
+  pll_compute_edge_loglikelihood( partition_.get(),
                                   new_tip->clv_index,
                                   PLL_SCALE_BUFFER_NONE,
                                   inner->clv_index,
@@ -57,15 +66,13 @@ Tiny_Tree::Tiny_Tree( pll_unode_t* edge_node,
                       unsigned int const branch_id,
                       Tree& reference_tree,
                       bool const opt_branches,
-                      Options const& options,
-                      std::shared_ptr< Lookup_Store >& lookup_store )
+                      Options const& options)
     : partition_( nullptr, tiny_partition_destroy )
     , tree_( nullptr, utree_destroy )
     , opt_branches_( opt_branches )
     , premasking_( options.premasking )
     , sliding_blo_( options.sliding_blo )
     , branch_id_( branch_id )
-    , lookup_( lookup_store )
 {
   assert( edge_node );
   original_branch_length_ = edge_node->length;
@@ -129,23 +136,6 @@ Tiny_Tree::Tiny_Tree( pll_unode_t* edge_node,
   // use update_partials to compute the clv pointing toward the new tip
   pll_update_partials( partition_.get(), &op, 1 );
 
-  if( not opt_branches ) {
-    std::lock_guard< std::mutex > const lock( lookup_store->get_mutex( branch_id ) );
-
-    if( not lookup_store->has_branch( branch_id ) ) {
-      auto const size = lookup_store->char_map_size();
-
-      // precompute all possible site likelihoods
-      std::vector< std::vector< double > > precomputed_sites( size );
-      for( size_t i = 0; i < size; ++i ) {
-        precompute_sites_static( lookup_store->char_map( i ),
-                                 precomputed_sites[ i ],
-                                 partition_.get(),
-                                 tree_.get() );
-      }
-      lookup_store->init_branch( branch_id, precomputed_sites );
-    }
-  }
 }
 
 Placement Tiny_Tree::place( Sequence const& s )
@@ -177,19 +167,20 @@ Placement Tiny_Tree::place( Sequence const& s )
     }
   }
 
+
+  auto virtual_root = inner;
+
+  // init the new tip with s.sequence(), branch length
+  auto err_check = pll_set_tip_states( partition_.get(),
+                                       new_tip->clv_index,
+                                       get_char_map( partition_.get() ),
+                                       s.sequence().c_str() );
+
+  if( err_check == PLL_FAILURE ) {
+    throw std::runtime_error{ "Set tip states during placement failed!" };
+  }
+
   if( opt_branches_ ) {
-
-    auto virtual_root = inner;
-
-    // init the new tip with s.sequence(), branch length
-    auto err_check = pll_set_tip_states( partition_.get(),
-                                         new_tip->clv_index,
-                                         get_char_map( partition_.get() ),
-                                         s.sequence().c_str() );
-
-    if( err_check == PLL_FAILURE ) {
-      throw std::runtime_error{ "Set tip states during placement failed!" };
-    }
 
     if( premasking_ ) {
       logl = call_focused( optimize_branch_triplet, range, partition_.get(), virtual_root, sliding_blo_ );
@@ -211,25 +202,23 @@ Placement Tiny_Tree::place( Sequence const& s )
                            partition_.get(),
                            original_branch_length_ );
 
-    // re-update the partial
-    auto child1 = virtual_root->next->back;
-    auto child2 = virtual_root->next->next->back;
-
-    pll_operation_t op;
-    op.parent_clv_index    = virtual_root->clv_index;
-    op.parent_scaler_index = virtual_root->scaler_index;
-    op.child1_clv_index    = child1->clv_index;
-    op.child1_scaler_index = child1->scaler_index;
-    op.child1_matrix_index = child1->pmatrix_index;
-    op.child2_clv_index    = child2->clv_index;
-    op.child2_scaler_index = child2->scaler_index;
-    op.child2_matrix_index = child2->pmatrix_index;
-
-    pll_update_partials( partition_.get(), &op, 1 );
-
-  } else {
-    logl = lookup_->sum_precomputed_sitelk( branch_id_, s.sequence(), range );
   }
+
+  // re-update the partial
+  auto child1 = virtual_root->next->back;
+  auto child2 = virtual_root->next->next->back;
+
+  pll_operation_t op;
+  op.parent_clv_index    = virtual_root->clv_index;
+  op.parent_scaler_index = virtual_root->scaler_index;
+  op.child1_clv_index    = child1->clv_index;
+  op.child1_scaler_index = child1->scaler_index;
+  op.child1_matrix_index = child1->pmatrix_index;
+  op.child2_clv_index    = child2->clv_index;
+  op.child2_scaler_index = child2->scaler_index;
+  op.child2_matrix_index = child2->pmatrix_index;
+
+  pll_update_partials( partition_.get(), &op, 1 );
 
   if( logl == -std::numeric_limits< double >::infinity() ) {
     throw std::runtime_error{

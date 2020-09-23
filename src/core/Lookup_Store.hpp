@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "tree/TinyTree.hpp"
 #include "util/Matrix.hpp"
 #include "util/Range.hpp"
 #include "util/maps.hpp"
@@ -81,6 +82,19 @@ class Lookup_Store {
     }
   }
 
+  void init_branch( TinyTree const& tiny_tree )
+  {
+    auto const size = char_map_size();
+
+    // precompute all possible site likelihoods
+    std::vector< std::vector< double > > precomputed_sites( size );
+    for( size_t i = 0; i < size; ++i ) {
+      tiny_tree.get_persite_logl( char_map( i ),
+                                  precomputed_sites[ i ] );
+    }
+    lookup_store->init_branch( tiny_tree.branch_id(), precomputed_sites );
+  }
+
   std::mutex& get_mutex( size_t const branch_id )
   {
     return branch_[ branch_id ];
@@ -99,7 +113,7 @@ class Lookup_Store {
   unsigned char char_map( size_t const i )
   {
     if( i >= char_map_size_ ) {
-      throw std::runtime_error {
+      throw std::runtime_error{
         std::string( "char_map access out of bounds! i =" ) + std::to_string( i )
       };
     }
@@ -117,14 +131,38 @@ class Lookup_Store {
     auto pos = char_to_posish_[ c ];
 
     if( pos == INVALID ) {
-      throw std::runtime_error { std::string( "char is invalid! char = " ) + std::to_string( c ) };
+      throw std::runtime_error{ std::string( "char is invalid! char = " ) + std::to_string( c ) };
     }
 
     return pos;
   }
 
-  double sum_precomputed_sitelk( size_t const branch_id, std::string const& seq, Range const& range ) const
+  /**
+   * Sum up the per-site log-likelihoods for a given branch, based on the given
+   * sequence. This LH is dependant on the values that the TinyTree had when
+   * it was used to create the lookup. The only real use case is preplacement,
+   * meaning placed in the center of the insertion branch, with the pednant
+   * length at the default value.
+   *
+   * @param  branch_id  branch for which the liklihood should be calculated
+   * @param  seq        Sequence for which likelihood is to be calculated
+   * @param  premasking flag indicating if flanking gaps should be masked out
+   * @return            log-likelihood
+   */
+  double sum_precomputed_sitelk( size_t const branch_id,
+                                 std::string const& seq,
+                                 bool const premasking ) const
   {
+    Range range( 0, seq.size() );
+    if( premasking ) {
+      range = get_valid_range( seq );
+      if( not range ) {
+        throw std::runtime_error{
+          "A sequence does not appear to have any non-gap sites!"
+        };
+      }
+    }
+
     assert( seq.length() == store_[ branch_id ].rows() );
 
     double sum                = 0;
@@ -162,4 +200,90 @@ class Lookup_Store {
   size_t const char_map_size_;
   unsigned char const* char_map_;
   std::array< size_t, 128 > char_to_posish_;
+};
+
+#ifdef __OMP
+#include <omp.h>
+#endif
+
+#include "core/pll/pllhead.hpp"
+#include "tree/Tree.hpp"
+
+/**
+ * Wraps the lookup store such that this object can be queried for a lookup-based
+ * placement (used for preplacement) for a given QS on a given branch.
+ *
+ * Creation of the object should take care of creating all necessary loopups,
+ * do it nicely parallel, and ideally optionally using the memsaver.
+ */
+class LookupPlacement {
+  public:
+  LookupPlacement( Tree const& ref_tree,
+                   std::vector< pll_unode_t* > const& branches )
+      : lookup_( ref_tree.nums().branches, ref_tree.partition()->states )
+      , pendant_length( ref_tree.nums().branches, -1.0 )
+      , distal_length( ref_tree.nums().branches, -1.0 )
+  {
+    // auto nums = ref_tree.nums();
+    bool const use_memsave = ( ref_tree.partition()->attributes & PLL_ATTRIB_LIMIT_MEMORY );
+    Options const& options = ref_tree.options();
+
+    // create and hold the lookup table for the entirety of the reference tree
+
+    // if the partition is not in memsave mode, calculate the lookups normally,
+    // from the fully precomputed partition data
+    if( not use_memsave ) {
+#ifdef __OMP
+#pragma omp parallel for schedule( dynamic )
+#endif
+      for( size_t branch_id = 0; branch_id < nums.branches; ++branch_id ) {
+        Tiny_Tree cur_branch( branches[ branch_id ],
+                              branch_id,
+                              ref_tree,
+                              false,
+                              options );
+
+        pendant_length_[ branch_id ] = cur_branch.pendant_length();
+        distal_length_[ branch_id ]  = cur_branch.distal_length();
+
+        lookup_.init_branch( cur_branch );
+      }
+
+    } else {
+      // otherwise do it in a regulated way ensuring limited memory use
+    }
+  }
+
+  // deleted copy assignment since this class hold hella memory
+
+  LookupPlacement()  = delete;
+  ~LookupPlacement() = default;
+
+  LookupPlacement( LookupPlacement const& other ) = delete;
+  LookupPlacement( LookupPlacement&& other )      = default;
+
+  LookupPlacement& operator=( LookupPlacement const& other ) = delete;
+  LookupPlacement& operator=( LookupPlacement&& other ) = default;
+
+  Placement place( size_t const branch_id,
+                   std::string const& seq,
+                   bool const premasking )
+  {
+    auto const logl = lookup_.sum_precomputed_sitelk( branch_id,
+                                                      seq,
+                                                      premasking );
+
+    return Placement( branch_id,
+                      logl,
+                      pendant_length[ branch_id ],
+                      distal_length[ branch_id ] );
+  }
+
+  size_t num_branches() const { return pendant_length_.size(); }
+
+  private:
+  Lookup_Store lookup_;
+  // arrays holding pendant and distal lengths for a given branch_id
+  std::vector< double > pendant_length_;
+  std::vector< double > distal_length_;
 };

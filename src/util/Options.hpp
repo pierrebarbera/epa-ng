@@ -37,4 +37,5 @@ class Options {
   unsigned int precision   = 10;
   NumericalScaling scaling = NumericalScaling::kAuto;
   bool preserve_rooting    = true;
+  bool preplacement_lookup = true;
 };

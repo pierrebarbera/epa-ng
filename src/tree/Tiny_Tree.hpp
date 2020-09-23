@@ -1,9 +1,8 @@
 #pragma once
 
 #include <memory>
-#include <unordered_map>
+#include <utility>
 
-#include "core/Lookup_Store.hpp"
 #include "core/pll/pll_util.hpp"
 #include "core/pll/pllhead.hpp"
 #include "sample/Placement.hpp"
@@ -35,8 +34,7 @@ class Tiny_Tree {
              unsigned int const branch_id,
              Tree& reference_tree,
              bool const opt_branches,
-             Options const& options,
-             std::shared_ptr< Lookup_Store >& lookup );
+             Options const& options);
 
   Tiny_Tree()  = delete;
   ~Tiny_Tree() = default;
@@ -49,6 +47,15 @@ class Tiny_Tree {
 
   Placement place( Sequence const& s );
 
+  void get_persite_logl( char const nt, std::vector< double >& result ) const;
+
+  // getters / setters
+
+  unsigned int branch_id() const { return branch_id_; }
+  double distal_length() const { return tree_->nodes[ 1 ]->length; }
+  double proximal_length() const { return tree_->nodes[ 0 ]->length; }
+  double pendant_length() const { return tree_->nodes[ 3 ]->length; }
+
   private:
   // pll structures
   std::unique_ptr< pll_partition_t, partition_deleter > partition_;
@@ -59,6 +66,4 @@ class Tiny_Tree {
   bool premasking_ = true;
   bool sliding_blo_;
   unsigned int branch_id_;
-
-  std::shared_ptr< Lookup_Store > lookup_;
 };
