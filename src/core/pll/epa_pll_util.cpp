@@ -129,6 +129,11 @@ static int cb_traverse_unslotted( pll_unode_t* node )
     // the CLV is slotted, so we:
     // 1) pin the clv in its slot
     clv_man->is_pinned[ node->clv_index ] = true;
+
+    // 1.1) in the unlikely case that we are re-calculating the CLVs toward a
+    // different root, then us finding a slotted CLV might be the case where
+    // this node was some previous iterations root. In this case
+
     // 2) do not traverse down the subtree of this node. The way is shut.
     return 0;
   } else {
@@ -217,6 +222,12 @@ void partial_compute_clvs( pll_utree_t* const tree,
   /* use the operations array to compute all num_ops inner CLVs. Operations
      will be carried out sequentially starting from operation 0 towrds num_ops-1 */
   pll_update_partials( partition, &operations[ 0 ], num_ops );
+
+  // preparation for any next iteration: unpin the CLVs at node and node->back
+  // (especially needed if next iteration has different root direction, as 
+  // otherwise one of these CLV will never get unpinned by update_partials)
+  partition->clv_man->is_pinned[ node->clv_index ]        = false;
+  partition->clv_man->is_pinned[ node->back->clv_index ]  = false;
 
   // cleanup
   // unset the data pointers juuust incase some free() gets called
