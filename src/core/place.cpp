@@ -78,7 +78,7 @@ static void preplace( MSA& msa,
 #ifdef __OMP
     auto const tid = omp_get_thread_num();
 #else
-    auto const tid               = 0;
+    auto const tid = 0;
 #endif
     // reference to the threadlocal branch
     auto& branch = branch_ptrs[ tid ];
@@ -93,12 +93,13 @@ static void preplace( MSA& msa,
       // as make_unique produces an rvalue, this is a move assignment and thus legal
       branch = std::make_unique< Tiny_Tree >( branches[ branch_id ],
                                               branch_id,
-                                              reference_tree,
-                                              false,
-                                              options );
+                                              reference_tree );
     }
 
-    sample[ seq_id ][ branch_id ] = branch->place( msa[ seq_id ] );
+    sample[ seq_id ][ branch_id ] = branch->place(
+        msa[ seq_id ],
+        false,
+        options );
 
     prev_branch_id = branch_id;
   }
@@ -220,9 +221,7 @@ static void blo_place( Work const& to_place,
       // as make_unique produces an rvalue, this is a move assignment and thus legal
       branch_ptrs[ tid ] = std::make_unique< Tiny_Tree >( branches[ branch_id ],
                                                           branch_id,
-                                                          reference_tree,
-                                                          true,
-                                                          options );
+                                                          reference_tree );
     }
 
     if( seq_lookup.count( seq_id ) == 0 ) {
@@ -230,7 +229,10 @@ static void blo_place( Work const& to_place,
       seq_lookup[ seq_id ] = new_idx;
     }
     assert( seq_lookup.count( seq_id ) > 0 );
-    local_sample[ seq_lookup[ seq_id ] ].emplace_back( branch_ptrs[ tid ]->place( seq ) );
+    local_sample[ seq_lookup[ seq_id ] ].emplace_back(
+        branch_ptrs[ tid ]->place( seq,
+                                   true,
+                                   options ) );
 
     prev_branch_id = branch_id;
   }
@@ -298,7 +300,7 @@ void simple_mpi( Tree& reference_tree,
       all_work = Work( std::make_pair( 0, num_branches ), std::make_pair( 0, num_sequences ) );
 
       if( options.prescoring ) {
-        preplace = Sample( num_sequences, num_branches );
+        preplace_result = Sample( num_sequences, num_branches );
       }
       first = false;
     }
@@ -308,22 +310,22 @@ void simple_mpi( Tree& reference_tree,
       LOG_DBG << "Preplacement." << std::endl;
       if( lookup_handler ) {
         // if we have a preplacement lookup, use that
-        place( chunk,
-               lookup_handler,
-               preplace,
-               options );
+        preplace( chunk,
+                  lookup_handler,
+                  preplace_result,
+                  options );
       } else {
         // otherwise do placement the hard way: through CLV calculation
-        place( chunk,
-               reference_tree,
-               branches,
-               preplace,
-               options );
+        preplace( chunk,
+                  reference_tree,
+                  branches,
+                  preplace_result,
+                  options );
       }
 
       LOG_DBG << "Selecting candidates." << std::endl;
 
-      blo_work = apply_heuristic( preplace, options );
+      blo_work = apply_heuristic( preplace_result, options );
 
     } else {
       blo_work = all_work;

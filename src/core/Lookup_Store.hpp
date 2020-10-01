@@ -226,7 +226,6 @@ class LookupPlacement {
   {
     // auto nums = ref_tree.nums();
     bool const use_memsave = ( ref_tree.partition()->attributes & PLL_ATTRIB_LIMIT_MEMORY );
-    Options const& options = ref_tree.options();
 
     // create and hold the lookup table for the entirety of the reference tree
 
@@ -239,9 +238,7 @@ class LookupPlacement {
       for( size_t branch_id = 0; branch_id < nums.branches; ++branch_id ) {
         Tiny_Tree cur_branch( branches[ branch_id ],
                               branch_id,
-                              ref_tree,
-                              false,
-                              options );
+                              ref_tree );
 
         pendant_length_[ branch_id ] = cur_branch.pendant_length();
         distal_length_[ branch_id ]  = cur_branch.distal_length();

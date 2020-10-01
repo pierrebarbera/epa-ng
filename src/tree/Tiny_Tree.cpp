@@ -64,14 +64,9 @@ void Tiny_Tree::get_persite_logl( char const nt,
 
 Tiny_Tree::Tiny_Tree( pll_unode_t* edge_node,
                       unsigned int const branch_id,
-                      Tree& reference_tree,
-                      bool const opt_branches,
-                      Options const& options)
+                      Tree& reference_tree )
     : partition_( nullptr, tiny_partition_destroy )
     , tree_( nullptr, utree_destroy )
-    , opt_branches_( opt_branches )
-    , premasking_( options.premasking )
-    , sliding_blo_( options.sliding_blo )
     , branch_id_( branch_id )
 {
   assert( edge_node );
@@ -135,10 +130,11 @@ Tiny_Tree::Tiny_Tree( pll_unode_t* edge_node,
 
   // use update_partials to compute the clv pointing toward the new tip
   pll_update_partials( partition_.get(), &op, 1 );
-
 }
 
-Placement Tiny_Tree::place( Sequence const& s )
+Placement Tiny_Tree::place( Sequence const& s,
+                            bool const opt_branches,
+                            Options const& options )
 {
   assert( partition_ );
   assert( tree_ );
@@ -159,14 +155,13 @@ Placement Tiny_Tree::place( Sequence const& s )
 
   Range range( 0, partition_->sites );
 
-  if( premasking_ ) {
+  if( options.premasking ) {
     range = get_valid_range( s.sequence() );
     if( not range ) {
       throw std::runtime_error{ std::string() + "Sequence with header '" + s.header()
                                 + "' does not appear to have any non-gap sites!" };
     }
   }
-
 
   auto virtual_root = inner;
 
@@ -180,12 +175,12 @@ Placement Tiny_Tree::place( Sequence const& s )
     throw std::runtime_error{ "Set tip states during placement failed!" };
   }
 
-  if( opt_branches_ ) {
+  if( opt_branches ) {
 
-    if( premasking_ ) {
-      logl = call_focused( optimize_branch_triplet, range, partition_.get(), virtual_root, sliding_blo_ );
+    if( options.premasking ) {
+      logl = call_focused( optimize_branch_triplet, range, partition_.get(), virtual_root, options.sliding_blo );
     } else {
-      logl = optimize_branch_triplet( partition_.get(), virtual_root, sliding_blo_ );
+      logl = optimize_branch_triplet( partition_.get(), virtual_root, options.sliding_blo );
     }
 
     assert( inner->length >= 0 );
@@ -201,7 +196,6 @@ Placement Tiny_Tree::place( Sequence const& s )
     reset_triplet_lengths( inner,
                            partition_.get(),
                            original_branch_length_ );
-
   }
 
   // re-update the partial

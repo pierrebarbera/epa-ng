@@ -32,9 +32,7 @@ class Tiny_Tree {
   public:
   Tiny_Tree( pll_unode_t* edge_node,
              unsigned int const branch_id,
-             Tree& reference_tree,
-             bool const opt_branches,
-             Options const& options);
+             Tree& reference_tree );
 
   Tiny_Tree()  = delete;
   ~Tiny_Tree() = default;
@@ -45,7 +43,9 @@ class Tiny_Tree {
   Tiny_Tree& operator=( Tiny_Tree const& other ) = delete;
   Tiny_Tree& operator=( Tiny_Tree&& other ) = default;
 
-  Placement place( Sequence const& s );
+  Placement place( Sequence const& s,
+                   bool const opt_branches,
+                   Options const& options );
 
   void get_persite_logl( char const nt, std::vector< double >& result ) const;
 
@@ -61,7 +61,6 @@ class Tiny_Tree {
   std::unique_ptr< pll_partition_t, partition_deleter > partition_;
   std::unique_ptr< pll_utree_t, utree_deleter > tree_;
 
-  bool opt_branches_;
   double original_branch_length_;
   bool premasking_ = true;
   bool sliding_blo_;
