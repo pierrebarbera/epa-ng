@@ -11,4 +11,5 @@ pll_partition_t* make_tiny_partition( Tree& reference_tree,
                                       pll_utree_t const* tree,
                                       pll_unode_t const* old_proximal,
                                       pll_unode_t const* old_distal,
-                                      bool const tip_tip_case );
+                                      bool const tip_tip_case,
+                                      bool const deep_copy_clvs );

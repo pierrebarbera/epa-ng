@@ -64,7 +64,8 @@ void Tiny_Tree::get_persite_logl( char const nt,
 
 Tiny_Tree::Tiny_Tree( pll_unode_t* edge_node,
                       unsigned int const branch_id,
-                      Tree& reference_tree )
+                      Tree& reference_tree,
+                      bool const deep_copy_clvs = false )
     : partition_( nullptr, tiny_partition_destroy )
     , tree_( nullptr, utree_destroy )
     , branch_id_( branch_id )

@@ -33,6 +33,40 @@ static void alloc_and_copy( T& dest, T const src, size_t const size )
           size * sizeof( base_t ) );
 }
 
+static void deep_copy_clv( pll_partition_t* dest_part,
+                           pll_unode_t* dest_node,
+                           pll_partition_t const* const src_part,
+                           pll_unode_t const* const src_node )
+{
+  /**
+   * TODO:
+   * - this function should probably cover the repeats case as well
+   * - automatically treat tips differently? or leave it to the caller?
+   * - memsaver vs normal (vs repeats?)
+   * - et ex mente tota
+   * 
+   */
+
+  assert( src_part->clv[ src_node->clv_index] != nullptr );
+
+  if( src_part->attributes & PLL_ATTRIB_LIMIT_MEMORY ) {
+
+
+  } else {
+    if(  ) {
+
+      auto const sites_alloc = src_part->asc_additional_sites + src_part->sites;
+      auto const scaler_size = ( src_part->attributes & PLL_ATTRIB_RATE_SCALERS )
+          ? sites_alloc * src_part->rate_cats
+          : sites_alloc;
+
+      alloc_and_copy( dest_part->scale_buffer[ dest_node->scaler_index ],
+                      src_part->scale_buffer[ src_node->scaler_index ],
+                      scaler_size );
+    }
+  }
+}
+
 static void deep_copy_scaler( pll_partition_t* dest_part,
                               pll_unode_t* dest_node,
                               pll_partition_t const* const src_part,
@@ -85,7 +119,8 @@ pll_partition_t* make_tiny_partition( Tree& reference_tree,
                                       pll_utree_t const* tree,
                                       pll_unode_t const* const old_proximal,
                                       pll_unode_t const* const old_distal,
-                                      bool const tip_tip_case )
+                                      bool const tip_tip_case,
+                                      bool const deep_copy_clvs )
 {
   /**
     As we work with PLL_PATTERN_TIP functionality, special care has to be taken in regards to the node and partition
@@ -98,7 +133,12 @@ pll_partition_t* make_tiny_partition( Tree& reference_tree,
   pll_partition_t const* const old_partition = reference_tree.partition();
   assert( old_partition );
 
-  bool use_tipchars = old_partition->attributes & PLL_ATTRIB_PATTERN_TIP;
+  unsigned int attributes = old_partition->attributes;
+
+  // unset memory saver mode
+  attributes &= ~PLL_ATTRIB_LIMIT_MEMORY;
+
+  bool use_tipchars = attributes & PLL_ATTRIB_PATTERN_TIP;
 
   // tip_inner case: both reference nodes are inner nodes
   // tip tip case: one for the "proximal" clv tip
@@ -115,7 +155,7 @@ pll_partition_t* make_tiny_partition( Tree& reference_tree,
       3, // number of prob. matrices (one per possible unique branch length)
       old_partition->rate_cats,
       3, // number of scale buffers (one per possible inner node)
-      old_partition->attributes );
+      attributes );
 
   assert( tiny );
 
@@ -175,9 +215,13 @@ pll_partition_t* make_tiny_partition( Tree& reference_tree,
   }
   tiny->pattern_weights = old_partition->pattern_weights;
 
-  // shallow copy major buffers
-  pll_aligned_free( tiny->clv[ proximal->clv_index ] );
-  tiny->clv[ proximal->clv_index ] = static_cast< double* >( reference_tree.get_clv( old_proximal ) );
+  if( not deep_copy_clvs ) {
+    // shallow copy major buffers
+    pll_aligned_free( tiny->clv[ proximal->clv_index ] );
+    tiny->clv[ proximal->clv_index ] = static_cast< double* >( reference_tree.get_clv( old_proximal ) );
+  } else {
+
+  }
 
   if( tip_tip_case and use_tipchars ) {
     std::string sequence( tiny->sites, 'A' );

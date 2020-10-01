@@ -2,11 +2,35 @@
 
 #include <algorithm>
 #include <unordered_map>
+#include <vector>
 
 #include "core/pll/optimize.hpp"
 #include "core/pll/pll_util.hpp"
 #include "set_manipulators.hpp"
 #include "util/Options.hpp"
+
+/**
+ * makes a vector mapping from internal node_indexes to their associated branch
+ * IDs (where the branch ids are consistent with the jplace standard)
+ */
+std::vector< size_t > get_branch_ids( pll_utree_t const* const tree )
+{
+  // size of the result vector will be number of tips + number of internal
+  // nodes (which are triplets)
+  std::vector< size_t > result( 3 * tree->inner_count + tree->tip_count );
+
+  std::vector< pll_unode_t* > branches( tree->edge_count );
+  auto traversed = utree_query_branches( tree,
+                                         &branches[ 0 ] );
+
+  for( size_t branch_id = 0; branch_id < traversed; ++branch_id ) {
+    auto const& node = branches[ branch_id ];
+    // both node and node back obviously are associated with the same branch
+    result[ node->node_index ] = result[ node->back->node_index ] = branch_id;
+  }
+
+  return result;
+}
 
 void link_tree_msa( pll_utree_t* tree,
                     pll_partition_t* partition,
@@ -224,10 +248,10 @@ void partial_compute_clvs( pll_utree_t* const tree,
   pll_update_partials( partition, &operations[ 0 ], num_ops );
 
   // preparation for any next iteration: unpin the CLVs at node and node->back
-  // (especially needed if next iteration has different root direction, as 
+  // (especially needed if next iteration has different root direction, as
   // otherwise one of these CLV will never get unpinned by update_partials)
-  partition->clv_man->is_pinned[ node->clv_index ]        = false;
-  partition->clv_man->is_pinned[ node->back->clv_index ]  = false;
+  partition->clv_man->is_pinned[ node->clv_index ]       = false;
+  partition->clv_man->is_pinned[ node->back->clv_index ] = false;
 
   // cleanup
   // unset the data pointers juuust incase some free() gets called

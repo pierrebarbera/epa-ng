@@ -32,7 +32,8 @@ class Tiny_Tree {
   public:
   Tiny_Tree( pll_unode_t* edge_node,
              unsigned int const branch_id,
-             Tree& reference_tree );
+             Tree& reference_tree,
+             bool const deep_copy_clvs = false );
 
   Tiny_Tree()  = delete;
   ~Tiny_Tree() = default;

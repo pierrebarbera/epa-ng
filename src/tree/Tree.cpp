@@ -59,6 +59,8 @@ Tree::Tree( std::string const& tree_file,
 
   set_unique_clv_indices( get_root( tree_.get() ), nums_.tip_nodes );
 
+  branch_id_ = get_branch_ids( tree_ );
+
   LOG_DBG << model_;
   LOG_DBG << "Tree length: " << sum_branch_lengths( tree_.get() );
 
@@ -74,7 +76,7 @@ Tree::Tree( std::string const& tree_file,
                           nums_,
                           subtree_sizes_.get(),
                           traversal[ 0 ],
-                          partition_.get() )
+                          partition_.get() );
   }
 
   auto logl = this->ref_tree_logl();
@@ -102,6 +104,22 @@ Tree::Tree( std::string const& bin_file,
   nums_                     = Tree_Numbers( partition_->tips );
   tree_                     = utree_ptr( binary_.load_utree( partition_->tips ), utree_destroy );
   locks_                    = Mutex_List( partition_->tips + partition_->clv_buffers );
+
+  // TODO this needs a major facelift to be able to interoperate with all the new shit
+  branch_id_ = get_branch_ids( tree_ );
+  if( options_.memsave ) {
+    memsave_ = Memsaver( tree_.get() );
+    // set the virtual root to where the traversal through the tree will later
+    // (during the parallelized placement) start
+    tree_.get()->vroot = memsave_.traversal( 0 );
+
+    // compute the CLVs toward that root
+    partial_compute_clvs( tree_.get(),
+                          nums_,
+                          subtree_sizes_.get(),
+                          traversal[ 0 ],
+                          partition_.get() );
+  }
 
   raxml::assign( model_, partition_.get() );
   LOG_DBG << model_;

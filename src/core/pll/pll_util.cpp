@@ -212,7 +212,8 @@ static void utree_query_branches_recursive( pll_unode_t* const node,
   *index              = *index + 1;
 }
 
-unsigned int utree_query_branches( pll_utree_t const* const tree, pll_unode_t** node_list )
+unsigned int utree_query_branches( pll_utree_t const* const tree,
+                                   pll_unode_t** node_list )
 {
   unsigned int index = 0;
 
