@@ -1,5 +1,6 @@
 #include "tree/tiny_util.hpp"
 
+#include <cstring>
 #include <type_traits>
 
 #include "core/pll/pll_util.hpp"
@@ -28,13 +29,13 @@ static void alloc_and_copy( T& dest, T const src, size_t const size )
 
   assert( dest != nullptr );
 
-  memcpy( dest,
-          src,
-          size * sizeof( base_t ) );
+  std::memcpy( dest,
+               src,
+               size * sizeof( base_t ) );
 }
 
 static void deep_copy_clv( pll_partition_t* dest_part,
-                           pll_unode_t* dest_node,
+                           pll_unode_t const* const dest_node,
                            pll_partition_t const* const src_part,
                            pll_unode_t const* const src_node )
 {
@@ -43,28 +44,30 @@ static void deep_copy_clv( pll_partition_t* dest_part,
    * - this function should probably cover the repeats case as well
    * - automatically treat tips differently? or leave it to the caller?
    * - memsaver vs normal (vs repeats?)
-   * - et ex mente tota
-   * 
    */
 
-  assert( src_part->clv[ src_node->clv_index] != nullptr );
+  assert( src_part->clv[ src_node->clv_index ] != nullptr );
 
-  if( src_part->attributes & PLL_ATTRIB_LIMIT_MEMORY ) {
+  // clv size in doubles (gets correct size wrt repeats also)
+  auto const clv_size = pll_get_clv_size( src_part,
+                                          src_node->clv_index );
 
+  // get the correct clv pointer (depends on memory mode)
+  double const* src_clv = pll_get_clv_reading( src_part,
+                                               src_node->clv_index );
 
-  } else {
-    if(  ) {
-
-      auto const sites_alloc = src_part->asc_additional_sites + src_part->sites;
-      auto const scaler_size = ( src_part->attributes & PLL_ATTRIB_RATE_SCALERS )
-          ? sites_alloc * src_part->rate_cats
-          : sites_alloc;
-
-      alloc_and_copy( dest_part->scale_buffer[ dest_node->scaler_index ],
-                      src_part->scale_buffer[ src_node->scaler_index ],
-                      scaler_size );
-    }
+  if( src_part == nullptr ) {
+    throw std::runtime_error { "Failed to fetch source clv." };
   }
+
+  double* dest_clv = dest_part->clv[ dest_node->clv_index ];
+
+  assert( dest_clv != nullptr );
+
+  // copy the clv buffer over
+  std::memcpy( dest_clv,
+               src_clv,
+               clv_size * sizeof( double ) );
 }
 
 static void deep_copy_scaler( pll_partition_t* dest_part,
@@ -115,7 +118,7 @@ static void deep_copy_repeats( pll_partition_t* dest_part,
   }
 }
 
-pll_partition_t* make_tiny_partition( Tree& reference_tree,
+pll_partition_t* make_tiny_partition( pll_partition_t const* const old_partition,
                                       pll_utree_t const* tree,
                                       pll_unode_t const* const old_proximal,
                                       pll_unode_t const* const old_distal,
@@ -130,12 +133,19 @@ pll_partition_t* make_tiny_partition( Tree& reference_tree,
     number of tips. This results in a acceptable amount of wasted memory that is never used (num_sites * bytes
     * number of clv-tips)
   */
-  pll_partition_t const* const old_partition = reference_tree.partition();
   assert( old_partition );
+  assert( tree );
+  assert( old_proximal );
+  assert( old_distal );
+
+  bool const memory_managed = old_partition->attributes & PLL_ATTRIB_LIMIT_MEMORY;
+
+  // ensure: never deep copy from memory managed partitions.
+  assert( not( memory_managed and not deep_copy_clvs ) );
 
   unsigned int attributes = old_partition->attributes;
 
-  // unset memory saver mode
+  // unset memory saver mode for the tiny partition
   attributes &= ~PLL_ATTRIB_LIMIT_MEMORY;
 
   bool use_tipchars = attributes & PLL_ATTRIB_PATTERN_TIP;
@@ -150,7 +160,8 @@ pll_partition_t* make_tiny_partition( Tree& reference_tree,
   pll_partition_t* tiny = pll_partition_create(
       3, // tips
       1 + num_clv_tips, // extra clv's
-      old_partition->states, old_partition->sites,
+      old_partition->states,
+      old_partition->sites,
       old_partition->rate_matrices,
       3, // number of prob. matrices (one per possible unique branch length)
       old_partition->rate_cats,
@@ -216,11 +227,16 @@ pll_partition_t* make_tiny_partition( Tree& reference_tree,
   tiny->pattern_weights = old_partition->pattern_weights;
 
   if( not deep_copy_clvs ) {
-    // shallow copy major buffers
+    // shallow copy clv buffers
     pll_aligned_free( tiny->clv[ proximal->clv_index ] );
-    tiny->clv[ proximal->clv_index ] = static_cast< double* >( reference_tree.get_clv( old_proximal ) );
-  } else {
+    assert( old_partition->clv[ old_proximal->clv_index ] );
 
+    tiny->clv[ proximal->clv_index ] = old_partition->clv[ old_proximal->clv_index ];
+  } else {
+    deep_copy_clv( tiny,
+                   proximal,
+                   old_partition,
+                   old_proximal );
   }
 
   if( tip_tip_case and use_tipchars ) {
@@ -230,10 +246,19 @@ pll_partition_t* make_tiny_partition( Tree& reference_tree,
       throw std::runtime_error { "Error setting tip state" };
     }
     pll_aligned_free( tiny->tipchars[ distal->clv_index ] );
-    tiny->tipchars[ distal->clv_index ] = static_cast< unsigned char* >( reference_tree.get_clv( old_distal ) );
+    assert( old_partition->clv[ old_distal->clv_index ] );
+    tiny->tipchars[ distal->clv_index ] = old_partition->tipchars[ old_distal->clv_index ];
   } else {
-    pll_aligned_free( tiny->clv[ distal->clv_index ] );
-    tiny->clv[ distal->clv_index ] = static_cast< double* >( reference_tree.get_clv( old_distal ) );
+    if( not deep_copy_clvs ) {
+      pll_aligned_free( tiny->clv[ distal->clv_index ] );
+      assert( old_partition->clv[ old_distal->clv_index ] );
+      tiny->clv[ distal->clv_index ] = old_partition->clv[ old_distal->clv_index ];
+    } else {
+      deep_copy_clv( tiny,
+                     distal,
+                     old_partition,
+                     old_distal );
+    }
   }
 
   // deep copy scalers
@@ -266,10 +291,12 @@ pll_partition_t* make_tiny_partition( Tree& reference_tree,
   return tiny;
 }
 
-void tiny_partition_destroy( pll_partition_t* partition )
+void tiny_partition_destroy( pll_partition_t* partition,
+                             bool const deep_copy_clvs )
 {
   if( partition ) {
     // unset shallow copied things
+    // TODO recheck thath these can be reused
     partition->rates              = nullptr;
     partition->subst_params       = nullptr;
     partition->frequencies        = nullptr;
@@ -281,7 +308,9 @@ void tiny_partition_destroy( pll_partition_t* partition )
     partition->eigen_decomp_valid = nullptr;
     partition->pattern_weights    = nullptr;
 
-    partition->clv[ proximal_clv_index ] = nullptr;
+    if( not deep_copy_clvs ) {
+      partition->clv[ proximal_clv_index ] = nullptr;
+    }
 
     bool const distal_is_tip    = partition->clv_buffers == 3 ? false : true;
     bool const pattern_tip_mode = partition->attributes & PLL_ATTRIB_PATTERN_TIP;
@@ -289,15 +318,31 @@ void tiny_partition_destroy( pll_partition_t* partition )
     if( distal_is_tip ) {
       if( pattern_tip_mode ) {
         partition->tipchars[ distal_clv_index_if_tip ] = nullptr;
-      } else {
+      } else if( not deep_copy_clvs ) {
         partition->clv[ distal_clv_index_if_tip ] = nullptr;
       }
-    } else {
+    } else if( not deep_copy_clvs ) {
       partition->clv[ distal_clv_index_if_inner ] = nullptr;
     }
 
     pll_partition_destroy( partition );
   }
+}
+
+/*
+  destructor that assumes partition was shallow copied
+ */
+void tiny_partition_destroy_shallow( pll_partition_t* partition )
+{
+  tiny_partition_destroy( partition, false );
+}
+
+/*
+  destructor that assumes partition was deep copied
+ */
+void tiny_partition_destroy_deep( pll_partition_t* partition )
+{
+  tiny_partition_destroy( partition, true );
 }
 
 pll_utree_t* make_tiny_tree_structure( pll_unode_t const* old_proximal,
@@ -355,6 +400,8 @@ pll_utree_t* make_tiny_tree_structure( pll_unode_t const* old_proximal,
   reset_triplet_lengths( inner, nullptr, old_distal->length );
 
   auto tree = static_cast< pll_utree_t* >( calloc( 1, sizeof( pll_utree_t ) ) );
+
+  tree->binary = true;
 
   tree->edge_count  = 3;
   tree->tip_count   = 3;

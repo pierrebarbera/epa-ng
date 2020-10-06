@@ -46,7 +46,7 @@ void Tiny_Tree::get_persite_logl( char const nt,
                                        seq.c_str() );
 
   if( err_check == PLL_FAILURE ) {
-    throw std::runtime_error{
+    throw std::runtime_error {
       std::string( "Set tip states during sites precompution failed! pll_errmsg: " )
       + pll_errmsg
     };
@@ -62,13 +62,70 @@ void Tiny_Tree::get_persite_logl( char const nt,
                                   &result[ 0 ] );
 }
 
+static void first_partition_calc( pll_utree_t* tree,
+                                  pll_partition_t* partition)
+{
+  // operation for computing the clv toward the new tip (for initialization and logl in non-blo case)
+  auto proximal = tree->nodes[ 0 ];
+  auto distal   = tree->nodes[ 1 ];
+  auto inner    = tree->nodes[ 3 ];
+
+  pll_operation_t op;
+  op.parent_clv_index    = inner->clv_index;
+  op.child1_clv_index    = distal->clv_index;
+  op.child1_scaler_index = distal->scaler_index;
+  op.child2_clv_index    = proximal->clv_index;
+  op.child2_scaler_index = proximal->scaler_index;
+  op.parent_scaler_index = inner->scaler_index;
+  op.child1_matrix_index = distal->pmatrix_index;
+  op.child2_matrix_index = proximal->pmatrix_index;
+
+  // whether heuristic is used or not, this is the initial branch length configuration
+  double branch_lengths[ 3 ]       = {  proximal->length,
+                                        distal->length,
+                                        inner->length };
+  unsigned int matrix_indices[ 3 ] = {  proximal->pmatrix_index,
+                                        distal->pmatrix_index,
+                                        inner->pmatrix_index };
+
+  // use branch lengths to compute the probability matrices
+  std::vector< unsigned int > param_indices( partition->rate_cats, 0 );
+  pll_update_prob_matrices( partition,
+                            &param_indices[ 0 ],
+                            matrix_indices,
+                            branch_lengths,
+                            3 );
+
+  // use update_partials to compute the clv pointing toward the new tip
+  pll_update_partials( partition, &op, 1 );
+}
+
+
+/* Encapsulates a smallest possible unrooted tree (3 tip nodes, 1 inner node)
+  for use in edge insertion:
+
+             S:[-] C:[1]
+           new_tip
+              |
+              |
+            inner S:[1] C:[3]
+           /     \
+          /       \
+      proximal    distal
+    S:[0] C:[4]   S:[2] C:[2 or 5]
+
+  where proximal/distal are the nodes adjacent to the insertion edge in the reference tree.
+  new_tip represents the newly added sequence.
+
+*/
 Tiny_Tree::Tiny_Tree( pll_unode_t* edge_node,
                       unsigned int const branch_id,
                       Tree& reference_tree,
                       bool const deep_copy_clvs = false )
-    : partition_( nullptr, tiny_partition_destroy )
+    : partition_( nullptr, tiny_partition_destroy_shallow )
     , tree_( nullptr, utree_destroy )
     , branch_id_( branch_id )
+    , deep_copy_( deep_copy_clvs )
 {
   assert( edge_node );
   original_branch_length_ = edge_node->length;
@@ -94,43 +151,63 @@ Tiny_Tree::Tiny_Tree( pll_unode_t* edge_node,
                                 tip_tip_case ),
       utree_destroy );
 
+  // ensure the clvs are there to be copied
+  reference_tree.get_clv( old_distal );
+  reference_tree.get_clv( old_proximal );
+
   partition_ = std::unique_ptr< pll_partition_t, partition_deleter >(
-      make_tiny_partition( reference_tree,
+      make_tiny_partition( reference_tree.partition(),
                            tree_.get(),
                            old_proximal,
                            old_distal,
-                           tip_tip_case ),
-      tiny_partition_destroy );
+                           tip_tip_case,
+                           deep_copy_clvs ),
+      deep_copy_clvs  ? tiny_partition_destroy_deep
+                      : tiny_partition_destroy_shallow );
 
-  // operation for computing the clv toward the new tip (for initialization and logl in non-blo case)
-  auto proximal = tree_->nodes[ 0 ];
-  auto distal   = tree_->nodes[ 1 ];
-  auto inner    = tree_->nodes[ 3 ];
+  first_partition_calc( tree_.get(), partition_.get() );
+}
 
-  pll_operation_t op;
-  op.parent_clv_index    = inner->clv_index;
-  op.child1_clv_index    = distal->clv_index;
-  op.child1_scaler_index = distal->scaler_index;
-  op.child2_clv_index    = proximal->clv_index;
-  op.child2_scaler_index = proximal->scaler_index;
-  op.parent_scaler_index = inner->scaler_index;
-  op.child1_matrix_index = distal->pmatrix_index;
-  op.child2_matrix_index = proximal->pmatrix_index;
+/*
+  Essentially a copy-constructor, but not overwriting the default one to:
+    1) avoid accidental calls to this operator (e.g. using std::vector)
+    2) enable deep or shallow copy capability for CLVs
+ */
+Tiny_Tree::Tiny_Tree( Tiny_Tree const& other,
+                      bool const deep_copy_clvs )
+    : partition_( nullptr, tiny_partition_destroy_shallow )
+    , tree_( nullptr, utree_destroy )
+    , original_branch_length_( other.original_branch_length_ )
+    , branch_id_( other.branch_id_ )
+    , deep_copy_( deep_copy_clvs )
+{
+  pll_utree_t const* other_tree = other.tree_.get();
 
-  // wether heuristic is used or not, this is the initial branch length configuration
-  double branch_lengths[ 3 ]       = { proximal->length, distal->length, inner->length };
-  unsigned int matrix_indices[ 3 ] = { proximal->pmatrix_index, distal->pmatrix_index, inner->pmatrix_index };
+  // as hardcoded in make_tiny_tree_structure
+  auto old_proximal = other_tree->nodes[ 0 ];
+  auto old_distal   = other_tree->nodes[ 1 ];
 
-  // use branch lengths to compute the probability matrices
-  std::vector< unsigned int > param_indices( reference_tree.partition()->rate_cats, 0 );
-  pll_update_prob_matrices( partition_.get(),
-                            &param_indices[ 0 ],
-                            matrix_indices,
-                            branch_lengths,
-                            3 );
+  /*
+    detect the tip-tip case. Since here we are based on a TinyTree, we can
+    expect the only possible tip to be the old distal node.
+  */
+  bool const tip_tip_case = !old_distal->next;
 
-  // use update_partials to compute the clv pointing toward the new tip
-  pll_update_partials( partition_.get(), &op, 1 );
+  tree_ = std::unique_ptr< pll_utree_t, utree_deleter >(
+      pll_utree_clone( other_tree ),
+      utree_destroy );
+
+  partition_ = std::unique_ptr< pll_partition_t, partition_deleter >(
+      make_tiny_partition( other.partition_.get(),
+                           tree_.get(),
+                           old_proximal,
+                           old_distal,
+                           tip_tip_case,
+                           deep_copy_clvs ),
+      deep_copy_clvs ? tiny_partition_destroy_deep
+                     : tiny_partition_destroy_shallow );
+
+  first_partition_calc( tree_.get(), partition_.get() );
 }
 
 Placement Tiny_Tree::place( Sequence const& s,
@@ -151,7 +228,7 @@ Placement Tiny_Tree::place( Sequence const& s,
   std::vector< unsigned int > param_indices( partition_->rate_cats, 0 );
 
   if( s.sequence().size() != partition_->sites ) {
-    throw std::runtime_error{ "Query sequence length not same as reference alignment!" };
+    throw std::runtime_error { "Query sequence length not same as reference alignment!" };
   }
 
   Range range( 0, partition_->sites );
@@ -159,8 +236,8 @@ Placement Tiny_Tree::place( Sequence const& s,
   if( options.premasking ) {
     range = get_valid_range( s.sequence() );
     if( not range ) {
-      throw std::runtime_error{ std::string() + "Sequence with header '" + s.header()
-                                + "' does not appear to have any non-gap sites!" };
+      throw std::runtime_error { std::string() + "Sequence with header '" + s.header()
+                                 + "' does not appear to have any non-gap sites!" };
     }
   }
 
@@ -173,7 +250,7 @@ Placement Tiny_Tree::place( Sequence const& s,
                                        s.sequence().c_str() );
 
   if( err_check == PLL_FAILURE ) {
-    throw std::runtime_error{ "Set tip states during placement failed!" };
+    throw std::runtime_error { "Set tip states during placement failed!" };
   }
 
   if( opt_branches ) {
@@ -216,7 +293,7 @@ Placement Tiny_Tree::place( Sequence const& s,
   pll_update_partials( partition_.get(), &op, 1 );
 
   if( logl == -std::numeric_limits< double >::infinity() ) {
-    throw std::runtime_error{
+    throw std::runtime_error {
       std::string( "-INF logl at branch " ) + std::to_string( branch_id_ ) + " with sequence " + s.header()
     };
   }

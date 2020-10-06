@@ -39,7 +39,8 @@ static void calc_block(
     // for a given branch
     buffer.emplace_back( branch_node,
                          branch_id[ branch_node->node_index ],
-                         *ref_tree );
+                         *ref_tree,
+                         true ); // make deep-copy TinyTrees
   }
 
   // update the start of the next traversal to be one beyond the block we just

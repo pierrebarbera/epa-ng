@@ -35,6 +35,9 @@ class Tiny_Tree {
              Tree& reference_tree,
              bool const deep_copy_clvs = false );
 
+  Tiny_Tree( Tiny_Tree const& other,
+             bool const deep_copy_clvs );
+
   Tiny_Tree()  = delete;
   ~Tiny_Tree() = default;
 
@@ -63,7 +66,6 @@ class Tiny_Tree {
   std::unique_ptr< pll_utree_t, utree_deleter > tree_;
 
   double original_branch_length_;
-  bool premasking_ = true;
-  bool sliding_blo_;
   unsigned int branch_id_;
+  bool deep_copy_;
 };
