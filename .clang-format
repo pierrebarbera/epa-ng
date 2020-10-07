@@ -2,8 +2,6 @@
 BasedOnStyle: WebKit
 AlignAfterOpenBracket: Align
 AlignConsecutiveAssignments: 'true'
-BinPackArguments: 'true'
-BinPackParameters: 'true'
 IndentWidth: '2'
 Language: Cpp
 SpaceAfterTemplateKeyword: 'false'
@@ -14,5 +12,7 @@ SpacesInParentheses: 'true'
 SpacesInSquareBrackets: 'true'
 Standard: Cpp11
 UseTab: Never
-
+ColumnLimit: 80
+BinPackArguments: 'false'
+BinPackParameters: 'false'
 ...
