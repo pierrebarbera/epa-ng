@@ -36,7 +36,7 @@ class Memsaver {
   ~Memsaver() = default;
 
   operator bool() const { return subtree_sizes_
-                          and not traversal_order.empty(); }
+                          and not traversal_.empty(); }
 
   unsigned int const * subtree_sizes() const { return subtree_sizes_.get(); }
   std::vector< pll_unode_t* > const& traversal() const { return traversal_; }
@@ -44,7 +44,7 @@ class Memsaver {
   pll_unode_t*  traversal( size_t i ) { return traversal_[ i ]; }
 
   private:
-  std::unique_ptr< unsigned int* > subtree_sizes_{ nullptr };
+  std::unique_ptr< unsigned int > subtree_sizes_{ nullptr };
   std::vector< pll_unode_t* > traversal_;
 };
 
@@ -90,7 +90,7 @@ class Tree {
   private:
   // pll structures
   partition_ptr partition_{ nullptr, pll_partition_destroy };
-  utree_ptr tree_{ nullptr, utree_destroy }; // must be top level node as parsed in newick! (for jplace)
+  utree_ptr tree_{ nullptr, utree_destroy };
 
   // Object holding memory saving related structures
   Memsaver memsave_;

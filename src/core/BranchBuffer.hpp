@@ -13,7 +13,7 @@
  */
 class BranchBuffer {
   public:
-  using container_type = std::vector< TinyTree >;
+  using container_type = std::vector< Tiny_Tree >;
 
   /**
    * Create the object and immediately start pre-calculating the first block
@@ -22,11 +22,11 @@ class BranchBuffer {
                 size_t const block_size );
 
   // allow moving, but not copying
-  BranchBuffer( BranchBuffer&& other )      = default;
-  BranchBuffer& operator=( BranchBuffer&& other )       = default;
-  
+  BranchBuffer( BranchBuffer&& other ) = default;
+  BranchBuffer& operator=( BranchBuffer&& other ) = default;
+
   BranchBuffer( BranchBuffer const& other ) = delete;
-  BranchBuffer& operator=( BranchBuffer const& other )  = delete;
+  BranchBuffer& operator=( BranchBuffer const& other ) = delete;
 
   ~BranchBuffer();
 

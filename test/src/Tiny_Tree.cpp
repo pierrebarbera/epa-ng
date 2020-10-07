@@ -22,20 +22,21 @@ using namespace std;
 static void place_( Options const options )
 {
   // buildup
-  auto msa     = build_MSA_from_file( env->reference_file, MSA_Info( env->reference_file ), options.premasking );
-  auto queries = build_MSA_from_file( env->query_file, MSA_Info( env->query_file ), options.premasking );
+  auto msa     = build_MSA_from_file( env->reference_file,
+                                  MSA_Info( env->reference_file ),
+                                  options.premasking );
+  auto queries = build_MSA_from_file(
+      env->query_file, MSA_Info( env->query_file ), options.premasking );
 
   auto ref_tree = Tree( env->tree_file, msa, env->model, options );
-
-  shared_ptr< Lookup_Store > lu_ptr( new Lookup_Store( ref_tree.nums().branches, ref_tree.partition()->states ) );
 
   auto root = get_root( ref_tree.tree() );
 
   // tests
-  Tiny_Tree tt( root, 0, ref_tree, options.prescoring, options, lu_ptr );
+  Tiny_Tree tt( root, 0, ref_tree );
 
   for( auto const& x : queries ) {
-    auto place = tt.place( x );
+    auto place = tt.place( x, options.prescoring, options );
     auto brlen = root->length;
     EXPECT_NE( place.likelihood(), 0.0 );
     EXPECT_NE( place.likelihood(), std::numeric_limits< double >::infinity() );
@@ -47,12 +48,10 @@ static void place_( Options const options )
   // teardown
 }
 
-TEST( Tiny_Tree, place )
-{
-  all_combinations( place_ );
-}
+TEST( Tiny_Tree, place ) { all_combinations( place_ ); }
 
-static void compare_samples( Sample<>& orig_samp, Sample<>& read_samp, bool verbose = false, unsigned int head = 0 )
+static void compare_samples( Sample<>& orig_samp, Sample<>& read_samp,
+                             bool verbose = false, unsigned int head = 0 )
 {
   for( size_t seq_id = 0; seq_id < read_samp.size(); ++seq_id ) {
     auto& orig_pq = orig_samp[ seq_id ];
@@ -68,8 +67,7 @@ static void compare_samples( Sample<>& orig_samp, Sample<>& read_samp, bool verb
         auto limit = head ? head : 2000;
         if( branch_id <= limit and seq_id < 1 ) {
           printf( "branch %lu: %f vs branch %lu: %f\n", orig_p.branch_id(),
-                  orig_p.likelihood(),
-                  read_p.branch_id(),
+                  orig_p.likelihood(), read_p.branch_id(),
                   read_p.likelihood() );
         }
       }
@@ -88,8 +86,11 @@ static void place_from_binary( Options const options )
   // setup
   auto tree_file      = env->tree_file;
   auto reference_file = env->reference_file;
-  auto msa            = build_MSA_from_file( env->reference_file, MSA_Info( env->reference_file ), options.premasking );
-  auto queries        = build_MSA_from_file( env->query_file, MSA_Info( env->query_file ), options.premasking );
+  auto msa            = build_MSA_from_file( env->reference_file,
+                                  MSA_Info( env->reference_file ),
+                                  options.premasking );
+  auto queries        = build_MSA_from_file(
+      env->query_file, MSA_Info( env->query_file ), options.premasking );
 
   raxml::Model model;
 
@@ -99,13 +100,9 @@ static void place_from_binary( Options const options )
   Tree read_tree( env->binary_file, model, options );
   string invocation( "./this --is -a test" );
 
-  auto orig_lup = std::make_shared< Lookup_Store >( original_tree.nums().branches,
-                                                    original_tree.partition()->states );
-  auto read_lup = std::make_shared< Lookup_Store >( read_tree.nums().branches,
-                                                    read_tree.partition()->states );
-
   if( options.repeats ) {
-    ASSERT_TRUE( original_tree.partition()->attributes & PLL_ATTRIB_SITE_REPEATS );
+    ASSERT_TRUE( original_tree.partition()->attributes
+                 & PLL_ATTRIB_SITE_REPEATS );
     ASSERT_TRUE( read_tree.partition()->attributes & PLL_ATTRIB_SITE_REPEATS );
   }
 
@@ -114,10 +111,10 @@ static void place_from_binary( Options const options )
   vector< pll_unode_t* > original_branches( original_tree.nums().branches );
   vector< pll_unode_t* > read_branches( read_tree.nums().branches );
 
-  auto original_traversed = utree_query_branches( original_tree.tree(),
-                                                  &original_branches[ 0 ] );
-  auto read_traversed     = utree_query_branches( read_tree.tree(),
-                                              &read_branches[ 0 ] );
+  auto original_traversed
+      = utree_query_branches( original_tree.tree(), &original_branches[ 0 ] );
+  auto read_traversed
+      = utree_query_branches( read_tree.tree(), &read_branches[ 0 ] );
 
   ASSERT_EQ( original_traversed, read_traversed );
   ASSERT_EQ( original_traversed, original_tree.nums().branches );
@@ -127,24 +124,15 @@ static void place_from_binary( Options const options )
 
   // test
   for( size_t i = 0; i < original_traversed; i++ ) {
-
-    Tiny_Tree original_tiny( original_branches[ i ],
-                             i,
-                             original_tree,
-                             !options.prescoring,
-                             options,
-                             orig_lup );
-    Tiny_Tree read_tiny( read_branches[ i ],
-                         i,
-                         read_tree,
-                         !options.prescoring,
-                         options,
-                         read_lup );
+    // TODO: deep copy test?
+    Tiny_Tree original_tiny( original_branches[ i ], i, original_tree );
+    Tiny_Tree read_tiny( read_branches[ i ], i, read_tree );
 
     size_t seq_id = 0;
     for( auto& seq : queries ) {
-      auto orig_place = original_tiny.place( seq );
-      auto read_place = read_tiny.place( seq );
+      auto orig_place
+          = original_tiny.place( seq, !options.prescoring, options );
+      auto read_place = read_tiny.place( seq !options.prescoring, options );
 
       ASSERT_DOUBLE_EQ( orig_place.likelihood(), read_place.likelihood() );
 
@@ -187,3 +175,5 @@ TEST( Tiny_Tree, place_from_binary )
   // o.repeats = true;
   // place_from_binary(o);
 }
+
+// TODO test shallow/deepcopy chaining
