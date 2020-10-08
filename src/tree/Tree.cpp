@@ -43,10 +43,11 @@ Tree::Tree( std::string const& tree_file,
   }
 
   partition_ = partition_ptr( make_partition( model_,
+                                              tree_.get(),
                                               nums_,
                                               ref_msa_.num_sites(),
                                               options_,
-                                              subtree_sizes_ ),
+                                              memsave_.subtree_sizes() ),
                               pll_partition_destroy );
 
   locks_ = Mutex_List( partition_->tips + partition_->clv_buffers );
@@ -59,7 +60,7 @@ Tree::Tree( std::string const& tree_file,
 
   set_unique_clv_indices( get_root( tree_.get() ), nums_.tip_nodes );
 
-  branch_id_ = get_branch_ids( tree_ );
+  branch_id_ = get_branch_ids( tree_.get() );
 
   LOG_DBG << model_;
   LOG_DBG << "Tree length: " << sum_branch_lengths( tree_.get() );
@@ -74,8 +75,8 @@ Tree::Tree( std::string const& tree_file,
     // compute the CLVs toward that root
     partial_compute_clvs( tree_.get(),
                           nums_,
-                          subtree_sizes_.get(),
-                          traversal[ 0 ],
+                          memsave_.subtree_sizes(),
+                          memsave_.traversal( 0 ),
                           partition_.get() );
   }
 
@@ -106,7 +107,7 @@ Tree::Tree( std::string const& bin_file,
   locks_                    = Mutex_List( partition_->tips + partition_->clv_buffers );
 
   // TODO this needs a major facelift to be able to interoperate with all the new shit
-  branch_id_ = get_branch_ids( tree_ );
+  branch_id_ = get_branch_ids( tree_.get() );
   if( options_.memsave ) {
     memsave_ = Memsaver( tree_.get() );
     // set the virtual root to where the traversal through the tree will later
@@ -116,8 +117,8 @@ Tree::Tree( std::string const& bin_file,
     // compute the CLVs toward that root
     partial_compute_clvs( tree_.get(),
                           nums_,
-                          subtree_sizes_.get(),
-                          traversal[ 0 ],
+                          memsave_.subtree_sizes(),
+                          memsave_.traversal( 0 ),
                           partition_.get() );
   }
 

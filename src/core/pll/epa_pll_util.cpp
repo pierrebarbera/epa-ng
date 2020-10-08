@@ -323,10 +323,11 @@ static unsigned int simd_autodetect()
 }
 
 pll_partition_t* make_partition( raxml::Model const& model,
+                                 pll_utree_t* const tree,
                                  Tree_Numbers const& nums,
                                  int const num_sites,
                                  Options const& options,
-                                 unsigned int* subtree_sizes = nullptr )
+                                 unsigned int const* const subtree_sizes )
 {
   assert( nums.tip_nodes ); // nums must have been initialized correctly
 
@@ -353,15 +354,17 @@ pll_partition_t* make_partition( raxml::Model const& model,
     attributes |= PLL_ATTRIB_LIMIT_MEMORY;
   }
 
-  auto partition = pll_partition_create( nums.tip_nodes,
-                                         nums.inner_nodes * 3, //number of extra clv buffers: 3 for every direction on the node
-                                         model.num_states(),
-                                         num_sites,
-                                         1,
-                                         nums.branches,
-                                         model.num_ratecats(),
-                                         ( nums.inner_nodes * 3 ) + nums.tip_nodes, /* number of scaler buffers */
-                                         attributes );
+  auto partition = pll_partition_create(
+      nums.tip_nodes,
+      nums.inner_nodes
+          * 3, // number of extra clv buffers: 3 for every direction on the node
+      model.num_states(),
+      num_sites,
+      1,
+      nums.branches,
+      model.num_ratecats(),
+      ( nums.inner_nodes * 3 ) + nums.tip_nodes, /* number of scaler buffers */
+      attributes );
 
   if( not partition ) {
     throw std::runtime_error{
@@ -378,9 +381,8 @@ pll_partition_t* make_partition( raxml::Model const& model,
 
     assert( subtree_sizes );
 
-    if( !pll_clv_manager_MRC_strategy_init( partition->clv_man,
-                                            tree,
-                                            subtree_sizes ) ) {
+    if( !pll_clv_manager_MRC_strategy_init(
+            partition->clv_man, tree, subtree_sizes ) ) {
       throw std::runtime_error{ std::string( pll_errmsg ) };
     }
   }

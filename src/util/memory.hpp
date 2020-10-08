@@ -1,11 +1,8 @@
 #pragma once
 
-#include "core/pll/pllhead.hpp"
 #include "core/raxml/Model.hpp"
-#include "io/file_io.hpp"
 #include "seq/MSA_Info.hpp"
 #include "util/Options.hpp"
-#include "util/logging.hpp"
 
 /*
 	Try to estimate the memory footprint of the program in bytes.

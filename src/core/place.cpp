@@ -121,9 +121,8 @@ static void preplace( MSA& msa,
 {
 
 #ifdef __OMP
-  unsigned int const num_threads = options.num_threads
-      ? options.num_threads
-      : omp_get_max_threads();
+  unsigned int const num_threads
+      = options.num_threads ? options.num_threads : omp_get_max_threads();
   omp_set_num_threads( num_threads );
   LOG_DBG << "Using threads: " << num_threads;
   LOG_DBG << "Max threads: " << omp_get_max_threads();
@@ -146,9 +145,8 @@ static void preplace( MSA& msa,
     auto const branch_id = static_cast< size_t >( i ) / num_sequences;
     auto const seq_id    = i % num_sequences;
 
-    sample[ seq_id ][ branch_id ] = lookup->place( branch_id,
-                                                   msa[ seq_id ],
-                                                   options.premasking );
+    sample[ seq_id ][ branch_id ]
+        = lookup.place( branch_id, msa[ seq_id ], options.premasking );
   }
   if( time ) {
     time->stop();
@@ -161,10 +159,9 @@ static void blo_place( Work const& to_place,
                        Tree& reference_tree,
                        std::vector< pll_unode_t* > const& branches,
                        Sample< T >& sample,
-                       Options const& options
-                           size_t const seq_id_offset
-                       = 0,
-                       mytimer* time = nullptr )
+                       Options const& options,
+                       size_t const seq_id_offset = 0,
+                       mytimer* time              = nullptr )
 {
 
 #ifdef __OMP
@@ -275,7 +272,7 @@ void simple_mpi( Tree& reference_tree,
   Work all_work;
   Work blo_work;
   MSA chunk;
-  Sample preplace;
+  Sample preplace_result;
   size_t sequences_done = 0; // not just for info output!
 
   // prepare output file
@@ -311,7 +308,7 @@ void simple_mpi( Tree& reference_tree,
       if( lookup_handler ) {
         // if we have a preplacement lookup, use that
         preplace( chunk,
-                  lookup_handler,
+                  *lookup_handler,
                   preplace_result,
                   options );
       } else {

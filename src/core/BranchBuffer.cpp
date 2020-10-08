@@ -32,7 +32,7 @@ static void calc_block( BranchBuffer::container_type& buffer,
     // compute the required CLVs
     partial_compute_clvs( ref_tree->tree(),
                           ref_tree->nums(),
-                          &memsave.subtree_sizes()[ 0 ],
+                          memsave.subtree_sizes(),
                           branch_node,
                           ref_tree->partition() );
 

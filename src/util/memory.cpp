@@ -6,6 +6,12 @@
 #include <mutex>
 
 #include "util/maps.hpp"
+#include "core/pll/pllhead.hpp"
+#include "core/pll/epa_pll_util.hpp"
+#include "core/raxml/Model.hpp"
+#include "seq/MSA_Info.hpp"
+#include "util/Options.hpp"
+#include "util/logging.hpp"
 
 static size_t lookuptable_footprint( size_t const branches,
                                      size_t const states,
@@ -29,10 +35,21 @@ static size_t lookuptable_footprint( size_t const branches,
   return size;
 }
 
+static unsigned int simd_autodetect()
+{
+  if( PLL_STAT( avx2_present ) )
+    return PLL_ATTRIB_ARCH_AVX2;
+  else if( PLL_STAT( avx_present ) )
+    return PLL_ATTRIB_ARCH_AVX;
+  else if( PLL_STAT( sse3_present ) )
+    return PLL_ATTRIB_ARCH_SSE;
+  else
+    return PLL_ATTRIB_ARCH_CPU;
+}
+
 static size_t partition_footprint( raxml::Model const& model,
                                    Tree_Numbers const& nums,
-                                   int const num_sites,
-                                   Options const& options )
+                                   int const num_sites )
 {
   size_t size = 0;
 
@@ -47,10 +64,17 @@ static size_t partition_footprint( raxml::Model const& model,
   fake_nums.inner_nodes = 1;
   fake_nums.branches    = 1;
 
-  auto partition = make_partition( model,
-                                   fake_nums,
-                                   num_sites,
-                                   options );
+  auto attributes = simd_autodetect();
+  auto partition
+      = pll_partition_create( fake_nums.tip_nodes,
+                              fake_nums.inner_nodes,
+                              model.num_states(),
+                              num_sites,
+                              1,
+                              fake_nums.branches,
+                              model.num_ratecats(),
+                              ( fake_nums.inner_nodes ) + fake_nums.tip_nodes,
+                              attributes );
 
   size_t const sites_alloc = partition->asc_additional_sites + partition->sites;
 
@@ -75,7 +99,7 @@ static size_t partition_footprint( raxml::Model const& model,
     size_t const tipchars_buffer = nums.tip_nodes
             * sites_alloc
             * sizeof( unsigned char )
-        + nums.tip_nodes * sizeof( unsigned char* ); // account for top level arra
+        + nums.tip_nodes * sizeof( unsigned char* ); // account for top level array
     size += tipchars_buffer;
   }
 
@@ -189,6 +213,9 @@ size_t estimate_footprint( MSA_Info const& ref_info,
 
   auto const tree_nums = Tree_Numbers( ref_info.sequences() );
 
+  // TODO actually include the query data in the calculation
+  (void)qry_info;
+
   // figure out the true size of the ref alignment
   assert( ref_info.sites() == qry_info.sites() );
   assert( ref_info.gap_mask().size() == qry_info.gap_mask().size() );
@@ -196,7 +223,7 @@ size_t estimate_footprint( MSA_Info const& ref_info,
 
   LOG_DBG << "Memory footprint breakdown:";
 
-  size += partition_footprint( model, tree_nums, num_sites, options );
+  size += partition_footprint( model, tree_nums, num_sites );
   LOG_DBG << "\t" << format_byte_num( size ) << "\tPartition Total";
 
   if( options.prescoring ) {

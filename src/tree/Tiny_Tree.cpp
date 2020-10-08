@@ -27,7 +27,7 @@
  * @param result per-site log-likelihood vector
  */
 void Tiny_Tree::get_persite_logl( char const nt,
-                                  std::vector< double >& result )
+                                  std::vector< double >& result ) const
 {
   size_t const sites = partition_->sites;
   auto const new_tip = tree_.get()->nodes[ 2 ];
@@ -40,14 +40,13 @@ void Tiny_Tree::get_persite_logl( char const nt,
 
   auto map = get_char_map( partition_.get() );
 
-  auto err_check = pll_set_tip_states( partition_.get(),
-                                       new_tip->clv_index,
-                                       map,
-                                       seq.c_str() );
+  auto err_check = pll_set_tip_states(
+      partition_.get(), new_tip->clv_index, map, seq.c_str() );
 
   if( err_check == PLL_FAILURE ) {
-    throw std::runtime_error {
-      std::string( "Set tip states during sites precompution failed! pll_errmsg: " )
+    throw std::runtime_error{
+      std::string(
+          "Set tip states during sites precompution failed! pll_errmsg: " )
       + pll_errmsg
     };
   }
@@ -63,9 +62,10 @@ void Tiny_Tree::get_persite_logl( char const nt,
 }
 
 static void first_partition_calc( pll_utree_t* tree,
-                                  pll_partition_t* partition)
+                                  pll_partition_t* partition )
 {
-  // operation for computing the clv toward the new tip (for initialization and logl in non-blo case)
+  // operation for computing the clv toward the new tip (for initialization and
+  // logl in non-blo case)
   auto proximal = tree->nodes[ 0 ];
   auto distal   = tree->nodes[ 1 ];
   auto inner    = tree->nodes[ 3 ];
@@ -80,26 +80,22 @@ static void first_partition_calc( pll_utree_t* tree,
   op.child1_matrix_index = distal->pmatrix_index;
   op.child2_matrix_index = proximal->pmatrix_index;
 
-  // whether heuristic is used or not, this is the initial branch length configuration
-  double branch_lengths[ 3 ]       = {  proximal->length,
-                                        distal->length,
-                                        inner->length };
-  unsigned int matrix_indices[ 3 ] = {  proximal->pmatrix_index,
-                                        distal->pmatrix_index,
-                                        inner->pmatrix_index };
+  // whether heuristic is used or not, this is the initial branch length
+  // configuration
+  double branch_lengths[ 3 ]
+      = { proximal->length, distal->length, inner->length };
+  unsigned int matrix_indices[ 3 ] = { proximal->pmatrix_index,
+                                       distal->pmatrix_index,
+                                       inner->pmatrix_index };
 
   // use branch lengths to compute the probability matrices
   std::vector< unsigned int > param_indices( partition->rate_cats, 0 );
-  pll_update_prob_matrices( partition,
-                            &param_indices[ 0 ],
-                            matrix_indices,
-                            branch_lengths,
-                            3 );
+  pll_update_prob_matrices(
+      partition, &param_indices[ 0 ], matrix_indices, branch_lengths, 3 );
 
   // use update_partials to compute the clv pointing toward the new tip
   pll_update_partials( partition, &op, 1 );
 }
-
 
 /* Encapsulates a smallest possible unrooted tree (3 tip nodes, 1 inner node)
   for use in edge insertion:
@@ -114,14 +110,14 @@ static void first_partition_calc( pll_utree_t* tree,
       proximal    distal
     S:[0] C:[4]   S:[2] C:[2 or 5]
 
-  where proximal/distal are the nodes adjacent to the insertion edge in the reference tree.
-  new_tip represents the newly added sequence.
+  where proximal/distal are the nodes adjacent to the insertion edge in the
+  reference tree. new_tip represents the newly added sequence.
 
 */
 Tiny_Tree::Tiny_Tree( pll_unode_t* edge_node,
                       unsigned int const branch_id,
                       Tree& reference_tree,
-                      bool const deep_copy_clvs = false )
+                      bool const deep_copy_clvs )
     : partition_( nullptr, tiny_partition_destroy_shallow )
     , tree_( nullptr, utree_destroy )
     , branch_id_( branch_id )
@@ -146,9 +142,7 @@ Tiny_Tree::Tiny_Tree( pll_unode_t* edge_node,
   }
 
   tree_ = std::unique_ptr< pll_utree_t, utree_deleter >(
-      make_tiny_tree_structure( old_proximal,
-                                old_distal,
-                                tip_tip_case ),
+      make_tiny_tree_structure( old_proximal, old_distal, tip_tip_case ),
       utree_destroy );
 
   // ensure the clvs are there to be copied
@@ -162,8 +156,8 @@ Tiny_Tree::Tiny_Tree( pll_unode_t* edge_node,
                            old_distal,
                            tip_tip_case,
                            deep_copy_clvs ),
-      deep_copy_clvs  ? tiny_partition_destroy_deep
-                      : tiny_partition_destroy_shallow );
+      deep_copy_clvs ? tiny_partition_destroy_deep
+                     : tiny_partition_destroy_shallow );
 
   first_partition_calc( tree_.get(), partition_.get() );
 }
@@ -173,8 +167,7 @@ Tiny_Tree::Tiny_Tree( pll_unode_t* edge_node,
     1) avoid accidental calls to this operator (e.g. using std::vector)
     2) enable deep or shallow copy capability for CLVs
  */
-Tiny_Tree::Tiny_Tree( Tiny_Tree const& other,
-                      bool const deep_copy_clvs )
+Tiny_Tree::Tiny_Tree( Tiny_Tree const& other, bool const deep_copy_clvs )
     : partition_( nullptr, tiny_partition_destroy_shallow )
     , tree_( nullptr, utree_destroy )
     , original_branch_length_( other.original_branch_length_ )
@@ -194,8 +187,7 @@ Tiny_Tree::Tiny_Tree( Tiny_Tree const& other,
   bool const tip_tip_case = !old_distal->next;
 
   tree_ = std::unique_ptr< pll_utree_t, utree_deleter >(
-      pll_utree_clone( other_tree ),
-      utree_destroy );
+      pll_utree_clone( other_tree ), utree_destroy );
 
   partition_ = std::unique_ptr< pll_partition_t, partition_deleter >(
       make_tiny_partition( other.partition_.get(),
@@ -228,7 +220,9 @@ Placement Tiny_Tree::place( Sequence const& s,
   std::vector< unsigned int > param_indices( partition_->rate_cats, 0 );
 
   if( s.sequence().size() != partition_->sites ) {
-    throw std::runtime_error { "Query sequence length not same as reference alignment!" };
+    throw std::runtime_error{
+      "Query sequence length not same as reference alignment!"
+    };
   }
 
   Range range( 0, partition_->sites );
@@ -236,8 +230,10 @@ Placement Tiny_Tree::place( Sequence const& s,
   if( options.premasking ) {
     range = get_valid_range( s.sequence() );
     if( not range ) {
-      throw std::runtime_error { std::string() + "Sequence with header '" + s.header()
-                                 + "' does not appear to have any non-gap sites!" };
+      throw std::runtime_error{
+        std::string() + "Sequence with header '" + s.header()
+        + "' does not appear to have any non-gap sites!"
+      };
     }
   }
 
@@ -250,15 +246,20 @@ Placement Tiny_Tree::place( Sequence const& s,
                                        s.sequence().c_str() );
 
   if( err_check == PLL_FAILURE ) {
-    throw std::runtime_error { "Set tip states during placement failed!" };
+    throw std::runtime_error{ "Set tip states during placement failed!" };
   }
 
   if( opt_branches ) {
 
     if( options.premasking ) {
-      logl = call_focused( optimize_branch_triplet, range, partition_.get(), virtual_root, options.sliding_blo );
+      logl = call_focused( optimize_branch_triplet,
+                           range,
+                           partition_.get(),
+                           virtual_root,
+                           options.sliding_blo );
     } else {
-      logl = optimize_branch_triplet( partition_.get(), virtual_root, options.sliding_blo );
+      logl = optimize_branch_triplet(
+          partition_.get(), virtual_root, options.sliding_blo );
     }
 
     assert( inner->length >= 0 );
@@ -268,12 +269,11 @@ Placement Tiny_Tree::place( Sequence const& s,
     // rescale the distal length, as it has likely changed during optimization
     // done as in raxml
     double const new_total_branch_length = distal->length + proximal->length;
-    distal_length                        = ( original_branch_length_ / new_total_branch_length ) * distal->length;
-    pendant_length                       = inner->length;
+    distal_length = ( original_branch_length_ / new_total_branch_length )
+        * distal->length;
+    pendant_length = inner->length;
 
-    reset_triplet_lengths( inner,
-                           partition_.get(),
-                           original_branch_length_ );
+    reset_triplet_lengths( inner, partition_.get(), original_branch_length_ );
   }
 
   // re-update the partial
@@ -293,9 +293,9 @@ Placement Tiny_Tree::place( Sequence const& s,
   pll_update_partials( partition_.get(), &op, 1 );
 
   if( logl == -std::numeric_limits< double >::infinity() ) {
-    throw std::runtime_error {
-      std::string( "-INF logl at branch " ) + std::to_string( branch_id_ ) + " with sequence " + s.header()
-    };
+    throw std::runtime_error{ std::string( "-INF logl at branch " )
+                              + std::to_string( branch_id_ ) + " with sequence "
+                              + s.header() };
   }
 
   assert( distal_length <= original_branch_length_ );

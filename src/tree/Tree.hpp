@@ -35,13 +35,18 @@ class Memsaver {
 
   ~Memsaver() = default;
 
-  operator bool() const { return subtree_sizes_
-                          and not traversal_.empty(); }
+  Memsaver( Memsaver const& other ) = delete;
+  Memsaver( Memsaver&& other )      = default;
 
-  unsigned int const * subtree_sizes() const { return subtree_sizes_.get(); }
+  Memsaver& operator=( Memsaver const& other ) = delete;
+  Memsaver& operator=( Memsaver&& other ) = default;
+
+  operator bool() const { return subtree_sizes_ and not traversal_.empty(); }
+
+  unsigned int const* subtree_sizes() const { return subtree_sizes_.get(); }
   std::vector< pll_unode_t* > const& traversal() const { return traversal_; }
-  pll_unode_t const*  traversal( size_t i ) const { return traversal_[ i ]; }
-  pll_unode_t*  traversal( size_t i ) { return traversal_[ i ]; }
+  pll_unode_t const* traversal( size_t i ) const { return traversal_[ i ]; }
+  pll_unode_t* traversal( size_t i ) { return traversal_[ i ]; }
 
   private:
   std::unique_ptr< unsigned int > subtree_sizes_{ nullptr };
@@ -74,14 +79,19 @@ class Tree {
 
   // member access
   Tree_Numbers& nums() { return nums_; }
+  Tree_Numbers const& nums() const { return nums_; }
   raxml::Model& model() { return model_; }
   Options& options() { return options_; }
   auto partition() { return partition_.get(); }
+  auto partition() const { return partition_.get(); }
   auto tree() { return tree_.get(); }
   rtree_mapper& mapper() { return mapper_; }
   Memsaver& memsave() { return memsave_; }
   std::vector< size_t > const& branch_id() { return branch_id_; }
-  size_t branch_id( unsigned int const node_index ) { return branch_id_[ node_index ]; }
+  size_t branch_id( unsigned int const node_index )
+  {
+    return branch_id_[ node_index ];
+  }
 
   void* get_clv( pll_unode_t const* const );
 

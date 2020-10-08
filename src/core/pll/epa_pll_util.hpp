@@ -13,10 +13,12 @@
 #include "util/Options.hpp"
 
 pll_partition_t* make_partition( raxml::Model const& model,
+                                 pll_utree_t* const tree,
                                  Tree_Numbers const& nums,
                                  int const num_sites,
                                  Options const& options,
-                                 unsigned int* subtree_sizes = nullptr );
+                                 unsigned int const* const subtree_sizes
+                                 = nullptr );
 void link_tree_msa( pll_utree_t* tree,
                     pll_partition_t* partition,
                     raxml::Model& model,
@@ -28,7 +30,7 @@ void precompute_clvs( pll_utree_t const* const tree,
 void partial_compute_clvs( pll_utree_t* const tree,
                            Tree_Numbers const& nums,
                            unsigned int const* const subtree_sizes,
-                           pll_unode_t const* const node,
+                           pll_unode_t* const node,
                            pll_partition_t* partition );
 void split_combined_msa( MSA& source,
                          MSA& target,

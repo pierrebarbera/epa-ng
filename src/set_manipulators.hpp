@@ -6,6 +6,7 @@
 
 #include "core/Work.hpp"
 #include "sample/Sample.hpp"
+#include "sample/PQuery.hpp"
 #include "seq/MSA.hpp"
 #include "util/Options.hpp"
 #include "util/Timer.hpp"

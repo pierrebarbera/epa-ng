@@ -8,6 +8,7 @@
 #include "sample/Placement.hpp"
 #include "seq/Sequence.hpp"
 #include "tree/Tree.hpp"
+#include "tree/tiny_util.hpp"
 #include "util/Options.hpp"
 #include "util/constants.hpp"
 
@@ -24,8 +25,9 @@
       proximal    distal
     S:[0] C:[4]   S:[2] C:[2 or 5]
 
-  where proximal/distal are the nodes adjacent to the insertion edge in the reference tree.
-  new_tip represents the newly added sequence.
+  where proximal/distal are the nodes adjacent to the insertion edge in the
+  reference tree. new_tip represents the newly added sequence.
+  S stands for scaler_index, C for clv_index
 
 */
 class Tiny_Tree {
@@ -38,7 +40,15 @@ class Tiny_Tree {
   Tiny_Tree( Tiny_Tree const& other,
              bool const deep_copy_clvs );
 
-  Tiny_Tree()  = delete;
+  Tiny_Tree()
+      : partition_( nullptr, tiny_partition_destroy_shallow )
+      , tree_( nullptr, utree_destroy )
+      , original_branch_length_( -1.0 )
+      , branch_id_( -1u )
+      , deep_copy_( false )
+  {
+  }
+
   ~Tiny_Tree() = default;
 
   Tiny_Tree( Tiny_Tree const& other ) = delete;

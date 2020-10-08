@@ -8,7 +8,8 @@
 #include <utility>
 #include <vector>
 
-#include "tree/TinyTree.hpp"
+#include "seq/Sequence.hpp"
+#include "tree/Tiny_Tree.hpp"
 #include "util/Matrix.hpp"
 #include "util/Range.hpp"
 #include "util/maps.hpp"
@@ -17,16 +18,23 @@ constexpr size_t INVALID = std::numeric_limits< size_t >::max();
 
 class Lookup_Store {
   /**
- * NOTE TO FUTURE DEVS:
- * This class has gotten a bit convoluted, so where is a brief overview of the various maps and tables:
- *
- * store_: vector of matrices, one per branch in the ref tree
- * <matrix in store>-> lookup_matrix: stores one CLV per character suitable for the model (ACGTVH- etc.)
- * char_map_: set of chars for which a lookup_matrix is done (see util/maps.hpp)
- * char_to_posish: maps ascii char to a column in a lookup_matrix. This also normalizes the input!
- *                 meaning: map upper and lowercase to the same CLV site, different variants of
- *                 GAP (-?Xx etc.) and ANY (N), U into T (RNA support) and defines invalid chars
- */
+   * NOTE TO FUTURE DEVS:
+   * This class has gotten a bit convoluted, so where is a brief overview of the
+   * various maps and tables:
+   *
+   * store_: vector of matrices, one per branch in the ref tree
+   *
+   * <matrix in store>-> lookup_matrix: stores one CLV per character suitable
+   * for the model (ACGTVH- etc.)
+   *
+   * char_map_: set of chars for which a lookup_matrix is done (see
+   * util/maps.hpp)
+   *
+   * char_to_posish: maps ascii char to a column in a lookup_matrix. This also
+   * normalizes the input! meaning: map upper and lowercase to the same CLV
+   * site, different variants of GAP (-?Xx etc.) and ANY (N), U into T
+   * (RNA support) and defines invalid chars
+   */
   public:
   using lookup_type = Matrix< double >;
 
@@ -71,9 +79,11 @@ class Lookup_Store {
   Lookup_Store()  = delete;
   ~Lookup_Store() = default;
 
-  void init_branch( size_t const branch_id, std::vector< std::vector< double > > precomps )
+  void init_branch( size_t const branch_id,
+                    std::vector< std::vector< double > > precomps )
   {
-    store_[ branch_id ] = Matrix< double >( precomps[ 0 ].size(), char_map_size_ );
+    store_[ branch_id ]
+        = Matrix< double >( precomps[ 0 ].size(), char_map_size_ );
 
     for( size_t ch = 0; ch < precomps.size(); ++ch ) {
       for( size_t site = 0; site < precomps[ ch ].size(); ++site ) {
@@ -82,17 +92,16 @@ class Lookup_Store {
     }
   }
 
-  void init_branch( TinyTree const& tiny_tree )
+  void init_branch( Tiny_Tree const& tiny_tree )
   {
     auto const size = char_map_size();
 
     // precompute all possible site likelihoods
     std::vector< std::vector< double > > precomputed_sites( size );
     for( size_t i = 0; i < size; ++i ) {
-      tiny_tree.get_persite_logl( char_map( i ),
-                                  precomputed_sites[ i ] );
+      tiny_tree.get_persite_logl( char_map( i ), precomputed_sites[ i ] );
     }
-    lookup_store->init_branch( tiny_tree.branch_id(), precomputed_sites );
+    init_branch( tiny_tree.branch_id(), precomputed_sites );
   }
 
   std::mutex& get_mutex( size_t const branch_id )
@@ -113,25 +122,23 @@ class Lookup_Store {
   unsigned char char_map( size_t const i )
   {
     if( i >= char_map_size_ ) {
-      throw std::runtime_error{
-        std::string( "char_map access out of bounds! i =" ) + std::to_string( i )
-      };
+      throw std::runtime_error{ std::string(
+                                    "char_map access out of bounds! i =" )
+                                + std::to_string( i ) };
     }
 
     return char_map_[ i ];
   }
 
-  size_t char_map_size()
-  {
-    return char_map_size_;
-  }
+  size_t char_map_size() { return char_map_size_; }
 
   size_t char_position( unsigned char c ) const
   {
     auto pos = char_to_posish_[ c ];
 
     if( pos == INVALID ) {
-      throw std::runtime_error{ std::string( "char is invalid! char = " ) + std::to_string( c ) };
+      throw std::runtime_error{ std::string( "char is invalid! char = " )
+                                + std::to_string( c ) };
     }
 
     return pos;
@@ -139,7 +146,7 @@ class Lookup_Store {
 
   /**
    * Sum up the per-site log-likelihoods for a given branch, based on the given
-   * sequence. This LH is dependant on the values that the TinyTree had when
+   * sequence. This LH is dependant on the values that the Tiny_Tree had when
    * it was used to create the lookup. The only real use case is preplacement,
    * meaning placed in the center of the insertion branch, with the pednant
    * length at the default value.
@@ -175,11 +182,15 @@ class Lookup_Store {
 
     size_t const stride = 4;
     for( ; site + stride - 1u < end; site += stride ) {
-      double sum_one = lookup[ lookup_matrix.coord( site, char_to_posish_[ seq[ site ] ] ) ]
-          + lookup[ lookup_matrix.coord( site + 1u, char_to_posish_[ seq[ site + 1u ] ] ) ];
+      double sum_one = lookup[ lookup_matrix.coord(
+                           site, char_to_posish_[ seq[ site ] ] ) ]
+          + lookup[ lookup_matrix.coord(
+                site + 1u, char_to_posish_[ seq[ site + 1u ] ] ) ];
 
-      double sum_two = lookup[ lookup_matrix.coord( site + 2u, char_to_posish_[ seq[ site + 2u ] ] ) ]
-          + lookup[ lookup_matrix.coord( site + 3u, char_to_posish_[ seq[ site + 3u ] ] ) ];
+      double sum_two = lookup[ lookup_matrix.coord(
+                           site + 2u, char_to_posish_[ seq[ site + 2u ] ] ) ]
+          + lookup[ lookup_matrix.coord(
+                site + 3u, char_to_posish_[ seq[ site + 3u ] ] ) ];
 
       sum_one += sum_two;
 
@@ -188,7 +199,8 @@ class Lookup_Store {
 
     // rest of the horizontal add
     while( site < end ) {
-      sum += lookup[ lookup_matrix.coord( site, char_to_posish_[ seq[ site ] ] ) ];
+      sum += lookup[ lookup_matrix.coord( site,
+                                          char_to_posish_[ seq[ site ] ] ) ];
       ++site;
     }
     return sum;
@@ -210,7 +222,8 @@ class Lookup_Store {
 #include "tree/Tree.hpp"
 
 /**
- * Wraps the lookup store such that this object can be queried for a lookup-based
+ * Wraps the lookup store such that this object can be queried for a
+ * lookup-based
  * placement (used for preplacement) for a given QS on a given branch.
  *
  * Creation of the object should take care of creating all necessary loopups,
@@ -218,14 +231,15 @@ class Lookup_Store {
  */
 class LookupPlacement {
   public:
-  LookupPlacement( Tree const& ref_tree,
+  LookupPlacement( Tree& ref_tree,
                    std::vector< pll_unode_t* > const& branches )
       : lookup_( ref_tree.nums().branches, ref_tree.partition()->states )
-      , pendant_length( ref_tree.nums().branches, -1.0 )
-      , distal_length( ref_tree.nums().branches, -1.0 )
+      , pendant_length_( ref_tree.nums().branches, -1.0 )
+      , distal_length_( ref_tree.nums().branches, -1.0 )
   {
-    // auto nums = ref_tree.nums();
-    bool const use_memsave = ( ref_tree.partition()->attributes & PLL_ATTRIB_LIMIT_MEMORY );
+    auto nums = ref_tree.nums();
+    bool const use_memsave
+        = ( ref_tree.partition()->attributes & PLL_ATTRIB_LIMIT_MEMORY );
 
     // create and hold the lookup table for the entirety of the reference tree
 
@@ -236,9 +250,7 @@ class LookupPlacement {
 #pragma omp parallel for schedule( dynamic )
 #endif
       for( size_t branch_id = 0; branch_id < nums.branches; ++branch_id ) {
-        Tiny_Tree cur_branch( branches[ branch_id ],
-                              branch_id,
-                              ref_tree );
+        Tiny_Tree cur_branch( branches[ branch_id ], branch_id, ref_tree );
 
         pendant_length_[ branch_id ] = cur_branch.pendant_length();
         distal_length_[ branch_id ]  = cur_branch.distal_length();
@@ -263,17 +275,16 @@ class LookupPlacement {
   LookupPlacement& operator=( LookupPlacement&& other ) = default;
 
   Placement place( size_t const branch_id,
-                   std::string const& seq,
-                   bool const premasking )
+                   Sequence const& seq,
+                   bool const premasking ) const
   {
-    auto const logl = lookup_.sum_precomputed_sitelk( branch_id,
-                                                      seq,
-                                                      premasking );
+    auto const logl = lookup_.sum_precomputed_sitelk(
+        branch_id, seq.sequence(), premasking );
 
     return Placement( branch_id,
                       logl,
-                      pendant_length[ branch_id ],
-                      distal_length[ branch_id ] );
+                      pendant_length_[ branch_id ],
+                      distal_length_[ branch_id ] );
   }
 
   size_t num_branches() const { return pendant_length_.size(); }
