@@ -3,7 +3,10 @@
 #include "core/BranchBuffer.hpp"
 
 #include "seq/MSA.hpp"
+#include "seq/MSA_Info.hpp"
 #include "tree/Tree.hpp"
+#include "util/Options.hpp"
+#include "io/file_io.hpp"
 
 static void test_buffer( Options const options )
 {

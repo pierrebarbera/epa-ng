@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "core/pll/pllhead.hpp"
 #include "core/raxml/Model.hpp"
 #include "io/Binary.hpp"
 #include "io/file_io.hpp"

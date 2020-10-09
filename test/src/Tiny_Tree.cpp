@@ -9,6 +9,7 @@
 #include "io/file_io.hpp"
 #include "sample/Sample.hpp"
 #include "seq/MSA.hpp"
+#include "seq/MSA_Info.hpp"
 #include "set_manipulators.hpp"
 #include "tree/Tiny_Tree.hpp"
 #include "tree/Tree.hpp"
@@ -16,6 +17,7 @@
 
 #include <limits>
 #include <tuple>
+#include <vector>
 
 using namespace std;
 
@@ -132,7 +134,7 @@ static void place_from_binary( Options const options )
     for( auto& seq : queries ) {
       auto orig_place
           = original_tiny.place( seq, !options.prescoring, options );
-      auto read_place = read_tiny.place( seq !options.prescoring, options );
+      auto read_place = read_tiny.place( seq, !options.prescoring, options );
 
       ASSERT_DOUBLE_EQ( orig_place.likelihood(), read_place.likelihood() );
 
