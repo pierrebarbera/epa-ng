@@ -24,8 +24,10 @@ class Memsaver {
       , traversal_{ tree->edge_count, nullptr }
   {
     // temporarily set the virtual root to one extreme of the tree (any leaf)
+    // however because of the way the traverse function works, it has to be the
+    // corresponding inner node
     pll_unode_t* old_root = tree->vroot;
-    tree->vroot           = tree->nodes[ 0 ];
+    tree->vroot           = tree->nodes[ 0 ]->back;
 
     // get the traversal, hopefully one that minimizes overall recomputations
     utree_query_branches( tree, &traversal_[ 0 ] );

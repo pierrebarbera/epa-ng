@@ -218,6 +218,7 @@ unsigned int utree_query_branches( pll_utree_t const* const tree,
   unsigned int index = 0;
 
   auto const root = get_root( tree );
+  assert( root->next );
 
   // utree-function: we start at a trifucation
   utree_query_branches_recursive( root->back, node_list, &index );

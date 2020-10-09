@@ -38,5 +38,5 @@ class Options {
   NumericalScaling scaling = NumericalScaling::kAuto;
   bool preserve_rooting    = true;
   bool preplacement_lookup = true;
-  bool memsave = true;
+  bool memsave = false;
 };

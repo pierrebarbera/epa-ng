@@ -188,7 +188,8 @@ void partial_compute_clvs( pll_utree_t* const tree,
 {
   // set vroot to selected node (and reverse this at the end)
   pll_unode_t* old_root = tree->vroot;
-  tree->vroot           = node;
+  // TODO recheck if this doesnt break something significant
+  tree->vroot           = node->next ? node : node->back;
 
   /*
    * Basic idea: set the data pointer of each node to point to the partition.
