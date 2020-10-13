@@ -188,7 +188,6 @@ void partial_compute_clvs( pll_utree_t* const tree,
 {
   // set vroot to selected node (and reverse this at the end)
   pll_unode_t* old_root = tree->vroot;
-  // TODO recheck if this doesnt break something significant
   tree->vroot           = node->next ? node : node->back;
 
   /*
@@ -201,7 +200,11 @@ void partial_compute_clvs( pll_utree_t* const tree,
   // go through all inner nodes, set data pointer to point to the partition
   size_t const nodes_count = tree->tip_count + tree->inner_count;
   for( size_t i = 0; i < nodes_count; ++i ) {
-    tree->nodes[ i ]->data = partition;
+    auto cur_node = tree->nodes[ i ];
+    cur_node->data = partition;
+    if( cur_node->next ){
+      cur_node->next->data = cur_node->next->next->data = partition;
+    }
   }
 
   // traverse!
@@ -257,7 +260,11 @@ void partial_compute_clvs( pll_utree_t* const tree,
   // cleanup
   // unset the data pointers juuust incase some free() gets called
   for( size_t i = 0; i < nodes_count; ++i ) {
-    tree->nodes[ i ]->data = nullptr;
+    auto cur_node = tree->nodes[ i ];
+    cur_node->data = nullptr;
+    if( cur_node->next ){
+      cur_node->next->data = cur_node->next->next->data = nullptr;
+    }
   }
 
   tree->vroot = old_root;
