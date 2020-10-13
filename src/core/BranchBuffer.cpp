@@ -11,7 +11,7 @@
 static void calc_block( BranchBuffer::container_type& buffer,
                         size_t const requested_size,
                         Tree* ref_tree,
-                        size_t& traversal_start )
+                        size_t* traversal_start )
 {
   auto& memsave = ref_tree->memsave();
   assert( memsave );
@@ -20,13 +20,13 @@ static void calc_block( BranchBuffer::container_type& buffer,
 
   // how many branches are there still in the complete traversal, until we've
   // calculated them all (in this overall iteration)
-  size_t const branches_left = traversal.size() - traversal_start;
+  size_t const branches_left = traversal.size() - *traversal_start;
 
   size_t const block_size = std::min( branches_left, requested_size );
   buffer.clear();
   buffer.resize( block_size );
 
-  for( size_t i = traversal_start; i < traversal_start + block_size; ++i ) {
+  for( size_t i = *traversal_start; i < *traversal_start + block_size; ++i ) {
     // for the current branch, according to the traversal
     auto branch_node = traversal[ i ];
     // compute the required CLVs
@@ -46,7 +46,7 @@ static void calc_block( BranchBuffer::container_type& buffer,
 
   // update the start of the next traversal to be one beyond the block we just
   // finished
-  traversal_start += block_size;
+  *traversal_start += block_size;
 }
 
 /**
@@ -62,7 +62,7 @@ BranchBuffer::BranchBuffer( Tree* ref_tree, size_t const block_size )
                             std::ref( buffer_ ),
                             block_size,
                             ref_tree_,
-                            std::ref( traversal_start_ ) );
+                            &traversal_start_ );
 }
 
 size_t BranchBuffer::get_next( BranchBuffer::container_type& result,
@@ -82,7 +82,7 @@ size_t BranchBuffer::get_next( BranchBuffer::container_type& result,
                             std::ref( buffer_ ),
                             block_size,
                             ref_tree_,
-                            std::ref( traversal_start_ ) );
+                            &traversal_start_ );
 
   // return the size of the returned block
   return result.size();
