@@ -4,6 +4,7 @@
 #include <type_traits>
 
 #include "core/pll/pll_util.hpp"
+#include "core/pll/error.hpp"
 
 constexpr unsigned int proximal_clv_index        = 4;
 constexpr unsigned int inner_clv_index           = 3;
@@ -45,8 +46,6 @@ static void deep_copy_clv( pll_partition_t* dest_part,
    * - automatically treat tips differently? or leave it to the caller?
    * - memsaver vs normal (vs repeats?)
    */
-
-  assert( src_part->clv[ src_node->clv_index ] != nullptr );
 
   // clv size in doubles (gets correct size wrt repeats also)
   auto const clv_size = pll_get_clv_size( src_part,
@@ -245,7 +244,7 @@ pll_partition_t* make_tiny_partition( pll_partition_t const* const old_partition
       throw std::runtime_error { "Error setting tip state" };
     }
     pll_aligned_free( tiny->tipchars[ distal->clv_index ] );
-    assert( old_partition->clv[ old_distal->clv_index ] );
+    assert( old_partition->tipchars[ old_distal->clv_index ] );
     tiny->tipchars[ distal->clv_index ] = old_partition->tipchars[ old_distal->clv_index ];
   } else {
     if( not deep_copy_clvs ) {
