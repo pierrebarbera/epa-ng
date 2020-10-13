@@ -216,16 +216,13 @@ void partial_compute_clvs( pll_utree_t* const tree,
   unsigned int num_matrices   = 0;
   unsigned int num_ops        = 0;
 
-  if( pll_utree_traverse_lsf( tree,
-                              subtree_sizes,
-                              PLL_TREE_TRAVERSE_POSTORDER,
-                              cb_traverse_unslotted,
-                              &travbuffer[ 0 ],
-                              &traversal_size )
-      != PLL_SUCCESS ) {
-    throw std::runtime_error{ std::string( "pll_utree_traverse_lsf failed: " )
-                              + pll_errmsg };
-  }
+  handle_pll_failure( not pll_utree_traverse_lsf( tree,
+                                                  subtree_sizes,
+                                                  PLL_TREE_TRAVERSE_POSTORDER,
+                                                  cb_traverse_unslotted,
+                                                  &travbuffer[ 0 ],
+                                                  &traversal_size ),
+                      "pll_utree_traverse_lsf failed." );
 
   /* given the computed traversal descriptor, generate the operations
    structure, and the corresponding probability matrix indices that
@@ -253,6 +250,9 @@ void partial_compute_clvs( pll_utree_t* const tree,
   // otherwise one of these CLV will never get unpinned by update_partials)
   partition->clv_man->is_pinned[ node->clv_index ]       = false;
   partition->clv_man->is_pinned[ node->back->clv_index ] = false;
+
+  // assert( pll_get_clv_reading( partition, node->clv_index ) );
+  // assert( pll_get_clv_reading( partition, node->back->clv_index ) );
 
   // cleanup
   // unset the data pointers juuust incase some free() gets called
@@ -367,25 +367,21 @@ pll_partition_t* make_partition( raxml::Model const& model,
       ( nums.inner_nodes * 3 ) + nums.tip_nodes, /* number of scaler buffers */
       attributes );
 
-  if( not partition ) {
-    throw std::runtime_error{
-      std::string( "Could not create partition (make_partition). pll_errmsg: " )
-      + pll_errmsg
-    };
-  }
+  handle_pll_failure(
+    not partition, "Could not create partition (make_partition)");
 
   if( options.memsave ) {
-    const size_t low_clv_num = ceil( log2( nums.tip_nodes - 1 ) ) + 2;
-    if( !pll_clv_manager_init( partition, low_clv_num, NULL, NULL, NULL ) ) {
-      throw std::runtime_error{ std::string( pll_errmsg ) };
-    }
-
     assert( subtree_sizes );
 
-    if( !pll_clv_manager_MRC_strategy_init(
-            partition->clv_man, tree, subtree_sizes ) ) {
-      throw std::runtime_error{ std::string( pll_errmsg ) };
-    }
+    const size_t low_clv_num = ceil( log2( nums.tip_nodes - 1 ) ) + 2;
+    handle_pll_failure(
+        not pll_clv_manager_init( partition, low_clv_num, NULL, NULL, NULL ),
+        "Could not initialize CLV manager." );
+
+    handle_pll_failure(
+        not pll_clv_manager_MRC_strategy_init(
+            partition->clv_man, tree, subtree_sizes ),
+        "Could not initialize CLV manager replacement strategy" );
   }
   return partition;
 }

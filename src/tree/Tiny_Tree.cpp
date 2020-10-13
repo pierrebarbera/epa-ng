@@ -10,6 +10,7 @@
 #include "core/pll/optimize.hpp"
 #include "core/pll/pll_util.hpp"
 #include "core/pll/pllhead.hpp"
+#include "core/pll/error.hpp"
 #include "core/raxml/Model.hpp"
 #include "set_manipulators.hpp"
 #include "tree/Tree_Numbers.hpp"
@@ -40,16 +41,10 @@ void Tiny_Tree::get_persite_logl( char const nt,
 
   auto map = get_char_map( partition_.get() );
 
-  auto err_check = pll_set_tip_states(
-      partition_.get(), new_tip->clv_index, map, seq.c_str() );
-
-  if( err_check == PLL_FAILURE ) {
-    throw std::runtime_error{
-      std::string(
-          "Set tip states during sites precompution failed! pll_errmsg: " )
-      + pll_errmsg
-    };
-  }
+  handle_pll_failure(
+      not pll_set_tip_states(
+          partition_.get(), new_tip->clv_index, map, seq.c_str() ),
+      "Set tip states during sites precompution failed!" );
 
   pll_compute_edge_loglikelihood( partition_.get(),
                                   new_tip->clv_index,

@@ -1,9 +1,9 @@
 #pragma once
 
-#include <string>
 #include <vector>
 
 #include "core/pll/pllhead.hpp"
+#include "core/pll/error.hpp"
 #include "core/raxml/Model.hpp"
 #include "seq/MSA.hpp"
 #include "seq/MSA_Stream.hpp"

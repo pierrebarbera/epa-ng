@@ -6,6 +6,7 @@
 
 #include "core/pll/pll_util.hpp"
 #include "core/pll/pllhead.hpp"
+#include "core/pll/error.hpp"
 #include "core/pll/rtree_mapper.hpp"
 #include "core/raxml/Model.hpp"
 #include "io/msa_reader.hpp"
@@ -146,10 +147,8 @@ pll_utree_s* build_tree_from_file( std::string const& tree_file,
     // convert the tree
     tree = pll_rtree_unroot( rtree );
 
-    if( ( tree == NULL ) or ( tree == PLL_FAILURE ) ) {
-      throw std::runtime_error { std::string( "pll_rtree_unroot failed with message: " )
-                                 + pll_errmsg + " (" + std::to_string( pll_errno ) + ") " };
-    }
+    handle_pll_failure( ( tree == NULL ) or ( tree == PLL_FAILURE ),
+                        "pll_rtree_unroot failed." );
 
     // is the virtual root on the left side of the rtree?
     // (this is the case if the left child node isn't a tip)
@@ -192,7 +191,7 @@ pll_utree_s* build_tree_from_file( std::string const& tree_file,
 
     // if both fails, abort
   } else {
-    throw std::runtime_error { std::string( "Treeparsing failed! " ) + pll_errmsg };
+    handle_pll_failure( true, "Treeparsing failed!" );
   }
 
   if( not tree->binary ) {

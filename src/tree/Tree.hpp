@@ -6,6 +6,7 @@
 
 #include "core/pll/pll_util.hpp"
 #include "core/pll/pllhead.hpp"
+#include "core/pll/error.hpp"
 #include "core/pll/rtree_mapper.hpp"
 #include "core/raxml/Model.hpp"
 #include "io/Binary.hpp"
@@ -23,6 +24,9 @@ class Memsaver {
       : subtree_sizes_( pll_utree_get_subtree_sizes( tree ) )
       , traversal_{ tree->edge_count, nullptr }
   {
+    handle_pll_failure( not subtree_sizes_,
+                        "pll_utree_get_subtree_sizes failed." );
+
     // temporarily set the virtual root to one extreme of the tree (any leaf)
     // however because of the way the traverse function works, it has to be the
     // corresponding inner node

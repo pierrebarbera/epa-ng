@@ -41,7 +41,7 @@ static void calc_block( BranchBuffer::container_type& buffer,
     buffer.emplace_back( branch_node,
                          branch_id[ branch_node->node_index ],
                          *ref_tree,
-                         true ); // make deep-copy TinyTrees
+                         true ); // make deep-copy Tiny_Tree
   }
 
   // update the start of the next traversal to be one beyond the block we just

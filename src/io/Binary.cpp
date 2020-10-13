@@ -5,6 +5,8 @@
 
 #include "tree/Tree.hpp"
 #include "util/constants.hpp"
+#include "core/pll/pllhead.hpp"
+#include "core/pll/error.hpp"
 
 int safe_fclose( FILE* fptr ) { return fptr ? fclose( fptr ) : 0; }
 
@@ -27,11 +29,11 @@ Binary::Binary( std::string const& binary_file_path )
 {
   // open the binary file
   pll_binary_header_t header;
-  bin_fptr_ = file_ptr_type( pllmod_binary_open( binary_file_path.c_str(), &header ), safe_fclose );
+  bin_fptr_ = file_ptr_type(
+      pllmod_binary_open( binary_file_path.c_str(), &header ), safe_fclose );
 
-  if( !bin_fptr_ ) {
-    throw std::runtime_error{ "Could not open binary file for reading." };
-  }
+  handle_pll_failure( not bin_fptr_,
+                      "Failed to open binary file for reading." );
 
   if( header.access_type != PLLMOD_BIN_ACCESS_RANDOM ) {
     throw std::runtime_error{ "Binary file must be random access enabled." };
@@ -94,18 +96,15 @@ void Binary::load_clv( pll_partition_t* partition,
   {
     unsigned int attributes;
     std::lock_guard< std::mutex > lock( file_mutex_ );
-    auto err = pllmod_binary_clv_load( bin_fptr_.get(),
-                                       0,
-                                       partition,
-                                       clv_index,
-                                       &attributes,
-                                       get_offset( map_, clv_index ) );
-    if( err != PLL_SUCCESS ) {
-      throw std::runtime_error{ std::string( "Loading CLV failed: " )
-                                + pll_errmsg
-                                + std::string( ". CLV index: " )
-                                + std::to_string( clv_index ) };
-    }
+    handle_pll_failure(
+        not pllmod_binary_clv_load( bin_fptr_.get(),
+                                    0,
+                                    partition,
+                                    clv_index,
+                                    &attributes,
+                                    get_offset( map_, clv_index ) ),
+        std::string( "Failed to load CLV from binary. CLV index: " )
+            + std::to_string( clv_index ) );
   }
 }
 
@@ -128,9 +127,9 @@ void Binary::load_tipchars( pll_partition_t* partition,
                                           &type,
                                           &attributes,
                                           get_offset( map_, tipchars_index ) );
-    if( !ptr ) {
-      throw std::runtime_error{ std::string( "Loading tipchar failed: " ) + pll_errmsg };
-    }
+    
+    handle_pll_failure( not ptr, "Failed to load tipchars from binary." );
+
     partition->tipchars[ tipchars_index ] = static_cast< unsigned char* >( ptr );
   }
 }
@@ -154,9 +153,8 @@ void Binary::load_scaler( pll_partition_t* partition,
                                           &type,
                                           &attributes,
                                           get_offset( map_, block_offset + scaler_index ) );
-    if( !ptr ) {
-      throw std::runtime_error{ std::string( "Loading scaler failed: " ) + pll_errmsg };
-    }
+
+    handle_pll_failure( not ptr, "Failed to load scalers from binary." );
 
     partition->scale_buffer[ scaler_index ] = static_cast< unsigned int* >( ptr );
   }
@@ -173,20 +171,17 @@ pll_partition_t* Binary::load_partition()
                                                  &part_attribs,
                                                  get_offset( map_, -1 ) );
 
-  if( !partition ) {
-    throw std::runtime_error{ std::string( "Error loading partition: " ) + pll_errmsg };
-  }
+  handle_pll_failure( not partition, "Failed to load partition from binary.");
 
   if( partition->attributes & PLL_ATTRIB_SITE_REPEATS ) {
     unsigned int repeats_attribs = 0;
-    if( pllmod_binary_repeats_load( bin_fptr_.get(),
-                                    0,
-                                    partition,
-                                    &repeats_attribs,
-                                    get_offset( map_, -3 ) )
-        != PLL_SUCCESS ) {
-      throw std::runtime_error{ std::string( "Error loading repeats: " ) + pll_errmsg };
-    }
+    handle_pll_failure(
+        not pllmod_binary_repeats_load( bin_fptr_.get(),
+                                        0,
+                                        partition,
+                                        &repeats_attribs,
+                                        get_offset( map_, -3 ) ),
+        "Failed to load repeats from binary." );
   }
 
   return partition;
@@ -200,9 +195,7 @@ pll_utree_t* Binary::load_utree( unsigned int const num_tips )
                                         0,
                                         &attributes,
                                         get_offset( map_, -2 ) );
-  if( !root ) {
-    throw std::runtime_error{ std::string( "Loading tree: " ) + pll_errmsg };
-  }
+  handle_pll_failure( not root, "Failed to load utree from binary." );
 
   return pll_utree_wraptree( root, num_tips );
 }
@@ -212,6 +205,7 @@ static int full_trav( pll_unode_t* )
   return 1;
 }
 
+// TODO this can probably be migrated to the new pll_traverse_foreach
 static auto create_scaler_to_clv_map( Tree& tree )
 {
   auto const num_scalers = tree.partition()->scale_buffers;
@@ -271,49 +265,48 @@ void dump_to_binary( Tree& tree, std::string const& file )
       PLLMOD_BIN_ACCESS_RANDOM,
       num_blocks );
 
-  if( !fptr ) {
-    throw std::runtime_error{ std::string( "Error opening binary file for writing: " ) + pll_errmsg };
-  }
+  handle_pll_failure( not fptr, "Failed to open binary file for writing." );
 
-  auto const attributes = PLLMOD_BIN_ATTRIB_UPDATE_MAP | PLLMOD_BIN_ATTRIB_PARTITION_DUMP_WGT;
+  auto const attributes = PLLMOD_BIN_ATTRIB_UPDATE_MAP 
+                        | PLLMOD_BIN_ATTRIB_PARTITION_DUMP_WGT;
 
-  if( use_repeats and not pllmod_binary_repeats_dump( fptr, block_id++, tree.partition(), attributes ) ) {
-    throw std::runtime_error{ std::string( "Error dumping the repeats: " ) + pll_errmsg };
+  if( use_repeats
+      and not pllmod_binary_repeats_dump(
+              fptr, block_id++, tree.partition(), attributes ) ) {
+    handle_pll_failure( true, "Failed to dump the repeats to binary." );
   }
 
   // dump the utree structure
-  if( !pllmod_binary_utree_dump( fptr, block_id++, get_root( tree.tree() ), num_tips, attributes ) ) {
-    throw std::runtime_error{ std::string( "Error dumping the utree to binary: " ) + pll_errmsg };
-  }
+  handle_pll_failure(
+      not pllmod_binary_utree_dump(
+          fptr, block_id++, get_root( tree.tree() ), num_tips, attributes ),
+      "Failed to dump the utree to binary." );
 
   // dump the partition
-  if( !pllmod_binary_partition_dump( fptr, block_id++, tree.partition(), attributes ) ) {
-    throw std::runtime_error{ std::string( "Error dumping partition to binary: " ) + pll_errmsg };
-  }
+  handle_pll_failure( not pllmod_binary_partition_dump(
+                          fptr, block_id++, tree.partition(), attributes ),
+                      "Failed to dump partition to binary." );
 
   // dump the tipchars, but only if partition uses them
   size_t tip_index = 0;
   if( use_tipchars ) {
     for( tip_index = 0; tip_index < num_tips; tip_index++ ) {
-      if( !pllmod_binary_custom_dump( fptr,
-                                      block_id++,
-                                      tree.partition()->tipchars[ tip_index ],
-                                      tree.partition()->sites * sizeof( unsigned char ),
-                                      attributes ) ) {
-        throw std::runtime_error{ std::string( "Error dumping tipchars to binary: " ) + pll_errmsg };
-      }
+      handle_pll_failure( not pllmod_binary_custom_dump(
+                              fptr,
+                              block_id++,
+                              tree.partition()->tipchars[ tip_index ],
+                              tree.partition()->sites * sizeof( unsigned char ),
+                              attributes ),
+                          "Failed to dump tipchars to binary." );
     }
   }
 
   // dump the clvs
   for( size_t clv_index = tip_index; clv_index < max_clv_index; clv_index++ ) {
-    if( !pllmod_binary_clv_dump( fptr,
-                                 block_id++,
-                                 tree.partition(),
-                                 clv_index,
-                                 attributes ) ) {
-      throw std::runtime_error{ std::string( "Error dumping clvs to binary: " ) + pll_errmsg };
-    }
+    handle_pll_failure(
+        not pllmod_binary_clv_dump(
+            fptr, block_id++, tree.partition(), clv_index, attributes ),
+        "Failed to dump clvs to binary." );
   }
 
   auto const scaler_to_clv = create_scaler_to_clv_map( tree );
@@ -331,13 +324,13 @@ void dump_to_binary( Tree& tree, std::string const& file )
       scaler_ptr[ scaler_index ] = static_cast< unsigned int* >( calloc( scaler_size, sizeof( unsigned int ) ) );
     }
 
-    if( !pllmod_binary_custom_dump( fptr,
-                                    block_id++,
-                                    scaler_ptr[ scaler_index ],
-                                    scaler_size * sizeof( unsigned int ),
-                                    attributes ) ) {
-      throw std::runtime_error{ std::string( "Error dumping scalers to binary: " ) + pll_errmsg };
-    }
+    handle_pll_failure(
+        not pllmod_binary_custom_dump( fptr,
+                                       block_id++,
+                                       scaler_ptr[ scaler_index ],
+                                       scaler_size * sizeof( unsigned int ),
+                                       attributes ),
+        "Failed to dump scalers to binary." );
   }
 
   fclose( fptr );
