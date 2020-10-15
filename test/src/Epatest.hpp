@@ -68,7 +68,7 @@ void all_combinations( Func f, bool const verbose = false )
   for( size_t i = 0; i < pow( 2, 5 ); ++i ) {
     auto o = get_options_config( i );
     if( verbose ) {
-      printf( "\nrepeats\toptim\tsliding\tprescore\tmasking\tmemsave\n" );
+      printf( "\nrepeats\toptim\tsliding\tprescor\tmasking\tmemsave\n" );
       printf( "%d\t%d\t%d\t%d\t%d\t%d\n",
               o.repeats,
               o.opt_model,
