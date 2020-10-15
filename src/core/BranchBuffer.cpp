@@ -10,38 +10,39 @@
  */
 static void calc_block( BranchBuffer::container_type& buffer,
                         size_t const requested_size,
-                        Tree* ref_tree,
+                        Tree* tree,
                         size_t* traversal_start )
 {
-  auto& memsave = ref_tree->memsave();
+  auto& memsave = tree->memsave();
   assert( memsave );
   auto const& traversal = memsave.traversal();
-  auto& branch_id       = ref_tree->branch_id();
+  auto& branch_id       = tree->branch_id();
 
   // how many branches are there still in the complete traversal, until we've
   // calculated them all (in this overall iteration)
   size_t const branches_left = traversal.size() - *traversal_start;
 
   size_t const block_size = std::min( branches_left, requested_size );
-  buffer.clear();
+  // buffer.clear();
   buffer.resize( block_size );
 
   for( size_t i = *traversal_start; i < *traversal_start + block_size; ++i ) {
     // for the current branch, according to the traversal
     auto branch_node = traversal[ i ];
     // compute the required CLVs
-    partial_compute_clvs( ref_tree->tree(),
-                          ref_tree->nums(),
+    partial_compute_clvs( tree->tree(),
+                          tree->nums(),
                           memsave.subtree_sizes(),
                           branch_node,
-                          ref_tree->partition() );
+                          tree->partition() );
 
     // and persist them into a dedicated object holding a copy of the CLV
     // buffers for a given branch
-    buffer.emplace_back( branch_node,
-                         branch_id[ branch_node->node_index ],
-                         *ref_tree,
-                         true ); // make deep-copy Tiny_Tree
+    size_t const buffer_index = i - *traversal_start;
+    buffer[ buffer_index ]    = Tiny_Tree( branch_node,
+                                        branch_id[ branch_node->node_index ],
+                                        *tree,
+                                        true ); // deep-copy CLVs
   }
 
   // update the start of the next traversal to be one beyond the block we just
@@ -52,8 +53,8 @@ static void calc_block( BranchBuffer::container_type& buffer,
 /**
  * Create the object and immediately start pre-calculating the first block
  */
-BranchBuffer::BranchBuffer( Tree* ref_tree, size_t const block_size )
-    : ref_tree_( ref_tree )
+BranchBuffer::BranchBuffer( Tree* tree, size_t const block_size )
+    : tree_( tree )
     , buffer_size_( block_size )
     , traversal_start_( 0 )
 {
@@ -61,7 +62,7 @@ BranchBuffer::BranchBuffer( Tree* ref_tree, size_t const block_size )
                             calc_block,
                             std::ref( buffer_ ),
                             block_size,
-                            ref_tree_,
+                            tree_,
                             &traversal_start_ );
 }
 
@@ -81,7 +82,7 @@ size_t BranchBuffer::get_next( BranchBuffer::container_type& result,
                             calc_block,
                             std::ref( buffer_ ),
                             block_size,
-                            ref_tree_,
+                            tree_,
                             &traversal_start_ );
 
   // return the size of the returned block

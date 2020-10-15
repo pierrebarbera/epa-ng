@@ -18,7 +18,7 @@ class BranchBuffer {
   /**
    * Create the object and immediately start pre-calculating the first block
    */
-  BranchBuffer( Tree* ref_tree,
+  BranchBuffer( Tree* tree,
                 size_t const block_size );
 
   // allow moving, but not copying
@@ -33,7 +33,7 @@ class BranchBuffer {
   size_t get_next( container_type& result, size_t const block_size );
 
   private:
-  Tree* ref_tree_ = nullptr;
+  Tree* tree_ = nullptr;
   size_t buffer_size_;
   container_type buffer_;
   std::future< void > prefetcher_;
