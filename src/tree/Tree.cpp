@@ -68,11 +68,7 @@ Tree::Tree( std::string const& tree_file,
   if( not memsave_ ) {
     precompute_clvs( tree_.get(), partition_.get(), nums_ );
   } else {
-    // set the virtual root to where the traversal through the tree will later
-    // (during the parallelized placement) start
-    tree_.get()->vroot = memsave_.traversal( 0 );
-
-    // compute the CLVs toward that root
+    // compute the CLVs toward the first vroot of the memsave-traversal
     partial_compute_clvs( tree_.get(),
                           nums_,
                           memsave_.subtree_sizes(),

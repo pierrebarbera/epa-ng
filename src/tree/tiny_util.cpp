@@ -35,6 +35,18 @@ static void alloc_and_copy( T& dest, T const src, size_t const size )
                size * sizeof( base_t ) );
 }
 
+static void shallow_copy_clv(pll_partition_t* dest_part,
+                           pll_unode_t const* const dest_node,
+                           pll_partition_t const* const src_part,
+                           pll_unode_t const* const src_node)
+{
+  pll_aligned_free( dest_part->clv[ dest_node->clv_index ] );
+  assert( src_part->clv[ src_node->clv_index ] );
+  dest_part->clv[ dest_node->clv_index ]
+      = src_part->clv[ src_node->clv_index ];
+}
+
+
 static void deep_copy_clv( pll_partition_t* dest_part,
                            pll_unode_t const* const dest_node,
                            pll_partition_t const* const src_part,
@@ -125,12 +137,14 @@ pll_partition_t* make_tiny_partition( pll_partition_t const* const old_partition
                                       bool const deep_copy_clvs )
 {
   /**
-    As we work with PLL_PATTERN_TIP functionality, special care has to be taken in regards to the node and partition
-    structure: PLL assumes that any node with clv index < number of tips is in fact a real tip, that is
-    a tip that uses a character array instead of a real clv. Here we need to set up the node/partition to fool pll:
-    the tips that actually contain CLVs copied over from the reference node have their index set to greater than
-    number of tips. This results in a acceptable amount of wasted memory that is never used (num_sites * bytes
-    * number of clv-tips)
+    As we work with PLL_PATTERN_TIP functionality, special care has to be taken
+    in regards to the node and partition structure: PLL assumes that any node
+    with clv index < number of tips is in fact a real tip, that is a tip that
+    uses a character array instead of a real clv. Here we need to set up the
+    node/partition to fool pll: the tips that actually contain CLVs copied over
+    from the reference node have their index set to greater than number of tips.
+    This results in a acceptable amount of wasted memory that is never used
+    (num_sites * bytes * number of clv-tips)
   */
   assert( old_partition );
   assert( tree );
@@ -146,7 +160,7 @@ pll_partition_t* make_tiny_partition( pll_partition_t const* const old_partition
   // unset memory saver mode for the tiny partition
   attributes &= ~PLL_ATTRIB_LIMIT_MEMORY;
 
-  bool use_tipchars = attributes & PLL_ATTRIB_PATTERN_TIP;
+  bool const use_tipchars = attributes & PLL_ATTRIB_PATTERN_TIP;
 
   // tip_inner case: both reference nodes are inner nodes
   // tip tip case: one for the "proximal" clv tip
@@ -224,39 +238,43 @@ pll_partition_t* make_tiny_partition( pll_partition_t const* const old_partition
   }
   tiny->pattern_weights = old_partition->pattern_weights;
 
-  if( not deep_copy_clvs ) {
-    // shallow copy clv buffers
-    pll_aligned_free( tiny->clv[ proximal->clv_index ] );
-    assert( old_partition->clv[ old_proximal->clv_index ] );
+  if( use_tipchars ) {
+    // manually alloc or shallow-copy the tipchar structures.
+    // shallow copy the charmap and tipmap
+    tiny->charmap   = old_partition->charmap;
+    tiny->tipmap    = old_partition->tipmap;
+    tiny->ttlookup  = old_partition->ttlookup;
 
-    tiny->clv[ proximal->clv_index ] = old_partition->clv[ old_proximal->clv_index ];
-  } else {
-    deep_copy_clv( tiny,
-                   proximal,
-                   old_partition,
-                   old_proximal );
+    // alloc the tipchars array
+    assert( tiny->tipchars == nullptr );
+    tiny->tipchars = static_cast< unsigned char** >(
+        calloc( tiny->tips, sizeof( unsigned char* ) ) );
+    // alloc only the needed tips
+    auto const sites_alloc
+        = tiny->asc_bias_alloc ? tiny->sites + tiny->states : tiny->sites;
+    tiny->tipchars[ new_tip_clv_index ] = static_cast< unsigned char* >(
+        calloc( sites_alloc, sizeof( unsigned char ) ) );
+    // thats it, we never use one of the three tipchars, and the last we only
+    // need in the tip tip case, in which case we shallow copy
   }
 
-  if( tip_tip_case and use_tipchars ) {
-    std::string sequence( tiny->sites, 'A' );
-    if( pll_set_tip_states( tiny, distal->clv_index, get_char_map( old_partition ), sequence.c_str() )
-        == PLL_FAILURE ) {
-      throw std::runtime_error { "Error setting tip state" };
-    }
-    pll_aligned_free( tiny->tipchars[ distal->clv_index ] );
-    assert( old_partition->tipchars[ old_distal->clv_index ] );
-    tiny->tipchars[ distal->clv_index ] = old_partition->tipchars[ old_distal->clv_index ];
+  // handle the distal
+  if( tip_tip_case and use_tipchars) {
+    tiny->tipchars[ distal->clv_index ]
+      = old_partition->tipchars[ old_distal->clv_index ];
   } else {
-    if( not deep_copy_clvs ) {
-      pll_aligned_free( tiny->clv[ distal->clv_index ] );
-      assert( old_partition->clv[ old_distal->clv_index ] );
-      tiny->clv[ distal->clv_index ] = old_partition->clv[ old_distal->clv_index ];
+    if( deep_copy_clvs ) {
+      deep_copy_clv( tiny, distal, old_partition, old_distal );
     } else {
-      deep_copy_clv( tiny,
-                     distal,
-                     old_partition,
-                     old_distal );
+      shallow_copy_clv( tiny, distal, old_partition, old_distal );
     }
+  }
+
+  // handle the proximal
+  if( deep_copy_clvs ) {
+    deep_copy_clv( tiny, proximal, old_partition, old_proximal );
+  } else {
+    shallow_copy_clv( tiny, proximal, old_partition, old_proximal );
   }
 
   // deep copy scalers
@@ -305,6 +323,9 @@ void tiny_partition_destroy( pll_partition_t* partition,
     partition->invariant          = nullptr;
     partition->eigen_decomp_valid = nullptr;
     partition->pattern_weights    = nullptr;
+    partition->charmap            = nullptr;
+    partition->tipmap             = nullptr;
+    partition->ttlookup           = nullptr;
 
     if( not deep_copy_clvs ) {
       partition->clv[ proximal_clv_index ] = nullptr;
@@ -313,12 +334,8 @@ void tiny_partition_destroy( pll_partition_t* partition,
     bool const distal_is_tip    = partition->clv_buffers == 3 ? false : true;
     bool const pattern_tip_mode = partition->attributes & PLL_ATTRIB_PATTERN_TIP;
 
-    if( distal_is_tip ) {
-      if( pattern_tip_mode ) {
-        partition->tipchars[ distal_clv_index_if_tip ] = nullptr;
-      } else if( not deep_copy_clvs ) {
-        partition->clv[ distal_clv_index_if_tip ] = nullptr;
-      }
+    if( distal_is_tip and pattern_tip_mode ) {
+      partition->tipchars[ distal_clv_index_if_tip ] = nullptr;
     } else if( not deep_copy_clvs ) {
       partition->clv[ distal_clv_index_if_inner ] = nullptr;
     }
@@ -352,11 +369,14 @@ pll_utree_t* make_tiny_tree_structure( pll_unode_t const* old_proximal,
   unsigned int const distal_scaler_index   = 2;
 
   /**
-    As we work with PLL_PATTERN_TIP functionality, special care has to be taken in regards to the tree and partition
-    structure: PLL assumes that any node with clv index < number of tips is in fact a real tip, that is
-    a tip that uses a character array instead of a real clv. Here we need to set up the tree/partition to fool pll:
-    the tips that actually contain CLVs copied over from the reference tree have their index set to greater than
-    number of tips. This results in a acceptable amount of wasted memory that is never used (num_sites * bytes
+    As we work with PLL_PATTERN_TIP functionality, special care has to be taken
+    in regards to the tree and partition structure: PLL assumes that any node
+    with clv index < number of tips is in fact a real tip, that is a tip that
+    uses a character array instead of a real clv. Here we need to set up the
+    tree/partition to fool pll: the tips that actually contain CLVs copied over
+    from the reference tree have their index set to greater than number of tips.
+    This results in a acceptable amount of wasted memory that is never used
+    (num_sites * bytes
     * number of clv-tips)
   */
   // if tip-inner case

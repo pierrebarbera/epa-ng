@@ -69,6 +69,8 @@ class Tiny_Tree {
   double distal_length() const { return tree_->nodes[ 1 ]->length; }
   double proximal_length() const { return tree_->nodes[ 0 ]->length; }
   double pendant_length() const { return tree_->nodes[ 3 ]->length; }
+  pll_partition_t const* partition() const { return partition_.get(); }
+  pll_utree_t const* utree() const { return tree_.get(); }
 
   private:
   // pll structures

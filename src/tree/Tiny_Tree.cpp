@@ -127,9 +127,9 @@ Tiny_Tree::Tiny_Tree( pll_unode_t* edge_node,
   // detect the tip-tip case. In the tip-tip case, the reference tip should
   // always be the DISTAL
   bool tip_tip_case = false;
-  if( !old_distal->next ) {
+  if( not old_distal->next ) {
     tip_tip_case = true;
-  } else if( !old_proximal->next ) {
+  } else if( not old_proximal->next ) {
     tip_tip_case = true;
     // do the switcheroo
     old_distal   = old_proximal;
@@ -235,14 +235,11 @@ Placement Tiny_Tree::place( Sequence const& s,
   auto virtual_root = inner;
 
   // init the new tip with s.sequence(), branch length
-  auto err_check = pll_set_tip_states( partition_.get(),
-                                       new_tip->clv_index,
-                                       get_char_map( partition_.get() ),
-                                       s.sequence().c_str() );
-
-  if( err_check == PLL_FAILURE ) {
-    throw std::runtime_error{ "Set tip states during placement failed!" };
-  }
+  handle_pll_failure( not pll_set_tip_states( partition_.get(),
+                                              new_tip->clv_index,
+                                              get_char_map( partition_.get() ),
+                                              s.sequence().c_str() ),
+                      "Set tip states during placement failed!" );
 
   if( opt_branches ) {
 
