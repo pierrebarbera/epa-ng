@@ -23,15 +23,15 @@ TEST( set_manipulators, split_sample_equal )
 
   split( sample_1, parts, 2 );
 
-  ASSERT_EQ( 2, parts.size() );
-  ASSERT_NE( 0, sample_1.size() );
+  ASSERT_EQ( 2ul, parts.size() );
+  ASSERT_NE( 0ul, sample_1.size() );
 
-  ASSERT_EQ( 2, parts[ 0 ].size() );
-  ASSERT_EQ( 1, parts[ 1 ].size() );
+  ASSERT_EQ( 2ul, parts[ 0 ].size() );
+  ASSERT_EQ( 1ul, parts[ 1 ].size() );
 
-  EXPECT_EQ( 1, parts[ 0 ][ 0 ][ 0 ].branch_id() );
-  EXPECT_EQ( 3, parts[ 0 ][ 1 ][ 0 ].branch_id() );
-  EXPECT_EQ( 2, parts[ 1 ][ 0 ][ 0 ].branch_id() );
+  EXPECT_EQ( 1ul, parts[ 0 ][ 0 ][ 0 ].branch_id() );
+  EXPECT_EQ( 3ul, parts[ 0 ][ 1 ][ 0 ].branch_id() );
+  EXPECT_EQ( 2ul, parts[ 1 ][ 0 ][ 0 ].branch_id() );
 }
 
 TEST( set_manipulators, split_sample_empty )
@@ -41,9 +41,9 @@ TEST( set_manipulators, split_sample_empty )
 
   split( sample_1, parts, 2 );
 
-  ASSERT_EQ( 2, parts.size() );
-  ASSERT_EQ( 0, parts[ 0 ].size() );
-  ASSERT_EQ( 0, parts[ 1 ].size() );
+  ASSERT_EQ( 2ul, parts.size() );
+  ASSERT_EQ( 0ul, parts[ 0 ].size() );
+  ASSERT_EQ( 0ul, parts[ 1 ].size() );
 }
 
 TEST( set_manipulators, split_sample_globaly_mapped )
@@ -62,14 +62,14 @@ TEST( set_manipulators, split_sample_globaly_mapped )
 
   split( sample_1, parts, 5 );
 
-  ASSERT_EQ( 5, parts.size() );
-  ASSERT_NE( 0, sample_1.size() );
+  ASSERT_EQ( 5ul, parts.size() );
+  ASSERT_NE( 0ul, sample_1.size() );
 
-  ASSERT_EQ( 0, parts[ 0 ].size() );
-  ASSERT_EQ( 1, parts[ 1 ].size() );
-  ASSERT_EQ( 1, parts[ 2 ].size() );
-  ASSERT_EQ( 1, parts[ 3 ].size() );
-  ASSERT_EQ( 1, parts[ 4 ].size() );
+  ASSERT_EQ( 0ul, parts[ 0 ].size() );
+  ASSERT_EQ( 1ul, parts[ 1 ].size() );
+  ASSERT_EQ( 1ul, parts[ 2 ].size() );
+  ASSERT_EQ( 1ul, parts[ 3 ].size() );
+  ASSERT_EQ( 1ul, parts[ 4 ].size() );
 }
 
 TEST( set_manipulators, split_work_equal )
@@ -112,19 +112,19 @@ TEST( set_manipulators, split_work_equal )
 
   split( work, parts, 2 );
 
-  auto total_placements = 0;
+  size_t total_placements = 0;
   for( auto& pq : sample_1 ) {
     total_placements += pq.size();
   }
 
-  auto total_work = 0;
+  size_t total_work = 0;
   for( auto& w : parts ) {
     total_work += w.size();
   }
 
   EXPECT_EQ( total_placements, total_work );
 
-  ASSERT_EQ( 2, parts.size() );
+  ASSERT_EQ( 2ul, parts.size() );
   ASSERT_EQ( total_placements, work.size() );
 
   // for (auto& p : parts)
@@ -141,8 +141,8 @@ TEST( set_manipulators, split_work_equal )
   //   printf("\n");
   // }
 
-  ASSERT_EQ( 4, parts[ 0 ].size() );
-  ASSERT_EQ( 3, parts[ 1 ].size() );
+  ASSERT_EQ( 4ul, parts[ 0 ].size() );
+  ASSERT_EQ( 3ul, parts[ 1 ].size() );
 }
 
 TEST( set_manipulators, split_work_equal_large )
@@ -156,7 +156,7 @@ TEST( set_manipulators, split_work_equal_large )
   split( work, parts, stage_size );
 
   for( size_t i = 0; i < stage_size; ++i ) {
-    ASSERT_GT( parts[ i ].size(), 0 );
+    ASSERT_GT( parts[ i ].size(), 0ul );
   }
 }
 
@@ -171,7 +171,7 @@ TEST( set_manipulators, split_work_empty )
   split( work, parts, stage_size );
 
   for( size_t i = 0; i < stage_size; ++i ) {
-    ASSERT_EQ( parts[ i ].size(), 0 );
+    ASSERT_EQ( parts[ i ].size(), 0ul );
   }
 }
 
@@ -197,9 +197,9 @@ TEST( set_manipulators, split_work_null_parts )
 
   for( size_t i = 0; i < stage_size; ++i ) {
     if( i < num_seqs * num_branches ) {
-      ASSERT_EQ( parts[ i ].size(), 1 );
+      ASSERT_EQ( parts[ i ].size(), 1ul );
     } else {
-      ASSERT_EQ( parts[ i ].size(), 0 );
+      ASSERT_EQ( parts[ i ].size(), 0ul );
     }
   }
 }
@@ -295,12 +295,12 @@ TEST( set_manipulators, merge_sample )
 
   merge( sample_1, sample_2 );
 
-  ASSERT_EQ( 4, sample_1.size() );
+  ASSERT_EQ( 4ul, sample_1.size() );
 
-  EXPECT_EQ( 1, sample_1[ 0 ].size() );
-  EXPECT_EQ( 2, sample_1[ 1 ].size() );
-  EXPECT_EQ( 2, sample_1[ 2 ].size() );
-  EXPECT_EQ( 1, sample_1[ 3 ].size() );
+  EXPECT_EQ( 1ul, sample_1[ 0 ].size() );
+  EXPECT_EQ( 2ul, sample_1[ 1 ].size() );
+  EXPECT_EQ( 2ul, sample_1[ 2 ].size() );
+  EXPECT_EQ( 1ul, sample_1[ 3 ].size() );
 }
 
 TEST( set_manipulators, find_collapse_equal_sequences )
@@ -320,12 +320,12 @@ TEST( set_manipulators, find_collapse_equal_sequences )
 
   // test
   find_collapse_equal_sequences( msa );
-  EXPECT_EQ( 4, msa.size() );
+  EXPECT_EQ( 4ul, msa.size() );
 
-  EXPECT_EQ( 3, msa[ 0 ].header_list().size() );
-  EXPECT_EQ( 3, msa[ 1 ].header_list().size() );
-  EXPECT_EQ( 2, msa[ 2 ].header_list().size() );
-  EXPECT_EQ( 2, msa[ 3 ].header_list().size() );
+  EXPECT_EQ( 3ul, msa[ 0 ].header_list().size() );
+  EXPECT_EQ( 3ul, msa[ 1 ].header_list().size() );
+  EXPECT_EQ( 2ul, msa[ 2 ].header_list().size() );
+  EXPECT_EQ( 2ul, msa[ 3 ].header_list().size() );
 }
 
 // TEST(set_manipulators, get_valid_range)

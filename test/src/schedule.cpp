@@ -22,7 +22,7 @@ TEST( schedule, solve )
   //   printf("%d, ", n);
 
   // printf("\nTotal: %d\n", accumulate(nps.begin(), nps.end(), 0));
-  EXPECT_EQ( accumulate( nps.begin(), nps.end(), 0 ), nodes );
+  EXPECT_EQ( accumulate( nps.begin(), nps.end(), 0u ), nodes );
 }
 
 TEST( schedule, to_difficulty )

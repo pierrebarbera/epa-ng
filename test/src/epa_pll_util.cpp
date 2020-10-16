@@ -27,10 +27,10 @@ TEST( epa_pll_util, make_partition )
   tree = build_tree_from_file( env->tree_file, nums, dummy );
   part = make_partition( env->model, tree, nums, msa.num_sites(), Options() );
 
-  EXPECT_EQ( nums.tip_nodes, 8 );
-  EXPECT_EQ( nums.nodes, 14 );
-  EXPECT_EQ( nums.inner_nodes, 6 );
-  EXPECT_EQ( nums.branches, 13 );
+  EXPECT_EQ( nums.tip_nodes, 8u );
+  EXPECT_EQ( nums.nodes, 14u );
+  EXPECT_EQ( nums.inner_nodes, 6u );
+  EXPECT_EQ( nums.branches, 13u );
 
   pll_partition_destroy( part );
   pll_utree_destroy( tree, nullptr );
@@ -121,26 +121,31 @@ static void precompute_clvs_test( Options o )
                                               x->back->clv_index,
                                               x->back->scaler_index,
                                               x->pmatrix_index,
-                                              param_indices, nullptr );
+                                              param_indices,
+                                              nullptr );
     if( !first ) {
       EXPECT_DOUBLE_EQ( log_old, log_new );
       if( fabs( log_old - log_new ) > 1e-10 ) {
-        // failure++;
-
         printf( "Failure!\n" );
         printf( "new logl: %f\n", log_new );
         printf( "IDX is: %lu\n", static_cast< unsigned long >( id ) );
-        printf( "x->clv_index: \t\t%u\t%p\n", x->clv_index, part->clv[ x->clv_index ] );
-        printf( "x->scaler_index: \t%d\t%p\n", x->scaler_index, part->scale_buffer[ x->scaler_index ] );
-        printf( "x->back->clv_index: \t%u\t%p\n", x->back->clv_index, part->clv[ x->back->clv_index ] );
-        printf( "x->back->scaler_index: \t%d\t%p\n", x->back->scaler_index, part->scale_buffer[ x->back->scaler_index ] );
+        printf( "x->clv_index: \t\t%u\t%p\n",
+                x->clv_index,
+                static_cast< void* >( part->clv[ x->clv_index ] ) );
+        printf( "x->scaler_index: \t%d\t%p\n",
+                x->scaler_index,
+                static_cast< void* >( part->scale_buffer[ x->scaler_index ] ) );
+        printf( "x->back->clv_index: \t%u\t%p\n",
+                x->back->clv_index,
+                static_cast< void* >( part->clv[ x->back->clv_index ] ) );
+        printf( "x->back->scaler_index: \t%d\t%p\n",
+                x->back->scaler_index,
+                static_cast< void* >(
+                    part->scale_buffer[ x->back->scaler_index ] ) );
         printf( "Is tip? %d\n", ( x->next == nullptr ) );
         printf( "Back tip? %d\n", ( x->back->next == nullptr ) );
         printf( "\n" );
       }
-      // else {
-      //   // success++;
-      // }
     } else {
       log_old = log_new;
     }
@@ -182,8 +187,8 @@ TEST( epa_pll_util, split_combined_msa )
   split_combined_msa( combined_msa, query_msa, tree );
 
   EXPECT_EQ( combined_msa.num_sites(), query_msa.num_sites() );
-  EXPECT_EQ( combined_msa.size(), 8 );
-  EXPECT_EQ( query_msa.size(), 2 );
+  EXPECT_EQ( combined_msa.size(), 8ul );
+  EXPECT_EQ( query_msa.size(), 2ul );
 
   for( auto x : combined_msa ) {
     for( auto y : query_msa ) {
