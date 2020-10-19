@@ -35,7 +35,7 @@ static void place_( Options const options )
   auto root = get_root( ref_tree.tree() );
 
   // tests
-  Tiny_Tree tt( root, 0, ref_tree );
+  Tiny_Tree tt( root, 0, ref_tree, ref_tree.memsave() );
 
   for( auto const& x : queries ) {
     auto place = tt.place( x, not options.prescoring, options );
@@ -126,9 +126,10 @@ static void place_from_binary( Options const options )
 
   // test
   for( size_t i = 0; i < original_traversed; i++ ) {
-    // TODO: deep copy test?
-    Tiny_Tree original_tiny( original_branches[ i ], i, original_tree );
-    Tiny_Tree read_tiny( read_branches[ i ], i, read_tree );
+    Tiny_Tree original_tiny(
+        original_branches[ i ], i, original_tree, original_tree.memsave() );
+    Tiny_Tree read_tiny(
+        read_branches[ i ], i, read_tree, read_tree.memsave() );
 
     size_t seq_id = 0;
     for( auto& seq : queries ) {

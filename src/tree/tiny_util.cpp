@@ -179,7 +179,7 @@ pll_partition_t* make_tiny_partition( pll_partition_t const* const old_partition
   assert( old_proximal );
   assert( old_distal );
 
-  // ensure: never deep copy from memory managed partitions.
+  // ensure: never shallow copy from memory managed partitions.
   assert( not( ( old_partition->attributes & PLL_ATTRIB_LIMIT_MEMORY )
                and not deep_copy_clvs ) );
 

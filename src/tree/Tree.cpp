@@ -126,11 +126,11 @@ Tree::Tree( std::string const& bin_file,
 }
 
 /**
-  Returns a pointer either to the CLV or tipchar buffer, depending on the index.
-  If they are not currently in memory, fetches them from file.
-  Ensures that associated scalers are allocated and ready on return.
+  Ensures that associated clv, tipchars, scalers are allocated and ready on
+  return. If they are not currently in memory, fetches them from file if in
+  Binary mode, or recomputes them in memsave mode.
 */
-void* Tree::get_clv( pll_unode_t const* const node )
+void Tree::ensure_clv_loaded( pll_unode_t const* const node )
 {
   auto const i = node->clv_index;
 
@@ -144,9 +144,8 @@ void* Tree::get_clv( pll_unode_t const* const node )
     throw std::runtime_error{ "Node index out of bounds" };
   }
 
-  void* clv_ptr = nullptr;
   if( use_tipchars and i < partition_->tips ) {
-    clv_ptr = partition_->tipchars[ i ];
+    auto clv_ptr = partition_->tipchars[ i ];
     // dynamically load from disk if not in memory
     if( options_.load_binary_mode
         and clv_ptr == nullptr ) {
@@ -154,12 +153,22 @@ void* Tree::get_clv( pll_unode_t const* const node )
       clv_ptr = partition_->tipchars[ i ];
     }
   } else {
-    clv_ptr = partition_->clv[ i ];
-    // dynamically load from disk if not in memory
-    if( options_.load_binary_mode
-        and clv_ptr == nullptr ) {
-      binary_.load_clv( partition_.get(), i );
-      clv_ptr = partition_->clv[ i ];
+    auto clv_ptr = pll_get_clv_reading(partition_.get(), i );
+    if (clv_ptr == nullptr) {
+      if( options_.load_binary_mode ) {
+        // dynamically load from disk if not in memory
+        binary_.load_clv( partition_.get(), i );
+        clv_ptr = pll_get_clv_reading(partition_.get(), i );
+      } else if( this->memsave() ) {
+        // kick off the partial traversal clv computation
+        partial_compute_clvs( tree_.get(),
+                          nums_,
+                          memsave_.subtree_sizes(),
+                          const_cast<pll_unode_t*const>(node),
+                          partition_.get() );
+      } else {
+        throw std::runtime_error{"Could not fetch CLV."};
+      }
     }
   }
 
@@ -169,8 +178,6 @@ void* Tree::get_clv( pll_unode_t const* const node )
       and partition_->scale_buffer[ scaler ] == nullptr ) {
     binary_.load_scaler( partition_.get(), scaler );
   }
-
-  return clv_ptr;
 }
 
 double Tree::ref_tree_logl()
@@ -178,8 +185,8 @@ double Tree::ref_tree_logl()
   std::vector< unsigned int > param_indices( partition_->rate_cats, 0 );
   auto const root = get_root( tree_.get() );
   // ensure clvs are there
-  this->get_clv( root );
-  this->get_clv( root->back );
+  this->ensure_clv_loaded( root );
+  this->ensure_clv_loaded( root->back );
 
   auto logl = pll_compute_edge_loglikelihood( partition_.get(),
                                               root->clv_index,

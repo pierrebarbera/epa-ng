@@ -254,9 +254,6 @@ void partial_compute_clvs( pll_utree_t* const tree,
   partition->clv_man->is_pinned[ node->clv_index ]       = false;
   partition->clv_man->is_pinned[ node->back->clv_index ] = false;
 
-  // assert( pll_get_clv_reading( partition, node->clv_index ) );
-  // assert( pll_get_clv_reading( partition, node->back->clv_index ) );
-
   // cleanup
   // unset the data pointers juuust incase some free() gets called
   for( size_t i = 0; i < nodes_count; ++i ) {

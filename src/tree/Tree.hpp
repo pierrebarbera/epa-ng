@@ -99,7 +99,7 @@ class Tree {
     return branch_id_[ node_index ];
   }
 
-  void* get_clv( pll_unode_t const* const );
+  void ensure_clv_loaded( pll_unode_t const* const );
 
   double ref_tree_logl();
 

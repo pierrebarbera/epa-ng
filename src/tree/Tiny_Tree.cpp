@@ -153,8 +153,8 @@ Tiny_Tree::Tiny_Tree( pll_unode_t* edge_node,
       utree_destroy );
 
   // ensure the clvs are there to be copied
-  reference_tree.get_clv( old_distal );
-  reference_tree.get_clv( old_proximal );
+  reference_tree.ensure_clv_loaded( old_distal );
+  reference_tree.ensure_clv_loaded( old_proximal );
 
   partition_ = std::unique_ptr< pll_partition_t, partition_deleter >(
       make_tiny_partition( reference_tree.partition(),

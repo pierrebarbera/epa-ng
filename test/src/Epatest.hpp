@@ -65,7 +65,7 @@ static inline Options get_options_config( unsigned int const d )
 template< class Func >
 void all_combinations( Func f, bool const verbose = false )
 {
-  for( size_t i = 0; i < pow( 2, 5 ); ++i ) {
+  for( size_t i = 0; i < pow( 2, 6 ); ++i ) {
     auto o = get_options_config( i );
     if( verbose ) {
       printf( "\nrepeats\toptim\tsliding\tprescor\tmasking\tmemsave\n" );

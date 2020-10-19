@@ -89,10 +89,10 @@ static void read_( Options options )
     check_equal( o, r );
     
     // ensure the read_tree has all CLVs, tipchars and scalers loaded
-    read_tree.get_clv( r );
+    read_tree.ensure_clv_loaded( r );
     if( r->next ) {
-      read_tree.get_clv( r->next );
-      read_tree.get_clv( r->next->next );
+      read_tree.ensure_clv_loaded( r->next );
+      read_tree.ensure_clv_loaded( r->next->next );
     }
   }
 
