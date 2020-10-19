@@ -344,7 +344,7 @@ pll_partition_t* make_partition( raxml::Model const& model,
   if( ( options.scaling == Options::NumericalScaling::kOn )
       or ( ( options.scaling == Options::NumericalScaling::kAuto )
            and nums.large_tree() ) ) {
-    attributes = PLL_ATTRIB_RATE_SCALERS;
+    attributes |= PLL_ATTRIB_RATE_SCALERS;
   }
 
   if( options.repeats ) {
