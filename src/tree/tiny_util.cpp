@@ -98,7 +98,10 @@ static void deep_copy_scaler( pll_partition_t* dest_part,
   if( src_node->scaler_index != PLL_SCALE_BUFFER_NONE
       and src_part->scale_buffer[ src_node->scaler_index ] != nullptr ) {
 
-    auto const sites_alloc = src_part->asc_additional_sites + src_part->sites;
+    // sites in the associated CLV (correct number if repeats)
+    auto const sites = pll_get_sites_number( src_part, src_node->clv_index );
+
+    auto const sites_alloc = src_part->asc_additional_sites + sites;
     auto const scaler_size = ( src_part->attributes & PLL_ATTRIB_RATE_SCALERS )
         ? sites_alloc * src_part->rate_cats
         : sites_alloc;

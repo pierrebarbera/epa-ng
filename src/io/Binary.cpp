@@ -314,9 +314,13 @@ void dump_to_binary( Tree& tree, std::string const& file )
   auto const scaler_ptr = tree.partition()->scale_buffer;
 
   for( size_t scaler_index = 0; scaler_index < num_scalers; scaler_index++ ) {
-
-    auto const scaler_size = pll_get_sites_number( tree.partition(),
-                                                   scaler_to_clv[ scaler_index ] );
+    auto const sites       = pll_get_sites_number( tree.partition(),
+                                             scaler_to_clv[ scaler_index ] );
+    auto const sites_alloc = tree.partition()->asc_additional_sites + sites;
+    auto const scaler_size
+        = ( tree.partition()->attributes & PLL_ATTRIB_RATE_SCALERS )
+        ? sites_alloc * tree.partition()->rate_cats
+        : sites_alloc;
 
     // with the repeats the scale buffers might not be allocated. dirty fix:
     // allocate them in this case, just so they can be written and later used
