@@ -30,12 +30,6 @@ TEST( Binary, write )
   all_combinations( write_ );
 }
 
-static int full_trav( pll_unode_t* )
-{
-  return 1;
-}
-
-
 static double loglh( pll_partition* partition, pll_unode_t* node )
 {
   std::vector< unsigned int > param_indices( partition->rate_cats, 0 );

@@ -38,7 +38,7 @@ static void place_( Options const options )
   Tiny_Tree tt( root, 0, ref_tree );
 
   for( auto const& x : queries ) {
-    auto place = tt.place( x, options.prescoring, options );
+    auto place = tt.place( x, not options.prescoring, options );
     auto brlen = root->length;
     EXPECT_NE( place.likelihood(), 0.0 );
     EXPECT_NE( place.likelihood(), std::numeric_limits< double >::infinity() );
@@ -133,8 +133,8 @@ static void place_from_binary( Options const options )
     size_t seq_id = 0;
     for( auto& seq : queries ) {
       auto orig_place
-          = original_tiny.place( seq, !options.prescoring, options );
-      auto read_place = read_tiny.place( seq, !options.prescoring, options );
+          = original_tiny.place( seq, not options.prescoring, options );
+      auto read_place = read_tiny.place( seq, not options.prescoring, options );
 
       ASSERT_DOUBLE_EQ( orig_place.likelihood(), read_place.likelihood() );
 
