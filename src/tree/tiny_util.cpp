@@ -13,8 +13,12 @@ constexpr unsigned int distal_clv_index_if_tip   = 2;
 constexpr unsigned int distal_clv_index_if_inner = 5;
 
 template< class T,
-          typename = typename std::enable_if< std::is_pointer< T >::value >::type >
-static void alloc_and_copy( T& dest, T const src, size_t const size )
+          typename
+          = typename std::enable_if< std::is_pointer< T >::value >::type >
+static void alloc_and_copy( T& dest,
+                            T const src,
+                            size_t const size,
+                            size_t const alignment = 0ul )
 {
   using base_t = std::remove_pointer_t< decltype( src ) >;
 
@@ -22,7 +26,12 @@ static void alloc_and_copy( T& dest, T const src, size_t const size )
     free( dest );
   }
 
-  dest = static_cast< T >( calloc( size, sizeof( base_t ) ) );
+  if( alignment ) {
+    dest = static_cast< T >(
+        pll_aligned_alloc( size * sizeof( base_t ), alignment ) );
+  } else {
+    dest = static_cast< T >( calloc( size, sizeof( base_t ) ) );
+  }
 
   if( dest == nullptr ) {
     throw std::runtime_error { "Can't alloc memory." };
@@ -126,6 +135,22 @@ static void deep_copy_repeats( pll_partition_t* dest_part,
     alloc_and_copy( dest_part->repeats->pernode_id_site[ dest_node->clv_index ],
                     src_part->repeats->pernode_id_site[ src_node->clv_index ],
                     size );
+  }
+}
+
+// the fact that I have to write this function makes my blood boil
+size_t size_of_ttlookup( pll_partition const* const partition )
+{
+  if( ( partition->states == 4 )
+      && ( partition->attributes & PLL_ATTRIB_ARCH_AVX )
+      && PLL_STAT( avx_present ) ) {
+    return 1024 * partition->rate_cats;
+  } else {
+    unsigned int l2_maxstates
+        = static_cast< unsigned int >( ceil( log2( partition->maxstates ) ) );
+    size_t alloc_size = ( 1 << ( 2 * l2_maxstates ) )
+        * ( partition->states_padded * partition->rate_cats );
+    return alloc_size;
   }
 }
 
@@ -239,23 +264,25 @@ pll_partition_t* make_tiny_partition( pll_partition_t const* const old_partition
   tiny->pattern_weights = old_partition->pattern_weights;
 
   if( use_tipchars ) {
-    // manually alloc or shallow-copy the tipchar structures.
-    // shallow copy the charmap and tipmap
-    tiny->charmap   = old_partition->charmap;
-    tiny->tipmap    = old_partition->tipmap;
-    tiny->ttlookup  = old_partition->ttlookup;
-
     // alloc the tipchars array
     assert( tiny->tipchars == nullptr );
     tiny->tipchars = static_cast< unsigned char** >(
         calloc( tiny->tips, sizeof( unsigned char* ) ) );
-    // alloc only the needed tips
+
+    // hardcopy the charmap buffers
+    alloc_and_copy( tiny->charmap, old_partition->charmap, PLL_ASCII_SIZE );
+    alloc_and_copy( tiny->tipmap, old_partition->tipmap, PLL_ASCII_SIZE );
+    alloc_and_copy( tiny->ttlookup,
+                    old_partition->ttlookup,
+                    size_of_ttlookup( old_partition ),
+                    old_partition->alignment );
+    tiny->maxstates = old_partition->maxstates;
+
+    // alloc the memory for the pendant/query tip
     auto const sites_alloc
         = tiny->asc_bias_alloc ? tiny->sites + tiny->states : tiny->sites;
     tiny->tipchars[ new_tip_clv_index ] = static_cast< unsigned char* >(
         calloc( sites_alloc, sizeof( unsigned char ) ) );
-    // thats it, we never use one of the three tipchars, and the last we only
-    // need in the tip tip case, in which case we shallow copy
   }
 
   // handle the distal
