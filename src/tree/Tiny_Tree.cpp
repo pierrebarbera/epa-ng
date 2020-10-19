@@ -56,27 +56,39 @@ void Tiny_Tree::get_persite_logl( char const nt,
                                   &result[ 0 ] );
 }
 
+static void update_partial( pll_partition_t* partition, pll_unode_t* target )
+{
+  // either way, call update partial for the inner
+  auto child1 = target->next->back;
+  auto child2 = target->next->next->back;
+
+  pll_operation_t op;
+  op.parent_clv_index    = target->clv_index;
+  op.parent_scaler_index = target->scaler_index;
+  op.child1_clv_index    = child1->clv_index;
+  op.child1_scaler_index = child1->scaler_index;
+  op.child1_matrix_index = child1->pmatrix_index;
+  op.child2_clv_index    = child2->clv_index;
+  op.child2_scaler_index = child2->scaler_index;
+  op.child2_matrix_index = child2->pmatrix_index;
+
+  pll_update_partials( partition, &op, 1 );
+}
+
 static void first_partition_calc( pll_utree_t* tree,
                                   pll_partition_t* partition )
 {
   // operation for computing the clv toward the new tip (for initialization and
   // logl in non-blo case)
-  auto proximal = tree->nodes[ 0 ];
-  auto distal   = tree->nodes[ 1 ];
-  auto inner    = tree->nodes[ 3 ];
+  auto const proximal = tree->nodes[ 0 ];
+  auto const distal   = tree->nodes[ 1 ];
+  auto const inner    = tree->nodes[ 3 ];
 
-  pll_operation_t op;
-  op.parent_clv_index    = inner->clv_index;
-  op.child1_clv_index    = distal->clv_index;
-  op.child1_scaler_index = distal->scaler_index;
-  op.child2_clv_index    = proximal->clv_index;
-  op.child2_scaler_index = proximal->scaler_index;
-  op.parent_scaler_index = inner->scaler_index;
-  op.child1_matrix_index = distal->pmatrix_index;
-  op.child2_matrix_index = proximal->pmatrix_index;
 
   // whether heuristic is used or not, this is the initial branch length
   // configuration
+  // TODO the setting of matrix indices and lengths is onfusing and error prone.
+  // check consitency! and move to something self-consistent
   double branch_lengths[ 3 ]
       = { proximal->length, distal->length, inner->length };
   unsigned int matrix_indices[ 3 ] = { proximal->pmatrix_index,
@@ -89,7 +101,7 @@ static void first_partition_calc( pll_utree_t* tree,
       partition, &param_indices[ 0 ], matrix_indices, branch_lengths, 3 );
 
   // use update_partials to compute the clv pointing toward the new tip
-  pll_update_partials( partition, &op, 1 );
+  update_partial( partition, inner );
 }
 
 /* Encapsulates a smallest possible unrooted tree (3 tip nodes, 1 inner node)
@@ -268,21 +280,24 @@ Placement Tiny_Tree::place( Sequence const& s,
     reset_triplet_lengths( inner, partition_.get(), original_branch_length_ );
   }
 
-  // re-update the partial
-  auto child1 = virtual_root->next->back;
-  auto child2 = virtual_root->next->next->back;
+  // in the opt_branches case, we need to do a final update to the inner-partial
+  // in preparation of the next iteration
+  // TODO it should be done before, not after (probably)
 
-  pll_operation_t op;
-  op.parent_clv_index    = virtual_root->clv_index;
-  op.parent_scaler_index = virtual_root->scaler_index;
-  op.child1_clv_index    = child1->clv_index;
-  op.child1_scaler_index = child1->scaler_index;
-  op.child1_matrix_index = child1->pmatrix_index;
-  op.child2_clv_index    = child2->clv_index;
-  op.child2_scaler_index = child2->scaler_index;
-  op.child2_matrix_index = child2->pmatrix_index;
+  // in the non-opt_branches case, we need to do it for the first time
+  // either way, call update partial for the inner
+  update_partial( partition_.get(), inner );
 
-  pll_update_partials( partition_.get(), &op, 1 );
+  if ( not opt_branches ) {
+    logl = pll_compute_edge_loglikelihood( partition_.get(),
+                                           new_tip->clv_index,
+                                           PLL_SCALE_BUFFER_NONE,
+                                           inner->clv_index,
+                                           inner->scaler_index,
+                                           inner->pmatrix_index,
+                                           &param_indices[ 0 ],
+                                           nullptr );
+  }
 
   if( logl == -std::numeric_limits< double >::infinity() ) {
     throw std::runtime_error{ std::string( "-INF logl at branch " )
