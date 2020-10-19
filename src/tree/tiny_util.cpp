@@ -171,7 +171,7 @@ pll_partition_t* make_tiny_partition( pll_partition_t const* const old_partition
 
   pll_partition_t* tiny = pll_partition_create(
       3, // tips
-      1 + num_clv_tips, // extra clv's
+      1 + num_clv_tips, // extra clvs
       old_partition->states,
       old_partition->sites,
       old_partition->rate_matrices,
@@ -259,9 +259,9 @@ pll_partition_t* make_tiny_partition( pll_partition_t const* const old_partition
   }
 
   // handle the distal
-  if( tip_tip_case and use_tipchars) {
+  if( tip_tip_case and use_tipchars ) {
     tiny->tipchars[ distal->clv_index ]
-      = old_partition->tipchars[ old_distal->clv_index ];
+        = old_partition->tipchars[ old_distal->clv_index ];
   } else {
     if( deep_copy_clvs ) {
       deep_copy_clv( tiny, distal, old_partition, old_distal );
@@ -334,8 +334,12 @@ void tiny_partition_destroy( pll_partition_t* partition,
     bool const distal_is_tip    = partition->clv_buffers == 3 ? false : true;
     bool const pattern_tip_mode = partition->attributes & PLL_ATTRIB_PATTERN_TIP;
 
-    if( distal_is_tip and pattern_tip_mode ) {
-      partition->tipchars[ distal_clv_index_if_tip ] = nullptr;
+    if( distal_is_tip ) {
+      if( pattern_tip_mode ) {
+        partition->tipchars[ distal_clv_index_if_tip ] = nullptr;
+      } else if ( not deep_copy_clvs ) {
+          partition->clv[ distal_clv_index_if_tip ] = nullptr;
+      }
     } else if( not deep_copy_clvs ) {
       partition->clv[ distal_clv_index_if_inner ] = nullptr;
     }
@@ -367,7 +371,7 @@ pll_utree_t* make_tiny_tree_structure( pll_unode_t const* old_proximal,
   unsigned int const inner_scaler_index    = 1;
   unsigned int const proximal_scaler_index = 0;
   unsigned int const distal_scaler_index   = 2;
-
+ 
   /**
     As we work with PLL_PATTERN_TIP functionality, special care has to be taken
     in regards to the tree and partition structure: PLL assumes that any node
