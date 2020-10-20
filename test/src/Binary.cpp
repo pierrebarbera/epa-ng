@@ -48,7 +48,9 @@ static void read_( Options options )
 {
   SKIP_CONFIG( options.memsave );
   // setup
-  auto msa = build_MSA_from_file( env->reference_file, MSA_Info( env->reference_file ), options.premasking );
+  auto msa = build_MSA_from_file( env->reference_file,
+                                  MSA_Info( env->reference_file ),
+                                  options.premasking );
   raxml::Model model;
   Tree original_tree( env->tree_file, msa, model, options );
   dump_to_binary( original_tree, env->binary_file );
@@ -60,8 +62,10 @@ static void read_( Options options )
   auto read_part = read_tree.partition();
 
   // compare numbered jplace strings
-  string original_nns( get_numbered_newick_string( original_tree.tree(), rtree_mapper() ) );
-  string read_nns( get_numbered_newick_string( read_tree.tree(), rtree_mapper() ) );
+  string original_nns(
+      get_numbered_newick_string( original_tree.tree(), rtree_mapper() ) );
+  string read_nns(
+      get_numbered_newick_string( read_tree.tree(), rtree_mapper() ) );
 
   EXPECT_STREQ( original_nns.c_str(), read_nns.c_str() );
   // compare tree traversals
@@ -89,7 +93,7 @@ static void read_( Options options )
     // printf("orig: %d back: %d\n", o->clv_index, o->back->clv_index);
     // printf("read: %d back: %d\n", r->clv_index, r->back->clv_index);
     check_equal( o, r );
-    
+
     // ensure the read_tree has all CLVs, tipchars and scalers loaded
     read_tree.ensure_clv_loaded( r );
     if( r->next ) {
@@ -98,8 +102,11 @@ static void read_( Options options )
     }
   }
 
+
   // compare the partitions
   check_equal( *part, *read_part );
+  check_equal_scalers(
+      *part, *read_part, *original_tree.tree(), *read_tree.tree() );
 
   // finally, compare some likelihoods
   for( size_t i = 0; i < read_traversed; i++ ) {
@@ -112,7 +119,4 @@ static void read_( Options options )
   }
 }
 
-TEST( Binary, read )
-{
-  all_combinations( read_ );
-}
+TEST( Binary, read ) { all_combinations( read_ ); }

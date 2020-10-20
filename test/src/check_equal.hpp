@@ -16,6 +16,7 @@ inline void check_equal_subnode( pll_unode_t const* const a,
   EXPECT_EQ( a->node_index, b->node_index );
   EXPECT_EQ( a->clv_index, b->clv_index );
   EXPECT_EQ( a->scaler_index, b->scaler_index );
+  // printf("clv_index: %u scaler_index: %u\n", a->clv_index, a->scaler_index);
   EXPECT_EQ( a->pmatrix_index, b->pmatrix_index );
 }
 
@@ -43,27 +44,46 @@ inline void check_equal( pll_utree_t const& lhs, pll_utree_t const& rhs )
   }
 }
 
-// inline std::vector< unsigned int > scaler_to_clv_map( Tree const& tree )
-// {
-//   auto const num_scalers = tree.partition()->scale_buffers;
-//   std::vector< unsigned int > map( num_scalers );
+inline void check_equal_scalers( pll_partition_t const& lhs_part,
+                          pll_partition_t const& rhs_part,
+                          int const scaler_index )
+{
+  if( scaler_index != PLL_SCALE_BUFFER_NONE ) {
+    auto const scaler_size = pll_get_sites_number( &lhs_part, scaler_index );
+    ASSERT_EQ( scaler_size, pll_get_sites_number( &rhs_part, scaler_index ) );
+    if( lhs_part.scale_buffer[ scaler_index ]
+        and rhs_part.scale_buffer[ scaler_index ] ) {
+      for( size_t j = 0; j < scaler_size; j++ ) {
+        EXPECT_EQ( lhs_part.scale_buffer[ scaler_index ][ j ],
+                   rhs_part.scale_buffer[ scaler_index ][ j ] ) << "j = " << j;
+      }
+    } else {
+      ASSERT_EQ( lhs_part.scale_buffer[ scaler_index ],
+                 rhs_part.scale_buffer[ scaler_index ] )
+          << "scaler_index = " << scaler_index;
+    }
+  }
+}
 
-//   std::vector< pll_unode_t* > travbuffer( tree.nums().nodes );
-//   unsigned int trav_size = 0;
-//   pll_utree_traverse( get_root( tree.tree() ),
-//                       PLL_TREE_TRAVERSE_POSTORDER,
-//                       full_trav,
-//                       &travbuffer[ 0 ],
-//                       &trav_size );
+inline void check_equal_scalers( pll_partition_t const& lhs_part,
+                                 pll_partition_t const& rhs_part,
+                                 pll_utree_t const& lhs_tree,
+                                 pll_utree_t const& rhs_tree )
+{
+  // somewhat gratuitous check that the trees are equal
+  check_equal( lhs_tree, rhs_tree );
 
-//   for( auto& n : travbuffer ) {
-//     if( n->scaler_index != PLL_SCALE_BUFFER_NONE ) {
-//       map[ n->scaler_index ] = n->clv_index;
-//     }
-//   }
-
-//   return map;
-// }
+  for( size_t i = 0; i < lhs_tree.tip_count + lhs_tree.inner_count; ++i ) {
+    check_equal_scalers(
+        lhs_part, rhs_part, lhs_tree.nodes[ i ]->scaler_index );
+    if( lhs_tree.nodes[ i ]->next ) {
+      check_equal_scalers(
+          lhs_part, rhs_part, lhs_tree.nodes[ i ]->next->scaler_index );
+      check_equal_scalers(
+          lhs_part, rhs_part, lhs_tree.nodes[ i ]->next->next->scaler_index );
+    }
+  }
+}
 
 inline void check_equal( pll_partition_t const& lhs,
                          pll_partition_t const& rhs)
@@ -139,21 +159,6 @@ inline void check_equal( pll_partition_t const& lhs,
       }
     } else {
       ASSERT_EQ( lhs.tipchars, rhs.tipchars );
-    }
-  }
-
-  // check scalers
-  for( size_t i = 0; i < scale_buffers; i++ ) {
-
-    auto const scaler_size = pll_get_sites_number( &lhs, i );
-    ASSERT_EQ( scaler_size, pll_get_sites_number( &rhs, i ) );
-    if( lhs.scale_buffer[ i ] and rhs.scale_buffer[ i ] ) {
-      for( size_t j = 0; j < scaler_size; j++ ) {
-        // printf("%u v %u\n",lhs.scale_buffer[i][j], rhs.scale_buffer[i][j] );
-        EXPECT_EQ( lhs.scale_buffer[ i ][ j ], rhs.scale_buffer[ i ][ j ] );
-      }
-    } else {
-      ASSERT_EQ( lhs.scale_buffer[ i ], rhs.scale_buffer[ i ] );
     }
   }
 
