@@ -334,7 +334,8 @@ void dump_to_binary( Tree& tree, std::string const& file )
     // with the repeats the scale buffers might not be allocated. dirty fix:
     // allocate them in this case, just so they can be written and later used
     if( scaler_ptr[ scaler_index ] == nullptr ) {
-      scaler_ptr[ scaler_index ] = static_cast< unsigned int* >( calloc( scaler_size, sizeof( unsigned int ) ) );
+      scaler_ptr[ scaler_index ] = static_cast< unsigned int* >(
+          calloc( scaler_size, sizeof( unsigned int ) ) );
     }
 
     handle_pll_failure(

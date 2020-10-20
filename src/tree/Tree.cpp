@@ -105,6 +105,7 @@ Tree::Tree( std::string const& bin_file,
   // TODO this needs a major facelift to be able to interoperate with all the new shit
   branch_id_ = get_branch_ids( tree_.get() );
   if( options_.memsave ) {
+    throw std::runtime_error{"Temporarily disabled loading from binary into memsave partition"};
     memsave_ = Memsaver( tree_.get() );
     // set the virtual root to where the traversal through the tree will later
     // (during the parallelized placement) start
@@ -132,33 +133,33 @@ Tree::Tree( std::string const& bin_file,
 */
 void Tree::ensure_clv_loaded( pll_unode_t const* const node )
 {
-  auto const i = node->clv_index;
+  auto const clv_index = node->clv_index;
 
   // prevent race condition from concurrent access to this function
-  Scoped_Mutex lock_by_clv_id( locks_[ i ] );
+  Scoped_Mutex lock_by_clv_id( locks_[ clv_index ] );
 
-  auto const scaler       = node->scaler_index;
+  auto const scaler_index = node->scaler_index;
   bool const use_tipchars = partition_->attributes & PLL_ATTRIB_PATTERN_TIP;
 
-  if( i >= partition_->tips + partition_->clv_buffers ) {
+  if( clv_index >= partition_->tips + partition_->clv_buffers ) {
     throw std::runtime_error{ "Node index out of bounds" };
   }
 
-  if( use_tipchars and i < partition_->tips ) {
-    auto clv_ptr = partition_->tipchars[ i ];
+  if( use_tipchars and clv_index < partition_->tips ) {
+    auto clv_ptr = partition_->tipchars[ clv_index ];
     // dynamically load from disk if not in memory
     if( options_.load_binary_mode
         and clv_ptr == nullptr ) {
-      binary_.load_tipchars( partition_.get(), i );
-      clv_ptr = partition_->tipchars[ i ];
+      binary_.load_tipchars( partition_.get(), clv_index );
+      clv_ptr = partition_->tipchars[ clv_index ];
     }
   } else {
-    auto clv_ptr = pll_get_clv_reading(partition_.get(), i );
+    auto clv_ptr = pll_get_clv_reading(partition_.get(), clv_index );
     if (clv_ptr == nullptr) {
       if( options_.load_binary_mode ) {
         // dynamically load from disk if not in memory
-        binary_.load_clv( partition_.get(), i );
-        clv_ptr = pll_get_clv_reading(partition_.get(), i );
+        binary_.load_clv( partition_.get(), clv_index );
+        clv_ptr = pll_get_clv_reading(partition_.get(), clv_index );
       } else if( this->memsave() ) {
         // kick off the partial traversal clv computation
         partial_compute_clvs( tree_.get(),
@@ -172,11 +173,19 @@ void Tree::ensure_clv_loaded( pll_unode_t const* const node )
     }
   }
 
-  // dynamically load the scaler if needed
-  if( options_.load_binary_mode
-      and scaler != PLL_SCALE_BUFFER_NONE
-      and partition_->scale_buffer[ scaler ] == nullptr ) {
-    binary_.load_scaler( partition_.get(), scaler );
+  // dynamically load the scaler_index if needed
+  if( options_.load_binary_mode ) {
+    if( scaler_index != PLL_SCALE_BUFFER_NONE
+        and partition_->scale_buffer[ scaler_index ] == nullptr ) {
+          binary_.load_scaler( partition_.get(), scaler_index );
+    } else if( partition_->scale_buffer[ clv_index ] == nullptr ) {
+      // the weird case where we are trying to load the scaler of a clv_index
+      // (if they are indeed linked 1 to 1) for a scaler equaling
+      // SCALE_BUFFER_NONE. This basically is only needed if we expect the
+      // scaling situation to change, otherwise it's a pointless overhead.
+      // since in epa-ng, the scaling cannot change and the binary holds a
+      // partition that is "set in stone", we don't do anything here
+    }
   }
 }
 
