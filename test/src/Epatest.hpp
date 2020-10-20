@@ -35,6 +35,8 @@ extern Epatest* env;
 #define COMPL_MASKING ( 1 << 4 )
 #define COMPL_MEMSAVE ( 1 << 5 )
 
+#define SKIP_CONFIG(x) if((x)) { return; }
+
 static inline Options get_options_config( unsigned int const d )
 {
   Options o;

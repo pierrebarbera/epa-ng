@@ -85,6 +85,10 @@ static void compare_samples( Sample<>& orig_samp, Sample<>& read_samp,
 
 static void place_from_binary( Options const options )
 {
+  // skip some configs
+  SKIP_CONFIG( options.memsave );
+
+
   // setup
   auto tree_file      = env->tree_file;
   auto reference_file = env->reference_file;
@@ -172,11 +176,6 @@ static void place_from_binary( Options const options )
 TEST( Tiny_Tree, place_from_binary )
 {
   all_combinations( place_from_binary );
-  // Options o;
-  // o.prescoring = true;
-  // o.opt_model = o.opt_branches = true;
-  // o.repeats = true;
-  // place_from_binary(o);
 }
 
 // TODO test shallow/deepcopy chaining

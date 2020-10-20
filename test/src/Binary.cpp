@@ -15,6 +15,7 @@ using namespace std;
 
 static void write_( Options const options )
 {
+  SKIP_CONFIG( options.memsave );
   // setup
   auto msa = build_MSA_from_file( env->reference_file, MSA_Info( env->reference_file ), options.premasking );
   raxml::Model model;
@@ -45,6 +46,7 @@ static double loglh( pll_partition* partition, pll_unode_t* node )
 
 static void read_( Options options )
 {
+  SKIP_CONFIG( options.memsave );
   // setup
   auto msa = build_MSA_from_file( env->reference_file, MSA_Info( env->reference_file ), options.premasking );
   raxml::Model model;

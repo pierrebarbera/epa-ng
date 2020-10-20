@@ -162,10 +162,10 @@ void Tree::ensure_clv_loaded( pll_unode_t const* const node )
       } else if( this->memsave() ) {
         // kick off the partial traversal clv computation
         partial_compute_clvs( tree_.get(),
-                          nums_,
-                          memsave_.subtree_sizes(),
-                          const_cast<pll_unode_t*const>(node),
-                          partition_.get() );
+                              nums_,
+                              memsave_.subtree_sizes(),
+                              const_cast< pll_unode_t* >( node ),
+                              partition_.get() );
       } else {
         throw std::runtime_error{"Could not fetch CLV."};
       }

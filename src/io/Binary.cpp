@@ -78,6 +78,11 @@ static long int get_offset( std::vector< pll_block_map_t >& map, int const block
 void Binary::load_clv( pll_partition_t* partition,
                        unsigned int const clv_index )
 {
+  if( partition->attributes & PLL_ATTRIB_LIMIT_MEMORY ) {
+    throw std::runtime_error{
+      "Loading from binary into memory managed partition not supported."
+    };
+  }
   assert( bin_fptr_ );
   assert( clv_index < partition->clv_buffers + partition->tips );
   if( partition->attributes & PLL_ATTRIB_PATTERN_TIP ) {
@@ -241,8 +246,9 @@ static auto create_scaler_to_clv_map( Tree& tree )
 }
 
 /**
-  Writes the structures and data encapsulated in Tree to the specified file in the binary format.
-  Writes them in such a way that the Binary class can read them.
+  Writes the structures and data encapsulated in Tree to the specified file in
+  the binary format. Writes them in such a way that the Binary class can read
+  them.
 */
 void dump_to_binary( Tree& tree, std::string const& file )
 {
@@ -303,6 +309,9 @@ void dump_to_binary( Tree& tree, std::string const& file )
 
   // dump the clvs
   for( size_t clv_index = tip_index; clv_index < max_clv_index; clv_index++ ) {
+    // TODO here it should, if in memsave mode, recalculate the CLVs as needed
+    // problem is that requires some traversal, and thus will write the CLVs 
+    // tree.ensure_clv_loaded( node );
     handle_pll_failure(
         not pllmod_binary_clv_dump(
             fptr, block_id++, tree.partition(), clv_index, attributes ),

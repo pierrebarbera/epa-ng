@@ -21,22 +21,14 @@ class Memsaver {
   public:
   Memsaver() = default;
   Memsaver( pll_utree_t* tree )
-      : subtree_sizes_( pll_utree_get_subtree_sizes( tree ) )
+      : subtree_sizes_( pll_utree_get_subtree_sizes( tree ), free )
       , traversal_{ tree->edge_count, nullptr }
   {
     handle_pll_failure( not subtree_sizes_,
                         "pll_utree_get_subtree_sizes failed." );
 
-    // temporarily set the virtual root to one extreme of the tree (any leaf)
-    // however because of the way the traverse function works, it has to be the
-    // corresponding inner node
-    // pll_unode_t* old_root = tree->vroot;
-    // tree->vroot           = tree->nodes[ 0 ]->back;
-
     // get the traversal, hopefully one that minimizes overall recomputations
     utree_query_branches( tree, &traversal_[ 0 ] );
-
-    // tree->vroot = old_root;
   }
 
   ~Memsaver() = default;
@@ -55,7 +47,8 @@ class Memsaver {
   pll_unode_t* traversal( size_t i ) { return traversal_[ i ]; }
 
   private:
-  std::unique_ptr< unsigned int > subtree_sizes_{ nullptr };
+  std::unique_ptr< unsigned int, decltype( free )* > subtree_sizes_{ nullptr,
+                                                                     free };
   std::vector< pll_unode_t* > traversal_;
 };
 
