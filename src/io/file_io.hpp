@@ -16,7 +16,9 @@
 // forward declarations
 class MSA;
 
-MSA build_MSA_from_file( std::string const& msa_file, MSA_Info const& info, bool const premasking = false );
+MSA build_MSA_from_file( std::string const& msa_file,
+                         MSA_Info const& info,
+                         bool const premasking = false );
 pll_utree_s* build_tree_from_file( std::string const& tree_file,
                                    Tree_Numbers& nums,
                                    rtree_mapper& mapper,

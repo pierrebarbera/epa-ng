@@ -11,6 +11,7 @@
 #endif
 
 #include "core/Lookup_Store.hpp"
+#include "core/BranchBuffer.hpp"
 #include "core/Work.hpp"
 #include "core/heuristics.hpp"
 #include "core/pll/epa_pll_util.hpp"
@@ -35,7 +36,54 @@
 #include "net/epa_mpi_util.hpp"
 #endif
 
-using mytimer = Timer< std::chrono::milliseconds >;
+using timer = Timer< std::chrono::milliseconds >;
+
+/**
+ *  Memsaver mode preplacement.
+ *
+ * Placement using default pendant lengths, center insertion point
+ * (preplacement), done via CLV computation managed by the BranchBuffer.
+ */
+template< class T >
+static void preplace( MSA& msa,
+                      BranchBuffer& branchbuf,
+                      Sample< T >& sample,
+                      Options const& options,
+                      timer* time = nullptr )
+{
+
+#ifdef __OMP
+  unsigned int const num_threads
+      = options.num_threads ? options.num_threads : omp_get_max_threads();
+  omp_set_num_threads( num_threads );
+  LOG_DBG << "Using threads: " << num_threads;
+  LOG_DBG << "Max threads: " << omp_get_max_threads();
+#endif
+
+  if( time ) {
+    time->start();
+  }
+
+  BranchBuffer::container_type branch_chunk;
+
+  while( branchbuf.get_next( branch_chunk ) ) {
+    // parallelize over branches: each thread places all queries on its
+    // designated branch
+#pragma omp parallel for schedule( dynamic )
+    for( size_t i = 0; i < branch_chunk.size(); ++i ) {
+      auto& branch = branch_chunk[ i ];
+      // make shallow copy of tinytree if parallelizing here as well!
+      for( size_t seq_id = 0; seq_id < msa.size(); ++seq_id ) {
+        sample[ seq_id ][ branch.branch_id() ]
+            = branch.place( msa[ seq_id ], false, options );
+      }
+    }
+  }
+
+  if( time ) {
+    time->stop();
+  }
+}
 
 /**
  * Placement using default pendant lengths, center insertion point
@@ -47,8 +95,15 @@ static void preplace( MSA& msa,
                       std::vector< pll_unode_t* > const& branches,
                       Sample< T >& sample,
                       Options const& options,
-                      mytimer* time = nullptr )
+                      timer* time = nullptr )
 {
+
+  if( reference_tree.memsave() ) {
+    auto const block_size = options.memory_config.concurrent_branches;
+    BranchBuffer branchbuf( &reference_tree, block_size );
+    preplace( msa, branchbuf, sample, options, time );
+    return;
+  }
 
 #ifdef __OMP
   unsigned int const num_threads = options.num_threads
@@ -117,7 +172,7 @@ static void preplace( MSA& msa,
                       LookupPlacement const& lookup,
                       Sample< T >& sample,
                       Options const& options,
-                      mytimer* time = nullptr )
+                      timer* time = nullptr )
 {
 
 #ifdef __OMP
@@ -161,7 +216,7 @@ static void blo_place( Work const& to_place,
                        Sample< T >& sample,
                        Options const& options,
                        size_t const seq_id_offset = 0,
-                       mytimer* time              = nullptr )
+                       timer* time              = nullptr )
 {
 
 #ifdef __OMP

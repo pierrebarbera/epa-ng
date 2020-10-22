@@ -78,6 +78,8 @@ class Work : public Token {
                             []( size_t a, std::pair< key_type, container_value_type > b ) { return a + b.second.size(); } );
   }
 
+  size_t branches() const { return work_set_.size(); }
+
   bool empty() const { return work_set_.empty(); }
 
   inline void add( key_type branch_id, value_type seq_id )

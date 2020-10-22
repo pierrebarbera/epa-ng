@@ -1,9 +1,11 @@
 #include "Epatest.hpp"
 #include "check_equal.hpp"
 #include "print.hpp"
+#include "get_randomized.hpp"
 
 #include "core/BranchBuffer.hpp"
 
+#include "core/Work.hpp"
 #include "seq/MSA.hpp"
 #include "seq/MSA_Info.hpp"
 #include "tree/Tree.hpp"
@@ -12,8 +14,10 @@
 #include "io/file_io.hpp"
 #include "core/pll/pllhead.hpp"
 
-static void test_buffer( Options const options )
+static void test_buffer_impl( Options const options, bool const whitelisted )
 {
+  Work work;
+
   // buildup
   auto msa        = build_MSA_from_file( env->reference_file,
                                   MSA_Info( env->reference_file ),
@@ -32,13 +36,19 @@ static void test_buffer( Options const options )
 
   ASSERT_TRUE( ref_tree.branch_id() == true_tree.branch_id() );
 
-  // create the buffer
+  // create the buffer  
+  if( whitelisted ) {
+    work = get_randomized_Work( ref_tree.nums().branches, 1, 0.5 );
+  }
+
   size_t const block_size = 10;
-  BranchBuffer bufferino( &ref_tree, block_size );
+  BranchBuffer bufferino( &ref_tree, block_size, work );
 
   BranchBuffer::container_type block;
 
-  while( bufferino.get_next( block, block_size ) ) {
+  size_t branches_tested = 0;
+
+  while( bufferino.get_next( block ) ) {
     for( auto& buffered_tt : block ) {
       auto const branch_id = buffered_tt.branch_id();
       // check for signs of demonic corruption
@@ -59,8 +69,23 @@ static void test_buffer( Options const options )
 
       // compare the two
       check_equal( buffered_tt, true_tt );
+
+      branches_tested++;
     }
   }
+
+  EXPECT_EQ( branches_tested,
+             whitelisted ? work.branches() : ref_tree.nums().branches );
+}
+
+static void test_buffer( Options const options )
+{
+  test_buffer_impl( options, false );
+}
+
+static void test_buffer_whitelisted( Options const options )
+{
+  test_buffer_impl( options, true );
 }
 
 TEST( BranchBuffer, buffer )
@@ -70,5 +95,15 @@ TEST( BranchBuffer, buffer )
   options.memsave = true;
 
   test_buffer( options );
+  // all_combinations( test_buffer );
+}
+
+TEST( BranchBuffer, buffer_whitelisted )
+{
+  Options options;
+
+  options.memsave = true;
+
+  test_buffer_whitelisted( options );
   // all_combinations( test_buffer );
 }

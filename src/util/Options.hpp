@@ -12,6 +12,16 @@ class Options {
     kAuto
   };
 
+  class MemoryConfig
+  {
+  public:
+    MemoryConfig()  = default;
+    ~MemoryConfig() = default;
+
+    size_t concurrent_branches    = 10;
+    bool preplace_lookup_enabled  = false;
+  };
+
   Options()  = default;
   ~Options() = default;
 
@@ -39,4 +49,6 @@ class Options {
   bool preserve_rooting    = true;
   bool preplacement_lookup = true;
   bool memsave = false;
+
+  MemoryConfig memory_config;
 };
