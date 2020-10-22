@@ -19,7 +19,7 @@ class Options {
     ~MemoryConfig() = default;
 
     size_t concurrent_branches    = 10;
-    bool preplace_lookup_enabled  = false;
+    bool preplace_lookup_enabled  = true;
   };
 
   Options()  = default;

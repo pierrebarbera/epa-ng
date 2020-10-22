@@ -219,6 +219,7 @@ class Lookup_Store {
 #endif
 
 #include "core/pll/pllhead.hpp"
+#include "core/BranchBuffer.hpp"
 #include "tree/Tree.hpp"
 
 /**
@@ -232,11 +233,16 @@ class Lookup_Store {
 class LookupPlacement {
   public:
   LookupPlacement( Tree& ref_tree,
-                   std::vector< pll_unode_t* > const& branches )
+                   std::vector< pll_unode_t* > const& branches,
+                   Options const& options )
       : lookup_( ref_tree.nums().branches, ref_tree.partition()->states )
       , pendant_length_( ref_tree.nums().branches, -1.0 )
       , distal_length_( ref_tree.nums().branches, -1.0 )
   {
+#ifdef __OMP
+    omp_set_num_threads( options.num_threads ? options.num_threads
+                                             : omp_get_max_threads() );
+#endif
     auto nums = ref_tree.nums();
     bool const use_memsave
         = ( ref_tree.partition()->attributes & PLL_ATTRIB_LIMIT_MEMORY );
@@ -260,7 +266,24 @@ class LookupPlacement {
 
     } else {
       // otherwise do it in a regulated way ensuring limited memory use
-      throw std::runtime_error{"implement this you dingus"};
+      auto const block_size = options.memory_config.concurrent_branches;
+      BranchBuffer branchbuf( &ref_tree, block_size );
+      BranchBuffer::container_type branch_chunk;
+
+      while( branchbuf.get_next( branch_chunk ) ) {
+        // parallelize over branches: each thread places all queries on its
+        // designated branch
+#pragma omp parallel for schedule( dynamic )
+        for( size_t i = 0; i < branch_chunk.size(); ++i ) {
+          auto& cur_branch     = branch_chunk[ i ];
+          auto const branch_id = cur_branch.branch_id();
+
+          pendant_length_[ branch_id ] = cur_branch.pendant_length();
+          distal_length_[ branch_id ]  = cur_branch.distal_length();
+
+          lookup_.init_branch( cur_branch );
+        }
+      }
     }
   }
 
