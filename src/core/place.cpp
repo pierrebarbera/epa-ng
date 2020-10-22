@@ -97,7 +97,6 @@ static void preplace( MSA& msa,
                       Options const& options,
                       timer* time = nullptr )
 {
-
   if( reference_tree.memsave() ) {
     auto const block_size = options.memory_config.concurrent_branches;
     BranchBuffer branchbuf( &reference_tree, block_size );
@@ -208,6 +207,95 @@ static void preplace( MSA& msa,
   }
 }
 
+/**
+ * BLO placement from a BranchBuffer
+ */
+template< class T >
+static void blo_place( Work const& to_place,
+                       MSA& msa,
+                       BranchBuffer& branchbuf,
+                       Sample< T >& sample,
+                       Options const& options,
+                       size_t const seq_id_offset = 0,
+                       timer* time                = nullptr )
+{
+#ifdef __OMP
+  unsigned int const num_threads
+      = options.num_threads ? options.num_threads : omp_get_max_threads();
+  omp_set_num_threads( num_threads );
+  LOG_DBG << "Using threads: " << num_threads;
+  LOG_DBG << "Max threads: " << omp_get_max_threads();
+#else
+  unsigned int const num_threads = 1;
+#endif
+
+  // work seperately
+  if( time ) {
+    time->start();
+  }
+
+  // split the sample structure such that the parts are thread-local
+  std::vector< Sample< T > > sample_parts( num_threads );
+  // Map from sequence indices to indices in the pquery vector.
+  auto seq_lookup_vec
+      = std::vector< std::unordered_map< size_t, size_t > >( num_threads );
+
+  // we will want thread-local copies of the tiny-trees that persist for a given
+  // thread, if it handles the same branch
+  std::vector< std::unique_ptr< Tiny_Tree > > branch_ptrs( num_threads );
+  auto prev_branch_id = std::numeric_limits< size_t >::max();
+
+  BranchBuffer::container_type branch_chunk;
+
+  while( branchbuf.get_next( branch_chunk ) ) {
+#pragma omp parallel for schedule( dynamic ), firstprivate( prev_branch_id )
+    for( size_t i = 0; i < branch_chunk.size(); ++i ) {
+      auto& branch         = branch_chunk[ i ];
+      auto const branch_id = branch.branch_id();
+      // array of all sequence IDs that are to be placed here
+      auto const& seqs_of_branch = to_place.at( branch_id );
+
+      // make shallow copy of tinytree if parallelizing here as well!
+      for( size_t j = 0; j < seqs_of_branch.size(); ++j ) {
+        auto const seq_id = seqs_of_branch[ j ];
+
+#ifdef __OMP
+        auto const tid = omp_get_thread_num();
+#else
+        auto const tid = 0;
+#endif
+        // get a tiny tree representing the current branch,
+        // IF the branch has changed. Overwriting the old variable ensures
+        // the now unused previous tiny tree is deallocated
+        if( ( branch_id != prev_branch_id ) or not branch_ptrs[ tid ] ) {
+          branch_ptrs[ tid ] = std::make_unique< Tiny_Tree >( branch, false );
+        }
+
+        auto& local_sample = sample_parts[ tid ];
+        auto& seq_lookup   = seq_lookup_vec[ tid ];
+        auto const& seq    = msa[ seq_id ];
+
+        if( seq_lookup.count( seq_id ) == 0 ) {
+          auto const new_idx
+              = local_sample.add_pquery( seq_id_offset + seq_id, seq.header() );
+          seq_lookup[ seq_id ] = new_idx;
+        }
+        assert( seq_lookup.count( seq_id ) > 0 );
+        local_sample[ seq_lookup[ seq_id ] ].emplace_back(
+            branch_ptrs[ tid ]->place( seq, true, options ) );
+      }
+      prev_branch_id = branch_id;
+    }
+  }
+
+  if( time ) {
+    time->stop();
+  }
+  // merge samples back
+  merge( sample, std::move( sample_parts ) );
+  collapse( sample );
+}
+
 template< class T >
 static void blo_place( Work const& to_place,
                        MSA& msa,
@@ -218,6 +306,12 @@ static void blo_place( Work const& to_place,
                        size_t const seq_id_offset = 0,
                        timer* time              = nullptr )
 {
+  if( reference_tree.memsave() ) {
+    auto const block_size = options.memory_config.concurrent_branches;
+    BranchBuffer branchbuf( &reference_tree, block_size, to_place );
+    blo_place( to_place, msa, branchbuf, sample, options, seq_id_offset, time );
+    return;
+  }
 
 #ifdef __OMP
   unsigned int const num_threads = options.num_threads
@@ -270,7 +364,6 @@ static void blo_place( Work const& to_place,
     // IF the branch has changed. Overwriting the old variable ensures
     // the now unused previous tiny tree is deallocated
     if( ( branch_id != prev_branch_id ) or not branch_ptrs[ tid ] ) {
-      // as make_unique produces an rvalue, this is a move assignment and thus legal
       branch_ptrs[ tid ] = std::make_unique< Tiny_Tree >( branches[ branch_id ],
                                                           branch_id,
                                                           reference_tree );
@@ -312,7 +405,8 @@ void simple_mpi( Tree& reference_tree,
     throw std::runtime_error{ "Traversing the utree went wrong during pipeline startup!" };
   }
 
-  std::unique_ptr< LookupPlacement > lookup_handler = ( options.preplacement_lookup )
+  std::unique_ptr< LookupPlacement > lookup_handler
+      = ( options.memory_config.preplace_lookup_enabled )
       ? std::make_unique< LookupPlacement >( reference_tree, branches )
       : nullptr;
 

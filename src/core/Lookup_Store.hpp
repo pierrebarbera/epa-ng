@@ -260,6 +260,7 @@ class LookupPlacement {
 
     } else {
       // otherwise do it in a regulated way ensuring limited memory use
+      throw std::runtime_error{"implement this you dingus"};
     }
   }
 

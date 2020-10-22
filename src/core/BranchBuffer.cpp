@@ -59,7 +59,7 @@ static void calc_block( BranchBuffer::container_type& buffer,
 }
 
 /**
- * Whitelisted BranchBuffer: skip branches that dont occur in given Work object
+ * Whitelisted BranchBuffer: skip branches that don't occur in given Work object
  */
 BranchBuffer::BranchBuffer( Tree* tree,
                             size_t const block_size,
