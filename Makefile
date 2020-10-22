@@ -20,7 +20,7 @@ update:
 
 unittest: update
 	@./test/bin/epa_test
-.PHONY: test
+.PHONY: unittest
 
 clean:
 	@echo "Cleaning"
@@ -43,9 +43,12 @@ OUTDIR=/tmp/epa
 
 BINARY_WRITE= -t $(TREE) -s $(REF) -B -w $(OUTDIR) --verbose $(F)
 BINARY_READ=-b $(BINFILE) -q $(QRY) -w $(OUTDIR) -g 0.99 --verbose $(F)
-NORM_TEST=-t $(TREE) -s $(REF) -q $(QRY) --model $(INFO)  -w $(OUTDIR)  --verbose $(F)
+NORM_TEST=-t $(TREE) -s $(REF) -q $(QRY) --model $(INFO) -w $(OUTDIR) --verbose $(F)
 
 test: #update
+ifneq (,$(TREE))
+	tar xzvf $(TEST)/*.tar.gz -C $(TEST)
+endif
 	mkdir -p $(OUTDIR)
 	rm -f $(OUTDIR)/*
 	$(EPABIN) $(NORM_TEST) --threads 4
