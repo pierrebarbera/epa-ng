@@ -264,6 +264,29 @@ int main( int argc, char** argv )
       ->group( "Compute" )
       ->check( CLI::IsMember( { "off", "on", "auto" }, CLI::ignore_case ) );
 
+  std::string memsave_toggle( "off" );
+  app.add_option(
+         "--memsave",
+         memsave_toggle,
+         "Use memory saving mode. On 'full' setting, minimizes the memory "
+         "footprint as agressively as possible, with the highest impact on "
+         "runtime. When passing 'auto' will try to limit the memory footprint "
+         "only such that the program doesnt crash from lack of memory. Passing "
+         "'custom' is also possible, though meant for advanced use, and "
+         "requires "
+         "the specification of a memory configuration via --memsave-config." )
+      ->group( "Compute" )
+      ->check( CLI::IsMember( { "off", "full", "auto", "custom" },
+                              CLI::ignore_case ) );
+
+  std::string memsave_config_string;
+  auto memsave_config_opt
+      = app.add_option( "--memsave-config",
+                        memsave_config_string,
+                        "Memory saver configuration. Ignored unless '--memsave "
+                        "custom' is set." )
+            ->group( "Compute" );
+
 #ifdef __OMP
   auto threads = app.add_option( "-T,--threads",
                                  options.num_threads,
@@ -417,6 +440,26 @@ int main( int argc, char** argv )
     LOG_INFO << "Selected: Disabling per rate scalers";
   }
 
+  if( memsave_toggle == "auto" ) {
+    options.memsave = Options::MemorySaver::Mode::kAuto;
+    LOG_INFO << "Selected: Memory saving mode: automatic mode.";
+  } else if( memsave_toggle == "full" ) {
+    options.memsave = Options::MemorySaver::Mode::kFull;
+    LOG_INFO << "Selected: Memory saving mode: full mode.";
+  } else if( memsave_toggle == "custom" ) {
+    if( not *memsave_config_opt ) {
+      LOG_ERR << "'--memsave custom' requires '--memsave-config'" << std::endl;
+      exit_epa( EXIT_FAILURE );
+    } else {
+      options.memsave = Options::MemorySaver::Mode::kCustom;
+      LOG_INFO << "Selected: Memory saving mode: custom mode.";
+      options.memory_config = MemoryConfig( memsave_config_string );
+    }
+  } else if( memsave_toggle == "off" ) {
+    options.memsave = Options::MemorySaver::Mode::kOff;
+    LOG_INFO << "Selected: Disabling memory saver mode.";
+  }
+
   if( preserve_rooting_option == "off" ) {
     options.preserve_rooting = false;
     LOG_INFO << "Selected: Do NOT preserve the root of the input tree";
@@ -521,7 +564,7 @@ int main( int argc, char** argv )
     tree = Tree( binary_file, model, options );
   } else {
     // build the full tree with all possible clv's
-    if( not*model_option ) {
+    if( not *model_option ) {
       LOG_ERR << "When using epa-ng like this, a model has to be explicitly specified! \n"
                  "You may specify it generically (GTR+G), however parameters will not be optimized. \n"
                  "Instead we reccommend to use RAxML to re-evaluate the parameters and then pass the resulting \n"

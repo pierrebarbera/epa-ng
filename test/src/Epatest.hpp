@@ -40,7 +40,7 @@ extern Epatest* env;
 static inline Options get_options_config( unsigned int const d )
 {
   Options o;
-  o.memsave = false;
+  o.memsave = Options::MemorySaver::Mode::kOff;
   if( d & COMPL_REPEATS ) {
     o.repeats = not o.repeats;
   }
@@ -58,7 +58,7 @@ static inline Options get_options_config( unsigned int const d )
     o.premasking = not o.premasking;
   }
   if( d & COMPL_MEMSAVE ) {
-    o.memsave = true;
+    o.memsave = Options::MemorySaver::Mode::kAuto;
     o.repeats = false;
   }
   return o;
@@ -77,7 +77,7 @@ void all_combinations( Func f, bool const verbose = false )
               o.sliding_blo,
               o.prescoring,
               o.premasking,
-              o.memsave );
+              static_cast<int>(o.memsave) );
     }
     f( o );
   }

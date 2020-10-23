@@ -3,23 +3,53 @@
 #include <limits>
 #include <string>
 
+class MemoryConfig {
+  public:
+  MemoryConfig()  = default;
+
+  MemoryConfig( std::string const& config_string )
+  {
+    // build from a config string
+    (void)config_string;
+  }
+
+  ~MemoryConfig() = default;
+
+  size_t concurrent_branches   = 10;
+  bool preplace_lookup_enabled = true;
+};
+
 class Options {
 
   public:
-  enum class NumericalScaling {
-    kOn,
-    kOff,
-    kAuto
-  };
+  enum class NumericalScaling { kOn, kOff, kAuto };
 
-  class MemoryConfig
-  {
+  class MemorySaver {
   public:
-    MemoryConfig()  = default;
-    ~MemoryConfig() = default;
+    enum class Mode { kOff, kFull, kAuto, kCustom };
 
-    size_t concurrent_branches    = 10;
-    bool preplace_lookup_enabled  = true;
+    MemorySaver() = default;
+    ~MemorySaver() = default;
+
+    MemorySaver& operator=( Mode mode_ )
+    {
+      mode = mode_;
+      return *this;
+    }
+    MemorySaver& operator=( bool enable )
+    {
+      if( enable ) {
+        mode = Options::MemorySaver::Mode::kFull;
+      } else {
+        mode = Options::MemorySaver::Mode::kOff;
+      }
+      return *this;
+    }
+
+    operator bool() const { return mode != Mode::kOff; }
+    // operator int() const { return static_cast<int>(bool()); }
+
+    Mode mode = Mode::kOff;
   };
 
   Options()  = default;
@@ -44,10 +74,10 @@ class Options {
   bool premasking               = true;
   bool baseball                 = false;
   std::string tmp_dir;
-  unsigned int precision   = 10;
-  NumericalScaling scaling = NumericalScaling::kAuto;
-  bool preserve_rooting    = true;
-  bool memsave = false;
+  unsigned int precision        = 10;
+  NumericalScaling scaling      = NumericalScaling::kAuto;
+  bool preserve_rooting         = true;
+  MemorySaver memsave;
 
   MemoryConfig memory_config;
 };
