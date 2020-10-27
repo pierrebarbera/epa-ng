@@ -124,4 +124,8 @@ BranchBuffer::~BranchBuffer()
   if( prefetcher_.valid() ) {
     prefetcher_.wait();
   }
+
+  // reverse the memsaver traversal to minimize the recomputation costs of any
+  // subsequent BranchBuffer
+  // tree_->memsave().reverse_traversal();
 }

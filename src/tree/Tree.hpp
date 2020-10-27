@@ -45,6 +45,10 @@ class Memsaver {
   std::vector< pll_unode_t* > const& traversal() const { return traversal_; }
   pll_unode_t const* traversal( size_t i ) const { return traversal_[ i ]; }
   pll_unode_t* traversal( size_t i ) { return traversal_[ i ]; }
+  void reverse_traversal()
+  {
+    std::reverse( std::begin( traversal_ ), std::end( traversal_ ) );
+  };
 
   private:
   std::unique_ptr< unsigned int, decltype( free )* > subtree_sizes_{ nullptr,
@@ -94,7 +98,7 @@ class Tree {
 
   void ensure_clv_loaded( pll_unode_t const* const );
 
-  double ref_tree_logl();
+  double ref_tree_logl( pll_unode_t* const vroot = nullptr );
 
   private:
   // pll structures

@@ -446,8 +446,13 @@ pll_utree_t* make_tiny_tree_structure( pll_unode_t const* old_proximal,
   inner->scaler_index             = inner_scaler_index;
   inner->next->scaler_index       = inner_scaler_index;
   inner->next->next->scaler_index = inner_scaler_index;
-  proximal->scaler_index          = ( old_proximal->scaler_index == PLL_SCALE_BUFFER_NONE ) ? PLL_SCALE_BUFFER_NONE : proximal_scaler_index;
-  distal->scaler_index            = ( old_distal->scaler_index == PLL_SCALE_BUFFER_NONE ) ? PLL_SCALE_BUFFER_NONE : distal_scaler_index;
+  proximal->scaler_index
+      = ( old_proximal->scaler_index == PLL_SCALE_BUFFER_NONE )
+      ? PLL_SCALE_BUFFER_NONE
+      : proximal_scaler_index;
+  distal->scaler_index = ( old_distal->scaler_index == PLL_SCALE_BUFFER_NONE )
+      ? PLL_SCALE_BUFFER_NONE
+      : distal_scaler_index;
 
   reset_triplet_lengths( inner, nullptr, old_distal->length );
 
@@ -467,6 +472,7 @@ pll_utree_t* make_tiny_tree_structure( pll_unode_t const* old_proximal,
   tree->nodes[ 1 ] = distal;
   tree->nodes[ 2 ] = new_tip;
   tree->nodes[ 3 ] = inner;
+  tree->vroot = inner;
 
   return tree;
 }

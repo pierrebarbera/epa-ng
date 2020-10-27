@@ -65,18 +65,17 @@ Tree::Tree( std::string const& tree_file,
   LOG_DBG << model_;
   LOG_DBG << "Tree length: " << sum_branch_lengths( tree_.get() );
 
+  pll_unode_t* vroot = nullptr;
   if( not memsave_ ) {
     precompute_clvs( tree_.get(), partition_.get(), nums_ );
   } else {
     // compute the CLVs toward the first vroot of the memsave-traversal
-    partial_compute_clvs( tree_.get(),
-                          nums_,
-                          memsave_.subtree_sizes(),
-                          memsave_.traversal( 0 ),
-                          partition_.get() );
+    vroot = memsave_.traversal( 0 );
+    partial_compute_clvs(
+        tree_.get(), nums_, memsave_.subtree_sizes(), vroot, partition_.get() );
   }
 
-  auto logl = this->ref_tree_logl();
+  auto logl = this->ref_tree_logl( vroot );
 
   if( logl == -std::numeric_limits< double >::infinity() ) {
     throw std::runtime_error{ "Tree Log-Likelihood -INF!" };
@@ -189,10 +188,10 @@ void Tree::ensure_clv_loaded( pll_unode_t const* const node )
   }
 }
 
-double Tree::ref_tree_logl()
+double Tree::ref_tree_logl( pll_unode_t* const vroot )
 {
   std::vector< unsigned int > param_indices( partition_->rate_cats, 0 );
-  auto const root = get_root( tree_.get() );
+  auto const root =  vroot ? vroot : get_root( tree_.get() );
   // ensure clvs are there
   this->ensure_clv_loaded( root );
   this->ensure_clv_loaded( root->back );

@@ -51,12 +51,12 @@ static void preplace( MSA& msa,
                       Options const& options,
                       timer* time = nullptr )
 {
-
+  LOG_DBG1 << "BranchBuffer based";
 #ifdef __OMP
   unsigned int const num_threads
       = options.num_threads ? options.num_threads : omp_get_max_threads();
   omp_set_num_threads( num_threads );
-  LOG_DBG << "Using threads: " << num_threads;
+  LOG_DBG1 << "Using threads: " << num_threads;
   LOG_DBG << "Max threads: " << omp_get_max_threads();
 #endif
 
@@ -67,6 +67,7 @@ static void preplace( MSA& msa,
   BranchBuffer::container_type branch_chunk;
 
   while( branchbuf.get_next( branch_chunk ) ) {
+    LOG_DBG1 << "branch_chunk size: " << branch_chunk.size();
     // parallelize over branches: each thread places all queries on its
     // designated branch
 #pragma omp parallel for schedule( dynamic )
@@ -104,13 +105,15 @@ static void preplace( MSA& msa,
     return;
   }
 
+  LOG_DBG1 << "Full Tree based";
+
 #ifdef __OMP
   unsigned int const num_threads = options.num_threads
       ? options.num_threads
       : omp_get_max_threads();
   omp_set_num_threads( num_threads );
-  LOG_DBG << "Using threads: " << num_threads;
-  LOG_DBG << "Max threads: " << omp_get_max_threads();
+  LOG_DBG1 << "Using threads: " << num_threads;
+  LOG_DBG1 << "Max threads: " << omp_get_max_threads();
 #else
   unsigned int const num_threads = 1;
 #endif
@@ -174,12 +177,14 @@ static void preplace( MSA& msa,
                       timer* time = nullptr )
 {
 
+  LOG_DBG1 << "Lookup based";
+
 #ifdef __OMP
   unsigned int const num_threads
       = options.num_threads ? options.num_threads : omp_get_max_threads();
   omp_set_num_threads( num_threads );
-  LOG_DBG << "Using threads: " << num_threads;
-  LOG_DBG << "Max threads: " << omp_get_max_threads();
+  LOG_DBG1 << "Using threads: " << num_threads;
+  LOG_DBG1 << "Max threads: " << omp_get_max_threads();
 #endif
 
   auto const num_sequences = msa.size();
@@ -219,12 +224,13 @@ static void blo_place( Work const& to_place,
                        size_t const seq_id_offset = 0,
                        timer* time                = nullptr )
 {
+  LOG_DBG1 << "BranchBuffer based";
 #ifdef __OMP
   unsigned int const num_threads
       = options.num_threads ? options.num_threads : omp_get_max_threads();
   omp_set_num_threads( num_threads );
-  LOG_DBG << "Using threads: " << num_threads;
-  LOG_DBG << "Max threads: " << omp_get_max_threads();
+  LOG_DBG1 << "Using threads: " << num_threads;
+  LOG_DBG1 << "Max threads: " << omp_get_max_threads();
 #else
   unsigned int const num_threads = 1;
 #endif
@@ -248,6 +254,7 @@ static void blo_place( Work const& to_place,
   BranchBuffer::container_type branch_chunk;
 
   while( branchbuf.get_next( branch_chunk ) ) {
+    LOG_DBG << "branch_chunk size: " << branch_chunk.size();
 #pragma omp parallel for schedule( dynamic ), firstprivate( prev_branch_id )
     for( size_t i = 0; i < branch_chunk.size(); ++i ) {
       auto& branch         = branch_chunk[ i ];
@@ -313,13 +320,15 @@ static void blo_place( Work const& to_place,
     return;
   }
 
+  LOG_DBG1 << "Full Tree based";
+
 #ifdef __OMP
   unsigned int const num_threads = options.num_threads
       ? options.num_threads
       : omp_get_max_threads();
   omp_set_num_threads( num_threads );
-  LOG_DBG << "Using threads: " << num_threads;
-  LOG_DBG << "Max threads: " << omp_get_max_threads();
+  LOG_DBG1 << "Using threads: " << num_threads;
+  LOG_DBG1 << "Max threads: " << omp_get_max_threads();
 #else
   unsigned int const num_threads = 1;
 #endif
@@ -453,7 +462,7 @@ void simple_mpi( Tree& reference_tree,
 
     if( options.prescoring ) {
 
-      LOG_DBG << "Preplacement." << std::endl;
+      LOG_DBG << "Preplacement" << std::endl;
       if( lookup_handler ) {
         // if we have a preplacement lookup, use that
         preplace( chunk,
@@ -479,7 +488,7 @@ void simple_mpi( Tree& reference_tree,
 
     Sample blo_sample;
 
-    LOG_DBG << "BLO Placement." << std::endl;
+    LOG_DBG << "BLO Placement" << std::endl;
     blo_place( blo_work,
                chunk,
                reference_tree,

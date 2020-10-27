@@ -105,14 +105,12 @@ void precompute_clvs( pll_utree_t const* const tree,
     unsigned int traversal_size = 0;
     unsigned int num_matrices   = 0;
     unsigned int num_ops        = 0;
-    if( pll_utree_traverse( node->back,
-                            PLL_TREE_TRAVERSE_POSTORDER,
-                            cb_partial_traversal,
-                            &travbuffer[ 0 ],
-                            &traversal_size )
-        != PLL_SUCCESS ) {
-      throw std::runtime_error{ "Function pll_unode_traverse() requires inner nodes as parameters" };
-    }
+    handle_pll_failure( not pll_utree_traverse( node->back,
+                                                PLL_TREE_TRAVERSE_POSTORDER,
+                                                cb_partial_traversal,
+                                                &travbuffer[ 0 ],
+                                                &traversal_size ),
+                        "utree traverse failed during clv precomputation" );
 
     /* given the computed traversal descriptor, generate the operations
        structure, and the corresponding probability matrix indices that
@@ -138,25 +136,37 @@ void precompute_clvs( pll_utree_t const* const tree,
   utree_free_node_data( root );
 }
 
+typedef struct {
+  unsigned int const * subtree_sizes;
+  pll_partition_t* partition;
+} partial_subtree_sizes_data;
+
 /* a callback function for traversing only down nodes with non-slotted CLVs
  * Assumes the node data pointer points to the partition!
  */
 static int cb_traverse_unslotted( pll_unode_t* node )
 {
-  auto partition = static_cast< pll_partition_t* >( node->data );
+  auto cb_data = static_cast< partial_subtree_sizes_data* >(node->data);
+
+  auto partition = cb_data->partition;
   assert( partition );
 
   pll_clv_manager_t* clv_man = partition->clv_man;
   assert( clv_man );
 
-  if( clv_man->slot_of_clvid[ node->clv_index ] != PLL_CLV_CLV_UNSLOTTED ) {
+  size_t const max_pinned_here = log2( cb_data->subtree_sizes[ node->node_index ] ) + 2;
+  size_t const num_unpinned_slots = clv_man->slottable_size - clv_man->num_pinned;
+
+  if( clv_man->slot_of_clvid[ node->clv_index ] != PLL_CLV_CLV_UNSLOTTED
+    // and clv_man->num_pinned <  clv_man->slottable_size - max_pinned_here
+    and num_unpinned_slots + 1 <  max_pinned_here
+   ) {
     // the CLV is slotted, so we:
     // 1) pin the clv in its slot
-    clv_man->is_pinned[ node->clv_index ] = true;
 
-    // 1.1) in the unlikely case that we are re-calculating the CLVs toward a
-    // different root, then us finding a slotted CLV might be the case where
-    // this node was some previous iterations root. In this case
+    auto retval = pll_pin_clv( partition, node->clv_index );
+    assert(retval);
+    (void) retval;
 
     // 2) do not traverse down the subtree of this node. The way is shut.
     return 0;
@@ -195,15 +205,28 @@ void partial_compute_clvs( pll_utree_t* const tree,
    * Then we do a largest-subtree-first traversal, with
    * a custom traversal callback that stops the traversal if a node's CLV is
    * currently slotted. The callback then also pins that CLV in place.
+   *
+   * Addendum: as this function is intended to be called for ever changing
+   * vroots (as we progress through the tree according to some traversal)
+   * and we pin in place CLVs that are already computed, we will sometimes
+   * end up in a state where we forced clvs to be slotted such that,
+   * effectively, it looks like we "traversed" in a non-lsf order, and thus run
+   * out of slots. The solution to this is to check every time we would pin an
+   * existing CLV whether it would leave us with sufficient clv slots to finish
+   * the computation, and not pin it if it doesn't
    */
 
   // go through all inner nodes, set data pointer to point to the partition
+  partial_subtree_sizes_data cb_data;
+  cb_data.subtree_sizes = subtree_sizes;
+  cb_data.partition     = partition;
+
   size_t const nodes_count = tree->tip_count + tree->inner_count;
   for( size_t i = 0; i < nodes_count; ++i ) {
     auto cur_node = tree->nodes[ i ];
-    cur_node->data = partition;
+    cur_node->data = &cb_data;
     if( cur_node->next ){
-      cur_node->next->data = cur_node->next->next->data = partition;
+      cur_node->next->data = cur_node->next->next->data = &cb_data;
     }
   }
 
@@ -251,8 +274,20 @@ void partial_compute_clvs( pll_utree_t* const tree,
   // preparation for any next iteration: unpin the CLVs at node and node->back
   // (especially needed if next iteration has different root direction, as
   // otherwise one of these CLV will never get unpinned by update_partials)
-  partition->clv_man->is_pinned[ node->clv_index ]       = false;
-  partition->clv_man->is_pinned[ node->back->clv_index ] = false;
+  pll_unpin_clv( partition, node->clv_index );
+  pll_unpin_clv( partition, node->back->clv_index );
+
+  assert( [ & ]() {
+    // assert that none of the CLVs are pinned
+    for( auto clv_index = partition->clv_man->addressable_begin;
+         clv_index < partition->clv_man->addressable_end;
+         ++clv_index ) {
+      if( partition->clv_man->is_pinned[ clv_index ] ) {
+        return false;
+      }
+    }
+    return true;
+  }() );
 
   // cleanup
   // unset the data pointers juuust incase some free() gets called
@@ -354,7 +389,6 @@ pll_partition_t* make_partition( raxml::Model const& model,
     if( options.repeats ) {
       throw std::runtime_error{ "Repeats + memsave not supported" };
     }
-
     attributes |= PLL_ATTRIB_PATTERN_TIP;
     attributes |= PLL_ATTRIB_LIMIT_MEMORY;
   }
@@ -377,7 +411,10 @@ pll_partition_t* make_partition( raxml::Model const& model,
   if( options.memsave ) {
     assert( subtree_sizes );
 
-    const size_t low_clv_num = ceil( log2( nums.tip_nodes - 1 ) ) + 2;
+    const size_t low_clv_num = ceil( log2( nums.tip_nodes  ) ) + 2;
+    printf("low clv num: %lu\n", low_clv_num);
+    const size_t max_clv_num = 3 * nums.inner_nodes;
+    printf("max clv num: %lu\n", max_clv_num);
     handle_pll_failure(
         not pll_clv_manager_init( partition, low_clv_num, NULL, NULL, NULL ),
         "Could not initialize CLV manager." );

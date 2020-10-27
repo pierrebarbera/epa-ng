@@ -357,7 +357,7 @@ int main( int argc, char** argv )
 
   if( verbosity ) {
     LOG_INFO << "Selected: verbose (debug) output";
-    genesis::utils::Logging::max_level( genesis::utils::Logging::kDebug );
+    genesis::utils::Logging::max_level( genesis::utils::Logging::kDebug1 );
   }
 
   if( not query_file.empty() ) {
@@ -445,6 +445,7 @@ int main( int argc, char** argv )
     LOG_INFO << "Selected: Memory saving mode: automatic mode.";
   } else if( memsave_toggle == "full" ) {
     options.memsave = Options::MemorySaver::Mode::kFull;
+    options.memory_config.preplace_lookup_enabled = false;
     LOG_INFO << "Selected: Memory saving mode: full mode.";
   } else if( memsave_toggle == "custom" ) {
     if( not *memsave_config_opt ) {
