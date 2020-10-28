@@ -401,7 +401,7 @@ pll_utree_t* make_tiny_tree_structure( pll_unode_t const* old_proximal,
   unsigned int const inner_scaler_index    = 1;
   unsigned int const proximal_scaler_index = 0;
   unsigned int const distal_scaler_index   = 2;
- 
+
   /**
     As we work with PLL_PATTERN_TIP functionality, special care has to be taken
     in regards to the tree and partition structure: PLL assumes that any node
@@ -414,16 +414,23 @@ pll_utree_t* make_tiny_tree_structure( pll_unode_t const* old_proximal,
     * number of clv-tips)
   */
   // if tip-inner case
-  unsigned int distal_clv_index = ( tip_tip_case ) ? distal_clv_index_if_tip : distal_clv_index_if_inner;
+  unsigned int distal_clv_index
+      = ( tip_tip_case ) ? distal_clv_index_if_tip : distal_clv_index_if_inner;
 
-  auto inner              = static_cast< pll_unode_t* >( calloc( 1, sizeof( pll_unode_t ) ) );
-  inner->next             = static_cast< pll_unode_t* >( calloc( 1, sizeof( pll_unode_t ) ) );
-  inner->next->next       = static_cast< pll_unode_t* >( calloc( 1, sizeof( pll_unode_t ) ) );
+  auto inner
+      = static_cast< pll_unode_t* >( calloc( 1, sizeof( pll_unode_t ) ) );
+  inner->next
+      = static_cast< pll_unode_t* >( calloc( 1, sizeof( pll_unode_t ) ) );
+  inner->next->next
+      = static_cast< pll_unode_t* >( calloc( 1, sizeof( pll_unode_t ) ) );
   inner->next->next->next = inner;
 
-  auto new_tip  = static_cast< pll_unode_t* >( calloc( 1, sizeof( pll_unode_t ) ) );
-  auto proximal = static_cast< pll_unode_t* >( calloc( 1, sizeof( pll_unode_t ) ) );
-  auto distal   = static_cast< pll_unode_t* >( calloc( 1, sizeof( pll_unode_t ) ) );
+  auto new_tip
+      = static_cast< pll_unode_t* >( calloc( 1, sizeof( pll_unode_t ) ) );
+  auto proximal
+      = static_cast< pll_unode_t* >( calloc( 1, sizeof( pll_unode_t ) ) );
+  auto distal
+      = static_cast< pll_unode_t* >( calloc( 1, sizeof( pll_unode_t ) ) );
 
   // connect the nodes to each other
   inner->back             = new_tip;
@@ -472,7 +479,7 @@ pll_utree_t* make_tiny_tree_structure( pll_unode_t const* old_proximal,
   tree->nodes[ 1 ] = distal;
   tree->nodes[ 2 ] = new_tip;
   tree->nodes[ 3 ] = inner;
-  tree->vroot = inner;
+  tree->vroot      = inner;
 
   return tree;
 }

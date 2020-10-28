@@ -188,13 +188,19 @@ Tiny_Tree::Tiny_Tree( Tiny_Tree const& other, bool const deep_copy_clvs )
   auto old_distal   = other_tree->nodes[ 1 ];
 
   /*
-    detect the tip-tip case. Since here we are based on a TinyTree, we can
-    expect the only possible tip to be the old distal node.
-  */
-  bool const tip_tip_case = !old_distal->next;
+    detect the tip-tip case. In this specific case, the other tree is also our
+    special tiny tree. So checking old_distal->next isn't sufficient to check
+    for the tip_case, as distal is always a tip in the tiny_tree utree
+    structure. What we actually want to test is if the _original_ distal was a
+    tip, i.e. had a tipchar vector. This is effectively encoded in the clv index
+    of the distal */
+  bool const tip_tip_case = old_distal->clv_index
+      < 3; // clv index smaller than number of tiny tree tips -> the basis of
+           // this distal is a tipchars vector
 
   tree_ = std::unique_ptr< pll_utree_t, utree_deleter >(
-      pll_utree_clone( other_tree ), utree_destroy );
+      make_tiny_tree_structure( old_proximal, old_distal, tip_tip_case ),
+      utree_destroy );
 
   partition_ = std::unique_ptr< pll_partition_t, partition_deleter >(
       make_tiny_partition( other.partition_.get(),

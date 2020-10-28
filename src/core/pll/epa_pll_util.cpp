@@ -159,7 +159,7 @@ static int cb_traverse_unslotted( pll_unode_t* node )
 
   if( clv_man->slot_of_clvid[ node->clv_index ] != PLL_CLV_CLV_UNSLOTTED
     // and clv_man->num_pinned <  clv_man->slottable_size - max_pinned_here
-    and num_unpinned_slots + 1 <  max_pinned_here
+    and num_unpinned_slots <=  max_pinned_here
    ) {
     // the CLV is slotted, so we:
     // 1) pin the clv in its slot
@@ -411,10 +411,10 @@ pll_partition_t* make_partition( raxml::Model const& model,
   if( options.memsave ) {
     assert( subtree_sizes );
 
-    const size_t low_clv_num = ceil( log2( nums.tip_nodes  ) ) + 2;
-    printf("low clv num: %lu\n", low_clv_num);
-    const size_t max_clv_num = 3 * nums.inner_nodes;
-    printf("max clv num: %lu\n", max_clv_num);
+    const size_t low_clv_num = ceil( log2( nums.tip_nodes ) ) + 2;
+    // printf("low clv num: %lu\n", low_clv_num);
+    // const size_t max_clv_num = 3 * nums.inner_nodes;
+    // printf("max clv num: %lu\n", max_clv_num);
     handle_pll_failure(
         not pll_clv_manager_init( partition, low_clv_num, NULL, NULL, NULL ),
         "Could not initialize CLV manager." );

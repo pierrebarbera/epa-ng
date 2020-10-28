@@ -67,7 +67,6 @@ static void preplace( MSA& msa,
   BranchBuffer::container_type branch_chunk;
 
   while( branchbuf.get_next( branch_chunk ) ) {
-    LOG_DBG1 << "branch_chunk size: " << branch_chunk.size();
     // parallelize over branches: each thread places all queries on its
     // designated branch
 #pragma omp parallel for schedule( dynamic )
@@ -254,7 +253,6 @@ static void blo_place( Work const& to_place,
   BranchBuffer::container_type branch_chunk;
 
   while( branchbuf.get_next( branch_chunk ) ) {
-    LOG_DBG << "branch_chunk size: " << branch_chunk.size();
 #pragma omp parallel for schedule( dynamic ), firstprivate( prev_branch_id )
     for( size_t i = 0; i < branch_chunk.size(); ++i ) {
       auto& branch         = branch_chunk[ i ];
