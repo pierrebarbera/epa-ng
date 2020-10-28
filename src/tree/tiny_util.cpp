@@ -141,22 +141,6 @@ static void deep_copy_repeats( pll_partition_t* dest_part,
   }
 }
 
-// the fact that I have to write this function makes my blood boil
-size_t size_of_ttlookup( pll_partition const* const partition )
-{
-  if( ( partition->states == 4 )
-      && ( partition->attributes & PLL_ATTRIB_ARCH_AVX )
-      && PLL_STAT( avx_present ) ) {
-    return 1024 * partition->rate_cats;
-  } else {
-    unsigned int l2_maxstates
-        = static_cast< unsigned int >( ceil( log2( partition->maxstates ) ) );
-    size_t alloc_size = ( 1 << ( 2 * l2_maxstates ) )
-        * ( partition->states_padded * partition->rate_cats );
-    return alloc_size;
-  }
-}
-
 pll_partition_t* make_tiny_partition( pll_partition_t const* const old_partition,
                                       pll_utree_t const* tree,
                                       pll_unode_t const* const old_proximal,

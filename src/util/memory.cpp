@@ -13,7 +13,7 @@
 #include "util/Options.hpp"
 #include "util/logging.hpp"
 
-static constexpr char SPACER[] = "\t ";
+static constexpr char SPACER[] = " \t";
 
 static size_t lookuptable_footprint( size_t const branches,
                                      size_t const states,
@@ -67,6 +67,9 @@ static size_t partition_footprint( raxml::Model const& model,
   fake_nums.branches    = 1;
 
   auto attributes = simd_autodetect();
+  // TODO this should behave more like the actual partition, i.e. figure out
+  // when and when not we use tipchars
+  attributes |= PLL_ATTRIB_PATTERN_TIP;
   auto partition
       = pll_partition_create( fake_nums.tip_nodes,
                               fake_nums.inner_nodes,
@@ -94,8 +97,8 @@ static size_t partition_footprint( raxml::Model const& model,
     // account fort tipmap
     size += PLL_ASCII_SIZE * sizeof( pll_state_t );
 
-    // ttlookup - upper limit? real calc is pretty difficult, good enough to take the non 4x4 case
-    size += 1024 * partition->rate_cats * sizeof( double );
+    // ttlookup
+    size += size_of_ttlookup( partition ) * sizeof( double );
 
     // account for the tipchars
     size_t const tipchars_buffer = nums.tip_nodes
@@ -103,6 +106,9 @@ static size_t partition_footprint( raxml::Model const& model,
             * sizeof( unsigned char )
         + nums.tip_nodes * sizeof( unsigned char* ); // account for top level array
     size += tipchars_buffer;
+
+    LOG_DBG << "\t" << format_byte_num( tipchars_buffer ) << SPACER
+            << "tipchars array";
   }
 
   size_t const clv_buffer = num_clvs
@@ -113,12 +119,10 @@ static size_t partition_footprint( raxml::Model const& model,
       + num_clvs * sizeof( double* ); // account for top level array
 
   // hypothetical size with log(n) optimization
-  auto const log_clv_buffer = log2( num_clvs )
-          * sites_alloc
-          * partition->states_padded
-          * partition->rate_cats
-          * sizeof( double )
-      + log2( num_clvs ) * sizeof( double* ); // account for top level array
+  auto const log_clv_buffer = ( log2( nums.tip_nodes ) + 2 ) * sites_alloc
+          * partition->states_padded * partition->rate_cats * sizeof( double )
+      + ( log2( nums.tip_nodes ) + 2 )
+          * sizeof( double* ); // account for top level array
 
   LOG_DBG << "\t" << format_byte_num( clv_buffer ) << SPACER << "CLV Buffer"
           << " (with log(n) opt: " << format_byte_num( log_clv_buffer ) << ")";

@@ -71,3 +71,5 @@ double call_focused( Func func, Range& range, pll_partition_t* partition, Args&&
 
   return ret;
 }
+
+size_t size_of_ttlookup( pll_partition const* const partition );
