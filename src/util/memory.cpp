@@ -13,6 +13,8 @@
 #include "util/Options.hpp"
 #include "util/logging.hpp"
 
+static constexpr char SPACER[] = "\t ";
+
 static size_t lookuptable_footprint( size_t const branches,
                                      size_t const states,
                                      size_t const sites )
@@ -118,7 +120,7 @@ static size_t partition_footprint( raxml::Model const& model,
           * sizeof( double )
       + log2( num_clvs ) * sizeof( double* ); // account for top level array
 
-  LOG_DBG << "\t\t" << format_byte_num( clv_buffer ) << "\tCLV Buffer"
+  LOG_DBG << "\t" << format_byte_num( clv_buffer ) << SPACER << "CLV Buffer"
           << " (with log(n) opt: " << format_byte_num( log_clv_buffer ) << ")";
 
   size += clv_buffer;
@@ -199,6 +201,21 @@ static size_t partition_footprint( raxml::Model const& model,
   return size;
 }
 
+static size_t msa_footprint( MSA_Info const& info, Options const& options )
+{
+  size_t size = 0;
+
+  auto const sites = options.premasking ? info.nongap_count() : info.sites();
+
+  // the sequences themselves
+  size += info.sequences() * sites * sizeof(char);
+
+  // some guess about the average size of sequence labels
+  size += info.sequences() * 100 * sizeof(char);
+
+  return size;
+}
+
 size_t estimate_footprint( MSA_Info const& ref_info,
                            MSA_Info const& qry_info,
                            raxml::Model const& model,
@@ -223,21 +240,32 @@ size_t estimate_footprint( MSA_Info const& ref_info,
 
   LOG_DBG << "Memory footprint breakdown:";
 
+
   size += partition_footprint( model, tree_nums, num_sites );
-  LOG_DBG << "\t" << format_byte_num( size ) << "\tPartition Total";
+  LOG_DBG << "\t" << format_byte_num( size ) << SPACER << "Partition Total";
 
   if( options.prescoring ) {
-    auto const lookup_size = lookuptable_footprint( tree_nums.branches, model.num_states(), num_sites );
-    LOG_DBG << "\t" << format_byte_num( lookup_size ) << "\tPreplacement Lookup";
+    auto const lookup_size = lookuptable_footprint(
+        tree_nums.branches, model.num_states(), num_sites );
+    LOG_DBG << "\t" << format_byte_num( lookup_size ) << SPACER
+            << "Preplacement Lookup";
     size += lookup_size;
   }
 
-  // account for the overhead induced by the tinytree-encapsulated partitions, which are one per thread
+  auto const ref_msa_size = msa_footprint( ref_info, options );
+  LOG_DBG << "\t" << format_byte_num( ref_msa_size ) << SPACER
+          << "Reference MSA";
+  size += ref_msa_size;
+
+  // account for the overhead induced by the tinytree-encapsulated partitions,
+  // which are one per thread
 
   // size of the fasta input stream buffers
   // currently only one: the query MSA_Stream
-  auto const input_stream_buffer_size = genesis::utils::InputStream::BlockLength * 3;
-  LOG_DBG << "\t" << format_byte_num( input_stream_buffer_size ) << "\tQuery MSA Inputstream";
+  auto const input_stream_buffer_size
+      = genesis::utils::InputStream::BlockLength * 3;
+  LOG_DBG << "\t" << format_byte_num( input_stream_buffer_size ) << SPACER
+          << "Query MSA Inputstream";
   size += input_stream_buffer_size;
 
   return size;
