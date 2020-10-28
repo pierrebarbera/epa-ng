@@ -353,9 +353,6 @@ void tiny_partition_destroy( pll_partition_t* partition,
     partition->invariant          = nullptr;
     partition->eigen_decomp_valid = nullptr;
     partition->pattern_weights    = nullptr;
-    partition->charmap            = nullptr;
-    partition->tipmap             = nullptr;
-    partition->ttlookup           = nullptr;
 
     if( not deep_copy_clvs ) {
       partition->clv[ proximal_clv_index ] = nullptr;

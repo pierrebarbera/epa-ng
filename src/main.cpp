@@ -347,10 +347,18 @@ int main( int argc, char** argv )
   log_file = work_dir + "epa_info.log";
 #endif
 
+#ifdef __OMP
+  if( *threads ) {
+    LOG_INFO << "Selected: Using threads: " << options.num_threads;
+  }
+#endif
+
+  std::ofstream file_stream;
   if( not redo and genesis::utils::file_exists( log_file ) ) {
     throw std::runtime_error{ log_file + " already exists! To overwrite existing output files, rerun with --redo" };
   } else {
-    genesis::utils::Logging::log_to_file( log_file );
+    genesis::utils::file_output_stream( log_file, file_stream );
+    genesis::utils::Logging::log_to_stream( file_stream );
   }
 
   LOG_INFO << "Selected: Output dir: " << work_dir;
@@ -498,11 +506,6 @@ int main( int argc, char** argv )
   if( *chunk_size ) {
     LOG_INFO << "Selected: Reading queries in chunks of: " << options.chunk_size;
   }
-#ifdef __OMP
-  if( *threads ) {
-    LOG_INFO << "Selected: Using threads: " << options.num_threads;
-  }
-#endif
 
   //================================================================
   //============    EPA    =========================================

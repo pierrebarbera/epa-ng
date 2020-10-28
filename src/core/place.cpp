@@ -413,7 +413,7 @@ void simple_mpi( Tree& reference_tree,
   }
 
   std::unique_ptr< LookupPlacement > lookup_handler
-      = ( options.memory_config.preplace_lookup_enabled )
+      = ( options.prescoring and options.memory_config.preplace_lookup_enabled )
       ? std::make_unique< LookupPlacement >( reference_tree, branches, options )
       : nullptr;
 

@@ -201,6 +201,8 @@ pllmod_mixture_model_t* Model::init_mix_model( const std::string& model_name )
     /* create pseudo-mixture with 1 component */
     mix_model = pllmod_util_model_mixture_create( modinfo->name, 1, &modinfo, NULL, NULL,
                                                   PLLMOD_UTIL_MIXTYPE_FIXED );
+
+    pllmod_util_model_destroy(modinfo);
   }
 
   return mix_model;

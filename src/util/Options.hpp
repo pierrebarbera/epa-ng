@@ -47,7 +47,6 @@ class Options {
     }
 
     operator bool() const { return mode != Mode::kOff; }
-    // operator int() const { return static_cast<int>(bool()); }
 
     Mode mode = Mode::kOff;
   };
