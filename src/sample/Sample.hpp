@@ -24,7 +24,7 @@ class Sample : public Token {
   template< typename T = Placement_Type,
             typename   = std::enable_if_t<
                 std::is_same< T, Placement >::value > >
-  Sample( Sample< Slim_Placement > const& other )
+  Sample( Sample< Preplacement > const& other )
       : pquerys_( other.size() )
       , newick_( other.newick() )
   {
@@ -105,7 +105,8 @@ class Sample : public Token {
 
   // Operator overloads
   value_type& operator[]( size_t const index ) { return pquerys_[ index ]; }
-  value_type const& at( size_t const index ) const { return pquerys_[ index ]; }
+  value_type const& operator[]( size_t const index ) const { return pquerys_[ index ]; }
+  value_type const& at( size_t const index ) const { return pquerys_.at( index ); }
 
   // serialization
   template< class Archive >

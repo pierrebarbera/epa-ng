@@ -1,27 +1,23 @@
 #pragma once
 
+#include "core/Work.hpp"
+#include "sample/Sample.hpp"
+#include "sample/functions.hpp"
+#include "util/Options.hpp"
+
 #include <algorithm>
+#include <type_traits>
+#include <utility>
 
 #ifdef __OMP
 #include <omp.h>
 #endif
 
-#include "core/Work.hpp"
-#include "sample/Sample.hpp"
-#include "set_manipulators.hpp"
-#include "util/Options.hpp"
-
-// class Work;
-// class Sample;
-// class Placement;
-// class Options;
-
 static inline size_t get_num_threads( Options const& options )
 {
 #ifdef __OMP
-  size_t const num_threads = options.num_threads
-      ? options.num_threads
-      : omp_get_max_threads();
+  size_t const num_threads
+      = options.num_threads ? options.num_threads : omp_get_max_threads();
   omp_set_num_threads( num_threads );
 #else
   (void)options;
@@ -39,12 +35,9 @@ static inline size_t get_thread_id()
 #endif
 }
 
-using getiter_t = pq_iter_t( PQuery< Placement >&, double const );
-
-template< typename F >
-static Work heuristic_( Sample< Placement >& sample,
-                        Options const& options,
-                        F filterstop )
+template< class T, typename F >
+static Work
+heuristic_( Sample< T >& sample, Options const& options, F& filterstop )
 {
   Work result;
   compute_and_set_lwr( sample );
@@ -70,26 +63,33 @@ static Work heuristic_( Sample< Placement >& sample,
   return result;
 }
 
-Work dynamic_heuristic( Sample< Placement >& sample,
-                        Options const& options )
+template< typename... Ts >
+using until_type
+    = decltype( until_accumulated_reached( std::declval< Ts >()... ) )( Ts... );
+
+template< class T >
+Work dynamic_heuristic( Sample< T >& sample, Options const& options )
 {
-  return heuristic_< getiter_t >( sample, options, until_accumulated_reached );
+  return heuristic_< T, until_type< PQuery< T >&, double const > >(
+      sample, options, until_accumulated_reached );
 }
 
-Work fixed_heuristic( Sample< Placement >& sample,
-                      Options const& options )
+template< class T >
+Work fixed_heuristic( Sample< T >& sample, Options const& options )
 {
-  return heuristic_< getiter_t >( sample, options, until_top_percent );
+  return heuristic_< T, decltype( until_top_percent< T > ) >(
+      sample, options, until_top_percent );
 }
 
-Work baseball_heuristic( Sample< Placement >& sample,
-                         Options const& options )
+template< class T >
+Work baseball_heuristic( Sample< T >& sample, Options const& options )
 {
   Work result;
 
   auto const num_threads = get_num_threads( options );
 
-  // strike_box: logl delta, keep placements within this many logl units from the best
+  // strike_box: logl delta, keep placements within this many logl units from
+  // the best
   double const strike_box = 3;
   // max_strikes: number of additional branches to add after strike box is full
   size_t const max_strikes = 6;
@@ -111,10 +111,10 @@ Work baseball_heuristic( Sample< Placement >& sample,
     double const best_logl = pq[ 0 ].likelihood();
     double const thresh    = best_logl - strike_box;
     // get first element not within strike box
-    auto keep_iter = std::find_if( pq.begin(), pq.end(),
-                                   [thresh]( auto const& p ) {
-                                     return ( p.likelihood() < thresh );
-                                   } );
+    auto keep_iter
+        = std::find_if( pq.begin(), pq.end(), [ thresh ]( auto const& p ) {
+            return ( p.likelihood() < thresh );
+          } );
 
     auto const hits = std::distance( pq.begin(), keep_iter );
 
@@ -131,8 +131,8 @@ Work baseball_heuristic( Sample< Placement >& sample,
   return result;
 }
 
-Work apply_heuristic( Sample< Placement >& sample,
-                      Options const& options )
+template< class T >
+Work apply_heuristic( Sample< T >& sample, Options const& options )
 {
   if( options.baseball ) {
     return baseball_heuristic( sample, options );

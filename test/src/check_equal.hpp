@@ -7,6 +7,9 @@
 #include "tree/Tiny_Tree.hpp"
 #include "tree/Tree.hpp"
 #include "util/Options.hpp"
+#include "sample/Sample.hpp"
+#include "sample/PQuery.hpp"
+#include "sample/Placement.hpp"
 
 inline void check_equal_subnode( pll_unode_t const* const a,
                                  pll_unode_t const* const b )
@@ -18,6 +21,43 @@ inline void check_equal_subnode( pll_unode_t const* const a,
   EXPECT_EQ( a->scaler_index, b->scaler_index );
   // printf("clv_index: %u scaler_index: %u\n", a->clv_index, a->scaler_index);
   EXPECT_EQ( a->pmatrix_index, b->pmatrix_index );
+}
+
+inline void check_equal( Placement const& lhs, Placement const& rhs )
+{
+  EXPECT_DOUBLE_EQ( lhs.likelihood(), rhs.likelihood() );
+  EXPECT_DOUBLE_EQ( lhs.pendant_length(), rhs.pendant_length() );
+  EXPECT_DOUBLE_EQ( lhs.distal_length(), rhs.distal_length() );
+  EXPECT_DOUBLE_EQ( lhs.lwr(), rhs.lwr() );
+  EXPECT_EQ( lhs.branch_id(), rhs.branch_id() );
+}
+
+inline void check_equal( Preplacement const& lhs, Preplacement const& rhs )
+{
+  EXPECT_DOUBLE_EQ( lhs.likelihood(), rhs.likelihood() );
+  EXPECT_DOUBLE_EQ( lhs.lwr(), rhs.lwr() );
+  EXPECT_EQ( lhs.branch_id(), rhs.branch_id() );
+}
+
+
+template< class T >
+inline void check_equal( PQuery< T > const& lhs, PQuery< T > const& rhs )
+{
+  ASSERT_EQ( lhs.size(), rhs.size() );
+
+  for( size_t branch_id = 0; branch_id < rhs.size(); ++branch_id ) {
+    check_equal( lhs.at( branch_id ), rhs.at( branch_id ) );
+  }
+}
+
+template< class T >
+inline void check_equal( Sample< T > const& lhs, Sample< T > const& rhs )
+{
+  ASSERT_EQ( lhs.size(), rhs.size() );
+
+  for( size_t seq_id = 0; seq_id < rhs.size(); ++seq_id ) {
+    check_equal( lhs.at( seq_id ), rhs.at( seq_id ) );
+  }
 }
 
 inline void check_equal( pll_unode_t const* const a,

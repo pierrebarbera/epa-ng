@@ -12,7 +12,6 @@
 #include "core/pll/pllhead.hpp"
 #include "core/pll/error.hpp"
 #include "core/raxml/Model.hpp"
-#include "set_manipulators.hpp"
 #include "tree/Tree_Numbers.hpp"
 #include "tree/tiny_util.hpp"
 #include "util/logging.hpp"
@@ -233,7 +232,7 @@ Placement Tiny_Tree::place( Sequence const& s,
   std::vector< unsigned int > param_indices( partition_->rate_cats, 0 );
 
   if( s.sequence().size() != partition_->sites ) {
-    throw std::runtime_error{
+    throw std::runtime_error {
       "Query sequence length not same as reference alignment!"
     };
   }
@@ -243,7 +242,7 @@ Placement Tiny_Tree::place( Sequence const& s,
   if( options.premasking ) {
     range = get_valid_range( s.sequence() );
     if( not range ) {
-      throw std::runtime_error{
+      throw std::runtime_error {
         std::string() + "Sequence with header '" + s.header()
         + "' does not appear to have any non-gap sites!"
       };
@@ -294,7 +293,7 @@ Placement Tiny_Tree::place( Sequence const& s,
   // either way, call update partial for the inner
   update_partial( partition_.get(), inner );
 
-  if ( not opt_branches ) {
+  if( not opt_branches ) {
     logl = pll_compute_edge_loglikelihood( partition_.get(),
                                            new_tip->clv_index,
                                            PLL_SCALE_BUFFER_NONE,
@@ -306,13 +305,22 @@ Placement Tiny_Tree::place( Sequence const& s,
   }
 
   if( logl == -std::numeric_limits< double >::infinity() ) {
-    throw std::runtime_error{ std::string( "-INF logl at branch " )
-                              + std::to_string( branch_id_ ) + " with sequence "
-                              + s.header() };
+    throw std::runtime_error { std::string( "-INF logl at branch " )
+                               + std::to_string( branch_id_ )
+                               + " with sequence " + s.header() };
   }
 
   assert( distal_length <= original_branch_length_ );
   assert( distal_length >= 0.0 );
 
   return Placement( branch_id_, logl, pendant_length, distal_length );
+}
+
+Preplacement Tiny_Tree::preplace( Sequence const& s, Options const& options )
+{
+  return place( s, false, options );
+}
+Placement Tiny_Tree::blo_place( Sequence const& s, Options const& options )
+{
+  return place( s, true, options );
 }

@@ -1,7 +1,9 @@
 #include "Epatest.hpp"
 
 #include "io/jplace_util.hpp"
-#include "set_manipulators.hpp"
+#include "util/set_manipulators.hpp"
+#include "sample/functions.hpp"
+#include "seq/functions.hpp"
 
 #include <iostream>
 #include <vector>

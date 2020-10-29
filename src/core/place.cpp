@@ -25,9 +25,10 @@
 #include "pipeline/Pipeline.hpp"
 #include "pipeline/schedule.hpp"
 #include "sample/Sample.hpp"
+#include "sample/functions.hpp"
 #include "seq/MSA.hpp"
-#include "set_manipulators.hpp"
 #include "tree/Tiny_Tree.hpp"
+#include "util/set_manipulators.hpp"
 #include "util/Timer.hpp"
 #include "util/logging.hpp"
 #include "util/stringify.hpp"
@@ -44,10 +45,9 @@ using timer = Timer< std::chrono::milliseconds >;
  * Placement using default pendant lengths, center insertion point
  * (preplacement), done via CLV computation managed by the BranchBuffer.
  */
-template< class T >
 static void preplace( MSA& msa,
                       BranchBuffer& branchbuf,
-                      Sample< T >& sample,
+                      Sample< Preplacement >& sample,
                       Options const& options,
                       timer* time = nullptr )
 {
@@ -75,7 +75,7 @@ static void preplace( MSA& msa,
       // make shallow copy of tinytree if parallelizing here as well!
       for( size_t seq_id = 0; seq_id < msa.size(); ++seq_id ) {
         sample[ seq_id ][ branch.branch_id() ]
-            = branch.place( msa[ seq_id ], false, options );
+            = branch.preplace( msa[ seq_id ], options );
       }
     }
   }
@@ -89,11 +89,10 @@ static void preplace( MSA& msa,
  * Placement using default pendant lengths, center insertion point
  * (preplacement), done via explicit CLV computation (no lookup table).
  */
-template< class T >
 static void preplace( MSA& msa,
                       Tree& reference_tree,
                       std::vector< pll_unode_t* > const& branches,
-                      Sample< T >& sample,
+                      Sample< Preplacement >& sample,
                       Options const& options,
                       timer* time = nullptr )
 {
@@ -152,10 +151,7 @@ static void preplace( MSA& msa,
                                               reference_tree );
     }
 
-    sample[ seq_id ][ branch_id ] = branch->place(
-        msa[ seq_id ],
-        false,
-        options );
+    sample[ seq_id ][ branch_id ] = branch->preplace( msa[ seq_id ], options );
 
     prev_branch_id = branch_id;
   }
@@ -168,10 +164,9 @@ static void preplace( MSA& msa,
  * Lookup-based placement using default pendant lengths, center insertion point
  * (preplacement).
  */
-template< class T >
 static void preplace( MSA& msa,
                       LookupPlacement const& lookup,
-                      Sample< T >& sample,
+                      Sample< Preplacement >& sample,
                       Options const& options,
                       timer* time = nullptr )
 {
@@ -214,11 +209,10 @@ static void preplace( MSA& msa,
 /**
  * BLO placement from a BranchBuffer
  */
-template< class T >
 static void blo_place( Work const& to_place,
                        MSA& msa,
                        BranchBuffer& branchbuf,
-                       Sample< T >& sample,
+                       Sample< Placement >& sample,
                        Options const& options,
                        size_t const seq_id_offset = 0,
                        timer* time                = nullptr )
@@ -240,7 +234,7 @@ static void blo_place( Work const& to_place,
   }
 
   // split the sample structure such that the parts are thread-local
-  std::vector< Sample< T > > sample_parts( num_threads );
+  std::vector< Sample< Placement > > sample_parts( num_threads );
   // Map from sequence indices to indices in the pquery vector.
   auto seq_lookup_vec
       = std::vector< std::unordered_map< size_t, size_t > >( num_threads );
@@ -287,7 +281,7 @@ static void blo_place( Work const& to_place,
         }
         assert( seq_lookup.count( seq_id ) > 0 );
         local_sample[ seq_lookup[ seq_id ] ].emplace_back(
-            branch_ptrs[ tid ]->place( seq, true, options ) );
+            branch_ptrs[ tid ]->blo_place( seq, options ) );
       }
       prev_branch_id = branch_id;
     }
@@ -301,12 +295,11 @@ static void blo_place( Work const& to_place,
   collapse( sample );
 }
 
-template< class T >
 static void blo_place( Work const& to_place,
                        MSA& msa,
                        Tree& reference_tree,
                        std::vector< pll_unode_t* > const& branches,
-                       Sample< T >& sample,
+                       Sample< Placement >& sample,
                        Options const& options,
                        size_t const seq_id_offset = 0,
                        timer* time              = nullptr )
@@ -332,7 +325,7 @@ static void blo_place( Work const& to_place,
 #endif
 
   // split the sample structure such that the parts are thread-local
-  std::vector< Sample< T > > sample_parts( num_threads );
+  std::vector< Sample< Placement > > sample_parts( num_threads );
 
   // build vector of elements
   std::vector< Work::Work_Pair > id;
@@ -382,9 +375,7 @@ static void blo_place( Work const& to_place,
     }
     assert( seq_lookup.count( seq_id ) > 0 );
     local_sample[ seq_lookup[ seq_id ] ].emplace_back(
-        branch_ptrs[ tid ]->place( seq,
-                                   true,
-                                   options ) );
+        branch_ptrs[ tid ]->blo_place( seq, options ) );
 
     prev_branch_id = branch_id;
   }
@@ -422,13 +413,12 @@ void simple_mpi( Tree& reference_tree,
                                  options.premasking,
                                  true );
 
-  using Sample         = Sample< Placement >;
   size_t num_sequences = 0;
   bool first           = true;
   Work all_work;
   Work blo_work;
   MSA chunk;
-  Sample preplace_result;
+  Sample< Preplacement > preplace_result;
   size_t sequences_done = 0; // not just for info output!
 
   // prepare output file
@@ -450,10 +440,11 @@ void simple_mpi( Tree& reference_tree,
     size_t const seq_id_offset = sequences_done + reader->local_seq_offset();
 
     if( first or num_sequences < options.chunk_size ) {
-      all_work = Work( std::make_pair( 0, num_branches ), std::make_pair( 0, num_sequences ) );
+      all_work = Work( std::make_pair( 0, num_branches ),
+                       std::make_pair( 0, num_sequences ) );
 
       if( options.prescoring ) {
-        preplace_result = Sample( num_sequences, num_branches );
+        preplace_result = Sample< Preplacement >( num_sequences, num_branches );
       }
       first = false;
     }
@@ -484,7 +475,7 @@ void simple_mpi( Tree& reference_tree,
       blo_work = all_work;
     }
 
-    Sample blo_sample;
+    Sample< Placement > blo_sample;
 
     LOG_DBG << "BLO Placement" << std::endl;
     blo_place( blo_work,

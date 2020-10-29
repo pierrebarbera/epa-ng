@@ -57,9 +57,10 @@ class Tiny_Tree {
   Tiny_Tree& operator=( Tiny_Tree const& other ) = delete;
   Tiny_Tree& operator=( Tiny_Tree&& other ) = default;
 
-  Placement place( Sequence const& s,
-                   bool const opt_branches,
-                   Options const& options );
+  Placement
+  place( Sequence const& s, bool const opt_branches, Options const& options );
+  Preplacement preplace( Sequence const& s, Options const& options );
+  Placement blo_place( Sequence const& s, Options const& options );
 
   void get_persite_logl( char const nt, std::vector< double >& result ) const;
 

@@ -22,7 +22,7 @@ class PQuery {
   template< typename T = Placement_Type,
             typename   = std::enable_if_t<
                 std::is_same< T, Placement >::value > >
-  PQuery( PQuery< Slim_Placement > const& other )
+  PQuery( PQuery< Preplacement > const& other )
       : sequence_id_( other.sequence_id() )
       , placements_( other.size() )
   {
@@ -92,7 +92,8 @@ class PQuery {
 
   // Operator overloads
   value_type& operator[]( size_t const index ) { return placements_[ index ]; }
-  value_type const& at( size_t const index ) const { return placements_[ index ]; }
+  value_type const& operator[]( size_t const index ) const { return placements_[ index ]; }
+  value_type const& at( size_t const index ) const { return placements_.at( index ); }
   bool operator==( PQuery const&& other ) { return sequence_id_ == other.sequence_id_; }
   bool operator==( PQuery const& other ) { return sequence_id_ == other.sequence_id_; }
 

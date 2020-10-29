@@ -13,7 +13,7 @@
 #include "util/Options.hpp"
 #include "util/logging.hpp"
 
-static constexpr char SPACER[] = " \t";
+static constexpr char SPACER[] = "       ";
 
 static size_t lookuptable_footprint( size_t const branches,
                                      size_t const states,
@@ -194,11 +194,14 @@ static size_t partition_footprint( raxml::Model const& model,
       ? sites_alloc * partition->rate_cats
       : sites_alloc;
 
-  size_t const scaler_buffer = partition->scale_buffers
-          * scaler_size
-          * sizeof( unsigned int )
-      + partition->scale_buffers * sizeof( unsigned int* ); // account for top level array
+  size_t const scaler_buffer
+      = partition->scale_buffers * scaler_size * sizeof( unsigned int )
+      + partition->scale_buffers
+          * sizeof( unsigned int* ); // account for top level array
   size += scaler_buffer;
+
+  LOG_DBG << "\t" << format_byte_num( scaler_buffer ) << SPACER
+            << "scalers array";
 
   pll_partition_destroy( partition );
 
@@ -240,7 +243,8 @@ size_t estimate_footprint( MSA_Info const& ref_info,
   // figure out the true size of the ref alignment
   assert( ref_info.sites() == qry_info.sites() );
   assert( ref_info.gap_mask().size() == qry_info.gap_mask().size() );
-  auto const num_sites = options.premasking ? ref_info.nongap_count() : ref_info.sites();
+  auto const num_sites
+      = options.premasking ? ref_info.nongap_count() : ref_info.sites();
 
   LOG_DBG << "Memory footprint breakdown:";
 

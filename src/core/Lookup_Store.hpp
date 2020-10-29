@@ -36,9 +36,10 @@ class Lookup_Store {
    * (RNA support) and defines invalid chars
    */
   public:
-  using lookup_type = Matrix< double >;
+  using branch_id_t = unsigned int;
+  using lookup_t = Matrix< double >;
 
-  Lookup_Store( size_t const num_branches, size_t const num_states )
+  Lookup_Store( branch_id_t const num_branches, size_t const num_states )
       : branch_( num_branches )
       , store_( num_branches )
       , char_map_size_( ( num_states == 4 ) ? NT_MAP_SIZE : AA_MAP_SIZE )
@@ -79,7 +80,7 @@ class Lookup_Store {
   Lookup_Store()  = delete;
   ~Lookup_Store() = default;
 
-  void init_branch( size_t const branch_id,
+  void init_branch( branch_id_t const branch_id,
                     std::vector< std::vector< double > > precomps )
   {
     store_[ branch_id ]
@@ -104,17 +105,17 @@ class Lookup_Store {
     init_branch( tiny_tree.branch_id(), precomputed_sites );
   }
 
-  std::mutex& get_mutex( size_t const branch_id )
+  std::mutex& get_mutex( branch_id_t const branch_id )
   {
     return branch_[ branch_id ];
   }
 
-  bool has_branch( size_t const branch_id )
+  bool has_branch( branch_id_t const branch_id )
   {
     return store_[ branch_id ].size() != 0;
   }
 
-  lookup_type& operator[]( size_t const branch_id )
+  lookup_t& operator[]( branch_id_t const branch_id )
   {
     return store_[ branch_id ];
   }
@@ -151,12 +152,12 @@ class Lookup_Store {
    * meaning placed in the center of the insertion branch, with the pednant
    * length at the default value.
    *
-   * @param  branch_id  branch for which the liklihood should be calculated
+   * @param  branch_id  branch for which the likelihood should be calculated
    * @param  seq        Sequence for which likelihood is to be calculated
    * @param  premasking flag indicating if flanking gaps should be masked out
    * @return            log-likelihood
    */
-  double sum_precomputed_sitelk( size_t const branch_id,
+  double sum_precomputed_sitelk( branch_id_t const branch_id,
                                  std::string const& seq,
                                  bool const premasking ) const
   {
@@ -206,9 +207,11 @@ class Lookup_Store {
     return sum;
   }
 
+  size_t num_branches() const { return store_.size(); }
+
   private:
   std::vector< std::mutex > branch_;
-  std::vector< lookup_type > store_;
+  std::vector< lookup_t > store_;
   size_t const char_map_size_;
   unsigned char const* char_map_;
   std::array< size_t, 128 > char_to_posish_;
@@ -232,12 +235,11 @@ class Lookup_Store {
  */
 class LookupPlacement {
   public:
+  using branch_id_t = unsigned int;
   LookupPlacement( Tree& ref_tree,
                    std::vector< pll_unode_t* > const& branches,
                    Options const& options )
       : lookup_( ref_tree.nums().branches, ref_tree.partition()->states )
-      , pendant_length_( ref_tree.nums().branches, -1.0 )
-      , distal_length_( ref_tree.nums().branches, -1.0 )
   {
 #ifdef __OMP
     omp_set_num_threads( options.num_threads ? options.num_threads
@@ -255,12 +257,8 @@ class LookupPlacement {
 #ifdef __OMP
 #pragma omp parallel for schedule( dynamic )
 #endif
-      for( size_t branch_id = 0; branch_id < nums.branches; ++branch_id ) {
+      for( branch_id_t branch_id = 0; branch_id < nums.branches; ++branch_id ) {
         Tiny_Tree cur_branch( branches[ branch_id ], branch_id, ref_tree );
-
-        pendant_length_[ branch_id ] = cur_branch.pendant_length();
-        distal_length_[ branch_id ]  = cur_branch.distal_length();
-
         lookup_.init_branch( cur_branch );
       }
 
@@ -276,11 +274,6 @@ class LookupPlacement {
 #pragma omp parallel for schedule( dynamic )
         for( size_t i = 0; i < branch_chunk.size(); ++i ) {
           auto& cur_branch     = branch_chunk[ i ];
-          auto const branch_id = cur_branch.branch_id();
-
-          pendant_length_[ branch_id ] = cur_branch.pendant_length();
-          distal_length_[ branch_id ]  = cur_branch.distal_length();
-
           lookup_.init_branch( cur_branch );
         }
       }
@@ -298,24 +291,18 @@ class LookupPlacement {
   LookupPlacement& operator=( LookupPlacement const& other ) = delete;
   LookupPlacement& operator=( LookupPlacement&& other ) = default;
 
-  Placement place( size_t const branch_id,
+  Preplacement place( branch_id_t const branch_id,
                    Sequence const& seq,
                    bool const premasking ) const
   {
     auto const logl = lookup_.sum_precomputed_sitelk(
         branch_id, seq.sequence(), premasking );
 
-    return Placement( branch_id,
-                      logl,
-                      pendant_length_[ branch_id ],
-                      distal_length_[ branch_id ] );
+    return Preplacement( branch_id, logl );
   }
 
-  size_t num_branches() const { return pendant_length_.size(); }
+  size_t num_branches() const { return lookup_.num_branches(); }
 
   private:
   Lookup_Store lookup_;
-  // arrays holding pendant and distal lengths for a given branch_id
-  std::vector< double > pendant_length_;
-  std::vector< double > distal_length_;
 };

@@ -1,5 +1,7 @@
 #include "Epatest.hpp"
 
+#include "check_equal.hpp"
+
 #include "core/Lookup_Store.hpp"
 #include "core/pll/epa_pll_util.hpp"
 #include "core/pll/pll_util.hpp"
@@ -8,9 +10,9 @@
 #include "io/Binary.hpp"
 #include "io/file_io.hpp"
 #include "sample/Sample.hpp"
+#include "sample/functions.hpp"
 #include "seq/MSA.hpp"
 #include "seq/MSA_Info.hpp"
-#include "set_manipulators.hpp"
 #include "tree/Tiny_Tree.hpp"
 #include "tree/Tree.hpp"
 #include "tree/Tree_Numbers.hpp"
@@ -51,37 +53,6 @@ static void place_( Options const options )
 }
 
 TEST( Tiny_Tree, place ) { all_combinations( place_ ); }
-
-static void compare_samples( Sample<>& orig_samp, Sample<>& read_samp,
-                             bool verbose = false, unsigned int head = 0 )
-{
-  for( size_t seq_id = 0; seq_id < read_samp.size(); ++seq_id ) {
-    auto& orig_pq = orig_samp[ seq_id ];
-    auto& read_pq = read_samp[ seq_id ];
-
-    ASSERT_EQ( orig_pq.size(), read_pq.size() );
-
-    for( size_t branch_id = 0; branch_id < read_pq.size(); ++branch_id ) {
-      auto& orig_p = orig_pq[ branch_id ];
-      auto& read_p = read_pq[ branch_id ];
-
-      if( verbose ) {
-        auto limit = head ? head : 2000;
-        if( branch_id <= limit and seq_id < 1 ) {
-          printf( "branch %lu: %f vs branch %lu: %f\n", orig_p.branch_id(),
-                  orig_p.likelihood(), read_p.branch_id(),
-                  read_p.likelihood() );
-        }
-      }
-
-      EXPECT_DOUBLE_EQ( orig_p.likelihood(), read_p.likelihood() );
-      EXPECT_DOUBLE_EQ( orig_p.pendant_length(), read_p.pendant_length() );
-      EXPECT_DOUBLE_EQ( orig_p.distal_length(), read_p.distal_length() );
-      EXPECT_DOUBLE_EQ( orig_p.lwr(), read_p.lwr() );
-      EXPECT_EQ( orig_p.branch_id(), read_p.branch_id() );
-    }
-  }
-}
 
 static void place_from_binary( Options const options )
 {
@@ -152,16 +123,16 @@ static void place_from_binary( Options const options )
 
   ASSERT_EQ( orig_samp.size(), read_samp.size() );
 
-  compare_samples( orig_samp, read_samp );
+  check_equal( orig_samp, read_samp );
 
   // effectively, do the candidate selection
   compute_and_set_lwr( orig_samp );
   compute_and_set_lwr( read_samp );
-  compare_samples( orig_samp, read_samp );
+  check_equal( orig_samp, read_samp );
 
   discard_by_accumulated_threshold( orig_samp, options.prescoring_threshold );
   discard_by_accumulated_threshold( read_samp, options.prescoring_threshold );
-  compare_samples( orig_samp, read_samp );
+  check_equal( orig_samp, read_samp );
 
   Work read_work( read_samp );
   Work orig_work( orig_samp );

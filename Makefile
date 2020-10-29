@@ -51,7 +51,7 @@ ifneq (,$(TREE))
 endif
 	mkdir -p $(OUTDIR)
 	rm -f $(OUTDIR)/*
-	$(EPABIN) $(NORM_TEST) --threads 4
+	$(EPABIN) $(NORM_TEST) --threads 4 --memsave full
 .PHONY: test
 
 bintest: update

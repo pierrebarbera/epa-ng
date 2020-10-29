@@ -8,6 +8,7 @@
 
 #include "pipeline/Token.hpp"
 #include "sample/Sample.hpp"
+#include "util/set_manipulators.hpp"
 
 // forward declaration
 class WorkIterator;
@@ -20,7 +21,7 @@ class WorkIterator;
  */
 class Work : public Token {
   public:
-  using key_type             = size_t;
+  using key_type             = unsigned int;
   using value_type           = size_t;
   using container_value_type = std::vector< value_type >;
   using container_type       = std::map< key_type, container_value_type >;
@@ -242,4 +243,43 @@ inline Work::const_iterator Work::begin() const
 inline Work::const_iterator Work::end() const
 {
   return WorkIterator( work_set_, true );
+}
+
+inline void split( Work const& src,
+            std::vector< Work >& parts,
+            unsigned int const num_parts )
+{
+  parts.clear();
+  // ensure that there are actually as many parts as specified. We want empty
+  // parts to enable null messages
+  parts.resize( num_parts );
+
+  size_t const ext_size
+      = ( src.size() - ( src.size() % num_parts ) ) + num_parts;
+  size_t const chunk_size = ext_size / num_parts;
+
+  size_t i      = 0;
+  size_t bucket = 0;
+  for( auto it : src ) {
+    parts[ bucket ].add( it );
+    if( ++i % chunk_size == 0 )
+      bucket++;
+  }
+}
+
+inline void merge( Work& dest, Work const& src )
+{
+  if( not src.empty() ) {
+    auto prev_branch_id = ( *src.begin() ).branch_id + 1;
+    for( auto it : src ) {
+      auto const branch_id = it.branch_id;
+      if( prev_branch_id != branch_id ) {
+        dest[ branch_id ];
+        dest[ branch_id ].insert( dest.at( branch_id ).end(),
+                                  src.at( branch_id ).begin(),
+                                  src.at( branch_id ).end() );
+      }
+      prev_branch_id = branch_id;
+    }
+  }
 }

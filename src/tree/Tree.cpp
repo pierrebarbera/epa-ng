@@ -9,7 +9,6 @@
 #include "core/pll/optimize.hpp"
 #include "io/file_io.hpp"
 #include "seq/Sequence.hpp"
-#include "set_manipulators.hpp"
 #include "util/logging.hpp"
 #include "util/stringify.hpp"
 

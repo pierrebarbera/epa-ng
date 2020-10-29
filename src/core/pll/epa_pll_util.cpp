@@ -6,8 +6,8 @@
 
 #include "core/pll/optimize.hpp"
 #include "core/pll/pll_util.hpp"
-#include "set_manipulators.hpp"
 #include "util/Options.hpp"
+#include "util/logging.hpp"
 
 /**
  * makes a vector mapping from internal node_indexes to their associated branch
