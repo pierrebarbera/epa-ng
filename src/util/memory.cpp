@@ -10,6 +10,7 @@
 #include "core/pll/epa_pll_util.hpp"
 #include "core/raxml/Model.hpp"
 #include "seq/MSA_Info.hpp"
+#include "sample/Placement.hpp"
 #include "util/Options.hpp"
 #include "util/logging.hpp"
 
@@ -107,7 +108,7 @@ static size_t partition_footprint( raxml::Model const& model,
         + nums.tip_nodes * sizeof( unsigned char* ); // account for top level array
     size += tipchars_buffer;
 
-    LOG_DBG << "\t" << format_byte_num( tipchars_buffer ) << SPACER
+    LOG_DBG << "\t\t" << format_byte_num( tipchars_buffer ) << SPACER
             << "tipchars array";
   }
 
@@ -124,7 +125,7 @@ static size_t partition_footprint( raxml::Model const& model,
       + ( log2( nums.tip_nodes ) + 2 )
           * sizeof( double* ); // account for top level array
 
-  LOG_DBG << "\t" << format_byte_num( clv_buffer ) << SPACER << "CLV Buffer"
+  LOG_DBG << "\t\t" << format_byte_num( clv_buffer ) << SPACER << "CLV Buffer"
           << " (with log(n) opt: " << format_byte_num( log_clv_buffer ) << ")";
 
   size += clv_buffer;
@@ -200,7 +201,7 @@ static size_t partition_footprint( raxml::Model const& model,
           * sizeof( unsigned int* ); // account for top level array
   size += scaler_buffer;
 
-  LOG_DBG << "\t" << format_byte_num( scaler_buffer ) << SPACER
+  LOG_DBG << "\t\t" << format_byte_num( scaler_buffer ) << SPACER
             << "scalers array";
 
   pll_partition_destroy( partition );
@@ -219,6 +220,20 @@ static size_t msa_footprint( MSA_Info const& info, Options const& options )
 
   // some guess about the average size of sequence labels
   size += info.sequences() * 100 * sizeof(char);
+
+  return size;
+}
+
+static size_t sample_footprint( size_t const chunk_size,
+                                size_t const num_branches,
+                                bool const slim )
+{
+  size_t size = 0;
+
+  size_t const placement_size = slim ? sizeof(Preplacement) : sizeof(Placement);
+
+  // the sequences themselves
+  size += chunk_size * num_branches * placement_size;
 
   return size;
 }
@@ -258,6 +273,12 @@ size_t estimate_footprint( MSA_Info const& ref_info,
     LOG_DBG << "\t" << format_byte_num( lookup_size ) << SPACER
             << "Preplacement Lookup";
     size += lookup_size;
+
+    auto const preplace_sample
+        = sample_footprint( options.chunk_size, tree_nums.branches, true );
+    LOG_DBG << "\t" << format_byte_num( preplace_sample ) << SPACER
+            << "Preplacement Sample";
+    size += preplace_sample;
   }
 
   auto const ref_msa_size = msa_footprint( ref_info, options );

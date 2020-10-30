@@ -96,8 +96,8 @@ static void place_from_binary( Options const options )
   ASSERT_EQ( original_traversed, read_traversed );
   ASSERT_EQ( original_traversed, original_tree.nums().branches );
 
-  Sample<> orig_samp;
-  Sample<> read_samp;
+  Sample< Placement > orig_samp;
+  Sample< Placement > read_samp;
 
   // test
   for( size_t i = 0; i < original_traversed; i++ ) {

@@ -439,7 +439,7 @@ void simple_mpi( Tree& reference_tree,
 
     size_t const seq_id_offset = sequences_done + reader->local_seq_offset();
 
-    if( first or num_sequences < options.chunk_size ) {
+    if( first or ( num_sequences < options.chunk_size ) ) {
       all_work = Work( std::make_pair( 0, num_branches ),
                        std::make_pair( 0, num_sequences ) );
 

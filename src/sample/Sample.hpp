@@ -12,7 +12,7 @@
 #include "pipeline/Token.hpp"
 #include "sample/PQuery.hpp"
 
-template< class Placement_Type = Placement >
+template< class Placement_Type >
 class Sample : public Token {
   public:
   using value_type     = PQuery< Placement_Type >;
@@ -33,6 +33,7 @@ class Sample : public Token {
       pquerys_[ i ] = PQuery< Placement >( other.at( i ) );
     }
   }
+
   explicit Sample( size_t const size )
   {
     pquerys_.reserve( size );
@@ -54,6 +55,14 @@ class Sample : public Token {
   {
   }
   ~Sample() = default;
+
+  Sample( Sample< Placement_Type > const& other ) = default;
+  Sample( Sample< Placement_Type > && other ) = default;
+
+  Sample< Placement_Type >& operator=( Sample< Placement_Type > const& other )
+      = default;
+  Sample< Placement_Type >& operator=( Sample< Placement_Type >&& other )
+      = default;
 
   // member access
   value_type& back() { return pquerys_.back(); }

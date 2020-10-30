@@ -72,7 +72,13 @@ class Preplacement {
   }
   Preplacement( Placement const& other );
 
+  Preplacement( Preplacement const& other ) = default;
+  Preplacement( Preplacement && other ) = default;
+
   ~Preplacement() = default;
+
+  Preplacement& operator=( Preplacement const& other ) = default;
+  Preplacement& operator=( Preplacement&& other ) = default;
 
   // getters
   branch_id_t branch_id() const { return branch_id_; }

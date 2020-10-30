@@ -61,7 +61,8 @@ class jplace_writer {
 #endif
   }
 
-  void write( Sample<>& chunk )
+  template< class T >
+  void write( Sample< T >& chunk )
   {
 #ifdef __PREFETCH
     // ensure the last write has finished
@@ -99,7 +100,8 @@ class jplace_writer {
   }
 
   protected:
-  void write_( Sample<>& chunk )
+  template< class T >
+  void write_( Sample< T >& chunk )
   {
 #ifdef __MPI // ========== MPI ==============
 
