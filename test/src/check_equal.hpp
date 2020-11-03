@@ -60,6 +60,98 @@ inline void check_equal( Sample< T > const& lhs, Sample< T > const& rhs )
   }
 }
 
+#include "genesis/placement.hpp"
+
+#include <algorithm>
+#include <unordered_map>
+
+using namespace genesis;
+using genesis_sample = placement::Sample;
+using genesis_pquery = placement::Pquery;
+using genesis_placement = placement::PqueryPlacement;
+using genesis_tree = placement::PlacementTree;
+
+inline void check_equal( genesis_tree const& lhs, genesis_tree const& rhs )
+{
+  ASSERT_TRUE( placement::compatible_trees( lhs, rhs ) );
+}
+
+inline void check_equal( genesis_placement const& lhs,
+                         genesis_placement const& rhs )
+{
+  ASSERT_EQ( lhs.edge_num(), rhs.edge_num() );
+  EXPECT_DOUBLE_EQ( lhs.likelihood, rhs.likelihood );
+  EXPECT_DOUBLE_EQ( lhs.like_weight_ratio, rhs.like_weight_ratio );
+  EXPECT_DOUBLE_EQ( lhs.proximal_length, rhs.proximal_length );
+  EXPECT_DOUBLE_EQ( lhs.pendant_length, rhs.pendant_length );
+}
+
+inline void check_equal( genesis_pquery const& lhs, genesis_pquery const& rhs )
+{
+  // compare pqueries on the basis of branch ids their placements are based on
+  ASSERT_EQ( lhs.placement_size(), rhs.placement_size() );
+
+  for( auto const& lhs_p : lhs.placements() ) {
+    auto find_it = std::find_if(
+        rhs.begin_placements(),
+        rhs.end_placements(),
+        [n = lhs_p.edge_num()]( auto const& p ) { return p.edge_num() == n; } );
+    ASSERT_NE( find_it, rhs.end_placements() );
+
+    auto const& rhs_p = *find_it;
+
+    check_equal( lhs_p, rhs_p );
+  }
+}
+
+inline auto name_to_index_map( genesis_sample const& smpl )
+{
+  auto ret_map = std::unordered_map< std::string, size_t >();
+
+  for( size_t pq_id = 0; pq_id < smpl.size(); ++pq_id ) {
+    for( auto const& n : smpl.at( pq_id ).names() ) {
+      ret_map[ n.name ] = pq_id;
+    }
+  }
+
+  return ret_map;
+}
+
+inline void check_equal( genesis_sample const& lhs, genesis_sample const& rhs )
+{
+  using namespace genesis::placement;
+
+  // first, compare the trees
+  check_equal( lhs.tree(), rhs.tree() );
+
+  // validate internal consitency of samples
+  // (pretty optional for the first one in a regression check)
+  ASSERT_TRUE( validate( lhs, true, true ) );
+  ASSERT_TRUE( validate( rhs, true, true ) );
+
+  ASSERT_EQ( lhs.size(), rhs.size() );
+
+  // create unordered maps for each sample pquery names to decomplexify the
+  // search for their equivalents
+  auto lhs_id_of = name_to_index_map( lhs );
+  auto rhs_id_of = name_to_index_map( rhs );
+
+  // go through the sample, find corresponding pquery
+  for( auto const& lhs_pq : lhs ) {
+    // TODO oversimplification: assume only one name per pquery
+    ASSERT_EQ( lhs_pq.name_size(), 1ul );
+    auto const& lhs_name = lhs_pq.name_at( 0 ).name;
+
+    // get the rhs_pq of that name, fail if none exists
+    auto lookup_it = rhs_id_of.find( lhs_name );
+    ASSERT_NE( lookup_it, std::end(rhs_id_of) );
+    auto const& rhs_pq = rhs.at( lookup_it->second );
+    ASSERT_EQ( rhs_pq.name_size(), 1ul );
+
+    check_equal( lhs_pq, rhs_pq );
+  }
+}
+
 inline void check_equal( pll_unode_t const* const a,
                          pll_unode_t const* const b )
 {
