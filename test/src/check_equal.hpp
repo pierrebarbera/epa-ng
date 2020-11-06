@@ -253,7 +253,7 @@ inline void check_equal( pll_partition_t const& lhs,
     auto const clv_size   = pll_get_clv_size( &lhs, clv_id );
     ASSERT_EQ( clv_size, pll_get_clv_size( &rhs, clv_id ) );
     for( size_t i = 0; i < clv_size; ++i ) {
-      EXPECT_DOUBLE_EQ( lhs_clv[ i ], rhs_clv[ i ] );
+      ASSERT_DOUBLE_EQ( lhs_clv[ i ], rhs_clv[ i ] );
     }
   }
 
@@ -324,7 +324,7 @@ inline void check_equal( pll_partition_t const& lhs,
 
 inline void check_equal( Tiny_Tree const& lhs, Tiny_Tree const& rhs )
 {
-  EXPECT_EQ( lhs.branch_id(), rhs.branch_id() );
+  ASSERT_EQ( lhs.branch_id(), rhs.branch_id() );
   EXPECT_DOUBLE_EQ( lhs.distal_length(), rhs.distal_length() );
   EXPECT_DOUBLE_EQ( lhs.proximal_length(), rhs.proximal_length() );
   EXPECT_DOUBLE_EQ( lhs.pendant_length(), rhs.pendant_length() );

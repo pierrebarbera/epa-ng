@@ -149,4 +149,34 @@ TEST( Tiny_Tree, place_from_binary )
   all_combinations( place_from_binary );
 }
 
-// TODO test shallow/deepcopy chaining
+static void copy_chaining( Options const options )
+{
+  auto msa     = build_MSA_from_file( env->reference_file,
+                                MSA_Info( env->reference_file ),
+                                options.premasking );
+  auto queries = build_MSA_from_file(
+      env->query_file, MSA_Info( env->query_file ), options.premasking );
+
+  auto ref_tree = Tree( env->tree_file, msa, env->model, options );
+  auto root = get_root( ref_tree.tree() );
+
+  Tiny_Tree original( root, 0, ref_tree, true );
+
+  // shallow from tiny tree
+  Tiny_Tree shallow( original, false );
+  check_equal( original, shallow );
+  
+  Tiny_Tree deep( original, true );
+  check_equal( original, deep );
+  
+  Tiny_Tree shallow_from_deep( deep, false );
+  check_equal( original, shallow_from_deep );
+
+  Tiny_Tree deep_from_shallow( shallow, true );
+  check_equal( original, deep_from_shallow );
+}
+
+TEST( Tiny_Tree, copy_chaining )
+{
+  all_combinations( copy_chaining );
+}

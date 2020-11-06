@@ -148,7 +148,8 @@ Tiny_Tree::Tiny_Tree( pll_unode_t* edge_node,
   }
 
   tree_ = std::unique_ptr< pll_utree_t, utree_deleter >(
-      make_tiny_tree_structure( old_proximal, old_distal, tip_tip_case ),
+      make_tiny_tree_structure(
+          old_proximal, old_distal, original_branch_length_, tip_tip_case ),
       utree_destroy );
 
   // ensure the clvs are there to be copied
@@ -198,7 +199,8 @@ Tiny_Tree::Tiny_Tree( Tiny_Tree const& other, bool const deep_copy_clvs )
            // this distal is a tipchars vector
 
   tree_ = std::unique_ptr< pll_utree_t, utree_deleter >(
-      make_tiny_tree_structure( old_proximal, old_distal, tip_tip_case ),
+      make_tiny_tree_structure(
+          old_proximal, old_distal, original_branch_length_, tip_tip_case ),
       utree_destroy );
 
   partition_ = std::unique_ptr< pll_partition_t, partition_deleter >(

@@ -17,6 +17,7 @@
 #include <limits>
 #include <string>
 #include <vector>
+#include <functional>
 
 using namespace genesis;
 
@@ -61,13 +62,34 @@ static void full_test( std::string const& previous_jplace,
 
 TEST( regression, neotrop )
 {
-  Options options;
+  // Options options;
   std::string dir = env->data_dir + "neotrop/";
 
-  full_test( dir + "epa_result.jplace",
-             dir + "tree.newick",
-             dir + "reference.fasta.gz",
-             dir + "query_1k.fasta.gz",
-             dir + "infofile",
-             options );
+  using namespace std::placeholders;
+  auto f = std::bind( full_test,
+                      dir + "epa_result.jplace",
+                      dir + "tree.newick",
+                      dir + "reference.fasta.gz",
+                      dir + "query_1k.fasta.gz",
+                      dir + "infofile",
+                      _1 );
+
+  all_combinations( f, true );
+}
+
+TEST( regression, tentaxa )
+{
+  // Options options;
+  std::string dir = env->data_dir;
+
+  using namespace std::placeholders;
+  auto f = std::bind( full_test,
+                      dir + "epa_result.jplace",
+                      dir + "ref.tre",
+                      dir + "aln.fasta",
+                      dir + "query.fasta",
+                      dir + "modelfiles/raxng_dna",
+                      _1 );
+
+  all_combinations( f, true );
 }
