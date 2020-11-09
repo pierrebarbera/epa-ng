@@ -163,15 +163,19 @@ static void copy_chaining( Options const options )
   Tiny_Tree original( root, 0, ref_tree, true );
 
   // shallow from tiny tree
+  // printf("shallow\n");fflush(stdout);
   Tiny_Tree shallow( original, false );
   check_equal( original, shallow );
   
+  // printf("deep\n");fflush(stdout);
   Tiny_Tree deep( original, true );
   check_equal( original, deep );
   
+  // printf("shallow_from_deep\n");fflush(stdout);
   Tiny_Tree shallow_from_deep( deep, false );
   check_equal( original, shallow_from_deep );
 
+  // printf("deep_from_shallow\n");fflush(stdout);
   Tiny_Tree deep_from_shallow( shallow, true );
   check_equal( original, deep_from_shallow );
 }

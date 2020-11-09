@@ -252,6 +252,10 @@ inline void check_equal( pll_partition_t const& lhs,
     double const* rhs_clv = rhs.clv[ clv_id ];
     auto const clv_size   = pll_get_clv_size( &lhs, clv_id );
     ASSERT_EQ( clv_size, pll_get_clv_size( &rhs, clv_id ) );
+    if( lhs_clv == nullptr ) {
+      ASSERT_EQ( rhs_clv, nullptr );
+      continue;
+    }
     for( size_t i = 0; i < clv_size; ++i ) {
       ASSERT_DOUBLE_EQ( lhs_clv[ i ], rhs_clv[ i ] );
     }
