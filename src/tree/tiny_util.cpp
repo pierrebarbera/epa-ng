@@ -379,7 +379,7 @@ void tiny_partition_destroy_deep( pll_partition_t* partition )
 
 pll_utree_t* make_tiny_tree_structure( pll_unode_t const* old_proximal,
                                        pll_unode_t const* old_distal,
-                                       unsigned int const original_brlen,
+                                       double const original_brlen,
                                        bool const tip_tip_case )
 {
   unsigned int const inner_scaler_index    = 1;
