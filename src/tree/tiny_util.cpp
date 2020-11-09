@@ -12,25 +12,21 @@ constexpr unsigned int new_tip_clv_index         = 1;
 constexpr unsigned int distal_clv_index_if_tip   = 2;
 constexpr unsigned int distal_clv_index_if_inner = 5;
 
-template< class T,
-          typename
-          = typename std::enable_if< std::is_pointer< T >::value >::type >
-static void alloc_and_copy( T& dest,
-                            T const src,
+template< class T >
+static void alloc_and_copy( T*& dest,
+                            T const* const src,
                             size_t const size,
                             size_t const alignment = 0ul )
 {
-  using base_t = std::remove_pointer_t< decltype( src ) >;
-
   if( dest != nullptr ) {
     free( dest );
   }
 
   if( alignment ) {
-    dest = static_cast< T >(
-        pll_aligned_alloc( size * sizeof( base_t ), alignment ) );
+    dest = static_cast< T* >(
+        pll_aligned_alloc( size * sizeof( T ), alignment ) );
   } else {
-    dest = static_cast< T >( calloc( size, sizeof( base_t ) ) );
+    dest = static_cast< T* >( calloc( size, sizeof( T ) ) );
   }
 
   if( dest == nullptr ) {
@@ -41,7 +37,7 @@ static void alloc_and_copy( T& dest,
 
   std::memcpy( dest,
                src,
-               size * sizeof( base_t ) );
+               size * sizeof( T ) );
 }
 
 static void shallow_copy_clv(pll_partition_t* dest_part,
@@ -64,8 +60,6 @@ static void deep_copy_clv( pll_partition_t* dest_part,
   /**
    * TODO:
    * - this function should probably cover the repeats case as well
-   * - automatically treat tips differently? or leave it to the caller?
-   * - memsaver vs normal (vs repeats?)
    */
 
   // clv size in doubles (gets correct size wrt repeats also)
@@ -82,12 +76,19 @@ static void deep_copy_clv( pll_partition_t* dest_part,
 
   double* dest_clv = dest_part->clv[ dest_node->clv_index ];
 
-  assert( dest_clv != nullptr );
+  // assert( dest_clv != nullptr );
 
-  // copy the clv buffer over
-  std::memcpy( dest_clv,
-               src_clv,
-               clv_size * sizeof( double ) );
+  if( dest_clv != nullptr ) {
+    // copy the clv buffer over
+    std::memcpy( dest_clv,
+                 src_clv,
+                 clv_size * sizeof( double ) );
+  } else {
+    alloc_and_copy( dest_part->clv[ dest_node->clv_index ],
+                    src_clv,
+                    clv_size,
+                    src_part->alignment );
+  }
 }
 
 static void deep_copy_scaler( pll_partition_t* dest_part,
@@ -250,6 +251,22 @@ pll_partition_t* make_tiny_partition( pll_partition_t const* const old_partition
   }
   tiny->pattern_weights = old_partition->pattern_weights;
 
+  // copy the repeats structures
+  if( old_partition->repeats ) {
+    // then do the per-clv stuff, but only for the two relevant clv
+    deep_copy_repeats( tiny,
+                       proximal,
+                       old_partition,
+                       old_proximal );
+
+    deep_copy_repeats( tiny,
+                       distal,
+                       old_partition,
+                       old_distal );
+
+    pll_resize_repeats_lookup( tiny, tiny->sites * tiny->states );
+  }
+
   if( use_tipchars ) {
     // alloc the tipchars array
     assert( tiny->tipchars == nullptr );
@@ -302,21 +319,6 @@ pll_partition_t* make_tiny_partition( pll_partition_t const* const old_partition
                     old_partition,
                     old_distal );
 
-  // copy the repeats structures
-  if( old_partition->repeats ) {
-    // then do the per-clv stuff, but only for the two relevant clv
-    deep_copy_repeats( tiny,
-                       proximal,
-                       old_partition,
-                       old_proximal );
-
-    deep_copy_repeats( tiny,
-                       distal,
-                       old_partition,
-                       old_distal );
-
-    pll_resize_repeats_lookup( tiny, tiny->sites * tiny->states );
-  }
 
   return tiny;
 }
