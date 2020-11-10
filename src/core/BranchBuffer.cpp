@@ -30,10 +30,10 @@ static void calc_block( BranchBuffer::container_type& buffer,
   buffer.clear();
   buffer.reserve( block_size );
 
-  for( size_t i = *traversal_start; i < *traversal_start + block_size; ++i ) {
-    // for the current branch, according to the traversal
-    auto branch_node = traversal[ i ];
-    auto const cur_branch_id  = branch_id[ branch_node->node_index ];
+  size_t i = *traversal_start;
+  for( ; ( i < traversal.size() ) and ( buffer.size() < block_size ); ++i ) {
+    auto branch_node         = traversal[ i ];
+    auto const cur_branch_id = branch_id[ branch_node->node_index ];
     // skip the branch if it isn't whitelisted
     if( use_whitelist and not treat_branch[ cur_branch_id ] ) {
       continue;
@@ -55,7 +55,7 @@ static void calc_block( BranchBuffer::container_type& buffer,
 
   // update the start of the next traversal to be one beyond the block we just
   // finished
-  *traversal_start += block_size;
+  *traversal_start = i;
 }
 
 /**
@@ -70,8 +70,7 @@ BranchBuffer::BranchBuffer( Tree* tree,
     , whitelist_( work.empty() ? 0ul : tree->nums().branches, false )
 {
   if( not work.empty() ) {
-    for( auto iter = work.bin_cbegin(); iter != work.bin_cend(); ++iter)
-    {
+    for( auto iter = work.bin_cbegin(); iter != work.bin_cend(); ++iter ) {
       auto const branch_id    = iter->first;
       whitelist_[ branch_id ] = true;
     }

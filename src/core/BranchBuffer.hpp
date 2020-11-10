@@ -1,17 +1,17 @@
 #pragma once
 
-#include "core/pll/pllhead.hpp"
 #include "core/Work.hpp"
+#include "core/pll/pllhead.hpp"
 #include "tree/Tiny_Tree.hpp"
 #include "tree/Tree.hpp"
 
 #include <future>
-#include <vector>
 #include <unordered_map>
+#include <vector>
 
 /**
- * Buffers x branches / TinyTrees as a block for computation, while pre-calculating
- * the next block of x, asynchronously.
+ * Buffers x branches / TinyTrees as a block for computation, while
+ * pre-calculating the next block of x, asynchronously.
  */
 class BranchBuffer {
   public:
@@ -34,6 +34,9 @@ class BranchBuffer {
   ~BranchBuffer();
 
   size_t get_next( container_type& result );
+
+  Tree const& tree() { return *tree_; }
+  whitelist_type const& whitelist() const { return whitelist_; }
 
   private:
   Tree* tree_ = nullptr;
