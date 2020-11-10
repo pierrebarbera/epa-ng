@@ -198,3 +198,33 @@ TEST( epa_pll_util, split_combined_msa )
 
   // teardown
 }
+
+static void branch_ids_test( std::string const& tree_file = env->tree_file,
+                             bool const verbose           = false )
+{
+  Tree_Numbers nums = Tree_Numbers();
+  rtree_mapper dummy;
+
+  auto tree = build_tree_from_file( tree_file, nums, dummy );
+
+  auto branch_ids = get_branch_ids( tree );
+
+  std::set< unsigned int > branch_set;
+
+  for( auto const& b : branch_ids ) {
+    branch_set.insert( b );
+    if( verbose ) {
+      printf("%u\n", b);
+    }
+  }
+
+  ASSERT_EQ( branch_set.size(), branch_ids.size() / 2.0 );
+}
+
+TEST( epa_pll_util, get_branch_ids ) { branch_ids_test(env->tree_file, true); }
+
+TEST( epa_pll_util, get_branch_ids_neotrop )
+{
+  std::string dir = env->data_dir + "neotrop/";
+  branch_ids_test( dir + "tree.newick" );
+}

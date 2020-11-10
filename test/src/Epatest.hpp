@@ -21,6 +21,7 @@ class Epatest : public ::testing::Environment {
   std::string binary_file;
   std::string info_file;
   raxml::Model model = raxml::Model( "GTR+G" );
+  std::string model_file;
   Options options;
 };
 
@@ -64,21 +65,41 @@ static inline Options get_options_config( unsigned int const d )
   return o;
 }
 
+inline void print_combination_line( Options const& o )
+{
+  printf( "\nrepeats\toptim\tsliding\tprescor\tmasking\tmemsave\n" );
+  printf( "%d\t%d\t%d\t%d\t%d\t%d\n",
+          o.repeats,
+          o.opt_model,
+          o.sliding_blo,
+          o.prescoring,
+          o.premasking,
+          static_cast< int >( o.memsave ) );
+}
+
 template< class Func >
 void all_combinations( Func f, bool const verbose = false )
 {
   for( size_t i = 0; i < pow( 2, 6 ); ++i ) {
     auto o = get_options_config( i );
     if( verbose ) {
-      printf( "\nrepeats\toptim\tsliding\tprescor\tmasking\tmemsave\n" );
-      printf( "%d\t%d\t%d\t%d\t%d\t%d\n",
-              o.repeats,
-              o.opt_model,
-              o.sliding_blo,
-              o.prescoring,
-              o.premasking,
-              static_cast<int>(o.memsave) );
+      print_combination_line( o );
     }
     f( o );
   }
+}
+
+template< class Func >
+void memsave_subset_test( Func f,
+                          Options o    = Options(),
+                          bool const verbose = false )
+{
+  o.num_threads= 4;
+  if( verbose ) print_combination_line( o );
+  f(o);
+  o.memsave = Options::MemorySaver::Mode::kAuto;
+  o.repeats = false;
+  o.memory_config.preplace_lookup_enabled = false;
+  if( verbose ) print_combination_line( o );
+  f(o);
 }

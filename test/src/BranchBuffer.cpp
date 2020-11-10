@@ -5,27 +5,34 @@
 
 #include "core/BranchBuffer.hpp"
 
+#include "core/pll/pllhead.hpp"
 #include "core/Work.hpp"
 #include "seq/MSA.hpp"
 #include "seq/MSA_Info.hpp"
 #include "tree/Tree.hpp"
 #include "tree/Tiny_Tree.hpp"
 #include "util/Options.hpp"
+#include "util/parse_model.hpp"
 #include "io/file_io.hpp"
-#include "core/pll/pllhead.hpp"
 
-static void test_buffer_impl( Options const options, bool const whitelisted )
+
+static void test_buffer_impl( std::string const& tree_file,
+                              std::string const& msa_file,
+                              std::string const& model_file,
+                              Options const options,
+                              bool const whitelisted )
 {
   Work work;
 
   // buildup
-  auto msa        = build_MSA_from_file( env->reference_file,
-                                  MSA_Info( env->reference_file ),
+  auto model = raxml::Model( parse_model( model_file ) );
+  auto msa        = build_MSA_from_file( msa_file,
+                                  MSA_Info( msa_file ),
                                   options.premasking );
-  auto ref_tree   = Tree( env->tree_file, msa, env->model, options );
+  auto ref_tree   = Tree( tree_file, msa, model, options );
 
   Options def_opts;
-  auto true_tree  = Tree( env->tree_file, msa, env->model, def_opts );
+  auto true_tree  = Tree( tree_file, msa, model, def_opts );
   std::vector< pll_unode_t* > branches( true_tree.nums().branches );
   auto num_traversed_branches
       = utree_query_branches( true_tree.tree(), &branches[ 0 ] );
@@ -41,15 +48,22 @@ static void test_buffer_impl( Options const options, bool const whitelisted )
     work = get_randomized_Work( ref_tree.nums().branches, 1, 0.5 );
   }
 
-  size_t const block_size = 10;
+  size_t const block_size = options.memory_config.concurrent_branches;
   BranchBuffer bufferino( &ref_tree, block_size, work );
+
+  ASSERT_EQ( std::accumulate( std::begin( bufferino.whitelist() ),
+                              std::end( bufferino.whitelist() ),
+                              0ul ),
+             work.branches() );
 
   BranchBuffer::container_type block;
 
-  size_t branches_tested = 0;
+  std::set< unsigned int > branches_tested;
+  size_t sum_branches = 0;
 
   while( bufferino.get_next( block ) ) {
     for( auto& buffered_tt : block ) {
+      sum_branches++;
       auto const branch_id = buffered_tt.branch_id();
       // check for signs of demonic corruption
       ASSERT_NE( branch_id, -1u );
@@ -70,22 +84,33 @@ static void test_buffer_impl( Options const options, bool const whitelisted )
       // compare the two
       check_equal( buffered_tt, true_tt );
 
-      branches_tested++;
+      branches_tested.insert( branch_id );
     }
   }
 
-  EXPECT_EQ( branches_tested,
+  // check we tested the correct number of branches
+  ASSERT_EQ( sum_branches,
+             whitelisted ? work.branches() : ref_tree.nums().branches );
+  ASSERT_EQ( branches_tested.size(),
              whitelisted ? work.branches() : ref_tree.nums().branches );
 }
 
-static void test_buffer( Options const options )
+static void test_buffer( Options const options,
+                         std::string const& tree_file  = env->tree_file,
+                         std::string const& msa_file   = env->reference_file,
+                         std::string const& model_file = env->model_file )
 {
-  test_buffer_impl( options, false );
+  test_buffer_impl( tree_file, msa_file, model_file, options, false );
 }
 
-static void test_buffer_whitelisted( Options const options )
+static void
+test_buffer_whitelisted( Options const options,
+                         std::string const& tree_file  = env->tree_file,
+                         std::string const& msa_file   = env->reference_file,
+                         std::string const& model_file = env->model_file )
+
 {
-  test_buffer_impl( options, true );
+  test_buffer_impl( tree_file, msa_file, model_file, options, true );
 }
 
 TEST( BranchBuffer, buffer )
@@ -95,7 +120,6 @@ TEST( BranchBuffer, buffer )
   options.memsave = true;
 
   test_buffer( options );
-  // all_combinations( test_buffer );
 }
 
 TEST( BranchBuffer, buffer_whitelisted )
@@ -105,5 +129,28 @@ TEST( BranchBuffer, buffer_whitelisted )
   options.memsave = true;
 
   test_buffer_whitelisted( options );
-  // all_combinations( test_buffer );
+}
+
+TEST( BranchBuffer, neotrop )
+{
+  Options options;
+  options.memsave = true;
+
+  std::string dir = env->data_dir + "neotrop/";
+  test_buffer( options,
+               dir + "tree.newick",
+               dir + "reference.fasta.gz",
+               dir + "infofile" );
+}
+
+TEST( BranchBuffer, neotrop_whitelisted )
+{
+  Options options;
+  options.memsave = true;
+
+  std::string dir = env->data_dir + "neotrop/";
+  test_buffer_whitelisted( options,
+                           dir + "tree.newick",
+                           dir + "reference.fasta.gz",
+                           dir + "infofile" );
 }

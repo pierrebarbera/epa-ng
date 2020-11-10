@@ -67,14 +67,33 @@ TEST( regression, neotrop )
 
   using namespace std::placeholders;
   auto f = std::bind( full_test,
-                      dir + "epa_result.jplace",
+                      dir + "1k_heur.jplace",
                       dir + "tree.newick",
                       dir + "reference.fasta.gz",
                       dir + "query_1k.fasta.gz",
                       dir + "infofile",
                       _1 );
 
-  all_combinations( f, true );
+  memsave_subset_test( f, Options(), true );
+}
+
+TEST( regression, neotrop_noheur )
+{
+  // Options options;
+  std::string dir = env->data_dir + "neotrop/";
+
+  using namespace std::placeholders;
+  auto f = std::bind( full_test,
+                      dir + "100_noheur.jplace",
+                      dir + "tree.newick",
+                      dir + "reference.fasta.gz",
+                      dir + "query_100.fasta.gz",
+                      dir + "infofile",
+                      _1 );
+  Options o;
+  o.prescoring = false;
+
+  memsave_subset_test( f, o, true );
 }
 
 TEST( regression, tentaxa )
@@ -91,5 +110,5 @@ TEST( regression, tentaxa )
                       dir + "modelfiles/raxng_dna",
                       _1 );
 
-  all_combinations( f, true );
+  memsave_subset_test( f, Options(), true );
 }

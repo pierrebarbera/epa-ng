@@ -32,6 +32,8 @@ int main( int argc, char** argv )
 
   env->reference_file = std::string( env->data_dir );
   env->reference_file += "aln.fasta";
+  env->model_file = std::string( env->data_dir );
+  env->model_file += "modelfiles/raxng_dna";
   env->query_file = std::string( env->data_dir );
   env->query_file += "query.fasta";
   env->combined_file = std::string( env->data_dir );

@@ -15,7 +15,7 @@ class MemoryConfig {
 
   ~MemoryConfig() = default;
 
-  size_t concurrent_branches   = 10;
+  size_t concurrent_branches   = 4;
   bool preplace_lookup_enabled = true;
 };
 
