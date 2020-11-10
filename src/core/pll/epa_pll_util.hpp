@@ -37,7 +37,7 @@ void split_combined_msa( MSA& source,
                          Tree& tree );
 raxml::Model get_model( pll_partition_t* partition );
 
-std::vector< size_t > get_branch_ids( pll_utree_t const* const tree );
+std::vector< unsigned int > get_branch_ids( pll_utree_t const* const tree );
 
 // operator overloads
 bool operator==( pll_unode_t const* node, Sequence const& s );

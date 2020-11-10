@@ -102,6 +102,7 @@ Tree::Tree( std::string const& bin_file,
 
   // TODO this needs a major facelift to be able to interoperate with all the new shit
   branch_id_ = get_branch_ids( tree_.get() );
+  assert( branch_id_.size() == nums_.branches );
   if( options_.memsave ) {
     throw std::runtime_error{"Temporarily disabled loading from binary into memsave partition"};
     memsave_ = Memsaver( tree_.get() );

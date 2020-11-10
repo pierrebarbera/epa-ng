@@ -90,8 +90,8 @@ class Tree {
   auto tree() { return tree_.get(); }
   rtree_mapper& mapper() { return mapper_; }
   Memsaver& memsave() { return memsave_; }
-  std::vector< size_t > const& branch_id() { return branch_id_; }
-  size_t branch_id( unsigned int const node_index )
+  std::vector< unsigned int > const& branch_id() { return branch_id_; }
+  unsigned int branch_id( unsigned int const node_index )
   {
     return branch_id_[ node_index ];
   }
@@ -111,7 +111,7 @@ class Tree {
   // tree related
   Tree_Numbers nums_;
   // map from node indexes to branch ID consistent with jplace standard
-  std::vector< size_t > branch_id_;
+  std::vector< unsigned int > branch_id_;
 
   // epa related classes
   MSA ref_msa_;

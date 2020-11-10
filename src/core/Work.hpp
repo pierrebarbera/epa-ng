@@ -175,7 +175,7 @@ class WorkIterator {
   //     return this;
   // }
 
-  size_t current_branch_id()
+  Work::key_type current_branch_id()
   {
 
     return map_it->first;

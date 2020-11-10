@@ -13,17 +13,17 @@
  * makes a vector mapping from internal node_indexes to their associated branch
  * IDs (where the branch ids are consistent with the jplace standard)
  */
-std::vector< size_t > get_branch_ids( pll_utree_t const* const tree )
+std::vector< unsigned int > get_branch_ids( pll_utree_t const* const tree )
 {
   // size of the result vector will be number of tips + number of internal
   // nodes (which are triplets)
-  std::vector< size_t > result( 3 * tree->inner_count + tree->tip_count );
+  std::vector< unsigned int > result( 3 * tree->inner_count + tree->tip_count );
 
   std::vector< pll_unode_t* > branches( tree->edge_count );
   auto traversed = utree_query_branches( tree,
                                          &branches[ 0 ] );
 
-  for( size_t branch_id = 0; branch_id < traversed; ++branch_id ) {
+  for( unsigned int branch_id = 0; branch_id < traversed; ++branch_id ) {
     auto const& node = branches[ branch_id ];
     // both node and node back obviously are associated with the same branch
     result[ node->node_index ] = result[ node->back->node_index ] = branch_id;

@@ -66,7 +66,7 @@ class Sample : public Token {
 
   // member access
   value_type& back() { return pquerys_.back(); }
-  unsigned int size() const { return pquerys_.size(); }
+  size_t size() const { return pquerys_.size(); }
   std::string const& newick() const { return newick_; }
   void clear() { pquerys_.clear(); }
   void push_back( value_type&& pq ) { pquerys_.push_back( pq ); }
