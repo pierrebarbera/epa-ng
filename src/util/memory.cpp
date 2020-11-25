@@ -9,12 +9,13 @@
 #include "core/pll/pllhead.hpp"
 #include "core/pll/epa_pll_util.hpp"
 #include "core/raxml/Model.hpp"
+#include "core/Work.hpp"
 #include "seq/MSA_Info.hpp"
 #include "sample/Placement.hpp"
 #include "util/Options.hpp"
 #include "util/logging.hpp"
 
-static constexpr char SPACER[] = "       ";
+static constexpr char SPACER[] = "  \t";
 
 static size_t lookuptable_footprint( size_t const branches,
                                      size_t const states,
@@ -238,6 +239,20 @@ static size_t sample_footprint( size_t const chunk_size,
   return size;
 }
 
+static size_t all_work_footprint( Tree_Numbers const& nums,
+                                  MSA_Info const& qry_info,
+                                  Options const& options )
+{
+  // the intermediate all-work object only gets created if prescoring is disabled
+  if( options.prescoring ) {
+    return 0;
+  } else {
+    return nums.branches * sizeof( Work::key_type )
+        * std::min( qry_info.sequences(), options.chunk_size )
+        * sizeof( Work::value_type );
+  }
+}
+
 size_t estimate_footprint( MSA_Info const& ref_info,
                            MSA_Info const& qry_info,
                            raxml::Model const& model,
@@ -251,9 +266,6 @@ size_t estimate_footprint( MSA_Info const& ref_info,
   size_t size = 0;
 
   auto const tree_nums = Tree_Numbers( ref_info.sequences() );
-
-  // TODO actually include the query data in the calculation
-  (void)qry_info;
 
   // figure out the true size of the ref alignment
   assert( ref_info.sites() == qry_info.sites() );
@@ -297,6 +309,13 @@ size_t estimate_footprint( MSA_Info const& ref_info,
           << "Query MSA Inputstream";
   size += input_stream_buffer_size;
 
+  auto const all_work_size = all_work_footprint( tree_nums, qry_info, options );
+  if( all_work_size ) {
+    LOG_DBG << "\t" << format_byte_num( all_work_size ) << SPACER
+            << "all-work object";
+    size += all_work_size;
+  }
+
   return size;
 }
 
@@ -322,4 +341,55 @@ std::string format_byte_num( double size )
 std::string format_byte_num( size_t size )
 {
   return format_byte_num( static_cast< double >( size ) );
+}
+
+size_t slurm_memstring_to_bytes( std::string memstr )
+{
+  assert( not memstr.empty() );
+  auto length       = memstr.size() - 1; // length without suffix
+  char const suffix = memstr.at( length );
+
+  size_t mult = 1;
+  switch( suffix ) {
+  case 'K':
+    mult = 1024;
+    break;
+  case 'M':
+    mult = std::pow( 1024, 2 );
+    break;
+  case 'G':
+    mult = std::pow( 1024, 3 );
+    break;
+  case 'T':
+    mult = std::pow( 1024, 4 );
+    break;
+  default:
+    // no good prefix: assume default: M
+    mult = std::pow( 1024, 2 );
+    // but also adjust the length
+    length = memstr.size();
+  }
+
+  return std::stoi( memstr.substr( 0, length ) ) * mult;
+}
+
+#include "util/get_memory_size.hpp"
+#include <cstdlib>
+size_t get_max_memory()
+{
+  size_t maxmem = 0ul;
+
+  // first check the total available memory
+  maxmem = getMemorySize();
+
+  // next, try to identify extra limitations
+
+  // SLURM might have set some maximum per process, useful for not exceeding
+  // total node memory when there are multiple processes per node
+  if( char const* slurm_mem = std::getenv( "SLURM_MEM_PER_NODE" ) ) {
+    size_t const slurm_maxbytes = slurm_memstring_to_bytes( slurm_mem );
+    maxmem                      = std::min( slurm_maxbytes, maxmem );
+  }
+
+  return maxmem;
 }

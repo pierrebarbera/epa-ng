@@ -67,7 +67,7 @@ class Options {
   bool ranged                   = false;
   bool dump_binary_mode         = false;
   bool load_binary_mode         = false;
-  unsigned int chunk_size       = 5000;
+  size_t chunk_size             = 5000;
   unsigned int num_threads      = 0;
   bool repeats                  = false;
   bool premasking               = true;

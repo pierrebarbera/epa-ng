@@ -551,6 +551,8 @@ int main( int argc, char** argv )
 
   LOG_INFO << "Estimated memory footprint: " << format_byte_num( estimated_mem_bytes );
 
+  LOG_INFO << "Total available memory: " << format_byte_num( get_max_memory() );
+
   MSA ref_msa;
   if( reference_file.size() ) {
     ref_msa = build_MSA_from_file( reference_file, ref_info, options.premasking );

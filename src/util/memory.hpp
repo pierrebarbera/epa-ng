@@ -16,3 +16,5 @@ size_t estimate_footprint( MSA_Info const& ref_info,
 	convert number of bytes into a formatte string of the highest sensible magnitude
  */
 std::string format_byte_num( size_t size );
+
+size_t get_max_memory();
