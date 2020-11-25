@@ -387,6 +387,7 @@ static void blo_place( Work const& to_place,
   collapse( sample );
 }
 
+
 void simple_mpi( Tree& reference_tree,
                  std::string const& query_file,
                  MSA_Info const& msa_info,
@@ -440,11 +441,12 @@ void simple_mpi( Tree& reference_tree,
     size_t const seq_id_offset = sequences_done + reader->local_seq_offset();
 
     if( first or ( num_sequences < options.chunk_size ) ) {
-      all_work = Work( std::make_pair( 0, num_branches ),
-                       std::make_pair( 0, num_sequences ) );
 
       if( options.prescoring ) {
         preplace_result = Sample< Preplacement >( num_sequences, num_branches );
+      } else {
+        all_work = Work( std::make_pair( 0, num_branches ),
+                         std::make_pair( 0, num_sequences ) );
       }
       first = false;
     }
