@@ -3,53 +3,12 @@
 #include <limits>
 #include <string>
 
-class MemoryConfig {
-  public:
-  MemoryConfig()  = default;
-
-  MemoryConfig( std::string const& config_string )
-  {
-    // build from a config string
-    (void)config_string;
-  }
-
-  ~MemoryConfig() = default;
-
-  size_t concurrent_branches   = 4;
-  bool preplace_lookup_enabled = true;
-};
+#include "util/memory.hpp"
 
 class Options {
 
   public:
-  enum class NumericalScaling { kOn, kOff, kAuto };
-
-  class MemorySaver {
-  public:
-    enum class Mode { kOff, kFull, kAuto, kCustom };
-
-    MemorySaver() = default;
-    ~MemorySaver() = default;
-
-    MemorySaver& operator=( Mode mode_ )
-    {
-      mode = mode_;
-      return *this;
-    }
-    MemorySaver& operator=( bool enable )
-    {
-      if( enable ) {
-        mode = Options::MemorySaver::Mode::kFull;
-      } else {
-        mode = Options::MemorySaver::Mode::kOff;
-      }
-      return *this;
-    }
-
-    operator bool() const { return mode != Mode::kOff; }
-
-    Mode mode = Mode::kOff;
-  };
+  enum class Numerical_Scaling { kOn, kOff, kAuto };
 
   Options()  = default;
   ~Options() = default;
@@ -74,9 +33,7 @@ class Options {
   bool baseball                 = false;
   std::string tmp_dir;
   unsigned int precision        = 10;
-  NumericalScaling scaling      = NumericalScaling::kAuto;
+  Numerical_Scaling scaling      = Numerical_Scaling::kAuto;
   bool preserve_rooting         = true;
-  MemorySaver memsave;
-
-  MemoryConfig memory_config;
+  Memory_Saver memsave;
 };

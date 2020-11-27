@@ -51,10 +51,17 @@ static unsigned int simd_autodetect()
     return PLL_ATTRIB_ARCH_CPU;
 }
 
-static size_t partition_footprint( raxml::Model const& model,
-                                   Tree_Numbers const& nums,
-                                   int const num_sites )
+typedef struct partition_breakdown {
+  size_t total      = 0ul;
+  size_t clv        = 0ul;
+  size_t clv_buffer = 0ul;
+};
+
+static partition_breakdown partition_footprint( raxml::Model const& model,
+                                                Tree_Numbers const& nums,
+                                                int const num_sites )
 {
+  partition_breakdown pb;
   size_t size = 0;
 
   /*
@@ -113,18 +120,19 @@ static size_t partition_footprint( raxml::Model const& model,
             << "tipchars array";
   }
 
-  size_t const clv_buffer = num_clvs
-          * sites_alloc
-          * partition->states_padded
-          * partition->rate_cats
-          * sizeof( double )
-      + num_clvs * sizeof( double* ); // account for top level array
+  size_t const per_clv = sites_alloc * partition->states_padded
+      * partition->rate_cats * sizeof( double ) 
+      + sizeof( double* ); // account for top level array
+
+  pb.clv = per_clv;
+
+  size_t const clv_buffer = num_clvs * per_clv;
+  pb.clv_buffer = clv_buffer;
 
   // hypothetical size with log(n) optimization
-  auto const log_clv_buffer = ( log2( nums.tip_nodes ) + 2 ) * sites_alloc
-          * partition->states_padded * partition->rate_cats * sizeof( double )
-      + ( log2( nums.tip_nodes ) + 2 )
-          * sizeof( double* ); // account for top level array
+  size_t const log_clv_buffer
+      = floor( log2( nums.tip_nodes ) + 2 ) * per_clv; // account for top level array
+
 
   LOG_DBG << "\t\t" << format_byte_num( clv_buffer ) << SPACER << "CLV Buffer"
           << " (with log(n) opt: " << format_byte_num( log_clv_buffer ) << ")";
@@ -207,7 +215,8 @@ static size_t partition_footprint( raxml::Model const& model,
 
   pll_partition_destroy( partition );
 
-  return size;
+  pb.total = size;
+  return pb;
 }
 
 static size_t msa_footprint( MSA_Info const& info, Options const& options )
@@ -220,7 +229,7 @@ static size_t msa_footprint( MSA_Info const& info, Options const& options )
   size += info.sequences() * sites * sizeof(char);
 
   // some guess about the average size of sequence labels
-  size += info.sequences() * 100 * sizeof(char);
+  size += info.sequences() * 50 * sizeof(char);
 
   return size;
 }
@@ -253,17 +262,16 @@ static size_t all_work_footprint( Tree_Numbers const& nums,
   }
 }
 
-size_t estimate_footprint( MSA_Info const& ref_info,
-                           MSA_Info const& qry_info,
-                           raxml::Model const& model,
-                           Options const& options )
+Memory_Footprint::Memory_Footprint( MSA_Info const& ref_info,
+                                    MSA_Info const& qry_info,
+                                    raxml::Model const& model,
+                                    Options const& options )
 {
   if( options.repeats ) {
-    LOG_ERR << "Cannot accurately calculate memory footprint when using siterepeats!";
-    assert( false );
+    LOG_ERR << "Cannot accurately calculate memory footprint when using "
+               "siterepeats! Aborting.";
+    std::exit( EXIT_FAILURE );
   }
-
-  size_t size = 0;
 
   auto const tree_nums = Tree_Numbers( ref_info.sequences() );
 
@@ -275,48 +283,51 @@ size_t estimate_footprint( MSA_Info const& ref_info,
 
   LOG_DBG << "Memory footprint breakdown:";
 
-
-  size += partition_footprint( model, tree_nums, num_sites );
-  LOG_DBG << "\t" << format_byte_num( size ) << SPACER << "Partition Total";
+  auto pb = partition_footprint( model, tree_nums, num_sites );
+  partition_  = pb.total;
+  perclv_     = pb.clv;
+  clvbuffer_  = pb.clv_buffer;
+  maxnumclv_  = nums.inner_nodes * 3 + ( options.repeats ? nums.tip_nodes : 0 );
+  logn_       = floor( log2( nums.tip_nodes ) + 2 );
+  LOG_DBG << "\t" << format_byte_num( partition_ ) << SPACER
+          << "Partition Total";
 
   if( options.prescoring ) {
-    auto const lookup_size = lookuptable_footprint(
+    lookup_ = lookuptable_footprint(
         tree_nums.branches, model.num_states(), num_sites );
-    LOG_DBG << "\t" << format_byte_num( lookup_size ) << SPACER
+    LOG_DBG << "\t" << format_byte_num( lookup_ ) << SPACER
             << "Preplacement Lookup";
-    size += lookup_size;
 
-    auto const preplace_sample
-        = sample_footprint( options.chunk_size, tree_nums.branches, true );
-    LOG_DBG << "\t" << format_byte_num( preplace_sample ) << SPACER
+    presample_ = sample_footprint(
+        std::min( options.chunk_size, qry_info.sequences() ),
+        tree_nums.branches,
+        true );
+    LOG_DBG << "\t" << format_byte_num( presample_ ) << SPACER
             << "Preplacement Sample";
-    size += preplace_sample;
   }
 
-  auto const ref_msa_size = msa_footprint( ref_info, options );
-  LOG_DBG << "\t" << format_byte_num( ref_msa_size ) << SPACER
-          << "Reference MSA";
-  size += ref_msa_size;
+  refmsa_ = msa_footprint( ref_info, options );
+  LOG_DBG << "\t" << format_byte_num( refmsa_ ) << SPACER << "Reference MSA";
 
   // account for the overhead induced by the tinytree-encapsulated partitions,
   // which are one per thread
 
   // size of the fasta input stream buffers
   // currently only one: the query MSA_Stream
-  auto const input_stream_buffer_size
-      = genesis::utils::InputStream::BlockLength * 3;
-  LOG_DBG << "\t" << format_byte_num( input_stream_buffer_size ) << SPACER
+  auto const qsistream_ = genesis::utils::InputStream::BlockLength * 3;
+  LOG_DBG << "\t" << format_byte_num( qsistream_ ) << SPACER
           << "Query MSA Inputstream";
-  size += input_stream_buffer_size;
 
-  auto const all_work_size = all_work_footprint( tree_nums, qry_info, options );
-  if( all_work_size ) {
-    LOG_DBG << "\t" << format_byte_num( all_work_size ) << SPACER
+  allwork_ = all_work_footprint( tree_nums, qry_info, options );
+  if( allwork_ ) {
+    LOG_DBG << "\t" << format_byte_num( allwork_ ) << SPACER
             << "all-work object";
-    size += all_work_size;
   }
 
-  return size;
+  LOG_INFO << "Estimated memory footprint: "
+         << format_byte_num( total() );
+
+  LOG_INFO << "Total available memory: " << format_byte_num( get_max_memory() );
 }
 
 std::string format_byte_num( double size )
@@ -347,7 +358,7 @@ size_t slurm_memstring_to_bytes( std::string memstr )
 {
   assert( not memstr.empty() );
   auto length       = memstr.size() - 1; // length without suffix
-  char const suffix = memstr.at( length );
+  char const suffix = toupper( memstr.at( length ) );
 
   size_t mult = 1;
   switch( suffix ) {
@@ -371,6 +382,11 @@ size_t slurm_memstring_to_bytes( std::string memstr )
   }
 
   return std::stoi( memstr.substr( 0, length ) ) * mult;
+}
+
+size_t memstring_to_byte( std::string s )
+{
+  return slurm_memstring_to_bytes( s );
 }
 
 #include "util/get_memory_size.hpp"

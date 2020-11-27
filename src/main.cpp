@@ -279,13 +279,20 @@ int main( int argc, char** argv )
       ->check( CLI::IsMember( { "off", "full", "auto", "custom" },
                               CLI::ignore_case ) );
 
-  std::string memsave_config_string;
-  auto memsave_config_opt
-      = app.add_option( "--memsave-config",
-                        memsave_config_string,
-                        "Memory saver configuration. Ignored unless '--memsave "
-                        "custom' is set." )
-            ->group( "Compute" );
+  // std::string memsave_config_string;
+  // auto memsave_config_opt
+  //     = app.add_option( "--memsave-config",
+  //                       memsave_config_string,
+  //                       "Memory saver configuration. Ignored unless '--memsave "
+  //                       "custom' is set." )
+  //           ->group( "Compute" );
+
+  std::string maxmem_string;
+  app.add_option( "--maxmem",
+                  maxmem_string,
+                  "Maximum amount of memory to use per process (per rank if "
+                  "under MPI)." )
+      ->group( "Compute" );
 
 #ifdef __OMP
   auto threads = app.add_option( "-T,--threads",
@@ -448,24 +455,25 @@ int main( int argc, char** argv )
     LOG_INFO << "Selected: Disabling per rate scalers";
   }
 
+  Memory_Saver::Mode memmode = Memory_Saver::Mode::kOff;
   if( memsave_toggle == "auto" ) {
-    options.memsave = Options::MemorySaver::Mode::kAuto;
+    memmode = Memory_Saver::Mode::kAuto;
     LOG_INFO << "Selected: Memory saving mode: automatic mode.";
   } else if( memsave_toggle == "full" ) {
-    options.memsave = Options::MemorySaver::Mode::kFull;
-    options.memory_config.preplace_lookup_enabled = false;
+    memmode = Memory_Saver::Mode::kFull;
     LOG_INFO << "Selected: Memory saving mode: full mode.";
-  } else if( memsave_toggle == "custom" ) {
-    if( not *memsave_config_opt ) {
-      LOG_ERR << "'--memsave custom' requires '--memsave-config'" << std::endl;
-      exit_epa( EXIT_FAILURE );
-    } else {
-      options.memsave = Options::MemorySaver::Mode::kCustom;
-      LOG_INFO << "Selected: Memory saving mode: custom mode.";
-      options.memory_config = MemoryConfig( memsave_config_string );
-    }
+  }
+  // else if( memsave_toggle == "custom" ) {
+  //   if( not *memsave_config_opt ) {
+  //     LOG_ERR << "'--memsave custom' requires '--memsave-config'" << std::endl;
+  //     exit_epa( EXIT_FAILURE );
+  //   } else {
+  //     memmode = Memory_Saver::Mode::kCustom;
+  //     LOG_INFO << "Selected: Memory saving mode: custom mode.";
+  //     // options.memory_config = Memory_Config( memsave_config_string );
+  //   }
   } else if( memsave_toggle == "off" ) {
-    options.memsave = Options::MemorySaver::Mode::kOff;
+    memmode = Memory_Saver::Mode::kOff;
     LOG_INFO << "Selected: Disabling memory saver mode.";
   }
 
@@ -546,12 +554,9 @@ int main( int argc, char** argv )
 
   MSA_Info::or_mask( ref_info, qry_info );
 
-  // use the MSA info data and options to estimate memory footprint
-  auto estimated_mem_bytes = estimate_footprint( ref_info, qry_info, model, options );
-
-  LOG_INFO << "Estimated memory footprint: " << format_byte_num( estimated_mem_bytes );
-
-  LOG_INFO << "Total available memory: " << format_byte_num( get_max_memory() );
+  // delegate evaluation/decision of memory footprint and memory config
+  options.memsave = Memory_Saver(
+      memmode, maxmem_string, ref_info, qry_info, model, options );
 
   MSA ref_msa;
   if( reference_file.size() ) {
