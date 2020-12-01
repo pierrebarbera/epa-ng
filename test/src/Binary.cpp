@@ -15,12 +15,13 @@ using namespace std;
 
 static void write_( Options const options )
 {
-  SKIP_CONFIG( options.memsave );
   // setup
   auto msa = build_MSA_from_file( env->reference_file, MSA_Info( env->reference_file ), options.premasking );
   raxml::Model model;
 
   Tree tree( env->tree_file, msa, model, options );
+
+  SKIP_CONFIG( tree.memsave() );
 
   // test
   dump_to_binary( tree, env->binary_file );
@@ -46,13 +47,15 @@ static double loglh( pll_partition* partition, pll_unode_t* node )
 
 static void read_( Options options )
 {
-  SKIP_CONFIG( options.memsave );
   // setup
   auto msa = build_MSA_from_file( env->reference_file,
                                   MSA_Info( env->reference_file ),
                                   options.premasking );
   raxml::Model model;
   Tree original_tree( env->tree_file, msa, model, options );
+
+  SKIP_CONFIG( original_tree.memsave() );
+
   dump_to_binary( original_tree, env->binary_file );
 
   // test

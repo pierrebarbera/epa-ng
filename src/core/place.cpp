@@ -97,7 +97,7 @@ static void preplace( MSA& msa,
                       timer* time = nullptr )
 {
   if( reference_tree.memsave() ) {
-    auto const block_size = options.memory_config.concurrent_branches;
+    auto const block_size = reference_tree.memsave().concurrent_branches;
     BranchBuffer branchbuf( &reference_tree, block_size );
     preplace( msa, branchbuf, sample, options, time );
     return;
@@ -305,7 +305,7 @@ static void blo_place( Work const& to_place,
                        timer* time              = nullptr )
 {
   if( reference_tree.memsave() ) {
-    auto const block_size = options.memory_config.concurrent_branches;
+    auto const block_size = reference_tree.memsave().concurrent_branches;
     BranchBuffer branchbuf( &reference_tree, block_size, to_place );
     blo_place( to_place, msa, branchbuf, sample, options, seq_id_offset, time );
     return;
@@ -405,7 +405,8 @@ void simple_mpi( Tree& reference_tree,
   }
 
   std::unique_ptr< LookupPlacement > lookup_handler
-      = ( options.prescoring and options.memory_config.preplace_lookup_enabled )
+      = ( options.prescoring
+          and reference_tree.memsave().preplace_lookup_enabled )
       ? std::make_unique< LookupPlacement >( reference_tree, branches, options )
       : nullptr;
 

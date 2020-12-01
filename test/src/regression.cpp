@@ -74,7 +74,7 @@ TEST( regression, neotrop )
                       dir + "infofile",
                       _1 );
 
-  memsave_subset_test( f, Options(), true );
+  memsave_subset_test( f, Options(), false );
 }
 
 TEST( regression, neotrop_noheur )
@@ -93,7 +93,7 @@ TEST( regression, neotrop_noheur )
   Options o;
   o.prescoring = false;
 
-  memsave_subset_test( f, o, true );
+  memsave_subset_test( f, o, false );
 }
 
 TEST( regression, tentaxa )
@@ -110,5 +110,5 @@ TEST( regression, tentaxa )
                       dir + "modelfiles/raxng_dna",
                       _1 );
 
-  memsave_subset_test( f, Options(), true );
+  memsave_subset_test( f, Options(), false );
 }

@@ -246,14 +246,11 @@ class LookupPlacement {
                                              : omp_get_max_threads() );
 #endif
     auto nums = ref_tree.nums();
-    bool const use_memsave
-        = ( ref_tree.partition()->attributes & PLL_ATTRIB_LIMIT_MEMORY );
-
     // create and hold the lookup table for the entirety of the reference tree
 
     // if the partition is not in memsave mode, calculate the lookups normally,
     // from the fully precomputed partition data
-    if( not use_memsave ) {
+    if( not ref_tree.memsave() ) {
 #ifdef __OMP
 #pragma omp parallel for schedule( dynamic )
 #endif
@@ -264,7 +261,7 @@ class LookupPlacement {
 
     } else {
       // otherwise do it in a regulated way ensuring limited memory use
-      auto const block_size = options.memory_config.concurrent_branches;
+      auto const block_size = ref_tree.memsave().concurrent_branches;
       BranchBuffer branchbuf( &ref_tree, block_size );
       BranchBuffer::container_type branch_chunk;
 

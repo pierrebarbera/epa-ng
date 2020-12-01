@@ -41,7 +41,7 @@ extern Epatest* env;
 static inline Options get_options_config( unsigned int const d )
 {
   Options o;
-  o.memsave = Options::MemorySaver::Mode::kOff;
+  o.memsave = Memsave_Option::Mode::kOff;
   if( d & COMPL_REPEATS ) {
     o.repeats = not o.repeats;
   }
@@ -59,7 +59,7 @@ static inline Options get_options_config( unsigned int const d )
     o.premasking = not o.premasking;
   }
   if( d & COMPL_MEMSAVE ) {
-    o.memsave = Options::MemorySaver::Mode::kAuto;
+    o.memsave = Memsave_Option::Mode::kFull;
     o.repeats = false;
   }
   return o;
@@ -74,7 +74,7 @@ inline void print_combination_line( Options const& o )
           o.sliding_blo,
           o.prescoring,
           o.premasking,
-          static_cast< int >( o.memsave ) );
+          static_cast< int >( o.memsave.mode ) );
 }
 
 template< class Func >
@@ -97,9 +97,8 @@ void memsave_subset_test( Func f,
   o.num_threads= 4;
   if( verbose ) print_combination_line( o );
   f(o);
-  o.memsave = Options::MemorySaver::Mode::kAuto;
+  o.memsave = Memsave_Option::Mode::kFull;
   o.repeats = false;
-  o.memory_config.preplace_lookup_enabled = false;
   if( verbose ) print_combination_line( o );
   f(o);
 }

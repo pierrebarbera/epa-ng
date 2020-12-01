@@ -5,6 +5,51 @@
 
 #include "util/memory.hpp"
 
+/**
+ * High level option class administering the memsaver option.
+ *
+ */
+class Memsave_Option {
+  public:
+  enum class Mode { kOff, kFull, kAuto, kCustom };
+
+  Memsave_Option()
+      : Memsave_Option( Mode::kOff, "" )
+  {
+  }
+
+  Memsave_Option( Mode mode_arg, std::string maxmem_string )
+      : mode( mode_arg )
+  {
+    size_t const system_constraint = get_max_memory();
+    size_t const user_constraint   = not maxmem_string.empty()
+        ? memstring_to_byte( maxmem_string )
+        : system_constraint;
+    memory_constraint = std::min( system_constraint, user_constraint );
+  }
+
+  ~Memsave_Option() = default;
+
+  Memsave_Option& operator=( Mode mode_arg )
+  {
+    mode = mode_arg;
+    return *this;
+  }
+
+  Memsave_Option& operator=( bool enable )
+  {
+    if( enable ) {
+      mode = Memsave_Option::Mode::kAuto;
+    } else {
+      mode = Memsave_Option::Mode::kOff;
+    }
+    return *this;
+  }
+
+  Mode mode                = Mode::kOff;
+  size_t memory_constraint = 0ul;
+};
+
 class Options {
 
   public:
@@ -33,7 +78,7 @@ class Options {
   bool baseball                 = false;
   std::string tmp_dir;
   unsigned int precision        = 10;
-  Numerical_Scaling scaling      = Numerical_Scaling::kAuto;
+  Numerical_Scaling scaling     = Numerical_Scaling::kAuto;
   bool preserve_rooting         = true;
-  Memory_Saver memsave;
+  Memsave_Option memsave;
 };

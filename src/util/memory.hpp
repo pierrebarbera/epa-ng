@@ -3,11 +3,11 @@
 #include <string>
 
 #include "core/raxml/Model.hpp"
+#include "core/pll/pll_util.hpp"
+#include "core/pll/error.hpp"
 #include "seq/MSA_Info.hpp"
-#include "util/Options.hpp"
 #include "util/logging.hpp"
 
-class Options;
 
 /*
   convert number of bytes into a formatted string of the highest sensible
@@ -19,6 +19,10 @@ size_t memstring_to_byte( std::string s );
 
 size_t get_max_memory();
 
+
+#include "util/Options.hpp"
+class Options;
+class Memsave_Option;
 
 /**
  * Class summarizing the estimated memory footprint of epa-ng, given the
@@ -52,8 +56,9 @@ class Memory_Footprint {
   size_t clv() const { return perclv_; }
   size_t maximum_required_clvs() const { return maxnumclv_; }
   size_t logn_clvs() const { return logn_; }
-
   size_t lookup() const { return lookup_; }
+
+  operator bool() const { return partition_; }
 
   private:
   size_t partition_ = 0ul;
@@ -71,6 +76,48 @@ class Memory_Footprint {
 };
 
 /**
+ * Extra structures needed when using the pll partition memory saving mode
+ */
+class Logn_Structures {
+  public:
+  Logn_Structures() = default;
+  Logn_Structures( pll_utree_t* tree )
+      : subtree_sizes_( pll_utree_get_subtree_sizes( tree ), free )
+      , traversal_{ tree->edge_count, nullptr }
+  {
+    handle_pll_failure( not subtree_sizes_,
+                        "pll_utree_get_subtree_sizes failed." );
+
+    // get the traversal, hopefully one that minimizes overall recomputations
+    utree_query_branches( tree, &traversal_[ 0 ] );
+  }
+
+  ~Logn_Structures() = default;
+
+  Logn_Structures( Logn_Structures const& other ) = delete;
+  Logn_Structures( Logn_Structures&& other )      = default;
+
+  Logn_Structures& operator=( Logn_Structures const& other ) = delete;
+  Logn_Structures& operator=( Logn_Structures&& other ) = default;
+
+  operator bool() const { return subtree_sizes_ and not traversal_.empty(); }
+
+  unsigned int const* subtree_sizes() const { return subtree_sizes_.get(); }
+  std::vector< pll_unode_t* > const& traversal() const { return traversal_; }
+  pll_unode_t const* traversal( size_t i ) const { return traversal_[ i ]; }
+  pll_unode_t* traversal( size_t i ) { return traversal_[ i ]; }
+  void reverse_traversal()
+  {
+    std::reverse( std::begin( traversal_ ), std::end( traversal_ ) );
+  };
+
+  private:
+  std::unique_ptr< unsigned int, decltype( free )* > subtree_sizes_{ nullptr,
+                                                                     free };
+  std::vector< pll_unode_t* > traversal_;
+};
+
+/**
  * Class holding/setting the configuration necessary to govern how the memory
  * saver mode should allocate memory
  */
@@ -78,11 +125,35 @@ class Memory_Config {
   public:
   Memory_Config() = default;
 
-  Memory_Config( std::string const& config_string ) { (void)config_string; }
+  Memory_Config(  Memsave_Option const& memsave_opt,
+                  Memory_Footprint const& footprint,
+                  pll_utree_t* tree );
 
-  Memory_Config( Memory_Footprint const& footprint,
-                 size_t const constraint )
+  ~Memory_Config() = default;
+
+  Memory_Config( Memory_Config const& other ) = delete;
+  Memory_Config( Memory_Config&& other )      = default;
+
+  Memory_Config& operator=( Memory_Config const& other ) = delete;
+  Memory_Config& operator=( Memory_Config&& other ) = default;
+
+  // use clv_slots and validity of the structs as indicator whether this config
+  // is valid
+  operator bool() const { return clv_slots and structs; }
+
+  size_t concurrent_branches   = 4;
+  bool preplace_lookup_enabled = true;
+  size_t clv_slots             = 0u;
+
+  Logn_Structures structs;
+  private:
+  void init( size_t const constraint,
+             Memory_Footprint const& footprint,
+             pll_utree_t* tree )
   {
+    //
+    // figure out the budget by setting the respective config values
+    //
     auto const maxmem = get_max_memory();
 
     if( constraint > maxmem ) {
@@ -118,98 +189,10 @@ class Memory_Config {
     // but have no more than the theoretical maximum
     clv_slots = std::min( footprint.logn_clvs() + extra_clv_slots,
                           footprint.maximum_required_clvs() );
+
+    //
+    // allocate the needed structures, if we do need them for the memsave mode
+    //
+    structs = Logn_Structures( tree );
   }
-
-  ~Memory_Config() = default;
-
-  // use clv_slots as indicator whether this config is valid
-  operator bool() const { return clv_slots; }
-
-  size_t concurrent_branches   = 4;
-  bool preplace_lookup_enabled = true;
-  size_t clv_slots             = 0u;
-};
-
-/**
- * High level option class administering the memsaver option
- */
-class Memory_Saver {
-  public:
-  enum class Mode { kOff, kFull, kAuto, kCustom };
-
-  Memory_Saver()  = default;
-
-  Memory_Saver( Mode mode_arg,
-                std::string maxmem_string,
-                MSA_Info const& ref_info,
-                MSA_Info const& qry_info,
-                raxml::Model const& model,
-                Options const& options )
-      : mode( mode_arg )
-      , footprint( ref_info, qry_info, model, options )
-  {
-    size_t const system_constraint = get_max_memory();
-    size_t const user_constraint   = not maxmem_string.empty()
-        ? memstring_to_byte( maxmem_string )
-        : system_constraint;
-    memory_constraint_ = std::min( system_constraint, user_constraint );
-
-    init();
-  }
-
-  ~Memory_Saver() = default;
-
-  Memory_Saver& operator=( Mode mode_arg )
-  {
-    // if the mode has changed, re-init
-    if( mode != mode_arg ) {
-      mode = mode_arg;
-      init();
-    } else {
-      mode = mode_arg;
-    }
-    return *this;
-  }
-
-  Memory_Saver& operator=( bool enable )
-  {
-    if( enable ) {
-      mode = Memory_Saver::Mode::kAuto;
-    } else {
-      mode = Memory_Saver::Mode::kOff;
-    }
-    return *this;
-  }
-
-  // no valid config = no memsave mode
-  operator bool() const { return config; }
-
-  Mode mode = Mode::kOff;
-  Memory_Footprint footprint;
-  Memory_Config config;
-
-  private:
-  void init()
-  {
-    switch( mode ) {
-    case Mode::kCustom:
-      std::runtime_error { "Custom memsave mode not implemented yet." };
-      break;
-    case Mode::kOff:
-      break;
-    case Mode::kAuto:
-      // only create a valid memory config if we absolutely need it
-      if( footprint.total() > memory_constraint_ * 0.95  ) {
-        config = Memory_Config( footprint, memory_constraint_ );
-      }
-      break;
-    case Mode::kFull:
-      config = Memory_Config( footprint, footprint.minimum() );
-      break;
-    default:
-      std::runtime_error { "Wrong mode!" };
-    }
-  }
-
-  size_t memory_constraint_ = 0ul;
 };

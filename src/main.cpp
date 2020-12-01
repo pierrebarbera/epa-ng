@@ -445,22 +445,21 @@ int main( int argc, char** argv )
   }
 
   if( rate_scalers_option == "auto" ) {
-    options.scaling = Options::NumericalScaling::kAuto;
+    options.scaling = Options::Numerical_Scaling::kAuto;
     LOG_INFO << "Selected: Automatic switching of use of per rate scalers";
   } else if( rate_scalers_option == "on" ) {
-    options.scaling = Options::NumericalScaling::kOn;
+    options.scaling = Options::Numerical_Scaling::kOn;
     LOG_INFO << "Selected: Using per rate scalers to combat numerical underflow";
   } else if( rate_scalers_option == "off" ) {
-    options.scaling = Options::NumericalScaling::kOff;
+    options.scaling = Options::Numerical_Scaling::kOff;
     LOG_INFO << "Selected: Disabling per rate scalers";
   }
 
-  Memory_Saver::Mode memmode = Memory_Saver::Mode::kOff;
   if( memsave_toggle == "auto" ) {
-    memmode = Memory_Saver::Mode::kAuto;
+    options.memsave = Memsave_Option( Memsave_Option::Mode::kAuto, maxmem_string);
     LOG_INFO << "Selected: Memory saving mode: automatic mode.";
   } else if( memsave_toggle == "full" ) {
-    memmode = Memory_Saver::Mode::kFull;
+    options.memsave = Memsave_Option( Memsave_Option::Mode::kFull, maxmem_string);
     LOG_INFO << "Selected: Memory saving mode: full mode.";
   }
   // else if( memsave_toggle == "custom" ) {
@@ -468,12 +467,13 @@ int main( int argc, char** argv )
   //     LOG_ERR << "'--memsave custom' requires '--memsave-config'" << std::endl;
   //     exit_epa( EXIT_FAILURE );
   //   } else {
-  //     memmode = Memory_Saver::Mode::kCustom;
+  //     options.memsave = Memsave_Option( Memsave_Option::Mode::kCustom, maxmem_string);
   //     LOG_INFO << "Selected: Memory saving mode: custom mode.";
   //     // options.memory_config = Memory_Config( memsave_config_string );
   //   }
-  } else if( memsave_toggle == "off" ) {
-    memmode = Memory_Saver::Mode::kOff;
+  // } 
+  else if( memsave_toggle == "off" ) {
+    options.memsave = Memsave_Option( Memsave_Option::Mode::kOff, maxmem_string);
     LOG_INFO << "Selected: Disabling memory saver mode.";
   }
 
@@ -554,9 +554,8 @@ int main( int argc, char** argv )
 
   MSA_Info::or_mask( ref_info, qry_info );
 
-  // delegate evaluation/decision of memory footprint and memory config
-  options.memsave = Memory_Saver(
-      memmode, maxmem_string, ref_info, qry_info, model, options );
+  // get some idea about the memory footprint
+  auto footprint = Memory_Footprint( ref_info, qry_info, model, options );
 
   MSA ref_msa;
   if( reference_file.size() ) {
@@ -572,7 +571,7 @@ int main( int argc, char** argv )
   Tree tree;
   if( options.load_binary_mode ) {
     LOG_INFO << "Loading from binary";
-    tree = Tree( binary_file, model, options );
+    tree = Tree( binary_file, model, options, footprint );
   } else {
     // build the full tree with all possible clv's
     if( not *model_option ) {
@@ -585,7 +584,7 @@ int main( int argc, char** argv )
               << std::endl;
       exit_epa( EXIT_FAILURE );
     }
-    tree = Tree( tree_file, ref_msa, model, options );
+    tree = Tree( tree_file, ref_msa, model, options, footprint );
   }
 
   if( not options.dump_binary_mode ) {

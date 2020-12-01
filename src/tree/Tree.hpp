@@ -13,48 +13,7 @@
 #include "seq/MSA.hpp"
 #include "tree/Tree_Numbers.hpp"
 #include "util/Options.hpp"
-
-/**
- * Extra structures needed when using the pll partition memory saving mode
- */
-class Memsaver {
-  public:
-  Memsaver() = default;
-  Memsaver( pll_utree_t* tree )
-      : subtree_sizes_( pll_utree_get_subtree_sizes( tree ), free )
-      , traversal_{ tree->edge_count, nullptr }
-  {
-    handle_pll_failure( not subtree_sizes_,
-                        "pll_utree_get_subtree_sizes failed." );
-
-    // get the traversal, hopefully one that minimizes overall recomputations
-    utree_query_branches( tree, &traversal_[ 0 ] );
-  }
-
-  ~Memsaver() = default;
-
-  Memsaver( Memsaver const& other ) = delete;
-  Memsaver( Memsaver&& other )      = default;
-
-  Memsaver& operator=( Memsaver const& other ) = delete;
-  Memsaver& operator=( Memsaver&& other ) = default;
-
-  operator bool() const { return subtree_sizes_ and not traversal_.empty(); }
-
-  unsigned int const* subtree_sizes() const { return subtree_sizes_.get(); }
-  std::vector< pll_unode_t* > const& traversal() const { return traversal_; }
-  pll_unode_t const* traversal( size_t i ) const { return traversal_[ i ]; }
-  pll_unode_t* traversal( size_t i ) { return traversal_[ i ]; }
-  void reverse_traversal()
-  {
-    std::reverse( std::begin( traversal_ ), std::end( traversal_ ) );
-  };
-
-  private:
-  std::unique_ptr< unsigned int, decltype( free )* > subtree_sizes_{ nullptr,
-                                                                     free };
-  std::vector< pll_unode_t* > traversal_;
-};
+#include "util/memory.hpp"
 
 /* Encapsulates the pll data structures for ML computation */
 class Tree {
@@ -67,10 +26,12 @@ class Tree {
   Tree( std::string const& tree_file,
         MSA const& msa,
         raxml::Model& model,
-        Options const& options );
+        Options const& options,
+        Memory_Footprint const& footprint = Memory_Footprint() );
   Tree( std::string const& bin_file,
         raxml::Model& model,
-        Options const& options );
+        Options const& options,
+        Memory_Footprint const& footprint = Memory_Footprint() );
   Tree()  = default;
   ~Tree() = default;
 
@@ -89,7 +50,7 @@ class Tree {
   auto partition() const { return partition_.get(); }
   auto tree() { return tree_.get(); }
   rtree_mapper& mapper() { return mapper_; }
-  Memsaver& memsave() { return memsave_; }
+  Memory_Config& memsave() { return memsave_; }
   std::vector< unsigned int > const& branch_id() { return branch_id_; }
   unsigned int branch_id( unsigned int const node_index )
   {
@@ -106,7 +67,7 @@ class Tree {
   utree_ptr tree_{ nullptr, utree_destroy };
 
   // Object holding memory saving related structures
-  Memsaver memsave_;
+  Memory_Config memsave_;
 
   // tree related
   Tree_Numbers nums_;

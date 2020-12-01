@@ -17,7 +17,7 @@ static void calc_block( BranchBuffer::container_type& buffer,
 {
   bool const use_whitelist = not treat_branch.empty();
 
-  auto& memsave = tree->memsave();
+  auto& memsave = tree->memsave().structs;
   assert( memsave );
   auto const& traversal = memsave.traversal();
   auto& branch_id       = tree->branch_id();
@@ -126,5 +126,5 @@ BranchBuffer::~BranchBuffer()
 
   // reverse the memsaver traversal to minimize the recomputation costs of any
   // subsequent BranchBuffer
-  // tree_->memsave().reverse_traversal();
+  // tree_->memsave().structs.reverse_traversal();
 }

@@ -15,7 +15,8 @@
 Tree::Tree( std::string const& tree_file,
             MSA const& msa,
             raxml::Model& model,
-            Options const& options )
+            Options const& options,
+            Memory_Footprint const& footprint )
     : ref_msa_( msa )
     , model_( model )
     , options_( options )
@@ -37,17 +38,17 @@ Tree::Tree( std::string const& tree_file,
              << ref_msa_.size() << " vs. " << nums_.tip_nodes;
   }
 
-  if( options_.memsave ) {
-    memsave_ = Memsaver( tree_.get() );
-  }
+  memsave_ = Memory_Config( options.memsave, footprint, tree_.get() );
+  assert( memsave_ ? memsave_.structs : true );
 
-  partition_ = partition_ptr( make_partition( model_,
-                                              tree_.get(),
-                                              nums_,
-                                              ref_msa_.num_sites(),
-                                              options_,
-                                              memsave_.subtree_sizes() ),
-                              pll_partition_destroy );
+  partition_
+      = partition_ptr( make_partition( model_,
+                                       tree_.get(),
+                                       nums_,
+                                       ref_msa_.num_sites(),
+                                       options_,
+                                       memsave_.structs ),
+                       pll_partition_destroy );
 
   locks_ = Mutex_List( partition_->tips + partition_->clv_buffers );
 
@@ -69,9 +70,12 @@ Tree::Tree( std::string const& tree_file,
     precompute_clvs( tree_.get(), partition_.get(), nums_ );
   } else {
     // compute the CLVs toward the first vroot of the memsave-traversal
-    vroot = memsave_.traversal( 0 );
-    partial_compute_clvs(
-        tree_.get(), nums_, memsave_.subtree_sizes(), vroot, partition_.get() );
+    vroot = memsave_.structs.traversal( 0 );
+    partial_compute_clvs( tree_.get(),
+                          nums_,
+                          memsave_.structs.subtree_sizes(),
+                          vroot,
+                          partition_.get() );
   }
 
   auto logl = this->ref_tree_logl( vroot );
@@ -89,32 +93,35 @@ Tree::Tree( std::string const& tree_file,
 */
 Tree::Tree( std::string const& bin_file,
             raxml::Model& model,
-            Options const& options )
+            Options const& options,
+            Memory_Footprint const& footprint )
     : model_( model )
     , options_( options )
     , binary_( bin_file )
 {
   options_.load_binary_mode = true;
-  partition_                = partition_ptr( binary_.load_partition(), pll_partition_destroy );
-  nums_                     = Tree_Numbers( partition_->tips );
-  tree_                     = utree_ptr( binary_.load_utree( partition_->tips ), utree_destroy );
-  locks_                    = Mutex_List( partition_->tips + partition_->clv_buffers );
+  partition_ = partition_ptr( binary_.load_partition(), pll_partition_destroy );
+  nums_      = Tree_Numbers( partition_->tips );
+  tree_  = utree_ptr( binary_.load_utree( partition_->tips ), utree_destroy );
+  locks_ = Mutex_List( partition_->tips + partition_->clv_buffers );
 
-  // TODO this needs a major facelift to be able to interoperate with all the new shit
+  // TODO this needs a major facelift to be able to interoperate with all the
+  // new shit
   branch_id_ = get_branch_ids( tree_.get() );
-  assert( branch_id_.size() == nums_.branches );
-  if( options_.memsave ) {
+
+  memsave_ = Memory_Config( options.memsave, footprint, tree_.get() );
+
+  if( memsave_ ) {
     throw std::runtime_error{"Temporarily disabled loading from binary into memsave partition"};
-    memsave_ = Memsaver( tree_.get() );
     // set the virtual root to where the traversal through the tree will later
     // (during the parallelized placement) start
-    tree_.get()->vroot = memsave_.traversal( 0 );
+    tree_.get()->vroot = memsave_.structs.traversal( 0 );
 
     // compute the CLVs toward that root
     partial_compute_clvs( tree_.get(),
                           nums_,
-                          memsave_.subtree_sizes(),
-                          memsave_.traversal( 0 ),
+                          memsave_.structs.subtree_sizes(),
+                          memsave_.structs.traversal( 0 ),
                           partition_.get() );
   }
 
@@ -163,7 +170,7 @@ void Tree::ensure_clv_loaded( pll_unode_t const* const node )
         // kick off the partial traversal clv computation
         partial_compute_clvs( tree_.get(),
                               nums_,
-                              memsave_.subtree_sizes(),
+                              memsave_.structs.subtree_sizes(),
                               const_cast< pll_unode_t* >( node ),
                               partition_.get() );
       } else {

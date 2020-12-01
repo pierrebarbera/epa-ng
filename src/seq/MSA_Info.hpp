@@ -76,7 +76,9 @@ class MSA_Info {
   // access
   std::string const& path() const { return path_; }
   size_t sites() const { return sites_; }
+  void sites( size_t const x ) { sites_ = x; }
   size_t sequences() const { return sequences_; }
+  void sequences( size_t const x ) { sequences_ = x; }
   mask_type const& gap_mask() const { return gap_mask_; }
   size_t gap_count() const { return gap_mask_.count(); }
   size_t nongap_count() const { return gap_mask_.size() - gap_mask_.count(); }

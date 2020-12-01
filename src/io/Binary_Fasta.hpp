@@ -9,7 +9,6 @@
 #include "seq/MSA.hpp"
 #include "seq/MSA_Info.hpp"
 #include "util/logging.hpp"
-#include "util/memory.hpp"
 #include "util/stringify.hpp"
 #include "util/template_magic.hpp"
 

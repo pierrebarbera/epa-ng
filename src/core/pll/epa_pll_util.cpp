@@ -367,14 +367,14 @@ pll_partition_t* make_partition( raxml::Model const& model,
                                  Tree_Numbers const& nums,
                                  int const num_sites,
                                  Options const& options,
-                                 unsigned int const* const subtree_sizes )
+                                 Logn_Structures const& memsave )
 {
   assert( nums.tip_nodes ); // nums must have been initialized correctly
 
   auto attributes = simd_autodetect();
 
-  if( ( options.scaling == Options::NumericalScaling::kOn )
-      or ( ( options.scaling == Options::NumericalScaling::kAuto )
+  if( ( options.scaling == Options::Numerical_Scaling::kOn )
+      or ( ( options.scaling == Options::Numerical_Scaling::kAuto )
            and nums.large_tree() ) ) {
     attributes |= PLL_ATTRIB_RATE_SCALERS;
   }
@@ -385,7 +385,7 @@ pll_partition_t* make_partition( raxml::Model const& model,
     attributes |= PLL_ATTRIB_PATTERN_TIP;
   }
 
-  if( options.memsave ) {
+  if( memsave ) {
     if( options.repeats ) {
       throw std::runtime_error{ "Repeats + memsave not supported" };
     }
@@ -408,8 +408,8 @@ pll_partition_t* make_partition( raxml::Model const& model,
   handle_pll_failure(
     not partition, "Could not create partition (make_partition)");
 
-  if( options.memsave ) {
-    assert( subtree_sizes );
+  if( memsave ) {
+    assert( memsave.subtree_sizes() );
 
     const size_t low_clv_num = ceil( log2( nums.tip_nodes ) ) + 2;
     // printf("low clv num: %lu\n", low_clv_num);
@@ -421,7 +421,7 @@ pll_partition_t* make_partition( raxml::Model const& model,
 
     handle_pll_failure(
         not pll_clv_manager_MRC_strategy_init(
-            partition->clv_man, tree, subtree_sizes ),
+            partition->clv_man, tree, memsave.subtree_sizes() ),
         "Could not initialize CLV manager replacement strategy" );
   }
   return partition;

@@ -11,14 +11,15 @@
 #include "tree/Tree.hpp"
 #include "tree/Tree_Numbers.hpp"
 #include "util/Options.hpp"
+#include "util/memory.hpp"
 
 pll_partition_t* make_partition( raxml::Model const& model,
                                  pll_utree_t* const tree,
                                  Tree_Numbers const& nums,
                                  int const num_sites,
                                  Options const& options,
-                                 unsigned int const* const subtree_sizes
-                                 = nullptr );
+                                 Logn_Structures const& memsave
+                                 = Logn_Structures() );
 void link_tree_msa( pll_utree_t* tree,
                     pll_partition_t* partition,
                     raxml::Model& model,

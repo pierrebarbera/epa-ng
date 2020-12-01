@@ -221,7 +221,10 @@ static void branch_ids_test( std::string const& tree_file = env->tree_file,
   ASSERT_EQ( branch_set.size(), branch_ids.size() / 2.0 );
 }
 
-TEST( epa_pll_util, get_branch_ids ) { branch_ids_test(env->tree_file, true); }
+TEST( epa_pll_util, get_branch_ids )
+{
+  branch_ids_test( env->tree_file, false );
+}
 
 TEST( epa_pll_util, get_branch_ids_neotrop )
 {

@@ -56,8 +56,6 @@ TEST( Tiny_Tree, place ) { all_combinations( place_ ); }
 
 static void place_from_binary( Options const options )
 {
-  // skip some configs
-  SKIP_CONFIG( options.memsave );
 
 
   // setup
@@ -72,6 +70,9 @@ static void place_from_binary( Options const options )
   raxml::Model model;
 
   Tree original_tree( tree_file, msa, model, options );
+
+  // skip some configs
+  SKIP_CONFIG( original_tree.memsave() );
 
   dump_to_binary( original_tree, env->binary_file );
   Tree read_tree( env->binary_file, model, options );

@@ -51,7 +51,7 @@ static unsigned int simd_autodetect()
     return PLL_ATTRIB_ARCH_CPU;
 }
 
-typedef struct partition_breakdown {
+struct partition_breakdown {
   size_t total      = 0ul;
   size_t clv        = 0ul;
   size_t clv_buffer = 0ul;
@@ -283,12 +283,13 @@ Memory_Footprint::Memory_Footprint( MSA_Info const& ref_info,
 
   LOG_DBG << "Memory footprint breakdown:";
 
-  auto pb = partition_footprint( model, tree_nums, num_sites );
-  partition_  = pb.total;
-  perclv_     = pb.clv;
-  clvbuffer_  = pb.clv_buffer;
-  maxnumclv_  = nums.inner_nodes * 3 + ( options.repeats ? nums.tip_nodes : 0 );
-  logn_       = floor( log2( nums.tip_nodes ) + 2 );
+  auto pb    = partition_footprint( model, tree_nums, num_sites );
+  partition_ = pb.total;
+  perclv_    = pb.clv;
+  clvbuffer_ = pb.clv_buffer;
+  maxnumclv_ = tree_nums.inner_nodes * 3
+      + ( options.repeats ? tree_nums.tip_nodes : 0 );
+  logn_ = floor( log2( tree_nums.tip_nodes ) + 2 );
   LOG_DBG << "\t" << format_byte_num( partition_ ) << SPACER
           << "Partition Total";
 
@@ -328,6 +329,35 @@ Memory_Footprint::Memory_Footprint( MSA_Info const& ref_info,
          << format_byte_num( total() );
 
   LOG_INFO << "Total available memory: " << format_byte_num( get_max_memory() );
+}
+
+Memory_Config::Memory_Config( Memsave_Option const& memsave_opt,
+                              Memory_Footprint const& footprint,
+                              pll_utree_t* tree )
+{
+  //
+  // figure out what the mode means for the config
+  //
+  if( footprint ) {
+    switch( memsave_opt.mode ) {
+    case Memsave_Option::Mode::kCustom:
+      std::runtime_error { "Custom memsave mode not implemented yet." };
+      break;
+    case Memsave_Option::Mode::kOff:
+      break;
+    case Memsave_Option::Mode::kAuto:
+      // only create a valid memory config if we absolutely need it
+      if( footprint.total() > memsave_opt.memory_constraint * 0.95 ) {
+        init( memsave_opt.memory_constraint, footprint, tree );
+      }
+      break;
+    case Memsave_Option::Mode::kFull:
+      init( footprint.minimum(), footprint, tree );
+      break;
+    default:
+      std::runtime_error { "Wrong mode!" };
+    }
+  }
 }
 
 std::string format_byte_num( double size )
