@@ -264,7 +264,7 @@ int main( int argc, char** argv )
       ->group( "Compute" )
       ->check( CLI::IsMember( { "off", "on", "auto" }, CLI::ignore_case ) );
 
-  std::string memsave_toggle( "off" );
+  std::string memsave_toggle( "auto" );
   app.add_option(
          "--memsave",
          memsave_toggle,
