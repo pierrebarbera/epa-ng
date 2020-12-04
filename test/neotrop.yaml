@@ -1,0 +1,252 @@
+########################################################################################################################
+# WORKFLOW CONFIGURATION
+########################################################################################################################
+
+# INPUT DATASET
+##############################
+# alignment in fasta format and tree in newick format
+dataset_align: data/neotrop/reference.fasta
+dataset_tree: data/neotrop/tree.newick
+
+# working directory
+#MUST be an absolute path (some software do not accept relative path)
+workdir: /home/barberpe/PEWO/neotrop_test
+
+# states used in analysis, either '0' for nucleotides or '1' for amino acids
+states: 0
+
+# which software to test, at least one of : epa, epang, pplacer, rappas, apples
+test_soft: [rappas,epang,pplacer]
+
+# read lengths to test
+read_length: [150]
+
+
+## IF "ACCURACY" IS EVALUATED
+#############################
+
+### this section matters only when you run the "eval_accuracy.smk" workflow
+
+# number of random prunings to compute
+pruning_count: 0
+
+
+## IF "RESOURCES" ARE EVALUATED
+##############################
+
+### this section matters only when you run the "eval_ressources.smk" workflow
+
+# number of identical runs to launch when evaluating RAM/CPU consumption
+# final measurements are reported as mean of the the runs.
+repeats: 1
+# defines queries source, one of the following:
+# user: query sequences are loaded from a file target by parameter "query_set"
+# simulate: queries are simulated from the input alignment (reserved for future upgrades, currently not implemented)
+query_type: user
+# queries used in resource evaluation, >10000 sequences recommended.
+# MUST be an absolute path (some software do not accept relative path).
+query_user: data/neotrop/query_100_unaligned.fasta
+
+
+
+
+########################################################################################################################
+# PER SOFTWARE CONFIGURATION
+########################################################################################################################
+
+# The following section allow you to set parameters combinations that will be tested by the workflow
+# For each software/parameter, set a list of values.
+
+### EPA
+###############################
+
+config_epa:
+
+  #EPA is alignment-based and uses a ML evaluation of the placement.
+  #it uses a 2-step heuristic:
+  # 1) rapid ML evaluation after insertion in the midpoint of each branch
+  # 2) full optimization for top scoring branch selected at step 1.
+  #(Berger et al, 2011 ; doi: 10.1093/sysbio/syr010)
+
+  #proportion of top scoring branch for which full optimization is computed
+  #float in ]0,1], higher values increase accuracy but analysis is slower
+  G: [0.01]
+
+### PPLACER
+###############################
+
+config_pplacer:
+
+  #PPLACER is alignment-based and uses a ML evaluation of the placement.
+  #it uses a 2-step heuristic similar to EPA but called the "baseball" heuristic
+  #(Matsen et al, 2012 ; doi: 10.1186/1471-2105-11-538)
+  
+  max-strikes: [12]
+  strike-box: [6]
+  max-pitches: [40]
+
+  #pre-masking, 1=yes, 0=no
+  premask: 1
+
+### EPA-ng
+###############################
+
+config_epang:
+
+  #EPA-NG is alignment-based and uses a ML evaluation of the placement.
+  #different heuristics that can be tested:
+  # h1: program default, heuristic developed for EPA-ng, fastest heuristic
+  # h2: heuristic equivalent to old EPA, slow
+  # h3: heuristic equivalent to pplacer defaults, fast
+  # h4: no heuristic, very very slow but should produce the best accuracy
+  #(Barbera et al, 2019 ; doi: 10.1093/sysbio/syy054)
+  executable: /home/barberpe/mem-epa/bin/epa-ng
+
+  heuristics: [h1]
+
+  h1:
+    #value in ]0,1], value close to 1 recommended by authors
+    g: [0.999]
+
+  # memory management mode to use, options: "off", "full", "auto"
+  memsave_mode: "auto"
+
+  # memory limitation to use, default in megabytes, otherwise use K, M, G, T prefixes
+  maxmem: ["16G"]
+
+  #pre-masking, 1=yes, 0=no
+  premask: 1
+
+### RAPPAS
+###############################
+
+config_rappas:
+
+  # RAPPAS uses an alignment-free approach which is completely different from the alignment-based apporaches
+  # of EPA, EPA-ng and PPlacer. It does not use a "heuristic" per see to accelerate placements,
+  # but a 2-step approach (DB build, then placements) based on the phylo-kmer idea.
+  #(Linard et al, 2019 ; doi: 10.1093/bioinformatics/btz068)
+
+  #panel of k that is tested
+  #integer in [3,16] (~8-10 recommended, >12 often produces too long computations)
+  k: [6]
+
+  #panel of omega that is tested, rappas probability threshold is Thr=(omega/#states)^k
+  #integer in ]0,#states] with #states=4 for nucleotides and 20 for amino acids
+  #For DNA, values in [1.5,2.0] recommended. For amino acids, values in [5,15] recommended.
+  omega: [2.0]
+
+  #reduction setup, e.g. gap/non-gap ratio
+  #above which a site of the input alignment
+  #is ignored during phylo-kmer computations
+  #integer in ]0,1], a value close to 1.00 is recommended (with 1.00, only gap-only columns are filtered).
+  reduction: [0.99]
+
+  #external software used to compute ancestral states probabilities (ancestral reconstruction)
+  #all software should compute approximately the same values (as same model and model parameters are called)
+  #putting more than one software in the list is useful only when 'ressources' consumption is explored
+  #
+  #following values can be currently set (software supported by RAPPAS):
+  # - PAML
+  # - PHYML
+  # - RAXMLNG
+  #
+  #overall, the following patterns are expected (oct 2019):
+  # speed: paml < phyml < raxml-ng
+  # ram  : paml < phyml < raxml-ng
+  #
+  #if you do not care about testing the behaviour of these external dependencies,
+  #set arsoft to 'RAXMLNG' and arthreads with 2 to 8 CPUs for faster computations
+  #currently, only raxml-ng can use multiple threads
+  #
+  #!!! warning, be sure to set arsoft VALUES as UPPER CASE !!!
+  arsoft: [RAXMLNG]
+  arthreads: 1
+
+  #maximum amount of memory available to rappas process
+  #this has no influence on placement accuracy but it will impact "resources" evaluation
+  #in particular, testing very large trees will be faster with more memory (32-64Gb)
+  #(this is due to JVM garbage collector behaviour)
+  #set as an integer value, which represents the maximum amount of Gb allocatable to the JVM (memory: 8 => 8 Gb of RAM)
+  memory: 8
+
+### APPLES
+###############################
+
+config_apples:
+
+  #apples placements are based on distance computations between the query and the reference tree
+  #it allows different "methods" to compute these distance and different "criteria" to selection the best placement.
+  #currenlt, PEWO uses the distances computed from the query to reference alignments, using the same alignments
+  #than those used for alignment-based methods.
+  #(Balaban et al, 2019 ; doi: 10.1093/sysbio/syz063)
+
+  #List of weighted least squares method to test.
+  #Possible values are:
+  # OLS: k=0 ordinary least square (Cavalli-Sforza and Edwards 1967)
+  # FM : k=2 (Fitch and Margoliash, 1967)
+  # BE : k=1 (Beyer et al., 1974)
+  #methods: ["OLS","FM","BE"]
+  #!warning, be sure to set methods VALUES as UPPER CASE
+  methods: [OLS]
+
+  #List of placement criterion to test.
+  #Possible values are:
+  # MLSE: Least Squares Phylogenetic Placement
+  # ME : Minimum Evolution
+  # HYBRID : MLSE then ME
+  #criteria: ["MLSE","ME","HYBRID"]
+  #!warning, be sure to set criteria VALUES as UPPER CASE
+  criteria: [MLSE]
+
+
+########################################################################################################################
+# OPTIONS COMMON TO ALL SOFTWARE
+########################################################################################################################
+
+### jplace output formatting
+### the number of placements reported in the jplace can have an impact on the eND values
+### below are default values used by most placement software
+
+# maximum number placements kept per query (minimum is 1)
+# equivalent to options :
+#  --epa-keep-placements (EPA)
+#  --keep-at-most (PPLACER)
+#  --filter-max (EPANG)
+#  --keep-at-most (RAPPAS)
+#  value in [1,#taxa_in_tree]
+maxplacements: 7
+
+# minimum likelihood weight ratio below which placement are not output
+# equivalent to options :
+#  --epa-prob-thresholds (EPA)
+#  --keep-factor (PPLACER)
+#  --filter-min-lwr (EPANG)
+#  --keep-factor (RAPPAS)
+#  value in ]0,1]
+minlwr: 0.01
+
+
+########################################################################################################################
+# EVOLUTIONARY MODEL
+########################################################################################################################
+
+# By default, the workflow re-optimises all pruned tree using the model defined below.
+# Updated model parameters are then loaded and transferred to placement software based on phylogenetic models.
+# Currently, you can choose one of the following models :
+#   - GTR+G (nucleotides)
+#   - JTT+G (amino acids)
+#   - WAG+G (amino acids)
+#   - LG+G  (amino acids)
+# Warning: in the present configuration file, be sure you set the "states:" field accordingly.
+phylo_params:
+  model: "GTR+G"
+  categories: 4
+
+
+########################################################################################################################
+# DEBUG OPTIONS
+########################################################################################################################
+
+#if 1, prints some debug lines on top of snakemake logs
+  debug: 0
