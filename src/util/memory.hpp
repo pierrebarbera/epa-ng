@@ -47,7 +47,9 @@ class Memory_Footprint {
 
   size_t minimum() const
   {
+    assert( partition_ );
     // size of partition assuming logn clv
+    assert( partition_ > clvbuffer_ );
     size_t const partition_logn = partition_ - clvbuffer_
         + ( logn_ * perclv_ );
     return partition_logn + presample_ + refmsa_ + qsistream_ + allwork_;
@@ -149,50 +151,5 @@ class Memory_Config {
   private:
   void init( size_t const constraint,
              Memory_Footprint const& footprint,
-             pll_utree_t* tree )
-  {
-    //
-    // figure out the budget by setting the respective config values
-    //
-    auto const maxmem = get_max_memory();
-
-    if( constraint > maxmem ) {
-      LOG_WARN << "Specified memory limit of " << format_byte_num( constraint )
-               << " exceeds the determined system wide maximum of "
-               << format_byte_num( maxmem )
-               << ". Continuing with the specified limit!";
-    }
-
-    auto const minmem = footprint.minimum();
-    if( constraint < minmem ) {
-      LOG_ERR << "Specified memory limit of " << format_byte_num( constraint )
-              << " is below the minimum required value (for this input) of "
-              << format_byte_num( minmem ) << ". Aborting!";
-      std::exit( EXIT_FAILURE );
-    }
-
-    // how much above the minimum can we play with?
-    // (this includes the logn + 2 clv slots)
-    auto budget = constraint - minmem;
-
-    // if we can afford it, use the preplacement lookup
-    if( footprint.lookup() and ( footprint.lookup() < budget ) ) {
-      budget -= footprint.lookup();
-      preplace_lookup_enabled = true;
-    }
-
-    auto const per_clv = footprint.clv();
-
-    // figure out how many more clv slots we can afford
-    size_t extra_clv_slots = floor( static_cast< double >( budget ) / per_clv );
-
-    // but have no more than the theoretical maximum
-    clv_slots = std::min( footprint.logn_clvs() + extra_clv_slots,
-                          footprint.maximum_required_clvs() );
-
-    //
-    // allocate the needed structures, if we do need them for the memsave mode
-    //
-    structs = Logn_Structures( tree );
-  }
+             pll_utree_t* tree );
 };

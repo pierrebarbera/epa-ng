@@ -367,7 +367,7 @@ pll_partition_t* make_partition( raxml::Model const& model,
                                  Tree_Numbers const& nums,
                                  int const num_sites,
                                  Options const& options,
-                                 Logn_Structures const& memsave )
+                                 Memory_Config const& memsave )
 {
   assert( nums.tip_nodes ); // nums must have been initialized correctly
 
@@ -409,19 +409,15 @@ pll_partition_t* make_partition( raxml::Model const& model,
     not partition, "Could not create partition (make_partition)");
 
   if( memsave ) {
-    assert( memsave.subtree_sizes() );
+    assert( memsave.structs.subtree_sizes() );
 
-    const size_t low_clv_num = ceil( log2( nums.tip_nodes ) ) + 2;
-    // printf("low clv num: %lu\n", low_clv_num);
-    // const size_t max_clv_num = 3 * nums.inner_nodes;
-    // printf("max clv num: %lu\n", max_clv_num);
-    handle_pll_failure(
-        not pll_clv_manager_init( partition, low_clv_num, NULL, NULL, NULL ),
-        "Could not initialize CLV manager." );
+    handle_pll_failure( not pll_clv_manager_init(
+                            partition, memsave.clv_slots, NULL, NULL, NULL ),
+                        "Could not initialize CLV manager." );
 
     handle_pll_failure(
         not pll_clv_manager_MRC_strategy_init(
-            partition->clv_man, tree, memsave.subtree_sizes() ),
+            partition->clv_man, tree, memsave.structs.subtree_sizes() ),
         "Could not initialize CLV manager replacement strategy" );
   }
   return partition;

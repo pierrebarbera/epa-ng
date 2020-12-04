@@ -47,7 +47,7 @@ Tree::Tree( std::string const& tree_file,
                                        nums_,
                                        ref_msa_.num_sites(),
                                        options_,
-                                       memsave_.structs ),
+                                       memsave_ ),
                        pll_partition_destroy );
 
   locks_ = Mutex_List( partition_->tips + partition_->clv_buffers );

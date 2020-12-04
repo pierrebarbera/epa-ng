@@ -315,7 +315,7 @@ Memory_Footprint::Memory_Footprint( MSA_Info const& ref_info,
 
   // size of the fasta input stream buffers
   // currently only one: the query MSA_Stream
-  auto const qsistream_ = genesis::utils::InputStream::BlockLength * 3;
+  qsistream_ = genesis::utils::InputStream::BlockLength * 3;
   LOG_DBG << "\t" << format_byte_num( qsistream_ ) << SPACER
           << "Query MSA Inputstream";
 
@@ -358,6 +358,73 @@ Memory_Config::Memory_Config( Memsave_Option const& memsave_opt,
       std::runtime_error { "Wrong mode!" };
     }
   }
+}
+
+void Memory_Config::init( size_t const constraint,
+                          Memory_Footprint const& footprint,
+                          pll_utree_t* tree )
+{
+  //
+  // figure out the budget by setting the respective config values
+  //
+  auto const maxmem = get_max_memory();
+
+  if( constraint > maxmem ) {
+    LOG_WARN << "Specified memory limit of " << format_byte_num( constraint )
+             << " exceeds the determined system wide maximum of "
+             << format_byte_num( maxmem )
+             << ". Continuing with the specified limit!";
+  }
+
+  auto const minmem = footprint.minimum();
+  if( constraint < minmem ) {
+    LOG_ERR << "Specified memory limit of " << format_byte_num( constraint )
+            << " is below the minimum required value (for this input) of "
+            << format_byte_num( minmem ) << ". Aborting!";
+    std::exit( EXIT_FAILURE );
+  }
+
+  LOG_DBG << "Limiting the memory footprint to "
+          << format_byte_num( constraint );
+
+  // how much above the minimum can we play with?
+  // (this includes the logn + 2 clv slots)
+  auto budget = constraint - minmem;
+
+  LOG_DBG1 << "Minimum possible RSS: "
+          << format_byte_num( minmem );
+
+  LOG_DBG1 << "RSS budget: "
+          << format_byte_num( budget );
+
+  // if we can afford it, use the preplacement lookup
+  if( footprint.lookup() and ( footprint.lookup() < budget ) ) {
+    budget -= footprint.lookup();
+    preplace_lookup_enabled = true;
+    LOG_DBG1 << "To lookuptable: "
+        << format_byte_num( footprint.lookup() );
+  } else {
+    LOG_DBG1 << "Cannot afford lookuptable.";
+    preplace_lookup_enabled = false;
+  }
+
+  auto const per_clv = footprint.clv();
+
+  // figure out how many more clv slots we can afford
+  size_t extra_clv_slots = floor( static_cast< double >( budget ) / per_clv );
+
+  // but have no more than the theoretical maximum
+  clv_slots = std::min( footprint.logn_clvs() + extra_clv_slots,
+                        footprint.maximum_required_clvs() );
+
+  LOG_DBG1 << "Will allocate clv slots: "
+        << clv_slots << " / " << footprint.maximum_required_clvs()
+        << " (" << format_byte_num( clv_slots * per_clv ) << ")";
+
+  //
+  // allocate the needed structures, if we do need them for the memsave mode
+  //
+  structs = Logn_Structures( tree );
 }
 
 std::string format_byte_num( double size )

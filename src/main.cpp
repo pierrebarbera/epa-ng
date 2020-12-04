@@ -455,6 +455,10 @@ int main( int argc, char** argv )
     LOG_INFO << "Selected: Disabling per rate scalers";
   }
 
+  if( not maxmem_string.empty() ) {
+    LOG_INFO << "Selected: Maximum memory size: " << maxmem_string;
+  }
+
   if( memsave_toggle == "auto" ) {
     options.memsave = Memsave_Option( Memsave_Option::Mode::kAuto, maxmem_string);
     LOG_INFO << "Selected: Memory saving mode: automatic mode.";

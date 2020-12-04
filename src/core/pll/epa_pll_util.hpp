@@ -18,8 +18,8 @@ pll_partition_t* make_partition( raxml::Model const& model,
                                  Tree_Numbers const& nums,
                                  int const num_sites,
                                  Options const& options,
-                                 Logn_Structures const& memsave
-                                 = Logn_Structures() );
+                                 Memory_Config const& memsave
+                                 = Memory_Config() );
 void link_tree_msa( pll_utree_t* tree,
                     pll_partition_t* partition,
                     raxml::Model& model,
