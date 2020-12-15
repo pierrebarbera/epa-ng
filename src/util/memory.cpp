@@ -131,7 +131,7 @@ static partition_breakdown partition_footprint( raxml::Model const& model,
 
   // hypothetical size with log(n) optimization
   size_t const log_clv_buffer
-      = floor( log2( nums.tip_nodes ) + 2 ) * per_clv; // account for top level array
+      = ceil( log2( nums.tip_nodes ) + 2 ) * per_clv; // account for top level array
 
 
   LOG_DBG << "\t\t" << format_byte_num( clv_buffer ) << SPACER << "CLV Buffer"
@@ -289,7 +289,7 @@ Memory_Footprint::Memory_Footprint( MSA_Info const& ref_info,
   clvbuffer_ = pb.clv_buffer;
   maxnumclv_ = tree_nums.inner_nodes * 3
       + ( options.repeats ? tree_nums.tip_nodes : 0 );
-  logn_ = floor( log2( tree_nums.tip_nodes ) + 2 );
+  logn_ = ceil( log2( tree_nums.tip_nodes ) + 2 );
   LOG_DBG << "\t" << format_byte_num( partition_ ) << SPACER
           << "Partition Total";
 
