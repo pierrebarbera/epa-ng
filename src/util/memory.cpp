@@ -478,7 +478,7 @@ size_t slurm_memstring_to_bytes( std::string memstr )
     length = memstr.size();
   }
 
-  return std::stoi( memstr.substr( 0, length ) ) * mult;
+  return std::stod( memstr.substr( 0, length ) ) * mult;
 }
 
 size_t memstring_to_byte( std::string s )
