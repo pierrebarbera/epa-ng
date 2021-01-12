@@ -4,6 +4,7 @@
 
 #include <iomanip>
 #include <mutex>
+#include <type_traits>
 
 #include "util/maps.hpp"
 #include "core/pll/pllhead.hpp"
@@ -262,6 +263,49 @@ static size_t all_work_footprint( Tree_Numbers const& nums,
   }
 }
 
+static size_t tinytree_footprint( size_t const per_clv,
+                                  bool const deep_copy )
+{
+  size_t size = 0;
+
+  auto const num_clvs = deep_copy ? 3 : 1;
+  size += num_clvs * per_clv;
+
+
+  return size;
+}
+
+#define GET_BASETYPE_OF(x) std::remove_pointer_t<decltype(x)>
+
+static size_t memsaver_slot_footprint( size_t const num_slots )
+{
+  return num_slots
+      * ( sizeof( GET_BASETYPE_OF( pll_clv_manager_t::clvid_of_slot ) )
+          // cost_of_slot from mrc_data
+          + sizeof( unsigned int ) );
+}
+
+static size_t min_memsaver_footprint( size_t const num_slots,
+                                      size_t const num_clvs )
+{
+  size_t size = 0;
+
+  size += memsaver_slot_footprint( num_slots );
+
+  // slot_of_clvid
+  size += sizeof( GET_BASETYPE_OF( pll_clv_manager_t::slot_of_clvid ) )
+      * num_clvs;
+
+  // is_pinned
+  size += sizeof( GET_BASETYPE_OF( pll_clv_manager_t::is_pinned ) ) * num_clvs;
+
+  // repl_strat_data stuff
+  // cost_of_clvid
+  size += sizeof( unsigned int ) * num_clvs;
+
+  return size;
+}
+
 Memory_Footprint::Memory_Footprint( MSA_Info const& ref_info,
                                     MSA_Info const& qry_info,
                                     raxml::Model const& model,
@@ -293,6 +337,10 @@ Memory_Footprint::Memory_Footprint( MSA_Info const& ref_info,
   LOG_DBG << "\t" << format_byte_num( partition_ ) << SPACER
           << "Partition Total";
 
+  memsaver_ = min_memsaver_footprint(
+      logn_,
+      tree_nums.inner_nodes + ( options.repeats ? tree_nums.tip_nodes : 0 ) );
+
   if( options.prescoring ) {
     lookup_ = lookuptable_footprint(
         tree_nums.branches, model.num_states(), num_sites );
@@ -312,6 +360,9 @@ Memory_Footprint::Memory_Footprint( MSA_Info const& ref_info,
 
   // account for the overhead induced by the tinytree-encapsulated partitions,
   // which are one per thread
+  tinytrees_ = tinytree_footprint( perclv_, false ) * options.num_threads;
+
+  perttdeep_ = tinytree_footprint( perclv_, true );
 
   // size of the fasta input stream buffers
   // currently only one: the query MSA_Stream
@@ -329,6 +380,9 @@ Memory_Footprint::Memory_Footprint( MSA_Info const& ref_info,
          << format_byte_num( total() );
 
   LOG_INFO << "Total available memory: " << format_byte_num( get_max_memory() );
+
+  LOG_DBG << "\t" << format_byte_num( memsaver_ ) << SPACER
+            << "minimum memsaver overhead if used";
 }
 
 Memory_Config::Memory_Config( Memsave_Option const& memsave_opt,
@@ -376,7 +430,11 @@ void Memory_Config::init( size_t const constraint,
              << ". Continuing with the specified limit!";
   }
 
-  auto const minmem = footprint.minimum();
+  // account for branchbuffer overhead in foortprint minimum
+  size_t const mem_concurrent_branches
+      = footprint.per_deepcopy_tiny_trees() * concurrent_branches;
+
+  auto const minmem = footprint.minimum() + mem_concurrent_branches;
   if( constraint < minmem ) {
     LOG_ERR << "Specified memory limit of " << format_byte_num( constraint )
             << " is below the minimum required value (for this input) of "
@@ -394,7 +452,7 @@ void Memory_Config::init( size_t const constraint,
   LOG_DBG1 << "Minimum possible RSS: "
           << format_byte_num( minmem );
 
-  LOG_DBG1 << "RSS budget: "
+  LOG_DBG1 << "Remaining RSS budget: "
           << format_byte_num( budget );
 
   // if we can afford it, use the preplacement lookup
@@ -408,10 +466,16 @@ void Memory_Config::init( size_t const constraint,
     preplace_lookup_enabled = false;
   }
 
-  auto const per_clv = footprint.clv();
+  // the rest of the budget goes to slots of the clv manager
+
+  auto const per_clv = footprint.clv()
+      // account for the per-slot overhead
+      + memsaver_slot_footprint( 1 );
 
   // figure out how many more clv slots we can afford
   size_t extra_clv_slots = floor( static_cast< double >( budget ) / per_clv );
+
+
 
   // but have no more than the theoretical maximum
   clv_slots = std::min( footprint.logn_clvs() + extra_clv_slots,
@@ -429,7 +493,8 @@ void Memory_Config::init( size_t const constraint,
 
 std::string format_byte_num( double size )
 {
-  constexpr std::array< char const*, 6 > magnitude = { { "", "KiB", "MiB", "GiB", "TiB", "PiB" } };
+  constexpr std::array< char const*, 6 > magnitude
+      = { { "", "KiB", "MiB", "GiB", "TiB", "PiB" } };
 
   size_t lvl = 0;
   while( size > 1024 ) {
@@ -478,7 +543,7 @@ size_t slurm_memstring_to_bytes( std::string memstr )
     length = memstr.size();
   }
 
-  return std::stod( memstr.substr( 0, length ) ) * mult;
+  return abs( std::stod( memstr.substr( 0, length ) ) ) * mult;
 }
 
 size_t memstring_to_byte( std::string s )

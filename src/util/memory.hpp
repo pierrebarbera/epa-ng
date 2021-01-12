@@ -50,15 +50,18 @@ class Memory_Footprint {
     assert( partition_ );
     // size of partition assuming logn clv
     assert( partition_ > clvbuffer_ );
-    size_t const partition_logn = partition_ - clvbuffer_
-        + ( logn_ * perclv_ );
-    return partition_logn + presample_ + refmsa_ + qsistream_ + allwork_;
+    size_t const partition_logn = partition_ - clvbuffer_ + ( logn_ * perclv_ );
+
+    return partition_logn + presample_ + refmsa_ + qsistream_ + allwork_
+        + memsaver_;
   }
 
   size_t clv() const { return perclv_; }
   size_t maximum_required_clvs() const { return maxnumclv_; }
   size_t logn_clvs() const { return logn_; }
   size_t lookup() const { return lookup_; }
+
+  size_t per_deepcopy_tiny_trees() const { return perttdeep_; }
 
   operator bool() const { return partition_; }
 
@@ -69,9 +72,12 @@ class Memory_Footprint {
   size_t refmsa_    = 0ul;
   size_t qsistream_ = 0ul;
   size_t allwork_   = 0ul;
+  size_t tinytrees_ = 0ul;
+  size_t memsaver_  = 0ul;
 
   size_t perclv_    = 0ul;
   size_t clvbuffer_ = 0ul;
+  size_t perttdeep_ = 0ul;
 
   size_t maxnumclv_ = 0ul;
   size_t logn_      = 0ul;
