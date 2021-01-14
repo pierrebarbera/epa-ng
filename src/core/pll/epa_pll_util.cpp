@@ -146,7 +146,7 @@ typedef struct {
  */
 static int cb_traverse_unslotted( pll_unode_t* node )
 {
-  auto cb_data = static_cast< partial_subtree_sizes_data* >(node->data);
+  auto cb_data = static_cast< partial_subtree_sizes_data* >( node->data );
 
   auto partition = cb_data->partition;
   assert( partition );
@@ -154,19 +154,20 @@ static int cb_traverse_unslotted( pll_unode_t* node )
   pll_clv_manager_t* clv_man = partition->clv_man;
   assert( clv_man );
 
-  size_t const max_pinned_here = log2( cb_data->subtree_sizes[ node->node_index ] ) + 2;
-  size_t const num_unpinned_slots = clv_man->slottable_size - clv_man->num_pinned;
+  size_t const free_slots_needed_here
+      = ceil(log2( cb_data->subtree_sizes[ node->node_index ] ) + 2);
+  size_t const free_slots
+      = clv_man->slottable_size - clv_man->num_pinned;
 
   if( clv_man->slot_of_clvid[ node->clv_index ] != PLL_CLV_CLV_UNSLOTTED
-    // and clv_man->num_pinned <  clv_man->slottable_size - max_pinned_here
-    and num_unpinned_slots <=  max_pinned_here
-   ) {
-    // the CLV is slotted, so we:
+      // and clv_man->num_pinned <  clv_man->slottable_size - free_slots_needed_here
+      and free_slots > free_slots_needed_here ) {
+    // the CLV is slotted AND we can afford to pin, so we:
     // 1) pin the clv in its slot
 
     auto retval = pll_pin_clv( partition, node->clv_index );
-    assert(retval);
-    (void) retval;
+    assert( retval );
+    (void)retval;
 
     // 2) do not traverse down the subtree of this node. The way is shut.
     return 0;
@@ -225,7 +226,7 @@ void partial_compute_clvs( pll_utree_t* const tree,
   for( size_t i = 0; i < nodes_count; ++i ) {
     auto cur_node = tree->nodes[ i ];
     cur_node->data = &cb_data;
-    if( cur_node->next ){
+    if( cur_node->next ) {
       cur_node->next->data = cur_node->next->next->data = &cb_data;
     }
   }
@@ -277,8 +278,9 @@ void partial_compute_clvs( pll_utree_t* const tree,
   pll_unpin_clv( partition, node->clv_index );
   pll_unpin_clv( partition, node->back->clv_index );
 
+  // assert that none of the CLVs are pinned
+  assert( partition->clv_man->num_pinned == 0 );
   assert( [ & ]() {
-    // assert that none of the CLVs are pinned
     for( auto clv_index = partition->clv_man->addressable_begin;
          clv_index < partition->clv_man->addressable_end;
          ++clv_index ) {
