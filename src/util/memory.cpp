@@ -406,7 +406,7 @@ Memory_Config::Memory_Config( Memsave_Option const& memsave_opt,
       }
       break;
     case Memsave_Option::Mode::kFull:
-      init( footprint.minimum(), footprint, tree );
+      init( footprint.minimum( concurrent_branches ), footprint, tree );
       break;
     default:
       std::runtime_error { "Wrong mode!" };
@@ -431,10 +431,7 @@ void Memory_Config::init( size_t const constraint,
   }
 
   // account for branchbuffer overhead in foortprint minimum
-  size_t const mem_concurrent_branches
-      = footprint.per_deepcopy_tiny_trees() * concurrent_branches;
-
-  auto const minmem = footprint.minimum() + mem_concurrent_branches;
+  auto const minmem = footprint.minimum( concurrent_branches );
   if( constraint < minmem ) {
     LOG_ERR << "Specified memory limit of " << format_byte_num( constraint )
             << " is below the minimum required value (for this input) of "

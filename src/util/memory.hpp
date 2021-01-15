@@ -45,7 +45,7 @@ class Memory_Footprint {
     return partition_ + lookup_ + presample_ + refmsa_ + qsistream_ + allwork_;
   }
 
-  size_t minimum() const
+  size_t minimum( size_t const concurrent_branches = 0 ) const
   {
     assert( partition_ );
     // size of partition assuming logn clv
@@ -53,7 +53,7 @@ class Memory_Footprint {
     size_t const partition_logn = partition_ - clvbuffer_ + ( logn_ * perclv_ );
 
     return partition_logn + presample_ + refmsa_ + qsistream_ + allwork_
-        + memsaver_;
+        + memsaver_ + (concurrent_branches * perttdeep_);
   }
 
   size_t clv() const { return perclv_; }
