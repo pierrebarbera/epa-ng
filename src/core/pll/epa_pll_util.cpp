@@ -136,17 +136,47 @@ void precompute_clvs( pll_utree_t const* const tree,
   utree_free_node_data( root );
 }
 
+using clv_cost_pair
+    = std::pair< decltype( pll_unode_t::clv_index ), unsigned int >;
+
 typedef struct {
-  unsigned int const * subtree_sizes;
+  unsigned int const* subtree_sizes;
   pll_partition_t* partition;
+  std::vector< clv_cost_pair > pin_list;
 } partial_subtree_sizes_data;
 
-/* a callback function for traversing only down nodes with non-slotted CLVs
- * Assumes the node data pointer points to the partition!
+/**
+ * Returns true if the vector contains the element of the corresponding clv index.
+ * If the vector does contain it, remove it from the vector.
  */
-static int cb_traverse_unslotted( pll_unode_t* node )
+static bool contains_consume( std::vector< clv_cost_pair >& vec,
+                              decltype( pll_unode_t::clv_index ) clv_index )
+{
+  auto iter = std::find_if(
+      vec.begin(), vec.end(), [ clv_index ]( clv_cost_pair const& elem ) {
+        return elem.first == clv_index;
+      } );
+
+  if( iter != vec.end() ) {
+    vec.erase( iter );
+    return true;
+  } else {
+    return false;
+  }
+}
+
+/**
+ * callback to identify candiates for pinning.
+ *
+ * Assumes the node data pointer points to the partition!
+ *
+ * @param  node current node
+ * @return      whether to keep traversing
+ */
+static int cb_traverse_ident_pinnable( pll_unode_t* node )
 {
   auto cb_data = static_cast< partial_subtree_sizes_data* >( node->data );
+  assert( cb_data );
 
   auto partition = cb_data->partition;
   assert( partition );
@@ -154,15 +184,35 @@ static int cb_traverse_unslotted( pll_unode_t* node )
   pll_clv_manager_t* clv_man = partition->clv_man;
   assert( clv_man );
 
-  size_t const free_slots_needed_here
-      = ceil(log2( cb_data->subtree_sizes[ node->node_index ] ) + 2);
-  size_t const free_slots
-      = clv_man->slottable_size - clv_man->num_pinned;
+  if( clv_man->slot_of_clvid[ node->clv_index ] != PLL_CLV_CLV_UNSLOTTED ) {
+    // the CLV is slotted, add it to the list and stop traversing
+    auto const cost = cb_data->subtree_sizes[ node->node_index ];
+    cb_data->pin_list.emplace_back( node->clv_index, cost );
+
+    return 0;
+  } else {
+    // not slotted = traverse
+    return 1;
+  }
+}
+
+/* a callback function for traversing only down nodes with non-slotted CLVs
+ * Assumes the node data pointer points to the partition!
+ */
+static int cb_traverse_unslotted( pll_unode_t* node )
+{
+  auto cb_data = static_cast< partial_subtree_sizes_data* >( node->data );
+  assert( cb_data );
+
+  auto partition = cb_data->partition;
+  assert( partition );
+
+  pll_clv_manager_t* clv_man = partition->clv_man;
+  assert( clv_man );
 
   if( clv_man->slot_of_clvid[ node->clv_index ] != PLL_CLV_CLV_UNSLOTTED
-      // and clv_man->num_pinned <  clv_man->slottable_size - free_slots_needed_here
-      and free_slots > free_slots_needed_here ) {
-    // the CLV is slotted AND we can afford to pin, so we:
+      and contains_consume( cb_data->pin_list, node->clv_index ) ) {
+    // the CLV is slotted AND we have marked it to be pinned
     // 1) pin the clv in its slot
 
     auto retval = pll_pin_clv( partition, node->clv_index );
@@ -202,10 +252,14 @@ void partial_compute_clvs( pll_utree_t* const tree,
   tree->vroot           = node->next ? node : node->back;
 
   /*
-   * Basic idea: set the data pointer of each node to point to the partition.
-   * Then we do a largest-subtree-first traversal, with
-   * a custom traversal callback that stops the traversal if a node's CLV is
-   * currently slotted. The callback then also pins that CLV in place.
+   * Basic idea: set the data pointer of each node to point to a custom struct
+   * containing pointers to the partition, the subtree_sizes array, and a list
+   * of clv candidates for pinning. Then we do two largest-subtree-first
+   * traversals, one to fill the candidates list, and one to pin the selected
+   * candidates (and abort the traversal at the pinned nodes/clvs). Inbetween
+   * these two iterations, we make a selection from the list of those we could
+   * pin, by keeping only as many as we can afford and pinning just the most
+   * valuable ones.
    *
    * Addendum: as this function is intended to be called for ever changing
    * vroots (as we progress through the tree according to some traversal)
@@ -231,7 +285,39 @@ void partial_compute_clvs( pll_utree_t* const tree,
     }
   }
 
-  // traverse!
+  // set up for the traversals
+  std::vector< pll_unode_t* > pretrav_buf( nums.nodes );
+  unsigned int pretrav_size = 0;
+
+  // First, traverse once to identify slotted CLVs that could be pinned
+  handle_pll_failure( not pll_utree_traverse_lsf( tree,
+                                                  subtree_sizes,
+                                                  PLL_TREE_TRAVERSE_POSTORDER,
+                                                  cb_traverse_ident_pinnable,
+                                                  &pretrav_buf[ 0 ],
+                                                  &pretrav_size ),
+                      "pll_utree_traverse_lsf failed." );
+
+  // then, keep only the highest cost entries of the list of clvs we could pin
+
+  // figure out how many extra slots we can pin
+  size_t const lower_free_slot_bound = ceil( log2( tree->tip_count ) + 2 );
+  auto const pinning_budget
+      = partition->clv_man->slottable_size - lower_free_slot_bound;
+
+  // sort ccandidates by cost
+  std::sort( std::begin( cb_data.pin_list ),
+             std::end( cb_data.pin_list ),
+             [](clv_cost_pair& lhs, clv_cost_pair& rhs) {
+                return lhs.second > rhs.second;
+             } );
+
+  // discard the lower ones
+  auto candidate_iter = std::begin( cb_data.pin_list );
+  std::advance( candidate_iter, pinning_budget );
+  cb_data.pin_list.erase( candidate_iter,
+                                    std::end( cb_data.pin_list ) );
+
   /* various buffers for creating a postorder traversal and operations structures */
   std::vector< unsigned int > param_indices( partition->rate_cats, 0 );
   std::vector< pll_unode_t* > travbuffer( nums.nodes );
