@@ -305,18 +305,21 @@ void partial_compute_clvs( pll_utree_t* const tree,
   auto const pinning_budget
       = partition->clv_man->slottable_size - lower_free_slot_bound;
 
-  // sort ccandidates by cost
-  std::sort( std::begin( cb_data.pin_list ),
-             std::end( cb_data.pin_list ),
-             [](clv_cost_pair& lhs, clv_cost_pair& rhs) {
-                return lhs.second > rhs.second;
-             } );
+  // do we need to discard candidates due to insufficient budget?
+  if( pinning_budget < cb_data.pin_list.size() ) {
+    // sort candidates by cost
+    std::sort( std::begin( cb_data.pin_list ),
+               std::end( cb_data.pin_list ),
+               [](clv_cost_pair& lhs, clv_cost_pair& rhs) {
+                  return lhs.second > rhs.second;
+               } );
 
-  // discard the lower ones
-  auto candidate_iter = std::begin( cb_data.pin_list );
-  std::advance( candidate_iter, pinning_budget );
-  cb_data.pin_list.erase( candidate_iter,
-                                    std::end( cb_data.pin_list ) );
+    // discard the lower ones
+    auto candidate_iter = std::begin( cb_data.pin_list );
+    std::advance( candidate_iter, pinning_budget );
+    cb_data.pin_list.erase( candidate_iter,
+                                      std::end( cb_data.pin_list ) );
+  }
 
   /* various buffers for creating a postorder traversal and operations structures */
   std::vector< unsigned int > param_indices( partition->rate_cats, 0 );
