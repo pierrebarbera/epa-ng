@@ -75,7 +75,7 @@ BranchBuffer::BranchBuffer( Tree* tree,
       whitelist_[ branch_id ] = true;
     }
   }
-
+#ifdef __PREFETCH
   prefetcher_ = std::async( std::launch::async,
                             calc_block,
                             std::ref( buffer_ ),
@@ -83,6 +83,9 @@ BranchBuffer::BranchBuffer( Tree* tree,
                             tree_,
                             &traversal_start_,
                             std::ref( whitelist_ ) );
+#else
+  calc_block( buffer_, buffer_size_, tree_, &traversal_start_, whitelist_ );
+#endif
 }
 
 /**
@@ -97,14 +100,17 @@ BranchBuffer::BranchBuffer( Tree* tree, size_t const block_size )
 size_t BranchBuffer::get_next( BranchBuffer::container_type& result )
 {
   // join prefetching thread to ensure new block exists
+  #ifdef __PREFETCH
   if( prefetcher_.valid() ) {
     prefetcher_.wait();
   }
+  #endif
 
   // perform pointer swap to data
   std::swap( result, buffer_ );
 
   // kick off calculation of the next block
+  #ifdef __PREFETCH
   prefetcher_ = std::async( std::launch::async,
                             calc_block,
                             std::ref( buffer_ ),
@@ -112,6 +118,9 @@ size_t BranchBuffer::get_next( BranchBuffer::container_type& result )
                             tree_,
                             &traversal_start_,
                             std::ref( whitelist_ ) );
+  #else
+    calc_block( buffer_, buffer_size_, tree_, &traversal_start_, whitelist_ );
+  #endif
 
   // return the size of the returned block
   return result.size();
@@ -120,9 +129,11 @@ size_t BranchBuffer::get_next( BranchBuffer::container_type& result )
 BranchBuffer::~BranchBuffer()
 {
   // avoid dangling threads
+  #ifdef __PREFETCH
   if( prefetcher_.valid() ) {
     prefetcher_.wait();
   }
+  #endif
 
   // reverse the memsaver traversal to minimize the recomputation costs of any
   // subsequent BranchBuffer

@@ -42,7 +42,9 @@ class BranchBuffer {
   Tree* tree_ = nullptr;
   size_t buffer_size_;
   container_type buffer_;
+  #ifdef __PREFETCH
   std::future< void > prefetcher_;
+  #endif
   size_t traversal_start_;
   whitelist_type whitelist_;
 };
