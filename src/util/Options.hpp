@@ -27,7 +27,6 @@ class Memsave_Option {
         ? memstring_to_byte( maxmem_string )
         : system_constraint;
     memory_constraint = std::min( system_constraint, user_constraint );
-    // LOG_DBG1 << "Determined memory constraint: " << format_byte_num( memory_constraint );
   }
 
   ~Memsave_Option() = default;

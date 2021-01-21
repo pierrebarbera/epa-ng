@@ -270,22 +270,14 @@ int main( int argc, char** argv )
          memsave_toggle,
          "Use memory saving mode. On 'full' setting, minimizes the memory "
          "footprint as agressively as possible, with the highest impact on "
-         "runtime. When passing 'auto' will try to limit the memory footprint "
-         "only such that the program doesnt crash from lack of memory. Passing "
-         "'custom' is also possible, though meant for advanced use, and "
-         "requires "
-         "the specification of a memory configuration via --memsave-config." )
+         "runtime. When passing 'auto' the memory footprint will be "
+         "automatically set "
+         "such that the program doesn't crash from lack of memory. 'maxmem' is "
+         "a special setting that allocates as much memory as the non-memsave "
+         "mode, but still uses the memsave structures and algorithms." )
       ->group( "Compute" )
-      ->check( CLI::IsMember( { "off", "full", "auto", "custom" },
+      ->check( CLI::IsMember( { "off", "full", "auto", "maxmem" },
                               CLI::ignore_case ) );
-
-  // std::string memsave_config_string;
-  // auto memsave_config_opt
-  //     = app.add_option( "--memsave-config",
-  //                       memsave_config_string,
-  //                       "Memory saver configuration. Ignored unless '--memsave "
-  //                       "custom' is set." )
-  //           ->group( "Compute" );
 
   std::string maxmem_string;
   app.add_option( "--maxmem",
@@ -465,18 +457,12 @@ int main( int argc, char** argv )
   } else if( memsave_toggle == "full" ) {
     options.memsave = Memsave_Option( Memsave_Option::Mode::kFull, maxmem_string);
     LOG_INFO << "Selected: Memory saving mode: full mode.";
-  }
-  // else if( memsave_toggle == "custom" ) {
-  //   if( not *memsave_config_opt ) {
-  //     LOG_ERR << "'--memsave custom' requires '--memsave-config'" << std::endl;
-  //     exit_epa( EXIT_FAILURE );
-  //   } else {
-  //     options.memsave = Memsave_Option( Memsave_Option::Mode::kCustom, maxmem_string);
-  //     LOG_INFO << "Selected: Memory saving mode: custom mode.";
-  //     // options.memory_config = Memory_Config( memsave_config_string );
-  //   }
-  // } 
-  else if( memsave_toggle == "off" ) {
+  } else if( memsave_toggle == "maxmem" ) {
+    options.memsave
+        = Memsave_Option( Memsave_Option::Mode::kCustom, "" );
+    LOG_INFO << "Selected: Memory saving mode: maxmem mode.";
+
+  } else if( memsave_toggle == "off" ) {
     options.memsave = Memsave_Option( Memsave_Option::Mode::kOff, maxmem_string);
     LOG_INFO << "Selected: Disabling memory saver mode.";
   }

@@ -395,7 +395,8 @@ Memory_Config::Memory_Config( Memsave_Option const& memsave_opt,
   if( footprint ) {
     switch( memsave_opt.mode ) {
     case Memsave_Option::Mode::kCustom:
-      std::runtime_error { "Custom memsave mode not implemented yet." };
+      // allocate full memory, but using memsave mode
+      init( memsave_opt.memory_constraint, footprint, tree );
       break;
     case Memsave_Option::Mode::kOff:
       break;
