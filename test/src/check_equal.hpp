@@ -25,10 +25,10 @@ inline void check_equal_subnode( pll_unode_t const* const a,
 
 inline void check_equal( Placement const& lhs, Placement const& rhs )
 {
-  EXPECT_DOUBLE_EQ( lhs.likelihood(), rhs.likelihood() );
+  EXPECT_NEAR( lhs.likelihood(), rhs.likelihood(), 1e-6 );
   EXPECT_DOUBLE_EQ( lhs.pendant_length(), rhs.pendant_length() );
   EXPECT_DOUBLE_EQ( lhs.distal_length(), rhs.distal_length() );
-  EXPECT_DOUBLE_EQ( lhs.lwr(), rhs.lwr() );
+  EXPECT_NEAR( lhs.lwr(), rhs.lwr(), 1e-6 );
   EXPECT_EQ( lhs.branch_id(), rhs.branch_id() );
 }
 
@@ -80,8 +80,8 @@ inline void check_equal( genesis_placement const& lhs,
                          genesis_placement const& rhs )
 {
   ASSERT_EQ( lhs.edge_num(), rhs.edge_num() );
-  EXPECT_DOUBLE_EQ( lhs.likelihood, rhs.likelihood );
-  EXPECT_DOUBLE_EQ( lhs.like_weight_ratio, rhs.like_weight_ratio );
+  EXPECT_NEAR( lhs.likelihood, rhs.likelihood, 1e-6 );
+  EXPECT_NEAR( lhs.like_weight_ratio, rhs.like_weight_ratio, 1e-6 );
   EXPECT_DOUBLE_EQ( lhs.proximal_length, rhs.proximal_length );
   EXPECT_DOUBLE_EQ( lhs.pendant_length, rhs.pendant_length );
 }
@@ -96,7 +96,7 @@ inline void check_equal( genesis_pquery const& lhs, genesis_pquery const& rhs )
         rhs.begin_placements(),
         rhs.end_placements(),
         [n = lhs_p.edge_num()]( auto const& p ) { return p.edge_num() == n; } );
-    ASSERT_NE( find_it, rhs.end_placements() );
+    ASSERT_TRUE( find_it != rhs.end_placements() );
 
     auto const& rhs_p = *find_it;
 
