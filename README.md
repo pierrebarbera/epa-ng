@@ -5,7 +5,7 @@
 [![Softwipe Score](https://img.shields.io/badge/softwipe-e8.0-blue)](https://github.com/adrianzap/softwipe/wiki/Code-Quality-Benchmark)
 [![Gitter chat](https://badges.gitter.im/Pbdas/epa-ng.png)](https://gitter.im/epa-ng/Lobby)
 
-# EPA-ng
+# EPA-ng -  Fast, parallel, highly accurate Maximum Likelihood Phylogenetic Placement, by the team behind RAxML(-ng)
 
 1. **[Introduction](#introduction)**
 2. **[Installation](#installation)**
