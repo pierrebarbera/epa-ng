@@ -145,13 +145,13 @@ static partition_breakdown partition_footprint( raxml::Model const& model,
       * ( partition->states_padded )
       * sizeof( double );
 
-  size_t const pmat_buffer = partition->prob_matrices
+  size_t const pmat_buffer = nums.branches
           * partition->states
           * partition->states_padded
           * partition->rate_cats
           * sizeof( double )
       + displacement
-      + partition->prob_matrices * sizeof( double* ); // account for top level array
+      + nums.branches * sizeof( double* ); // account for top level array
   size += pmat_buffer;
 
   // eigenvectors
@@ -205,9 +205,11 @@ static partition_breakdown partition_footprint( raxml::Model const& model,
       ? sites_alloc * partition->rate_cats
       : sites_alloc;
 
+  size_t num_scale_buffers = ( nums.inner_nodes * 3 ) + nums.tip_nodes;
+
   size_t const scaler_buffer
-      = partition->scale_buffers * scaler_size * sizeof( unsigned int )
-      + partition->scale_buffers
+      = num_scale_buffers * scaler_size * sizeof( unsigned int )
+      + num_scale_buffers
           * sizeof( unsigned int* ); // account for top level array
   size += scaler_buffer;
 
