@@ -205,9 +205,7 @@ static partition_breakdown partition_footprint( raxml::Model const& model,
   size += sites_alloc * sizeof( unsigned int );
 
   // scale buffers
-  size_t const scaler_size = ( partition->attributes & PLL_ATTRIB_RATE_SCALERS )
-      ? sites_alloc * partition->rate_cats
-      : sites_alloc;
+  size_t const scaler_size = sites_alloc * model.num_ratecats();
 
   size_t num_scale_buffers = ( nums.inner_nodes * 3 ) + nums.tip_nodes;
 
