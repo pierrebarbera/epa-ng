@@ -152,6 +152,10 @@ static partition_breakdown partition_footprint( raxml::Model const& model,
           * sizeof( double )
       + displacement
       + nums.branches * sizeof( double* ); // account for top level array
+
+  LOG_DBG << "\t\t" << format_byte_num( pmat_buffer ) << SPACER
+            << "P-matrix buffer";
+
   size += pmat_buffer;
 
   // eigenvectors
