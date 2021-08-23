@@ -2,6 +2,7 @@
 #include <string>
 #include <algorithm>
 #include <chrono>
+#include <limits>
 
 #include <CLI/CLI.hpp>
 
@@ -170,7 +171,7 @@ int main(int argc, char** argv)
   auto filter_acc_lwr =
   app.add_option( "--filter-acc-lwr",
                   options.support_threshold,
-                  "Accumulated likelihood weight after which further placements are discarded.",
+                  "Accumulated likelihood weight after which further placements are discarded. Disables --filter-max unless explicitly specified.",
                   options.acc_threshold
                 )->group("Output")->check(CLI::Range(0.0,1.0));
   auto filter_min_lwr =
@@ -362,6 +363,10 @@ int main(int argc, char** argv)
   {
     options.acc_threshold = true;
     LOG_INFO << "Selected: Filtering by accumulated threshold: " << options.support_threshold;
+    if (not *filter_max) {
+      options.filter_max = std::numeric_limits<decltype(options.filter_max)>::max();
+      LOG_INFO << "    As --filter-max was not specified, it was disabled.";
+    }
   }
 
   if (*filter_min_lwr) {
