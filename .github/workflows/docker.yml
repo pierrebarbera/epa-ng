@@ -11,13 +11,15 @@ jobs:
       - name: Compute Docker tags
         id: tags
         run: |
-          TAGS="ghcr.io/Pbdas/epa-ng:${{ github.event.release.tag_name }}"
+          REPO="ghcr.io/${GITHUB_REPOSITORY,,}"
+          TAGS="${REPO}:${{ github.event.release.tag_name }}"
           if [[ "${{ github.event.release.prerelease }}" != "true" ]]; then
-            TAGS="${TAGS}"$'\n'"ghcr.io/Pbdas/epa-ng:latest"
+            TAGS="${TAGS}"$'\n'"${REPO}:latest"
           fi
           echo "value<<EOF" >> $GITHUB_OUTPUT
           echo "$TAGS" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
+          echo "repo=${REPO}" >> $GITHUB_OUTPUT
       - name: Checkout
         uses: actions/checkout@v3
       - name: Set up Docker Buildx
@@ -38,6 +40,10 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - name: Compute image name
+        id: img
+        run: |
+          echo "repo=ghcr.io/${GITHUB_REPOSITORY,,}" >> $GITHUB_OUTPUT
       - name: Checkout
         uses: actions/checkout@v3
       - name: Login to GitHub Container Registry
@@ -52,7 +58,7 @@ jobs:
           docker run --rm \
             -v ${{ github.workspace }}/test/data:/data \
             -v ${{ github.workspace }}/epa_out:/out \
-            ghcr.io/Pbdas/epa-ng:${{ github.event.release.tag_name }} \
-            epa-ng --tree /data/ref.tre --ref-msa /data/aln.fasta --query /data/query.fasta --outdir /out
+            ${{ steps.img.outputs.repo }}:${{ github.event.release.tag_name }} \
+            epa-ng --tree /data/ref.tre --ref-msa /data/aln.fasta --query /data/query.fasta --outdir /out --model GTR+G
       - name: Check output
         run: test -f epa_out/epa_result.jplace

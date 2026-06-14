@@ -51,3 +51,4 @@ libs/share/
 
 # softwipe out files
 softwipe_*
+test/data/combined.fasta.bin
