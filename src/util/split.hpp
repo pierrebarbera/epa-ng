@@ -56,7 +56,7 @@ static void write_subset(genesis::sequence::SequenceSet const& set,
   }
 
   // output the ref file
-  genesis::sequence::FastaWriter().to_file(ref_set, output_file);
+  genesis::sequence::FastaWriter().write(ref_set, genesis::utils::to_file(output_file));
 }
 
 void split(std::string const& ref_msa, std::vector<std::string> query_files,
@@ -104,6 +104,6 @@ void split(std::string const& ref_msa, std::vector<std::string> query_files,
 
     genesis::sequence::filter_by_label_list(qry_set, ref_labels);
 
-    writer.to_stream(qry_set, outstream);
+    writer.write(qry_set, genesis::utils::to_stream(outstream));
   }
 }
