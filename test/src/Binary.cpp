@@ -11,8 +11,7 @@
 
 using namespace std;
 
-static void check_equal_current(pll_unode_t const * const a, pll_unode_t const * const b)
-{
+static void check_equal_current(pll_unode_t const* const a, pll_unode_t const* const b) {
   EXPECT_DOUBLE_EQ(a->length, b->length);
   EXPECT_EQ(a->node_index, b->node_index);
   EXPECT_EQ(a->clv_index, b->clv_index);
@@ -21,8 +20,7 @@ static void check_equal_current(pll_unode_t const * const a, pll_unode_t const *
   EXPECT_STREQ(a->label, a->label);
 }
 
-static void check_equal(pll_unode_t const * const a, pll_unode_t const * const b)
-{
+static void check_equal(pll_unode_t const* const a, pll_unode_t const* const b) {
   check_equal_current(a, b);
 
   if (a->next) {
@@ -32,10 +30,10 @@ static void check_equal(pll_unode_t const * const a, pll_unode_t const * const b
   }
 }
 
-static void write_(const Options options)
-{
+static void write_(const Options options) {
   // setup
-  auto msa = build_MSA_from_file(env->reference_file, MSA_Info(env->reference_file), options.premasking);
+  auto msa =
+      build_MSA_from_file(env->reference_file, MSA_Info(env->reference_file), options.premasking);
   raxml::Model model;
 
   Tree tree(env->tree_file, msa, model, options);
@@ -44,28 +42,18 @@ static void write_(const Options options)
   dump_to_binary(tree, env->binary_file);
 }
 
-TEST(Binary, write)
-{
-  all_combinations(write_);
-}
+TEST(Binary, write) { all_combinations(write_); }
 
-static int full_trav(pll_unode_t*)
-{
-  return 1;
-}
+static int full_trav(pll_unode_t*) { return 1; }
 
-static auto create_scaler_to_clv_map(Tree& tree)
-{
+static auto create_scaler_to_clv_map(Tree& tree) {
   const auto num_scalers = tree.partition()->scale_buffers;
   std::vector<unsigned int> map(num_scalers);
 
   std::vector<pll_unode_t*> travbuffer(tree.nums().nodes);
   unsigned int trav_size = 0;
-  pll_utree_traverse( get_root(tree.tree()),
-                      PLL_TREE_TRAVERSE_POSTORDER,
-                      full_trav,
-                      &travbuffer[0],
-                      &trav_size);
+  pll_utree_traverse(get_root(tree.tree()), PLL_TREE_TRAVERSE_POSTORDER, full_trav, &travbuffer[0],
+                     &trav_size);
 
   for (auto& n : travbuffer) {
     if (n->scaler_index != PLL_SCALE_BUFFER_NONE) {
@@ -76,23 +64,17 @@ static auto create_scaler_to_clv_map(Tree& tree)
   return map;
 }
 
-static double loglh(pll_partition* partition, pll_unode_t* node)
-{
+static double loglh(pll_partition* partition, pll_unode_t* node) {
   std::vector<unsigned int> param_indices(partition->rate_cats, 0);
-  return pll_compute_edge_loglikelihood(partition,
-                                        node->clv_index,
-                                        node->scaler_index,
-                                        node->back->clv_index,
-                                        node->back->scaler_index,
-                                        node->pmatrix_index,
-                                        &param_indices[0],
-                                        nullptr);
+  return pll_compute_edge_loglikelihood(partition, node->clv_index, node->scaler_index,
+                                        node->back->clv_index, node->back->scaler_index,
+                                        node->pmatrix_index, &param_indices[0], nullptr);
 }
 
-static void read_(Options options)
-{
+static void read_(Options options) {
   // setup
-  auto msa = build_MSA_from_file(env->reference_file, MSA_Info(env->reference_file), options.premasking);
+  auto msa =
+      build_MSA_from_file(env->reference_file, MSA_Info(env->reference_file), options.premasking);
   raxml::Model model;
   // double freqs[4] = {0.1,0.2,0.3,0.4};
   // double alpha = 42.42;
@@ -112,25 +94,19 @@ static void read_(Options options)
   auto read_part = read_tree.partition();
 
   // compare numbered jplace strings
-  string original_nns( get_numbered_newick_string( original_tree.tree(), rtree_mapper() ) );
-  string read_nns( get_numbered_newick_string( read_tree.tree(), rtree_mapper() ) );
+  string original_nns(get_numbered_newick_string(original_tree.tree(), rtree_mapper()));
+  string read_nns(get_numbered_newick_string(read_tree.tree(), rtree_mapper()));
 
   EXPECT_STREQ(original_nns.c_str(), read_nns.c_str());
   // compare tree traversals
   ASSERT_EQ(original_tree.nums().nodes, read_tree.nums().nodes);
-  vector<pll_unode_t *> original_nodes(original_tree.nums().nodes);
-  vector<pll_unode_t *> read_nodes(read_tree.nums().nodes);
+  vector<pll_unode_t*> original_nodes(original_tree.nums().nodes);
+  vector<pll_unode_t*> read_nodes(read_tree.nums().nodes);
   unsigned int original_traversed, read_traversed;
-  pll_utree_traverse( get_root(original_tree.tree()),
-                      PLL_TREE_TRAVERSE_POSTORDER,
-                      cb_full_traversal,
-                      &original_nodes[0],
-                      &original_traversed);
-  pll_utree_traverse( get_root(read_tree.tree()),
-                      PLL_TREE_TRAVERSE_POSTORDER,
-                      cb_full_traversal,
-                      &read_nodes[0],
-                      &read_traversed);
+  pll_utree_traverse(get_root(original_tree.tree()), PLL_TREE_TRAVERSE_POSTORDER, cb_full_traversal,
+                     &original_nodes[0], &original_traversed);
+  pll_utree_traverse(get_root(read_tree.tree()), PLL_TREE_TRAVERSE_POSTORDER, cb_full_traversal,
+                     &read_nodes[0], &read_traversed);
 
   ASSERT_EQ(original_traversed, read_traversed);
   ASSERT_EQ(original_traversed, original_tree.nums().nodes);
@@ -142,7 +118,6 @@ static void read_(Options options)
     // printf("read: %d back: %d\n", r->clv_index, r->back->clv_index);
     check_equal(o, r);
   }
-
 
   ASSERT_EQ(part->sites, read_part->sites);
   ASSERT_EQ(part->states, read_part->states);
@@ -160,23 +135,21 @@ static void read_(Options options)
 
   auto read_subs = read_part->subst_params[0];
   auto subs = part->subst_params[0];
-  for(size_t i = 0; i < 6; i++) {
+  for (size_t i = 0; i < 6; i++) {
     EXPECT_DOUBLE_EQ(subs[i], read_subs[i]);
   }
 
   auto read_rates = read_part->rates;
   auto rates = part->rates;
-  for(size_t i = 0; i < part->rate_cats; i++) {
+  for (size_t i = 0; i < part->rate_cats; i++) {
     EXPECT_DOUBLE_EQ(rates[i], read_rates[i]);
   }
 
   auto read_rate_weights = read_part->rate_weights;
   auto rate_weights = part->rate_weights;
-  for(size_t i = 0; i < part->rate_cats; i++) {
+  for (size_t i = 0; i < part->rate_cats; i++) {
     EXPECT_DOUBLE_EQ(rate_weights[i], read_rate_weights[i]);
   }
-
-
 
   // compare tips
   if (read_part->attributes & PLL_ATTRIB_PATTERN_TIP) {
@@ -229,8 +202,7 @@ static void read_(Options options)
     }
     for (size_t i = 0; i < part->clv_buffers + part->tips; ++i) {
       EXPECT_EQ(rep->pernode_ids[i], read_rep->pernode_ids[i]);
-      EXPECT_EQ(rep->pernode_allocated_clvs[i],
-                read_rep->pernode_allocated_clvs[i]);
+      EXPECT_EQ(rep->pernode_allocated_clvs[i], read_rep->pernode_allocated_clvs[i]);
 
       for (size_t j = 0; j < part->sites; ++j) {
         EXPECT_EQ(rep->pernode_site_id[i][j], read_rep->pernode_site_id[i][j]);
@@ -253,7 +225,4 @@ static void read_(Options options)
   }
 }
 
-TEST(Binary, read)
-{
-  all_combinations(read_);
-}
+TEST(Binary, read) { all_combinations(read_); }

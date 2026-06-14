@@ -4,17 +4,14 @@
 
 #include "core/pll/pll_util.hpp"
 
+constexpr unsigned int proximal_clv_index = 4;
+constexpr unsigned int inner_clv_index = 3;
+constexpr unsigned int new_tip_clv_index = 1;
+constexpr unsigned int distal_clv_index_if_tip = 2;
+constexpr unsigned int distal_clv_index_if_inner = 5;
 
-constexpr unsigned int proximal_clv_index         = 4;
-constexpr unsigned int inner_clv_index            = 3;
-constexpr unsigned int new_tip_clv_index          = 1;
-constexpr unsigned int distal_clv_index_if_tip    = 2;
-constexpr unsigned int distal_clv_index_if_inner  = 5;
-
-template <class T,
-          typename = typename std::enable_if<std::is_pointer<T>::value>::type>
-static void alloc_and_copy(T& dest, const T src, const size_t size)
-{
+template <class T, typename = typename std::enable_if<std::is_pointer<T>::value>::type>
+static void alloc_and_copy(T& dest, const T src, const size_t size) {
   using base_t = std::remove_pointer_t<decltype(src)>;
 
   if (dest != nullptr) {
@@ -23,82 +20,68 @@ static void alloc_and_copy(T& dest, const T src, const size_t size)
 
   dest = static_cast<T>(calloc(size, sizeof(base_t)));
 
-  if( dest == nullptr ) {
+  if (dest == nullptr) {
     throw std::runtime_error{"Can't alloc memory."};
   }
 
-  assert( dest != nullptr );
+  assert(dest != nullptr);
 
-  memcpy( dest,
-          src,
-          size * sizeof(base_t));
+  memcpy(dest, src, size * sizeof(base_t));
 }
 
-static void deep_copy_scaler( pll_partition_t* dest_part,
-                              pll_unode_t* dest_node,
-                              pll_partition_t const * const src_part,
-                              pll_unode_t const * const src_node)
-{
-  if (src_node->scaler_index != PLL_SCALE_BUFFER_NONE
-    and src_part->scale_buffer[src_node->scaler_index] != nullptr) {
-
+static void deep_copy_scaler(pll_partition_t* dest_part, pll_unode_t* dest_node,
+                             pll_partition_t const* const src_part,
+                             pll_unode_t const* const src_node) {
+  if (src_node->scaler_index != PLL_SCALE_BUFFER_NONE and
+      src_part->scale_buffer[src_node->scaler_index] != nullptr) {
     const auto sites_alloc = src_part->asc_additional_sites + src_part->sites;
-    const auto scaler_size  = (src_part->attributes & PLL_ATTRIB_RATE_SCALERS)
-                            ? sites_alloc * src_part->rate_cats : sites_alloc;
+    const auto scaler_size = (src_part->attributes & PLL_ATTRIB_RATE_SCALERS)
+                                 ? sites_alloc * src_part->rate_cats
+                                 : sites_alloc;
 
-    alloc_and_copy( dest_part->scale_buffer[dest_node->scaler_index],
-                    src_part->scale_buffer[src_node->scaler_index],
-                    scaler_size);
+    alloc_and_copy(dest_part->scale_buffer[dest_node->scaler_index],
+                   src_part->scale_buffer[src_node->scaler_index], scaler_size);
   }
 }
 
-static void deep_copy_repeats(pll_partition_t* dest_part,
-                              pll_unode_t* dest_node,
-                              pll_partition_t const * const src_part,
-                              pll_unode_t const * const src_node)
-{
+static void deep_copy_repeats(pll_partition_t* dest_part, pll_unode_t* dest_node,
+                              pll_partition_t const* const src_part,
+                              pll_unode_t const* const src_node) {
   // copy size info
   if (src_node->scaler_index != PLL_SCALE_BUFFER_NONE) {
-    dest_part->repeats->perscale_ids[dest_node->scaler_index]
-      = src_part->repeats->perscale_ids[src_node->scaler_index];
+    dest_part->repeats->perscale_ids[dest_node->scaler_index] =
+        src_part->repeats->perscale_ids[src_node->scaler_index];
   }
 
-  dest_part->repeats->pernode_ids[dest_node->clv_index]
-    = src_part->repeats->pernode_ids[src_node->clv_index];
-  dest_part->repeats->pernode_allocated_clvs[dest_node->clv_index]
-    = src_part->repeats->pernode_allocated_clvs[src_node->clv_index];
+  dest_part->repeats->pernode_ids[dest_node->clv_index] =
+      src_part->repeats->pernode_ids[src_node->clv_index];
+  dest_part->repeats->pernode_allocated_clvs[dest_node->clv_index] =
+      src_part->repeats->pernode_allocated_clvs[src_node->clv_index];
 
   if (src_part->repeats->pernode_ids[src_node->clv_index]) {
     const auto size =
-    pll_get_sites_number( const_cast<pll_partition_t*>(src_part),
-                          src_node->clv_index);
+        pll_get_sites_number(const_cast<pll_partition_t*>(src_part), src_node->clv_index);
 
-    alloc_and_copy( dest_part->repeats->pernode_site_id[dest_node->clv_index],
-                    src_part->repeats->pernode_site_id[src_node->clv_index],
-                    src_part->sites);
-    alloc_and_copy( dest_part->repeats->pernode_id_site[dest_node->clv_index],
-                    src_part->repeats->pernode_id_site[src_node->clv_index],
-                    size);
+    alloc_and_copy(dest_part->repeats->pernode_site_id[dest_node->clv_index],
+                   src_part->repeats->pernode_site_id[src_node->clv_index], src_part->sites);
+    alloc_and_copy(dest_part->repeats->pernode_id_site[dest_node->clv_index],
+                   src_part->repeats->pernode_id_site[src_node->clv_index], size);
   }
-
 }
 
-
-pll_partition_t * make_tiny_partition(Tree& reference_tree,
-                                      const pll_utree_t * tree,
-                                      pll_unode_t const * const old_proximal,
-                                      pll_unode_t const * const old_distal,
-                                      const bool tip_tip_case)
-{
+pll_partition_t* make_tiny_partition(Tree& reference_tree, const pll_utree_t* tree,
+                                     pll_unode_t const* const old_proximal,
+                                     pll_unode_t const* const old_distal, const bool tip_tip_case) {
   /**
-    As we work with PLL_PATTERN_TIP functionality, special care has to be taken in regards to the node and partition
-    structure: PLL assumes that any node with clv index < number of tips is in fact a real tip, that is
-    a tip that uses a character array instead of a real clv. Here we need to set up the node/partition to fool pll:
-    the tips that actually contain CLVs copied over from the reference node have their index set to greater than
-    number of tips. This results in a acceptable amount of wasted memory that is never used (num_sites * bytes
+    As we work with PLL_PATTERN_TIP functionality, special care has to be taken in regards to the
+    node and partition structure: PLL assumes that any node with clv index < number of tips is in
+    fact a real tip, that is a tip that uses a character array instead of a real clv. Here we need
+    to set up the node/partition to fool pll: the tips that actually contain CLVs copied over from
+    the reference node have their index set to greater than number of tips. This results in a
+    acceptable amount of wasted memory that is never used (num_sites * bytes
     * number of clv-tips)
   */
-  pll_partition_t const * const old_partition = reference_tree.partition();
+  pll_partition_t const* const old_partition = reference_tree.partition();
   assert(old_partition);
 
   bool use_tipchars = old_partition->attributes & PLL_ATTRIB_PATTERN_TIP;
@@ -110,18 +93,17 @@ pll_partition_t * make_tiny_partition(Tree& reference_tree,
   auto proximal = tree->nodes[0];
   auto distal = tree->nodes[1];
 
-  pll_partition_t * tiny = pll_partition_create(
-    3, // tips
-    1 + num_clv_tips, // extra clv's
-    old_partition->states, old_partition->sites,
-    old_partition->rate_matrices,
-    3, // number of prob. matrices (one per possible unique branch length)
-    old_partition->rate_cats,
-    3, // number of scale buffers (one per possible inner node)
-    old_partition->attributes);
+  pll_partition_t* tiny = pll_partition_create(
+      3,                 // tips
+      1 + num_clv_tips,  // extra clv's
+      old_partition->states, old_partition->sites, old_partition->rate_matrices,
+      3,  // number of prob. matrices (one per possible unique branch length)
+      old_partition->rate_cats,
+      3,  // number of scale buffers (one per possible inner node)
+      old_partition->attributes);
 
-  if( not tiny ) {
-    throw std::runtime_error { std::string( pll_errmsg ) };
+  if (not tiny) {
+    throw std::runtime_error{std::string(pll_errmsg)};
   }
 
   unsigned int i;
@@ -182,47 +164,33 @@ pll_partition_t * make_tiny_partition(Tree& reference_tree,
 
   // shallow copy major buffers
   pll_aligned_free(tiny->clv[proximal->clv_index]);
-  tiny->clv[proximal->clv_index] =
-    static_cast<double*>(reference_tree.get_clv(old_proximal));
+  tiny->clv[proximal->clv_index] = static_cast<double*>(reference_tree.get_clv(old_proximal));
 
-
-  if(tip_tip_case and use_tipchars) {
+  if (tip_tip_case and use_tipchars) {
     std::string sequence(tiny->sites, 'A');
-    if( pll_set_tip_states(tiny, distal->clv_index, get_char_map(old_partition), sequence.c_str())
-        == PLL_FAILURE) {
+    if (pll_set_tip_states(tiny, distal->clv_index, get_char_map(old_partition),
+                           sequence.c_str()) == PLL_FAILURE) {
       throw std::runtime_error{"Error setting tip state"};
     }
     pll_aligned_free(tiny->tipchars[distal->clv_index]);
-    tiny->tipchars[distal->clv_index] = static_cast<unsigned char*>(reference_tree.get_clv(old_distal));
+    tiny->tipchars[distal->clv_index] =
+        static_cast<unsigned char*>(reference_tree.get_clv(old_distal));
   } else {
     pll_aligned_free(tiny->clv[distal->clv_index]);
     tiny->clv[distal->clv_index] = static_cast<double*>(reference_tree.get_clv(old_distal));
   }
 
-
   // deep copy scalers
-  deep_copy_scaler( tiny,
-                    proximal,
-                    old_partition,
-                    old_proximal);
+  deep_copy_scaler(tiny, proximal, old_partition, old_proximal);
 
-  deep_copy_scaler( tiny,
-                    distal,
-                    old_partition,
-                    old_distal);
+  deep_copy_scaler(tiny, distal, old_partition, old_distal);
 
   // copy the repeats structures
   if (old_partition->repeats) {
     // then do the per-clv stuff, but only for the two relevant clv
-    deep_copy_repeats(tiny,
-                      proximal,
-                      old_partition,
-                      old_proximal);
+    deep_copy_repeats(tiny, proximal, old_partition, old_proximal);
 
-    deep_copy_repeats(tiny,
-                      distal,
-                      old_partition,
-                      old_distal);
+    deep_copy_repeats(tiny, distal, old_partition, old_distal);
 
     pll_resize_repeats_lookup(tiny, tiny->sites * tiny->states);
   }
@@ -230,24 +198,23 @@ pll_partition_t * make_tiny_partition(Tree& reference_tree,
   return tiny;
 }
 
-void tiny_partition_destroy(pll_partition_t * partition)
-{
+void tiny_partition_destroy(pll_partition_t* partition) {
   if (partition) {
     // unset shallow copied things
-    partition->rates              = nullptr;
-    partition->subst_params       = nullptr;
-    partition->frequencies        = nullptr;
-    partition->eigenvecs          = nullptr;
-    partition->inv_eigenvecs      = nullptr;
-    partition->eigenvals          = nullptr;
-    partition->prop_invar         = nullptr;
-    partition->invariant          = nullptr;
+    partition->rates = nullptr;
+    partition->subst_params = nullptr;
+    partition->frequencies = nullptr;
+    partition->eigenvecs = nullptr;
+    partition->inv_eigenvecs = nullptr;
+    partition->eigenvals = nullptr;
+    partition->prop_invar = nullptr;
+    partition->invariant = nullptr;
     partition->eigen_decomp_valid = nullptr;
-    partition->pattern_weights    = nullptr;
+    partition->pattern_weights = nullptr;
 
     partition->clv[proximal_clv_index] = nullptr;
 
-    const bool distal_is_tip    = partition->clv_buffers == 3 ? false : true;
+    const bool distal_is_tip = partition->clv_buffers == 3 ? false : true;
     const bool pattern_tip_mode = partition->attributes & PLL_ATTRIB_PATTERN_TIP;
 
     if (distal_is_tip) {
@@ -264,33 +231,33 @@ void tiny_partition_destroy(pll_partition_t * partition)
   }
 }
 
-pll_utree_t * make_tiny_tree_structure( const pll_unode_t * old_proximal,
-                                        const pll_unode_t * old_distal,
-                                        const bool tip_tip_case)
-{
+pll_utree_t* make_tiny_tree_structure(const pll_unode_t* old_proximal,
+                                      const pll_unode_t* old_distal, const bool tip_tip_case) {
   const unsigned int inner_scaler_index = 1;
   const unsigned int proximal_scaler_index = 0;
   const unsigned int distal_scaler_index = 2;
 
   /**
-    As we work with PLL_PATTERN_TIP functionality, special care has to be taken in regards to the tree and partition
-    structure: PLL assumes that any node with clv index < number of tips is in fact a real tip, that is
-    a tip that uses a character array instead of a real clv. Here we need to set up the tree/partition to fool pll:
-    the tips that actually contain CLVs copied over from the reference tree have their index set to greater than
-    number of tips. This results in a acceptable amount of wasted memory that is never used (num_sites * bytes
+    As we work with PLL_PATTERN_TIP functionality, special care has to be taken in regards to the
+    tree and partition structure: PLL assumes that any node with clv index < number of tips is in
+    fact a real tip, that is a tip that uses a character array instead of a real clv. Here we need
+    to set up the tree/partition to fool pll: the tips that actually contain CLVs copied over from
+    the reference tree have their index set to greater than number of tips. This results in a
+    acceptable amount of wasted memory that is never used (num_sites * bytes
     * number of clv-tips)
   */
   // if tip-inner case
-  unsigned int distal_clv_index = (tip_tip_case) ? distal_clv_index_if_tip : distal_clv_index_if_inner;
+  unsigned int distal_clv_index =
+      (tip_tip_case) ? distal_clv_index_if_tip : distal_clv_index_if_inner;
 
-  auto inner = static_cast<pll_unode_t *>(calloc(1,sizeof(pll_unode_t)));
-  inner->next = static_cast<pll_unode_t *>(calloc(1,sizeof(pll_unode_t)));
-  inner->next->next = static_cast<pll_unode_t *>(calloc(1,sizeof(pll_unode_t)));
+  auto inner = static_cast<pll_unode_t*>(calloc(1, sizeof(pll_unode_t)));
+  inner->next = static_cast<pll_unode_t*>(calloc(1, sizeof(pll_unode_t)));
+  inner->next->next = static_cast<pll_unode_t*>(calloc(1, sizeof(pll_unode_t)));
   inner->next->next->next = inner;
 
-  auto new_tip = static_cast<pll_unode_t *>(calloc(1,sizeof(pll_unode_t)));
-  auto proximal = static_cast<pll_unode_t *>(calloc(1,sizeof(pll_unode_t)));
-  auto distal = static_cast<pll_unode_t *>(calloc(1,sizeof(pll_unode_t)));
+  auto new_tip = static_cast<pll_unode_t*>(calloc(1, sizeof(pll_unode_t)));
+  auto proximal = static_cast<pll_unode_t*>(calloc(1, sizeof(pll_unode_t)));
+  auto distal = static_cast<pll_unode_t*>(calloc(1, sizeof(pll_unode_t)));
 
   // connect the nodes to each other
   inner->back = new_tip;
@@ -313,11 +280,11 @@ pll_utree_t * make_tiny_tree_structure( const pll_unode_t * old_proximal,
   inner->scaler_index = inner_scaler_index;
   inner->next->scaler_index = inner_scaler_index;
   inner->next->next->scaler_index = inner_scaler_index;
-  proximal->scaler_index = (old_proximal->scaler_index == PLL_SCALE_BUFFER_NONE) ?
-    PLL_SCALE_BUFFER_NONE : proximal_scaler_index;
-  distal->scaler_index = (old_distal->scaler_index == PLL_SCALE_BUFFER_NONE) ?
-    PLL_SCALE_BUFFER_NONE : distal_scaler_index;
-
+  proximal->scaler_index = (old_proximal->scaler_index == PLL_SCALE_BUFFER_NONE)
+                               ? PLL_SCALE_BUFFER_NONE
+                               : proximal_scaler_index;
+  distal->scaler_index = (old_distal->scaler_index == PLL_SCALE_BUFFER_NONE) ? PLL_SCALE_BUFFER_NONE
+                                                                             : distal_scaler_index;
 
   reset_triplet_lengths(inner, nullptr, old_distal->length);
 
@@ -327,9 +294,8 @@ pll_utree_t * make_tiny_tree_structure( const pll_unode_t * old_proximal,
   tree->tip_count = 3;
   tree->inner_count = 1;
 
-  tree->nodes = static_cast<pll_unode_t **>(
-    calloc( tree->inner_count + tree->tip_count,
-            sizeof(pll_unode_t*)));
+  tree->nodes =
+      static_cast<pll_unode_t**>(calloc(tree->inner_count + tree->tip_count, sizeof(pll_unode_t*)));
 
   tree->nodes[0] = proximal;
   tree->nodes[1] = distal;

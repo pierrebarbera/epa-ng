@@ -15,14 +15,12 @@
 #include "set_manipulators.hpp"
 #include "util/logging.hpp"
 
-static void precompute_sites_static(char nt,
-                                    std::vector<double>& result,
-                                    pll_partition_t * const partition,
-                                    pll_utree_t const * const tree)
-{
-  const size_t sites  = partition->sites;
-  const auto new_tip  = tree->nodes[2];
-  const auto inner    = new_tip->back;
+static void precompute_sites_static(char nt, std::vector<double>& result,
+                                    pll_partition_t* const partition,
+                                    pll_utree_t const* const tree) {
+  const size_t sites = partition->sites;
+  const auto new_tip = tree->nodes[2];
+  const auto inner = new_tip->back;
   result.clear();
   result.resize(sites);
   std::string seq(sites, nt);
@@ -31,47 +29,32 @@ static void precompute_sites_static(char nt,
 
   auto map = get_char_map(partition);
 
-  auto err_check = pll_set_tip_states(partition,
-                                      new_tip->clv_index,
-                                      map,
-                                      seq.c_str());
+  auto err_check = pll_set_tip_states(partition, new_tip->clv_index, map, seq.c_str());
 
   if (err_check == PLL_FAILURE) {
     throw std::runtime_error{
-      std::string("Set tip states during sites precompution failed! pll_errmsg: ")
-      + pll_errmsg
-    };
+        std::string("Set tip states during sites precompution failed! pll_errmsg: ") + pll_errmsg};
   }
 
-  auto logl = pll_compute_edge_loglikelihood( partition,
-                                              new_tip->clv_index,
-                                              PLL_SCALE_BUFFER_NONE,
-                                              inner->clv_index,
-                                              inner->scaler_index,
-                                              inner->pmatrix_index,
-                                              &param_indices[ 0 ],
-                                              &result[ 0 ] );
+  auto logl = pll_compute_edge_loglikelihood(partition, new_tip->clv_index, PLL_SCALE_BUFFER_NONE,
+                                             inner->clv_index, inner->scaler_index,
+                                             inner->pmatrix_index, &param_indices[0], &result[0]);
 
-  if( logl == -std::numeric_limits< double >::infinity() ) {
-    throw std::runtime_error { "Tree Log-Likelihood -INF!" };
+  if (logl == -std::numeric_limits<double>::infinity()) {
+    throw std::runtime_error{"Tree Log-Likelihood -INF!"};
   }
 }
 
-
-Tiny_Tree::Tiny_Tree( pll_unode_t * edge_node,
-                      const unsigned int branch_id,
-                      Tree& reference_tree,
-                      const bool opt_branches,
-                      const Options& options,
-                      std::shared_ptr<Lookup_Store>& lookup_store)
-  : partition_(nullptr, tiny_partition_destroy)
-  , tree_(nullptr, utree_destroy)
-  , opt_branches_(opt_branches)
-  , premasking_(options.premasking)
-  , sliding_blo_(options.sliding_blo)
-  , branch_id_(branch_id)
-  , lookup_(lookup_store)
-{
+Tiny_Tree::Tiny_Tree(pll_unode_t* edge_node, const unsigned int branch_id, Tree& reference_tree,
+                     const bool opt_branches, const Options& options,
+                     std::shared_ptr<Lookup_Store>& lookup_store)
+    : partition_(nullptr, tiny_partition_destroy),
+      tree_(nullptr, utree_destroy),
+      opt_branches_(opt_branches),
+      premasking_(options.premasking),
+      sliding_blo_(options.sliding_blo),
+      branch_id_(branch_id),
+      lookup_(lookup_store) {
   assert(edge_node);
   original_branch_length_ = edge_node->length;
 
@@ -91,23 +74,17 @@ Tiny_Tree::Tiny_Tree( pll_unode_t * edge_node,
   }
 
   tree_ = std::unique_ptr<pll_utree_t, utree_deleter>(
-      	                    make_tiny_tree_structure( old_proximal,
-                                                      old_distal,
-                                                      tip_tip_case),
-                            utree_destroy);
+      make_tiny_tree_structure(old_proximal, old_distal, tip_tip_case), utree_destroy);
 
   partition_ = std::unique_ptr<pll_partition_t, partition_deleter>(
-                                make_tiny_partition(reference_tree,
-                                                    tree_.get(),
-                                                    old_proximal,
-                                                    old_distal,
-                                                    tip_tip_case),
-                                tiny_partition_destroy);
+      make_tiny_partition(reference_tree, tree_.get(), old_proximal, old_distal, tip_tip_case),
+      tiny_partition_destroy);
 
-  // operation for computing the clv toward the new tip (for initialization and logl in non-blo case)
+  // operation for computing the clv toward the new tip (for initialization and logl in non-blo
+  // case)
   auto proximal = tree_->nodes[0];
-  auto distal   = tree_->nodes[1];
-  auto inner    = tree_->nodes[3];
+  auto distal = tree_->nodes[1];
+  auto inner = tree_->nodes[3];
 
   pll_operation_t op;
   op.parent_clv_index = inner->clv_index;
@@ -121,16 +98,14 @@ Tiny_Tree::Tiny_Tree( pll_unode_t * edge_node,
 
   // wether heuristic is used or not, this is the initial branch length configuration
   double branch_lengths[3] = {proximal->length, distal->length, inner->length};
-  unsigned int matrix_indices[3] = {proximal->pmatrix_index, distal->pmatrix_index, inner->pmatrix_index};
+  unsigned int matrix_indices[3] = {proximal->pmatrix_index, distal->pmatrix_index,
+                                    inner->pmatrix_index};
 
   // use branch lengths to compute the probability matrices
   std::vector<unsigned int> param_indices(reference_tree.partition()->rate_cats, 0);
-  if( not pll_update_prob_matrices( partition_.get(),
-                                    &param_indices[ 0 ],
-                                    matrix_indices,
-                                    branch_lengths,
-                                    3 ) ) {
-    throw std::runtime_error { std::string( pll_errmsg ) };
+  if (not pll_update_prob_matrices(partition_.get(), &param_indices[0], matrix_indices,
+                                   branch_lengths, 3)) {
+    throw std::runtime_error{std::string(pll_errmsg)};
   }
 
   // use update_partials to compute the clv pointing toward the new tip
@@ -145,9 +120,7 @@ Tiny_Tree::Tiny_Tree( pll_unode_t * edge_node,
       // precompute all possible site likelihoods
       std::vector<std::vector<double>> precomputed_sites(size);
       for (size_t i = 0; i < size; ++i) {
-        precompute_sites_static(lookup_store->char_map(i),
-                                precomputed_sites[i],
-                                partition_.get(),
+        precompute_sites_static(lookup_store->char_map(i), precomputed_sites[i], partition_.get(),
                                 tree_.get());
       }
       lookup_store->init_branch(branch_id, precomputed_sites);
@@ -155,22 +128,21 @@ Tiny_Tree::Tiny_Tree( pll_unode_t * edge_node,
   }
 }
 
-Placement Tiny_Tree::place(const Sequence &s)
-{
+Placement Tiny_Tree::place(const Sequence& s) {
   assert(partition_);
   assert(tree_);
 
-  const auto inner    = tree_->nodes[3];
-  const auto distal   = tree_->nodes[1];
+  const auto inner = tree_->nodes[3];
+  const auto distal = tree_->nodes[1];
   const auto proximal = tree_->nodes[0];
-  const auto new_tip  = inner->back;
+  const auto new_tip = inner->back;
 
   auto distal_length = distal->length;
   auto pendant_length = inner->length;
   double logl = 0.0;
   std::vector<unsigned int> param_indices(partition_->rate_cats, 0);
 
-  if ( s.sequence().size() != partition_->sites ) {
+  if (s.sequence().size() != partition_->sites) {
     throw std::runtime_error{"Query sequence length not same as reference alignment!"};
   }
 
@@ -179,27 +151,25 @@ Placement Tiny_Tree::place(const Sequence &s)
   if (premasking_) {
     range = get_valid_range(s.sequence());
     if (not range) {
-      throw std::runtime_error{std::string()+"Sequence with header '" + s.header()
-        + "' does not appear to have any non-gap sites!"};
+      throw std::runtime_error{std::string() + "Sequence with header '" + s.header() +
+                               "' does not appear to have any non-gap sites!"};
     }
   }
 
   if (opt_branches_) {
-
     auto virtual_root = inner;
 
     // init the new tip with s.sequence(), branch length
-    auto err_check = pll_set_tip_states(partition_.get(),
-                                        new_tip->clv_index,
-                                        get_char_map(partition_.get()),
-                                        s.sequence().c_str());
+    auto err_check = pll_set_tip_states(partition_.get(), new_tip->clv_index,
+                                        get_char_map(partition_.get()), s.sequence().c_str());
 
     if (err_check == PLL_FAILURE) {
       throw std::runtime_error{"Set tip states during placement failed!"};
     }
 
-    if (premasking_){
-      logl = call_focused(optimize_branch_triplet, range, partition_.get(), virtual_root, sliding_blo_);
+    if (premasking_) {
+      logl = call_focused(optimize_branch_triplet, range, partition_.get(), virtual_root,
+                          sliding_blo_);
     } else {
       logl = optimize_branch_triplet(partition_.get(), virtual_root, sliding_blo_);
     }
@@ -214,9 +184,7 @@ Placement Tiny_Tree::place(const Sequence &s)
     distal_length = (original_branch_length_ / new_total_branch_length) * distal->length;
     pendant_length = inner->length;
 
-    reset_triplet_lengths(inner,
-                          partition_.get(),
-                          original_branch_length_);
+    reset_triplet_lengths(inner, partition_.get(), original_branch_length_);
 
     // re-update the partial
     auto child1 = virtual_root->next->back;
@@ -239,10 +207,8 @@ Placement Tiny_Tree::place(const Sequence &s)
   }
 
   if (logl == -std::numeric_limits<double>::infinity()) {
-    throw std::runtime_error{
-      std::string("-INF logl at branch ") + std::to_string( branch_id_ ) +
-      " with sequence " + s.header()
-    };
+    throw std::runtime_error{std::string("-INF logl at branch ") + std::to_string(branch_id_) +
+                             " with sequence " + s.header()};
   }
 
   assert(distal_length <= original_branch_length_);

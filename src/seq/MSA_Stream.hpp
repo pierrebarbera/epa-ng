@@ -16,24 +16,21 @@
 
 #include "genesis/sequence/formats/fasta_input_iterator.hpp"
 
-class MSA_Stream : public msa_reader
-{
+class MSA_Stream : public msa_reader {
 public:
-  using container_type  = MSA;
-  using file_type       = genesis::sequence::FastaInputIterator;
+  using container_type = MSA;
+  using file_type = genesis::sequence::FastaInputIterator;
 
-  MSA_Stream (const std::string& msa_file,
-              const MSA_Info& info,
-              const bool premasking = true,
-              const bool split = false);
+  MSA_Stream(const std::string& msa_file, const MSA_Info& info, const bool premasking = true,
+             const bool split = false);
   MSA_Stream() = default;
   ~MSA_Stream();
 
   MSA_Stream(MSA_Stream const& other) = delete;
   MSA_Stream(MSA_Stream&& other) = default;
 
-  MSA_Stream& operator= (MSA_Stream const& other) = delete;
-  MSA_Stream& operator= (MSA_Stream && other) = default;
+  MSA_Stream& operator=(MSA_Stream const& other) = delete;
+  MSA_Stream& operator=(MSA_Stream&& other) = default;
 
   size_t read_next(container_type& result, const size_t number) override;
   size_t num_sequences() const override { return info_.sequences(); }

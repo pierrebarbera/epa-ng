@@ -8,7 +8,6 @@
 // The testing environment
 class Epatest : public ::testing::Environment {
 public:
-
   // Objects declared here can be used by all tests in the test case for Foo.
   std::string data_dir;
   std::string out_dir;
@@ -23,21 +22,19 @@ public:
   std::string info_file;
   raxml::Model model = raxml::Model("GTR+G");
   Options options;
-
 };
 
 extern Epatest* env;
 
 #include <cmath>
 
-#define COMPL_REPEATS       (1 << 0)
-#define COMPL_OPTIMIZE      (1 << 1)
-#define COMPL_SLIDING_BLO   (1 << 2)
-#define COMPL_PRESCORING    (1 << 3)
-#define COMPL_MASKING       (1 << 4)
+#define COMPL_REPEATS (1 << 0)
+#define COMPL_OPTIMIZE (1 << 1)
+#define COMPL_SLIDING_BLO (1 << 2)
+#define COMPL_PRESCORING (1 << 3)
+#define COMPL_MASKING (1 << 4)
 
-static inline Options get_options_config(const unsigned int d)
-{
+static inline Options get_options_config(const unsigned int d) {
   Options o;
   if (d & COMPL_REPEATS) {
     o.repeats = not o.repeats;
@@ -59,18 +56,13 @@ static inline Options get_options_config(const unsigned int d)
 }
 
 template <class Func>
-void all_combinations(Func f, bool verbose=false)
-{
+void all_combinations(Func f, bool verbose = false) {
   for (size_t i = 0; i < pow(2, 4); ++i) {
     auto o = get_options_config(i);
     if (verbose) {
       printf("\nrepeats\toptim\tsliding\tprescore\tmasking\n");
-      printf( "%d\t%d\t%d\t%d\t%d\n",
-              o.repeats,
-              o.opt_model,
-              o.sliding_blo,
-              o.prescoring,
-              o.premasking);
+      printf("%d\t%d\t%d\t%d\t%d\n", o.repeats, o.opt_model, o.sliding_blo, o.prescoring,
+             o.premasking);
     }
     f(o);
   }

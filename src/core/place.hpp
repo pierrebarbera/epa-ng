@@ -8,10 +8,5 @@
 
 #include <string>
 
-void simple_mpi(Tree& tree,
-                const std::string& query_file,
-                const MSA_Info& msa_info,
-                const std::string& outdir,
-                const Options& options,
-                const std::string& invocation);
-
+void simple_mpi(Tree& tree, const std::string& query_file, const MSA_Info& msa_info,
+                const std::string& outdir, const Options& options, const std::string& invocation);

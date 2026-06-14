@@ -15,8 +15,7 @@
 
 using namespace std;
 
-TEST(Tree, process_from_binary)
-{
+TEST(Tree, process_from_binary) {
   genesis::utils::Options::get().allow_file_overwriting(true);
 
   // setup
@@ -40,10 +39,8 @@ TEST(Tree, process_from_binary)
 
   simple_mpi(read_tree, queries, qry_info, env->out_dir, options, invocation);
 
-
   options.prescoring = true;
   simple_mpi(read_tree, queries, qry_info, env->out_dir, options, invocation);
-
 
   Tree mvstree;
   mvstree = Tree(env->binary_file, model, options);
@@ -53,14 +50,12 @@ TEST(Tree, process_from_binary)
   // teardown
 }
 
-TEST(Tree, combined_input_file)
-{
+TEST(Tree, combined_input_file) {
   auto combined_msa = build_MSA_from_file(env->combined_file, MSA_Info(env->combined_file), true);
   auto tree = Tree(env->tree_file, combined_msa, env->model, env->options);
 }
 
-TEST(Tree, rooted_input)
-{
+TEST(Tree, rooted_input) {
   auto msa = build_MSA_from_file(env->reference_file, MSA_Info(env->reference_file), true);
   auto tree = Tree(env->tree_file_rooted, msa, env->model, env->options);
 }

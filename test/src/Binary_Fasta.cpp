@@ -6,8 +6,7 @@
 
 #include "genesis/utils/core/options.hpp"
 
-static void compare_msas(const MSA& lhs, const MSA& rhs)
-{
+static void compare_msas(const MSA& lhs, const MSA& rhs) {
   ASSERT_EQ(lhs.size(), rhs.size());
 
   for (size_t i = 0; i < lhs.size(); ++i) {
@@ -16,8 +15,7 @@ static void compare_msas(const MSA& lhs, const MSA& rhs)
   }
 }
 
-TEST(Binary_Fasta, 4bit_store_and_load)
-{
+TEST(Binary_Fasta, 4bit_store_and_load) {
   genesis::utils::Options::get().allow_file_overwriting(true);
 
   const std::string orig_file(env->combined_file);
@@ -32,8 +30,7 @@ TEST(Binary_Fasta, 4bit_store_and_load)
   compare_msas(msa, read_msa);
 }
 
-TEST(Binary_Fasta, reader)
-{
+TEST(Binary_Fasta, reader) {
   genesis::utils::Options::get().allow_file_overwriting(true);
 
   const std::string orig_file(env->combined_file);
@@ -53,16 +50,14 @@ TEST(Binary_Fasta, reader)
   size_t i = skip;
   const size_t chunksize = 5;
   size_t num_sequences = 0;
-  while ( (num_sequences = reader.read_next(read_msa, chunksize)) != 0 ) {
-
+  while ((num_sequences = reader.read_next(read_msa, chunksize)) != 0) {
     ASSERT_EQ(num_sequences, read_msa.size()) << "bad size at i=" << i;
 
-    for( size_t k = 0; k < num_sequences; ++k ) {
-      EXPECT_STREQ(msa[i+k].header().c_str(), read_msa[k].header().c_str());
-      EXPECT_STREQ(msa[i+k].sequence().c_str(), read_msa[k].sequence().c_str());
+    for (size_t k = 0; k < num_sequences; ++k) {
+      EXPECT_STREQ(msa[i + k].header().c_str(), read_msa[k].header().c_str());
+      EXPECT_STREQ(msa[i + k].sequence().c_str(), read_msa[k].sequence().c_str());
     }
 
     i += num_sequences;
-
   }
 }

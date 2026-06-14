@@ -14,29 +14,23 @@
 #include "core/pll/rtree_mapper.hpp"
 
 /* Encapsulates the pll data structures for ML computation */
-class Tree
-{
+class Tree {
 public:
-  using Scoped_Mutex  = std::lock_guard<std::mutex>;
-  using Mutex_List    = std::vector<std::mutex>;
+  using Scoped_Mutex = std::lock_guard<std::mutex>;
+  using Mutex_List = std::vector<std::mutex>;
   using partition_ptr = std::unique_ptr<pll_partition_t, partition_deleter>;
-  using utree_ptr     = std::unique_ptr<pll_utree_t, utree_deleter>;
+  using utree_ptr = std::unique_ptr<pll_utree_t, utree_deleter>;
 
-  Tree( const std::string& tree_file,
-        const MSA& msa,
-        raxml::Model& model,
-        const Options& options);
-  Tree( const std::string& bin_file,
-        raxml::Model &model,
-        const Options& options);
-  Tree()  = default;
+  Tree(const std::string& tree_file, const MSA& msa, raxml::Model& model, const Options& options);
+  Tree(const std::string& bin_file, raxml::Model& model, const Options& options);
+  Tree() = default;
   ~Tree() = default;
 
   Tree(Tree const& other) = delete;
-  Tree(Tree&& other)      = default;
+  Tree(Tree&& other) = default;
 
-  Tree& operator= (Tree const& other) = delete;
-  Tree& operator= (Tree && other)     = default;
+  Tree& operator=(Tree const& other) = delete;
+  Tree& operator=(Tree&& other) = default;
 
   // member access
   Tree_Numbers& nums() { return nums_; }
@@ -46,7 +40,7 @@ public:
   auto tree() { return tree_.get(); }
   rtree_mapper& mapper() { return mapper_; }
 
-  void * get_clv(const pll_unode_t*);
+  void* get_clv(const pll_unode_t*);
 
   double ref_tree_logl();
 
@@ -54,7 +48,8 @@ private:
   // pll structures
 
   partition_ptr partition_{nullptr, pll_partition_destroy};
-  utree_ptr     tree_{nullptr, utree_destroy}; // must be top level node as parsed in newick! (for jplace)
+  utree_ptr tree_{nullptr,
+                  utree_destroy};  // must be top level node as parsed in newick! (for jplace)
 
   // tree related numbers
   Tree_Numbers nums_;
@@ -68,5 +63,4 @@ private:
 
   // thread safety
   Mutex_List locks_;
-
 };

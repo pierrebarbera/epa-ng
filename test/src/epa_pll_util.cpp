@@ -16,31 +16,29 @@
 
 using namespace std;
 
-TEST(epa_pll_util, link_tree_msa)
-{
+TEST(epa_pll_util, link_tree_msa) {
   // buildup
   auto msa = build_MSA_from_file(env->reference_file, MSA_Info(env->reference_file), true);
   Tree_Numbers nums = Tree_Numbers();
-  pll_partition_t * part;
-  pll_utree_t * tree;
+  pll_partition_t* part;
+  pll_utree_t* tree;
   raxml::Model model;
 
   rtree_mapper dummy;
-  tree = build_tree_from_file( env->tree_file, nums, dummy );
-  part = make_partition( env->model, nums, msa.num_sites(), Options() );
+  tree = build_tree_from_file(env->tree_file, nums, dummy);
+  part = make_partition(env->model, nums, msa.num_sites(), Options());
   // auto valid_map = vector<Range>(nums.tip_nodes);
   link_tree_msa(tree, part, model, msa, nums.tip_nodes);
 
   // tests
-  vector<pll_unode_t *> tip_nodes(nums.tip_nodes);
+  vector<pll_unode_t*> tip_nodes(nums.tip_nodes);
   tip_nodes.assign(tree->nodes, tree->nodes + nums.tip_nodes);
 
   for (auto n : tip_nodes) {
     ASSERT_NE(n, nullptr);
     if (part->attributes & PLL_ATTRIB_PATTERN_TIP)
       EXPECT_NE(part->tipchars[n->clv_index][0], 0);
-    else
-    {
+    else {
       EXPECT_NE(part->clv[n->clv_index][0], 0);
     }
   }
@@ -48,11 +46,9 @@ TEST(epa_pll_util, link_tree_msa)
   // teardown
   pll_partition_destroy(part);
   pll_utree_destroy(tree, nullptr);
-
 }
 
-static void precompute_clvs_test(Options o)
-{
+static void precompute_clvs_test(Options o) {
   // auto tree_file = env->data_dir + "lucas/20k.newick";
   // auto reference_file = env->data_dir + "lucas/1k_reference.fasta";
   auto tree_file = env->tree_file;
@@ -63,26 +59,20 @@ static void precompute_clvs_test(Options o)
   raxml::Model model;
 
   rtree_mapper dummy;
-  auto tree = build_tree_from_file( tree_file, nums, dummy );
-  auto part = make_partition( model, nums, msa.num_sites(), o );
-
+  auto tree = build_tree_from_file(tree_file, nums, dummy);
+  auto part = make_partition(model, nums, msa.num_sites(), o);
 
   auto root = get_root(tree);
   set_unique_clv_indices(root, nums.tip_nodes);
   // auto valid_map = vector<Range>(nums.tip_nodes);
   link_tree_msa(tree, part, model, msa, nums.tip_nodes);
 
-  optimize( model,
-            tree,
-            part,
-            nums,
-            o.opt_branches,
-            o.opt_model);
+  optimize(model, tree, part, nums, o.opt_branches, o.opt_model);
 
   precompute_clvs(tree, part, nums);
 
   // tests
-  vector<pll_unode_t *> node_list(nums.branches, nullptr);
+  vector<pll_unode_t*> node_list(nums.branches, nullptr);
   utree_query_branches(tree, &node_list[0]);
 
   for (auto& p : node_list) {
@@ -97,15 +87,10 @@ static void precompute_clvs_test(Options o)
   size_t id = 0;
   // size_t success = 1;
   // size_t failure = 0;
-  for (auto x : node_list)
-  {
-    log_new = pll_compute_edge_loglikelihood(part,
-                                         x->clv_index,
-                                         x->scaler_index,
-                                         x->back->clv_index,
-                                         x->back->scaler_index,
-                                         x->pmatrix_index,
-                                         param_indices, nullptr);
+  for (auto x : node_list) {
+    log_new = pll_compute_edge_loglikelihood(part, x->clv_index, x->scaler_index,
+                                             x->back->clv_index, x->back->scaler_index,
+                                             x->pmatrix_index, param_indices, nullptr);
     if (!first) {
       EXPECT_DOUBLE_EQ(log_old, log_new);
       if (fabs(log_old - log_new) > 1e-10) {
@@ -113,11 +98,12 @@ static void precompute_clvs_test(Options o)
 
         printf("Failure!\n");
         printf("new logl: %f\n", log_new);
-        printf("IDX is: %lu\n", static_cast<unsigned long>(id) );
+        printf("IDX is: %lu\n", static_cast<unsigned long>(id));
         printf("x->clv_index: \t\t%u\t%p\n", x->clv_index, part->clv[x->clv_index]);
-        printf("x->scaler_index: \t%d\t%p\n", x->scaler_index,part->scale_buffer[x->scaler_index]);
+        printf("x->scaler_index: \t%d\t%p\n", x->scaler_index, part->scale_buffer[x->scaler_index]);
         printf("x->back->clv_index: \t%u\t%p\n", x->back->clv_index, part->clv[x->back->clv_index]);
-        printf("x->back->scaler_index: \t%d\t%p\n", x->back->scaler_index, part->scale_buffer[x->back->scaler_index]);
+        printf("x->back->scaler_index: \t%d\t%p\n", x->back->scaler_index,
+               part->scale_buffer[x->back->scaler_index]);
         printf("Is tip? %d\n", (x->next == nullptr));
         printf("Back tip? %d\n", (x->back->next == nullptr));
         printf("\n");
@@ -134,7 +120,6 @@ static void precompute_clvs_test(Options o)
     id++;
   }
 
-
   // printf("success vs failue: %lu vs %lu\n", success, failure);
 
   EXPECT_NE(log_new, 0.0);
@@ -145,16 +130,14 @@ static void precompute_clvs_test(Options o)
   pll_utree_destroy(tree, nullptr);
 }
 
-TEST(epa_pll_util, precompute_clvs)
-{
+TEST(epa_pll_util, precompute_clvs) {
   Options o;
   o.opt_model = o.opt_branches = false;
   o.repeats = false;
   precompute_clvs_test(o);
 }
 
-TEST(epa_pll_util, split_combined_msa)
-{
+TEST(epa_pll_util, split_combined_msa) {
   // buildup
   auto combined_msa = build_MSA_from_file(env->combined_file, MSA_Info(env->combined_file), true);
   raxml::Model model;
