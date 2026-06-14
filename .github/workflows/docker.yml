@@ -59,6 +59,6 @@ jobs:
             -v ${{ github.workspace }}/test/data:/data \
             -v ${{ github.workspace }}/epa_out:/out \
             ${{ steps.img.outputs.repo }}:${{ github.event.release.tag_name }} \
-            epa-ng --tree /data/ref.tre --ref-msa /data/aln.fasta --query /data/query.fasta --outdir /out
+            epa-ng --tree /data/ref.tre --ref-msa /data/aln.fasta --query /data/query.fasta --outdir /out --model GTR+G
       - name: Check output
         run: test -f epa_out/epa_result.jplace
