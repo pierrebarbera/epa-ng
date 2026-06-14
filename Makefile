@@ -22,6 +22,14 @@ unittest: update
 	@./test/bin/epa_test
 .PHONY: test
 
+format:
+	@./scripts/clang-format.sh --fix
+.PHONY: format
+
+format-check:
+	@./scripts/clang-format.sh
+.PHONY: format-check
+
 clean:
 	@echo "Cleaning"
 	@rm -rf build

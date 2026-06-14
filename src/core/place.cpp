@@ -39,19 +39,12 @@
 using mytimer = Timer<std::chrono::milliseconds>;
 
 template <class T>
-static void place(MSA& msa,
-                  Tree& reference_tree,
-                  const std::vector<pll_unode_t *>& branches,
-                  Sample<T>& sample,
-                  const Options& options,
-                  std::shared_ptr<Lookup_Store>& lookup_store,
-                  mytimer* time=nullptr)
-{
-
+static void place(MSA& msa, Tree& reference_tree, const std::vector<pll_unode_t*>& branches,
+                  Sample<T>& sample, const Options& options,
+                  std::shared_ptr<Lookup_Store>& lookup_store, mytimer* time = nullptr) {
 #ifdef __OMP
-  const unsigned int num_threads  = options.num_threads
-                                  ? options.num_threads
-                                  : omp_get_max_threads();
+  const unsigned int num_threads =
+      options.num_threads ? options.num_threads : omp_get_max_threads();
   omp_set_num_threads(num_threads);
   LOG_DBG << "Using threads: " << num_threads;
   LOG_DBG << "Max threads: " << omp_get_max_threads();
@@ -59,20 +52,19 @@ static void place(MSA& msa,
   const unsigned int num_threads = 1;
 #endif
 
-  const size_t num_sequences  = msa.size();
-  const size_t num_branches   = branches.size();
+  const size_t num_sequences = msa.size();
+  const size_t num_branches = branches.size();
 
   std::vector<std::unique_ptr<Tiny_Tree>> branch_ptrs(num_threads);
   auto prev_branch_id = std::numeric_limits<size_t>::max();
 
-  if (time){
+  if (time) {
     time->start();
   }
 #ifdef __OMP
-  #pragma omp parallel for schedule(guided, 10000), firstprivate(prev_branch_id)
+#pragma omp parallel for schedule(guided, 10000), firstprivate(prev_branch_id)
 #endif
   for (size_t i = 0; i < num_sequences * num_branches; ++i) {
-
 #ifdef __OMP
     const auto tid = omp_get_thread_num();
 #else
@@ -89,39 +81,27 @@ static void place(MSA& msa,
     // the now unused previous tiny tree is deallocated
     if ((branch_id != prev_branch_id) or not branch) {
       // as make_unique produces an rvalue, this is a move assignment and thus legal
-      branch = std::make_unique<Tiny_Tree>(branches[branch_id],
-                                           branch_id,
-                                           reference_tree,
-                                           false,
-                                           options,
-                                           lookup_store);
+      branch = std::make_unique<Tiny_Tree>(branches[branch_id], branch_id, reference_tree, false,
+                                           options, lookup_store);
     }
 
     sample[seq_id][branch_id] = branch->place(msa[seq_id]);
 
     prev_branch_id = branch_id;
   }
-  if (time){
+  if (time) {
     time->stop();
   }
 }
 
 template <class T>
-static void place_thorough(const Work& to_place,
-                  MSA& msa,
-                  Tree& reference_tree,
-                  const std::vector<pll_unode_t *>& branches,
-                  Sample<T>& sample,
-                  const Options& options,
-                  std::shared_ptr<Lookup_Store>& lookup_store,
-                  const size_t seq_id_offset=0,
-                  mytimer* time=nullptr)
-{
-
+static void place_thorough(const Work& to_place, MSA& msa, Tree& reference_tree,
+                           const std::vector<pll_unode_t*>& branches, Sample<T>& sample,
+                           const Options& options, std::shared_ptr<Lookup_Store>& lookup_store,
+                           const size_t seq_id_offset = 0, mytimer* time = nullptr) {
 #ifdef __OMP
-  const unsigned int num_threads  = options.num_threads
-                                  ? options.num_threads
-                                  : omp_get_max_threads();
+  const unsigned int num_threads =
+      options.num_threads ? options.num_threads : omp_get_max_threads();
   omp_set_num_threads(num_threads);
   LOG_DBG << "Using threads: " << num_threads;
   LOG_DBG << "Max threads: " << omp_get_max_threads();
@@ -134,7 +114,7 @@ static void place_thorough(const Work& to_place,
 
   // build vector of elements
   std::vector<Work::Work_Pair> id;
-  for(auto it = to_place.begin(); it != to_place.end(); ++it) {
+  for (auto it = to_place.begin(); it != to_place.end(); ++it) {
     id.push_back(*it);
   }
 
@@ -145,14 +125,13 @@ static void place_thorough(const Work& to_place,
   auto prev_branch_id = std::numeric_limits<size_t>::max();
 
   // work seperately
-  if (time){
+  if (time) {
     time->start();
   }
 #ifdef __OMP
-  #pragma omp parallel for schedule(dynamic), firstprivate(prev_branch_id)
+#pragma omp parallel for schedule(dynamic), firstprivate(prev_branch_id)
 #endif
   for (size_t i = 0; i < id.size(); ++i) {
-
 #ifdef __OMP
     const auto tid = omp_get_thread_num();
 #else
@@ -170,24 +149,20 @@ static void place_thorough(const Work& to_place,
     // the now unused previous tiny tree is deallocated
     if ((branch_id != prev_branch_id) or not branch_ptrs[tid]) {
       // as make_unique produces an rvalue, this is a move assignment and thus legal
-      branch_ptrs[tid] = std::make_unique<Tiny_Tree>(branches[branch_id],
-                                           branch_id,
-                                           reference_tree,
-                                           true,
-                                           options,
-                                           lookup_store);
+      branch_ptrs[tid] = std::make_unique<Tiny_Tree>(branches[branch_id], branch_id, reference_tree,
+                                                     true, options, lookup_store);
     }
 
-    if (seq_lookup.count( seq_id ) == 0) {
-      auto const new_idx = local_sample.add_pquery( seq_id_offset + seq_id, seq.header() );
-      seq_lookup[ seq_id ] = new_idx;
+    if (seq_lookup.count(seq_id) == 0) {
+      auto const new_idx = local_sample.add_pquery(seq_id_offset + seq_id, seq.header());
+      seq_lookup[seq_id] = new_idx;
     }
-    assert( seq_lookup.count( seq_id ) > 0 );
-    local_sample[ seq_lookup[ seq_id ] ].emplace_back( branch_ptrs[tid]->place(seq) );
+    assert(seq_lookup.count(seq_id) > 0);
+    local_sample[seq_lookup[seq_id]].emplace_back(branch_ptrs[tid]->place(seq));
 
     prev_branch_id = branch_id;
   }
-  if (time){
+  if (time) {
     time->stop();
   }
   // merge samples back
@@ -195,29 +170,20 @@ static void place_thorough(const Work& to_place,
   collapse(sample);
 }
 
-void simple_mpi(Tree& reference_tree,
-                const std::string& query_file,
-                const MSA_Info& msa_info,
-                const std::string& outdir,
-                const Options& options,
-                const std::string& invocation)
-{
+void simple_mpi(Tree& reference_tree, const std::string& query_file, const MSA_Info& msa_info,
+                const std::string& outdir, const Options& options, const std::string& invocation) {
   const auto num_branches = reference_tree.nums().branches;
 
   // get all edges
-  std::vector<pll_unode_t *> branches(num_branches);
+  std::vector<pll_unode_t*> branches(num_branches);
   auto num_traversed_branches = utree_query_branches(reference_tree.tree(), &branches[0]);
   if (num_traversed_branches != num_branches) {
     throw std::runtime_error{"Traversing the utree went wrong during pipeline startup!"};
   }
 
-  auto lookups =
-    std::make_shared<Lookup_Store>(num_branches, reference_tree.partition()->states);
+  auto lookups = std::make_shared<Lookup_Store>(num_branches, reference_tree.partition()->states);
 
-  auto reader = make_msa_reader(query_file,
-                                msa_info,
-                                options.premasking,
-                                true);
+  auto reader = make_msa_reader(query_file, msa_info, options.premasking, true);
 
   size_t num_sequences = 0;
   Work all_work(std::make_pair(0, num_branches), std::make_pair(0, options.chunk_size));
@@ -226,22 +192,19 @@ void simple_mpi(Tree& reference_tree,
 
   using Sample = Sample<Placement>;
   MSA chunk;
-  size_t sequences_done = 0; // not just for info output!
+  size_t sequences_done = 0;  // not just for info output!
 
   // prepare output file
   LOG_INFO << "Output file: " << outdir + "epa_result.jplace";
-  jplace_writer jplace( outdir, "epa_result.jplace",
-                        get_numbered_newick_string( reference_tree.tree(),
-                                                    reference_tree.mapper(),
-                                                    options.precision ),
-                        invocation,
-                        reference_tree.mapper());
-  jplace.set_precision( options.precision );
+  jplace_writer jplace(
+      outdir, "epa_result.jplace",
+      get_numbered_newick_string(reference_tree.tree(), reference_tree.mapper(), options.precision),
+      invocation, reference_tree.mapper());
+  jplace.set_precision(options.precision);
 
   Sample preplace(options.chunk_size, num_branches);
 
-  while ( (num_sequences = reader->read_next(chunk, options.chunk_size)) ) {
-
+  while ((num_sequences = reader->read_next(chunk, options.chunk_size))) {
     assert(chunk.size() == num_sequences);
 
     LOG_DBG << "num_sequences: " << num_sequences << std::endl;
@@ -254,14 +217,8 @@ void simple_mpi(Tree& reference_tree,
     }
 
     if (options.prescoring) {
-
       LOG_DBG << "Preplacement." << std::endl;
-      place(chunk,
-            reference_tree,
-            branches,
-            preplace,
-            options,
-            lookups);
+      place(chunk, reference_tree, branches, preplace, options, lookups);
 
       LOG_DBG << "Selecting candidates." << std::endl;
 
@@ -274,28 +231,21 @@ void simple_mpi(Tree& reference_tree,
     Sample blo_sample;
 
     LOG_DBG << "BLO Placement." << std::endl;
-    place_thorough( blo_work,
-                    chunk,
-                    reference_tree,
-                    branches,
-                    blo_sample,
-                    options,
-                    lookups,
-                    seq_id_offset);
+    place_thorough(blo_work, chunk, reference_tree, branches, blo_sample, options, lookups,
+                   seq_id_offset);
 
     // Output
     compute_and_set_lwr(blo_sample);
     filter(blo_sample, options);
 
     // pass the result chunk to the writer
-    jplace.write( blo_sample );
+    jplace.write(blo_sample);
 
     sequences_done += num_sequences;
-    LOG_INFO << sequences_done  << " Sequences done!";
+    LOG_INFO << sequences_done << " Sequences done!";
   }
 
   jplace.wait();
 
   MPI_BARRIER(MPI_COMM_WORLD);
 }
-

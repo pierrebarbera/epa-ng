@@ -2,8 +2,7 @@
 
 #include "io/encoding.hpp"
 
-TEST(encoding, 4bit)
-{
+TEST(encoding, 4bit) {
   FourBit converter;
   const std::string input("AATGCTTCGTAA---NNNATTCBDAVMKWYR");
 

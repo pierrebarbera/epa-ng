@@ -1,0 +1,16 @@
+---
+Language: Cpp
+BasedOnStyle: Google
+IndentWidth: 2
+ColumnLimit: 100
+PointerAlignment: Left
+ReferenceAlignment: Left
+BraceWrapping:
+  AfterClass: false
+  AfterFunction: false
+  AfterControlStatement: Never
+BreakBeforeBraces: Attach
+AccessModifierOffset: -2
+SpaceAfterTemplateKeyword: true
+SortIncludes: false
+---

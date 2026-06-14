@@ -6,13 +6,11 @@
 
 #include "util/constants.hpp"
 
-void fasta_close(pll_fasta_t* fptr)
-{
-  if(fptr) pll_fasta_close(fptr);
+void fasta_close(pll_fasta_t* fptr) {
+  if (fptr) pll_fasta_close(fptr);
 }
 
-static void set_missing_branch_lengths_recursive(pll_unode_t * tree, const double length)
-{
+static void set_missing_branch_lengths_recursive(pll_unode_t* tree, const double length) {
   if (tree) {
     /* set branch length to length if not set */
     if (!tree->length) {
@@ -20,11 +18,11 @@ static void set_missing_branch_lengths_recursive(pll_unode_t * tree, const doubl
     }
 
     if (tree->next) {
-      if (!tree->next->length){
+      if (!tree->next->length) {
         tree->next->length = length;
       }
 
-      if (!tree->next->next->length){
+      if (!tree->next->next->length) {
         tree->next->next->length = length;
       }
 
@@ -34,15 +32,13 @@ static void set_missing_branch_lengths_recursive(pll_unode_t * tree, const doubl
   }
 }
 
-void set_missing_branch_lengths(pll_utree_t * tree, const double length)
-{
+void set_missing_branch_lengths(pll_utree_t* tree, const double length) {
   const auto root = get_root(tree);
   set_missing_branch_lengths_recursive(root, length);
   set_missing_branch_lengths_recursive(root->back, length);
 }
 
-static double sum_branch_lengths_recursive(pll_unode_t const  * const tree)
-{
+static double sum_branch_lengths_recursive(pll_unode_t const* const tree) {
   double length = 0.0;
   if (tree) {
     if (tree->next) {
@@ -54,16 +50,14 @@ static double sum_branch_lengths_recursive(pll_unode_t const  * const tree)
   return length;
 }
 
-double sum_branch_lengths(pll_utree_t const * const tree)
-{
+double sum_branch_lengths(pll_utree_t const* const tree) {
   const auto root = get_root(tree);
   double length = sum_branch_lengths_recursive(root);
   length += sum_branch_lengths_recursive(root->back);
   return length - root->length;
 }
 
-static void set_branch_lengths_recursive(pll_unode_t * tree, const double length)
-{
+static void set_branch_lengths_recursive(pll_unode_t* tree, const double length) {
   if (tree) {
     tree->length = length;
 
@@ -77,15 +71,13 @@ static void set_branch_lengths_recursive(pll_unode_t * tree, const double length
   }
 }
 
-void set_branch_lengths(pll_utree_t * tree, const double length)
-{
+void set_branch_lengths(pll_utree_t* tree, const double length) {
   const auto root = get_root(tree);
   set_branch_lengths_recursive(root, length);
   set_branch_lengths_recursive(root->back, length);
 }
 
-static void set_unique_clv_indices_recursive(pll_unode_t * tree, const int num_tip_nodes)
-{
+static void set_unique_clv_indices_recursive(pll_unode_t* tree, const int num_tip_nodes) {
   if (tree and tree->next) {
     unsigned int idx = tree->clv_index;
     /* new index is in principle old index * 3 + 0 for the first traversed, + 1 for the
@@ -105,16 +97,14 @@ static void set_unique_clv_indices_recursive(pll_unode_t * tree, const int num_t
   }
 }
 
-void set_unique_clv_indices(pll_unode_t * const tree, const int num_tip_nodes)
-{
+void set_unique_clv_indices(pll_unode_t* const tree, const int num_tip_nodes) {
   set_unique_clv_indices_recursive(tree, num_tip_nodes);
   set_unique_clv_indices_recursive(tree->back, num_tip_nodes);
 }
 
 /* a callback function for performing a partial traversal */
-int cb_partial_traversal(pll_unode_t * node)
-{
-  node_info_t * node_info;
+int cb_partial_traversal(pll_unode_t* node) {
+  node_info_t* node_info;
 
   /* if we don't want tips in the traversal we must return 0 here. For now,
      allow tips */
@@ -125,15 +115,15 @@ int cb_partial_traversal(pll_unode_t * node)
      element is not yet allocated then we allocate it, set the direction
      and instruct the traversal routine to place the node in the traversal array
      by returning 1 */
-  node_info = static_cast<node_info_t *>(node->data);
+  node_info = static_cast<node_info_t*>(node->data);
   if (!node_info) {
     /* allocate data element */
-    node->data             = (node_info_t *)calloc(1,sizeof(node_info_t));
-    node->next->data       = (node_info_t *)calloc(1,sizeof(node_info_t));
-    node->next->next->data = (node_info_t *)calloc(1,sizeof(node_info_t));
+    node->data = (node_info_t*)calloc(1, sizeof(node_info_t));
+    node->next->data = (node_info_t*)calloc(1, sizeof(node_info_t));
+    node->next->next->data = (node_info_t*)calloc(1, sizeof(node_info_t));
 
     /* set orientation on selected direction and traverse the subtree */
-    node_info = (node_info_t*) (node->data);
+    node_info = (node_info_t*)(node->data);
     node_info->clv_valid = 1;
     return 1;
   }
@@ -149,18 +139,15 @@ int cb_partial_traversal(pll_unode_t * node)
   return 1;
 }
 
-int cb_full_traversal(pll_unode_t * node)
-{
+int cb_full_traversal(pll_unode_t* node) {
   static_cast<void>(node);
   return 1;
 }
 
-static void free_node_data(pll_unode_t * node)
-{
-
+static void free_node_data(pll_unode_t* node) {
   // currently we don't allocate a data struct at the tips
 
-  if (node->next) { // we are at a inner node
+  if (node->next) {  // we are at a inner node
     // free all memory behind data of current node triplet
     if (node->data) {
       free(node->data);
@@ -176,9 +163,8 @@ static void free_node_data(pll_unode_t * node)
   }
 }
 
-int utree_free_node_data(pll_unode_t * node)
-{
-  if (!node->next) return 0; // not a inner node!
+int utree_free_node_data(pll_unode_t* node) {
+  if (!node->next) return 0;  // not a inner node!
 
   // we start at a trifurcation: call explicitly for this node and its adjacent node
   free_node_data(node);
@@ -187,20 +173,17 @@ int utree_free_node_data(pll_unode_t * node)
   return 1;
 }
 
-void utree_destroy(pll_utree_t * tree)
-{
+void utree_destroy(pll_utree_t* tree) {
   if (tree) {
     pll_utree_destroy(tree, nullptr);
   }
 }
 
-static void utree_query_branches_recursive( pll_unode_t * const node,
-                                            pll_unode_t ** node_list,
-                                            unsigned int * index)
-{
+static void utree_query_branches_recursive(pll_unode_t* const node, pll_unode_t** node_list,
+                                           unsigned int* index) {
   // Postorder traversal
 
-  if (node->next) { // inner node
+  if (node->next) {  // inner node
     utree_query_branches_recursive(node->next->back, node_list, index);
     utree_query_branches_recursive(node->next->next->back, node_list, index);
   }
@@ -208,8 +191,7 @@ static void utree_query_branches_recursive( pll_unode_t * const node,
   *index = *index + 1;
 }
 
-unsigned int utree_query_branches(pll_utree_t const * const tree, pll_unode_t ** node_list)
-{
+unsigned int utree_query_branches(pll_utree_t const* const tree, pll_unode_t** node_list) {
   unsigned int index = 0;
 
   const auto root = get_root(tree);
@@ -222,44 +204,37 @@ unsigned int utree_query_branches(pll_utree_t const * const tree, pll_unode_t **
   return index;
 }
 
-void get_numbered_newick_string_recursive( pll_unode_t const * const node,
-                                                  std::ostringstream &ss,
-                                                  unsigned int * const index,
-                                                  rtree_mapper const& mapper)
-{
-
-  if ( node->next ) { //inner node
+void get_numbered_newick_string_recursive(pll_unode_t const* const node, std::ostringstream& ss,
+                                          unsigned int* const index, rtree_mapper const& mapper) {
+  if (node->next) {  // inner node
     ss << "(";
     get_numbered_newick_string_recursive(node->next->back, ss, index, mapper);
     ss << ",";
     get_numbered_newick_string_recursive(node->next->next->back, ss, index, mapper);
-    auto const edge_id = (mapper) ? mapper.map_at( *index ) : *index;
+    auto const edge_id = (mapper) ? mapper.map_at(*index) : *index;
     ss << ")";
     if (node->label) {
       ss << node->label;
     }
     ss << ":" << node->length << "{" << edge_id << "}";
   } else {
-    auto const edge_id = (mapper) ? mapper.map_at( *index ) : *index;
+    auto const edge_id = (mapper) ? mapper.map_at(*index) : *index;
     ss << node->label << ":" << node->length << "{" << edge_id << "}";
   }
   *index = *index + 1;
-
 }
 
-std::string get_numbered_newick_string( pll_utree_t const * const tree,
-                                        rtree_mapper const& mapper,
-                                        size_t precision )
-{
+std::string get_numbered_newick_string(pll_utree_t const* const tree, rtree_mapper const& mapper,
+                                       size_t precision) {
   const auto root = get_root(tree);
 
   std::ostringstream ss;
 
-  ss.precision( precision );
-  ss.setf( std::ios::fixed, std:: ios::floatfield );
+  ss.precision(precision);
+  ss.setf(std::ios::fixed, std::ios::floatfield);
 
   // print the unrooted tree
-  if ( not mapper ) {
+  if (not mapper) {
     unsigned int index = 0;
 
     ss << "(";
@@ -287,7 +262,7 @@ std::string get_numbered_newick_string( pll_utree_t const * const tree,
     ss << "(";
 
     // if the uroot was assigned to the left subtree of the rtree
-    if ( mapper.uroot_is_left() ) {
+    if (mapper.uroot_is_left()) {
       ss << "(";
       get_numbered_newick_string_recursive(root->back, ss, &unrooted_idx, mapper);
       ss << ",";
@@ -295,21 +270,21 @@ std::string get_numbered_newick_string( pll_utree_t const * const tree,
       ss << ")";
 
       if (root->label) {
-          ss << root->label;
+        ss << root->label;
       }
 
       // account for the edge connecting the left subtree to the rtree root
-      std::tie( edge_id, branch_length ) = mapper.proximal_of_utree_root();
-      assert( unrooted_idx == edge_id );
+      std::tie(edge_id, branch_length) = mapper.proximal_of_utree_root();
+      assert(unrooted_idx == edge_id);
       ss << ":" << branch_length << "{" << edge_id << "}";
 
-      ss << ","; // this is the comma at the root!
+      ss << ",";  // this is the comma at the root!
 
       // catch a special case: if the right rtree subtree is just a leaf, we don't recurse
       auto const right = root->next->next->back;
-      if ( not right->next ) {
-        std::tie( edge_id, branch_length ) = mapper.distal_of_utree_root();
-        assert( unrooted_idx + 1 == edge_id );
+      if (not right->next) {
+        std::tie(edge_id, branch_length) = mapper.distal_of_utree_root();
+        assert(unrooted_idx + 1 == edge_id);
         ss << right->label << ":" << branch_length << "{" << edge_id << "}";
       } else {
         // otherise recurse again
@@ -324,27 +299,27 @@ std::string get_numbered_newick_string( pll_utree_t const * const tree,
         }
 
         // and account for the edge connecting to the root
-        std::tie( edge_id, branch_length ) = mapper.distal_of_utree_root();
-        assert( unrooted_idx + 1 == edge_id );
+        std::tie(edge_id, branch_length) = mapper.distal_of_utree_root();
+        assert(unrooted_idx + 1 == edge_id);
         ss << ":" << branch_length << "{" << edge_id << "}";
       }
 
-    // if the uroot was assigned to the right subtree of the rtree
+      // if the uroot was assigned to the right subtree of the rtree
     } else {
       // this means the first edge has to be a leaf
       auto const left = root->back;
-      assert( mapper.is_utree_root_edge( 0 ) );
-      assert( left->next == nullptr );
+      assert(mapper.is_utree_root_edge(0));
+      assert(left->next == nullptr);
 
       // so we manually handle this branch
-      std::tie( edge_id, branch_length ) = mapper.distal_of_utree_root();
-      assert( edge_id == 0 );
+      std::tie(edge_id, branch_length) = mapper.distal_of_utree_root();
+      assert(edge_id == 0);
       ss << left->label << ":" << branch_length << "{" << edge_id << "}";
 
       // manually iterate the index
       unrooted_idx++;
 
-      ss << ","; // this is the comma at the root!
+      ss << ",";  // this is the comma at the root!
 
       // recurse down
       auto const right = root;
@@ -355,12 +330,12 @@ std::string get_numbered_newick_string( pll_utree_t const * const tree,
       ss << ")";
 
       if (right->label) {
-          ss << right->label;
+        ss << right->label;
       }
 
       // finally account for the edge connecting the right rtree subtree to the root
-      std::tie( edge_id, branch_length ) = mapper.proximal_of_utree_root();
-      assert( unrooted_idx == edge_id );
+      std::tie(edge_id, branch_length) = mapper.proximal_of_utree_root();
+      assert(unrooted_idx == edge_id);
       ss << ":" << branch_length << "{" << edge_id << "}";
     }
 
@@ -371,16 +346,13 @@ std::string get_numbered_newick_string( pll_utree_t const * const tree,
     }
 
     ss << ";";
-
   }
 
   return ss.str();
 }
 
-void reset_triplet_lengths( pll_unode_t * toward_pendant,
-                            pll_partition_t * partition,
-                            const double old_length)
-{
+void reset_triplet_lengths(pll_unode_t* toward_pendant, pll_partition_t* partition,
+                           const double old_length) {
   double half_original = old_length / 2.0;
 
   if (toward_pendant) {
@@ -406,20 +378,14 @@ void reset_triplet_lengths( pll_unode_t * toward_pendant,
     unsigned int matrix_indices[3] = {0, 1, 2};
     std::vector<unsigned int> param_indices(partition->rate_cats, 0);
 
-    if( not pll_update_prob_matrices( partition,
-                                      &param_indices[ 0 ],
-                                      matrix_indices,
-                                      branch_lengths,
-                                      3 ) ) {
-      throw std::runtime_error { std::string( pll_errmsg ) };
+    if (not pll_update_prob_matrices(partition, &param_indices[0], matrix_indices, branch_lengths,
+                                     3)) {
+      throw std::runtime_error{std::string(pll_errmsg)};
     }
   }
 }
 
-void shift_partition_focus( pll_partition_t * partition,
-                            const int offset,
-                            const unsigned int span)
-{
+void shift_partition_focus(pll_partition_t* partition, const int offset, const unsigned int span) {
   const auto clv_size = static_cast<int>(partition->rate_cats * partition->states_padded);
   const auto num_tips = partition->tips;
   const auto max_index = num_tips + partition->clv_buffers;
@@ -449,14 +415,12 @@ void shift_partition_focus( pll_partition_t * partition,
 
   // adjust the number of sites
   partition->sites = span;
-
 }
 
 /* Function to return the tip node if either <node> or <node->back> is one. Otherwise
   returns null. */
-pll_unode_t * get_tip_node(pll_unode_t * node)
-{
-  pll_unode_t * tip_node = nullptr;
+pll_unode_t* get_tip_node(pll_unode_t* node) {
+  pll_unode_t* tip_node = nullptr;
   // node is the tip
   if (!node->next) {
     tip_node = node;
@@ -467,12 +431,9 @@ pll_unode_t * get_tip_node(pll_unode_t * node)
   return tip_node;
 }
 
-static void utree_query_tipnodes_recursive(pll_unode_t * node,
-                                           pll_unode_t ** node_list,
-                                           unsigned int * index)
-{
-  if (!node->next)
-  {
+static void utree_query_tipnodes_recursive(pll_unode_t* node, pll_unode_t** node_list,
+                                           unsigned int* index) {
+  if (!node->next) {
     node_list[*index] = node;
     *index = *index + 1;
     return;
@@ -482,9 +443,7 @@ static void utree_query_tipnodes_recursive(pll_unode_t * node,
   utree_query_tipnodes_recursive(node->next->next->back, node_list, index);
 }
 
-static unsigned int utree_query_tipnodes(pll_unode_t const * root,
-                                  pll_unode_t ** node_list)
-{
+static unsigned int utree_query_tipnodes(pll_unode_t const* root, pll_unode_t** node_list) {
   unsigned int index = 0;
 
   if (!root) return 0;
@@ -499,41 +458,30 @@ static unsigned int utree_query_tipnodes(pll_unode_t const * root,
   return index;
 }
 
-static int cb_trav_no_tips(pll_unode_t* n)
-{
-  return (n->next != nullptr);
-}
+static int cb_trav_no_tips(pll_unode_t* n) { return (n->next != nullptr); }
 
-pll_utree_t* make_utree_struct(pll_unode_t * root, const unsigned int num_nodes)
-{
+pll_utree_t* make_utree_struct(pll_unode_t* root, const unsigned int num_nodes) {
   auto tree = static_cast<pll_utree_t*>(calloc(1, sizeof(pll_utree_t)));
   auto nodes = static_cast<pll_unode_t**>(calloc(num_nodes, sizeof(pll_unode_t*)));
 
   // get tips
   auto tip_count = utree_query_tipnodes(root, nodes);
 
-
   unsigned int inner_count = 0;
 
-  if( not pll_utree_traverse( root,
-                              PLL_TREE_TRAVERSE_POSTORDER,
-                              cb_trav_no_tips,
-                              nodes + tip_count,
-                              &inner_count ) ) {
-    throw std::runtime_error { std::string( pll_errmsg ) };
+  if (not pll_utree_traverse(root, PLL_TREE_TRAVERSE_POSTORDER, cb_trav_no_tips, nodes + tip_count,
+                             &inner_count)) {
+    throw std::runtime_error{std::string(pll_errmsg)};
   }
 
   assert(num_nodes == tip_count + inner_count);
 
-  tree->tip_count   = tip_count;
+  tree->tip_count = tip_count;
   tree->inner_count = inner_count;
-  tree->edge_count  = num_nodes - 1;
-  tree->nodes       = nodes;
+  tree->edge_count = num_nodes - 1;
+  tree->nodes = nodes;
 
   return tree;
 }
 
-pll_unode_t* get_root(pll_utree_t const * const tree)
-{
-  return tree->vroot;
-}
+pll_unode_t* get_root(pll_utree_t const* const tree) { return tree->vroot; }

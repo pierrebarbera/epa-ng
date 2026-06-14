@@ -12,25 +12,22 @@
 
 using namespace std;
 
-TEST(file_io, build_MSA_from_file)
-{
+TEST(file_io, build_MSA_from_file) {
   auto msa = build_MSA_from_file(env->reference_file, MSA_Info(env->reference_file), true);
 
   EXPECT_EQ(msa.size(), 8);
   EXPECT_EQ(msa.num_sites(), 705);
-
 }
 
-TEST(file_io, make_partition)
-{
+TEST(file_io, make_partition) {
   auto msa = build_MSA_from_file(env->reference_file, MSA_Info(env->reference_file), true);
   Tree_Numbers nums = Tree_Numbers();
-  pll_partition_t * part;
-  pll_utree_t * tree;
+  pll_partition_t* part;
+  pll_utree_t* tree;
 
   rtree_mapper dummy;
-  tree = build_tree_from_file(env->tree_file, nums, dummy );
-  part = make_partition( env->model, nums, msa.num_sites(), Options() );
+  tree = build_tree_from_file(env->tree_file, nums, dummy);
+  part = make_partition(env->model, nums, msa.num_sites(), Options());
 
   EXPECT_EQ(nums.tip_nodes, 8);
   EXPECT_EQ(nums.nodes, 14);
@@ -41,8 +38,7 @@ TEST(file_io, make_partition)
   pll_utree_destroy(tree, nullptr);
 }
 
-TEST(file_io, file_check)
-{
+TEST(file_io, file_check) {
   EXPECT_ANY_THROW(file_check("asjbjibvi.hhs"));
 
   EXPECT_NO_THROW(file_check(env->combined_file));

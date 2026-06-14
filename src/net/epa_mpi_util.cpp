@@ -7,8 +7,7 @@
 #include <utility>
 #include <cstddef>
 
-std::pair<size_t, size_t> local_seq_package( const size_t num_seqs )
-{
+std::pair<size_t, size_t> local_seq_package(const size_t num_seqs) {
   int local_rank = 0;
   int num_ranks = 1;
 
@@ -27,5 +26,5 @@ std::pair<size_t, size_t> local_seq_package( const size_t num_seqs )
 
     local_rank_seq_offset = part_size * local_rank;
   }
-  return std::make_pair( local_rank_seq_offset, part_size );
+  return std::make_pair(local_rank_seq_offset, part_size);
 }

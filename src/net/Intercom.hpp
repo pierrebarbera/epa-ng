@@ -10,16 +10,13 @@
 #ifdef __MPI
 #include <mpi.h>
 
-
 /**
  * Class encapsulating the Communication and scheduling work used by the
  * distributed pipeline.
  */
-class Intercom
-{
+class Intercom {
 public:
-  explicit Intercom( size_t const num_stages )
-  {
+  explicit Intercom(size_t const num_stages) {
     std::vector<double> initial_difficulty(num_stages, 1.0);
     MPI_Comm_rank(MPI_COMM_WORLD, &local_rank_);
     MPI_Comm_size(MPI_COMM_WORLD, &world_size_);
@@ -31,8 +28,8 @@ public:
     LOG_DBG << "Schedule: " << stringify(schedule_);
   }
 
-  Intercom()   = delete;
-  ~Intercom()  = default;
+  Intercom() = delete;
+  ~Intercom() = default;
 
   /**
    * Returns a set of MPI Ranks representing a stage in the pipeline.
@@ -43,10 +40,7 @@ public:
    * @param  id index of a stage
    * @return    reference to a set of mpi ranks representing a stage
    */
-  auto& schedule( size_t const id )
-  {
-    return schedule_[id];
-  }
+  auto& schedule(size_t const id) { return schedule_[id]; }
 
   /**
    * Returns a reference to the previously started async send requests.
@@ -57,10 +51,7 @@ public:
    *
    * @return reference to structure holding previous async send requests information
    */
-  auto& previous_requests()
-  {
-    return prev_requests_;
-  }
+  auto& previous_requests() { return prev_requests_; }
 
   /**
    * Returns true when the supplied stage id should be active on the current MPI Rank.
@@ -70,8 +61,7 @@ public:
    * @param  stage_id the ID of the stage
    * @return          wether that stage ought to be active on the current MPI Rank
    */
-  bool stage_active(const size_t stage_id) const
-  {
+  bool stage_active(const size_t stage_id) const {
     return stage_id == static_cast<size_t>(local_stage_);
   }
 
@@ -84,8 +74,7 @@ public:
    * @param timer local timing value used to calcuate the difficulty of a stage, and
    *              consequently the global schedule.
    */
-  void rebalance(Timer<>& timer)
-  {
+  void rebalance(Timer<>& timer) {
     MPI_BARRIER(MPI_COMM_WORLD);
     // if (local_rank == 0)
     // {
@@ -112,12 +101,12 @@ public:
     MPI_Comm foreman_comm;
     MPI_Comm_split(MPI_COMM_WORLD, color, local_stage_, &foreman_comm);
 
-    if (local_rank_ == foreman)
-    {
+    if (local_rank_ == foreman) {
       double total_stagetime = per_node_avg.sum();
       // Step 3: make known to all other stage representatives (mpi_allgather)
       LOG_DBG1 << "Foremen allgather...";
-      MPI_Allgather(&total_stagetime, 1, MPI_DOUBLE, &perstage_total[0], 1, MPI_DOUBLE, foreman_comm);
+      MPI_Allgather(&total_stagetime, 1, MPI_DOUBLE, &perstage_total[0], 1, MPI_DOUBLE,
+                    foreman_comm);
       LOG_DBG1 << "Foremen allgather done!";
       MPI_Comm_free(&foreman_comm);
     }
@@ -166,43 +155,33 @@ public:
     timer.clear();
   }
 
-  void barrier() const
-  {
-    MPI_BARRIER(MPI_COMM_WORLD);
-  }
+  void barrier() const { MPI_BARRIER(MPI_COMM_WORLD); }
 
-  int rank()
-  {
-    return local_rank_;
-  }
+  int rank() { return local_rank_; }
 
 private:
-  int local_rank_   = -1;
-  int world_size_   = -1;
-  int local_stage_  = -1;
+  int local_rank_ = -1;
+  int world_size_ = -1;
+  int local_stage_ = -1;
 
   schedule_type schedule_;
   previous_request_storage_t prev_requests_;
-
 };
 
 #else
 
-class Intercom
-{
+class Intercom {
 public:
   explicit Intercom(const size_t) {}
   Intercom() = default;
-  ~Intercom()= default;
-
+  ~Intercom() = default;
 
   // auto& schedule(const size_t) { }
   // auto& previous_requests() { }
   bool stage_active(const size_t) const { return true; }
-  void rebalance(Timer<>&) { }
-  void barrier() const { }
+  void rebalance(Timer<>&) {}
+  void barrier() const {}
   int rank() { return 0; }
-
 };
 
-#endif //__MPI
+#endif  //__MPI

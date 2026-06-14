@@ -28,20 +28,18 @@
 #define EPA_VERSION "UNKNOWN"
 #endif
 
-static void ensure_dir_has_slash(std::string& dir)
-{
+static void ensure_dir_has_slash(std::string& dir) {
   if (dir.length() > 0 && dir.back() != '/') {
     dir += "/";
   }
 }
 
-inline bool is_file (const std::string& name) {
-    std::ifstream f(name.c_str());
-    return f.good();
+inline bool is_file(const std::string& name) {
+  std::ifstream f(name.c_str());
+  return f.good();
 }
 
-void exit_epa(int ret=EXIT_SUCCESS)
-{
+void exit_epa(int ret = EXIT_SUCCESS) {
   MPI_FINALIZE();
   if (ret != EXIT_SUCCESS) {
     std::cout << "Aborting with a failure." << std::endl;
@@ -49,8 +47,7 @@ void exit_epa(int ret=EXIT_SUCCESS)
   std::exit(ret);
 }
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv) {
   auto start_all = std::chrono::high_resolution_clock::now();
 
 #ifdef __MPI
@@ -87,12 +84,12 @@ int main(int argc, char** argv)
 
   raxml::Model model;
 
-  bool display_version  = false;
-  bool verbosity        = false;
-  bool heuristics_off   = not options.prescoring;
-  bool raxml_blo        = not options.sliding_blo;
-  bool no_pre_mask      = not options.premasking;
-  bool redo             = false;
+  bool display_version = false;
+  bool verbosity = false;
+  bool heuristics_off = not options.prescoring;
+  bool raxml_blo = not options.sliding_blo;
+  bool no_pre_mask = not options.premasking;
+  bool redo = false;
 
   const bool empty = argc == 1;
 
@@ -105,184 +102,170 @@ int main(int argc, char** argv)
 
   //  ============== CONVERT OPTIONS ==============
 
-  app.add_option( "-c,--bfast",
-                  bfast_conv_file,
-                  "Convert the given fasta file to bfast format."
-                )->group("Convert")->check(CLI::ExistingFile);
-  app.add_flag( "-B,--dump-binary",
-                  options.dump_binary_mode,
-                  "Binary Dump mode: write ref. tree in binary format then exit. NOTE: not compatible with premasking!"
-                )->group("Convert");
+  app.add_option("-c,--bfast", bfast_conv_file, "Convert the given fasta file to bfast format.")
+      ->group("Convert")
+      ->check(CLI::ExistingFile);
+  app.add_flag("-B,--dump-binary", options.dump_binary_mode,
+               "Binary Dump mode: write ref. tree in binary format then exit. NOTE: not compatible "
+               "with premasking!")
+      ->group("Convert");
   auto split_option =
-  app.add_option( "--split",
-                  split_files,
-                  "Takes a reference MSA (phylip/fasta/fasta.gz) and combined ref +"
-                  " query MSA(s) (phylip/fasta/fasta.gz) and outputs a monolithic query file (fasta), as well as a "
-                  "reference file (fasta), ready for use. "
-                  "Usage: epa-ng --split ref_alignment query_alignments+"
-                )->group("Convert")->check(CLI::ExistingFile);
+      app.add_option("--split", split_files,
+                     "Takes a reference MSA (phylip/fasta/fasta.gz) and combined ref +"
+                     " query MSA(s) (phylip/fasta/fasta.gz) and outputs a monolithic query file "
+                     "(fasta), as well as a "
+                     "reference file (fasta), ready for use. "
+                     "Usage: epa-ng --split ref_alignment query_alignments+")
+          ->group("Convert")
+          ->check(CLI::ExistingFile);
 
   //  ============== INPUT OPTIONS ==============
-  auto tree_file_opt =
-  app.add_option( "-t,--tree",
-                  tree_file,
-                  "Path to Reference Tree file."
-                )->group("Input")->check(CLI::ExistingFile);
+  auto tree_file_opt = app.add_option("-t,--tree", tree_file, "Path to Reference Tree file.")
+                           ->group("Input")
+                           ->check(CLI::ExistingFile);
   auto reference_file_opt =
-  app.add_option( "-s,--ref-msa,--msa",
-                  reference_file,
-                  "Path to Reference MSA file."
-                )->group("Input")->check(CLI::ExistingFile);
+      app.add_option("-s,--ref-msa,--msa", reference_file, "Path to Reference MSA file.")
+          ->group("Input")
+          ->check(CLI::ExistingFile);
   auto binary_file_opt =
-  app.add_option( "-b,--binary",
-                  binary_file,
-                  "Path to binary reference file, as created using --dump-binary."
-                )->group("Input")->check(CLI::ExistingFile);
+      app.add_option("-b,--binary", binary_file,
+                     "Path to binary reference file, as created using --dump-binary.")
+          ->group("Input")
+          ->check(CLI::ExistingFile);
 
   binary_file_opt->excludes(tree_file_opt)->excludes(reference_file_opt);
   tree_file_opt->excludes(binary_file_opt);
   reference_file_opt->excludes(binary_file_opt);
 
-  app.add_option( "-q,--query",
-                  query_file,
-                  "Path to Query MSA file."
-                )->group("Input")->check(CLI::ExistingFile);
+  app.add_option("-q,--query", query_file, "Path to Query MSA file.")
+      ->group("Input")
+      ->check(CLI::ExistingFile);
 
   auto model_option =
-  app.add_option( "-m,--model",
-                  model_desc,
-                  "Description string of the model to be used, or a RAxML_info file."
-                  " --model STRING | FILE "
-                  "See: https://github.com/amkozlov/raxml-ng/wiki/Input-data#evolutionary-model",
-                  true
-                )->group("Input");
+      app.add_option("-m,--model", model_desc,
+                     "Description string of the model to be used, or a RAxML_info file."
+                     " --model STRING | FILE "
+                     "See: https://github.com/amkozlov/raxml-ng/wiki/Input-data#evolutionary-model",
+                     true)
+          ->group("Input");
 
   //  ============== OUTPUT OPTIONS ==============
 
-  app.add_option("-w,--outdir,--out-dir", work_dir, "Path to output directory.", true
-                )->group("Output")->check(CLI::ExistingDirectory);
+  app.add_option("-w,--outdir,--out-dir", work_dir, "Path to output directory.", true)
+      ->group("Output")
+      ->check(CLI::ExistingDirectory);
 
-  app.add_option("--tmp", options.tmp_dir, "Path to temporary directory. If set, MPI-Rank-local"
-                  " files will be stored here instead. Useful for node-local SSDs!"
-              )->group("")->check(CLI::ExistingDirectory)
-  // ->set_custom_option("DIR", 2)
-  ;
+  app.add_option("--tmp", options.tmp_dir,
+                 "Path to temporary directory. If set, MPI-Rank-local"
+                 " files will be stored here instead. Useful for node-local SSDs!")
+      ->group("")
+      ->check(CLI::ExistingDirectory)
+      // ->set_custom_option("DIR", 2)
+      ;
   auto filter_acc_lwr =
-  app.add_option( "--filter-acc-lwr",
-                  options.support_threshold,
-                  "Accumulated likelihood weight after which further placements are discarded.",
-                  options.acc_threshold
-                )->group("Output")->check(CLI::Range(0.0,1.0));
+      app.add_option("--filter-acc-lwr", options.support_threshold,
+                     "Accumulated likelihood weight after which further placements are discarded.",
+                     options.acc_threshold)
+          ->group("Output")
+          ->check(CLI::Range(0.0, 1.0));
   auto filter_min_lwr =
-  app.add_option( "--filter-min-lwr",
-                  options.support_threshold,
-                  "Minimum likelihood weight below which a placement is discarded.",
-                  not options.acc_threshold
-                )->group("Output")->check(CLI::Range(0.0,1.0));
+      app.add_option("--filter-min-lwr", options.support_threshold,
+                     "Minimum likelihood weight below which a placement is discarded.",
+                     not options.acc_threshold)
+          ->group("Output")
+          ->check(CLI::Range(0.0, 1.0));
   filter_acc_lwr->excludes(filter_min_lwr);
   filter_min_lwr->excludes(filter_acc_lwr);
 
   auto filter_min =
-  app.add_option( "--filter-min",
-                  options.filter_min,
-                  "Minimum number of placements per sequence to include in final output.",
-                  true
-                )->group("Output");
+      app.add_option("--filter-min", options.filter_min,
+                     "Minimum number of placements per sequence to include in final output.", true)
+          ->group("Output");
   auto filter_max =
-  app.add_option( "--filter-max",
-                  options.filter_max,
-                  "Maximum number of placements per sequence to include in final output.",
-                  true
-                )->group("Output");
+      app.add_option("--filter-max", options.filter_max,
+                     "Maximum number of placements per sequence to include in final output.", true)
+          ->group("Output");
 
   auto precision =
-  app.add_option( "--precision",
-                  options.precision,
-                  "Output decimal point precision for floating point numbers.",
-                  true
-                )->group("Output");
+      app.add_option("--precision", options.precision,
+                     "Output decimal point precision for floating point numbers.", true)
+          ->group("Output");
 
-  app.add_flag( "--redo",
-                  redo,
-                  "Overwrite existing files."
-                )->group("Output");
+  app.add_flag("--redo", redo, "Overwrite existing files.")->group("Output");
 
   std::string preserve_rooting_option("on");
-  app.add_option( "--preserve-rooting",
-                preserve_rooting_option,
-                "Preserve the rooting of rooted trees. When disabled, EPA-ng will print the result as an unrooted tree."
-                )->group("Output")->check(CLI::IsMember({"off", "on"}, CLI::ignore_case));
+  app.add_option("--preserve-rooting", preserve_rooting_option,
+                 "Preserve the rooting of rooted trees. When disabled, EPA-ng will print the "
+                 "result as an unrooted tree.")
+      ->group("Output")
+      ->check(CLI::IsMember({"off", "on"}, CLI::ignore_case));
 
   //  ============== COMPUTE OPTIONS ==============
 
   auto dyn_heur =
-  app.add_option( "-g,--dyn-heur",
-                  options.prescoring_threshold,
-                  "Two-phase heuristic, determination of candidate edges using accumulative threshold. "
-                  "Enabled by default! See --no-heur for disabling it",
-                  true
-                )->group("Compute")->check(CLI::Range(0.0,1.0));
-  auto fix_heur =
-  app.add_option( "-G,--fix-heur",
-                  options.prescoring_threshold,
-                  "Two-phase heuristic, determination of candidate edges by specified percentage of total edges.",
-                  options.prescoring_by_percentage
-                )->group("Compute")->check(CLI::Range(0.0,1.0));
+      app.add_option(
+             "-g,--dyn-heur", options.prescoring_threshold,
+             "Two-phase heuristic, determination of candidate edges using accumulative threshold. "
+             "Enabled by default! See --no-heur for disabling it",
+             true)
+          ->group("Compute")
+          ->check(CLI::Range(0.0, 1.0));
+  auto fix_heur = app.add_option("-G,--fix-heur", options.prescoring_threshold,
+                                 "Two-phase heuristic, determination of candidate edges by "
+                                 "specified percentage of total edges.",
+                                 options.prescoring_by_percentage)
+                      ->group("Compute")
+                      ->check(CLI::Range(0.0, 1.0));
   auto baseball_heur =
-  app.add_flag( "--baseball-heur",
-                  options.baseball,
-                  "Baseball heuristic as known from pplacer. strike_box=3,max_strikes=6,max_pitches=40."
-                )->group("Compute");
+      app.add_flag(
+             "--baseball-heur", options.baseball,
+             "Baseball heuristic as known from pplacer. strike_box=3,max_strikes=6,max_pitches=40.")
+          ->group("Compute");
   auto no_heur =
-  app.add_flag( "--no-heur",
-                  heuristics_off,
-                  "Disables heuristic preplacement completely. Overrides all other heuristic flags."
-                )->group("Compute");
+      app.add_flag(
+             "--no-heur", heuristics_off,
+             "Disables heuristic preplacement completely. Overrides all other heuristic flags.")
+          ->group("Compute");
   dyn_heur->excludes(fix_heur)->excludes(baseball_heur)->excludes(no_heur);
   fix_heur->excludes(dyn_heur)->excludes(baseball_heur)->excludes(no_heur);
   baseball_heur->excludes(dyn_heur)->excludes(fix_heur)->excludes(no_heur);
   no_heur->excludes(dyn_heur)->excludes(fix_heur)->excludes(baseball_heur);
 
   auto chunk_size =
-  app.add_option( "--chunk-size",
-                  options.chunk_size,
-                  "Number of query sequences to be read in at a time. May influence performance.",
-                  true
-                )->group("Compute");
-  app.add_flag( "--raxml-blo",
-                  raxml_blo,
-                  "Employ old style of branch length optimization during thorough insertion as opposed"
-                  " to sliding approach. "
-                  "WARNING: may significantly slow down computation."
-                )->group("Compute");
-  app.add_flag( "--no-pre-mask",
-                  no_pre_mask,
-                  "Do NOT pre-mask sequences. Enables repeats unless --no-repeats is also specified."
-                )->group("Compute");
+      app.add_option(
+             "--chunk-size", options.chunk_size,
+             "Number of query sequences to be read in at a time. May influence performance.", true)
+          ->group("Compute");
+  app.add_flag("--raxml-blo", raxml_blo,
+               "Employ old style of branch length optimization during thorough insertion as opposed"
+               " to sliding approach. "
+               "WARNING: may significantly slow down computation.")
+      ->group("Compute");
+  app.add_flag("--no-pre-mask", no_pre_mask,
+               "Do NOT pre-mask sequences. Enables repeats unless --no-repeats is also specified.")
+      ->group("Compute");
 
   std::string rate_scalers_option("auto");
-  app.add_option( "--rate-scalers",
-                rate_scalers_option,
-                "Use individual rate scalers. Important to avoid numerical underflow in taxa rich trees."
-                )->group("Compute")
-                ->check(CLI::IsMember({"off", "on", "auto"}, CLI::ignore_case));
+  app.add_option(
+         "--rate-scalers", rate_scalers_option,
+         "Use individual rate scalers. Important to avoid numerical underflow in taxa rich trees.")
+      ->group("Compute")
+      ->check(CLI::IsMember({"off", "on", "auto"}, CLI::ignore_case));
 
-  #ifdef __OMP
-  auto threads =
-  app.add_option( "-T,--threads",
-                  options.num_threads,
-                  "Number of threads to use. If 0 is passed as argument,"
-                  "program will run with the maximum number of threads available.",
-                  true
-                )->group("Compute");
-  #endif
+#ifdef __OMP
+  auto threads = app.add_option("-T,--threads", options.num_threads,
+                                "Number of threads to use. If 0 is passed as argument,"
+                                "program will run with the maximum number of threads available.",
+                                true)
+                     ->group("Compute");
+#endif
 
   try {
     app.parse(argc, argv);
     if (empty) {
       throw CLI::CallForHelp();
     }
-  } catch (const CLI::ParseError &e) {
+  } catch (const CLI::ParseError& e) {
     return app.exit(e);
   }
 
@@ -292,7 +275,7 @@ int main(int argc, char** argv)
   }
 
   ensure_dir_has_slash(work_dir);
-  if ( not options.tmp_dir.empty() ) {
+  if (not options.tmp_dir.empty()) {
     ensure_dir_has_slash(options.tmp_dir);
     LOG_INFO << "Selected: Temporary dir: " << options.tmp_dir;
   }
@@ -305,13 +288,14 @@ int main(int argc, char** argv)
     exit_epa();
   }
 
-  if ( redo ) {
-    genesis::utils::Options::get().allow_file_overwriting( true );
+  if (redo) {
+    genesis::utils::Options::get().allow_file_overwriting(true);
   }
 
   if (*split_option) {
     if (split_files.size() < 2) {
-      LOG_ERR << "Incorrect number of inputs! Usage: epa-ng --split ref_alignment query_alignments+";
+      LOG_ERR
+          << "Incorrect number of inputs! Usage: epa-ng --split ref_alignment query_alignments+";
       exit_epa();
     }
     auto ref_msa = split_files[0];
@@ -322,16 +306,17 @@ int main(int argc, char** argv)
   }
 
   std::string log_file;
-  #ifdef __MPI
+#ifdef __MPI
   log_file = work_dir + std::to_string(local_rank) + ".epa_info.log";
-  #else
+#else
   log_file = work_dir + "epa_info.log";
-  #endif
+#endif
 
-  if ( not redo and genesis::utils::file_exists( log_file ) ) {
-    throw std::runtime_error{ log_file + " already exists! To overwrite existing output files, rerun with --redo" };
+  if (not redo and genesis::utils::file_exists(log_file)) {
+    throw std::runtime_error{
+        log_file + " already exists! To overwrite existing output files, rerun with --redo"};
   } else {
-    genesis::utils::Logging::log_to_file( log_file );
+    genesis::utils::Logging::log_to_file(log_file);
   }
 
   LOG_INFO << "Selected: Output dir: " << work_dir;
@@ -358,8 +343,7 @@ int main(int argc, char** argv)
     LOG_INFO << "Selected: Binary CLV store: " << binary_file;
   }
 
-  if (*filter_acc_lwr)
-  {
+  if (*filter_acc_lwr) {
     options.acc_threshold = true;
     LOG_INFO << "Selected: Filtering by accumulated threshold: " << options.support_threshold;
   }
@@ -393,10 +377,11 @@ int main(int argc, char** argv)
   if (*dyn_heur) {
     options.prescoring = true;
     options.prescoring_by_percentage = false;
-    LOG_INFO << "Selected: Prescoring by accumulated LWR threshold: " << options.prescoring_threshold;
+    LOG_INFO << "Selected: Prescoring by accumulated LWR threshold: "
+             << options.prescoring_threshold;
   }
 
-  if ( *baseball_heur ) {
+  if (*baseball_heur) {
     LOG_INFO << "Selected: Prescoring using the baseball heuristic";
   }
 
@@ -460,11 +445,11 @@ int main(int argc, char** argv)
   if (*chunk_size) {
     LOG_INFO << "Selected: Reading queries in chunks of: " << options.chunk_size;
   }
-  #ifdef __OMP
+#ifdef __OMP
   if (*threads) {
     LOG_INFO << "Selected: Using threads: " << options.num_threads;
   }
-  #endif
+#endif
 
   //================================================================
   //============    EPA    =========================================
@@ -495,9 +480,10 @@ int main(int argc, char** argv)
   }
 
   if (ref_info.sites() != qry_info.sites()) {
-    LOG_ERR << "The reference and query alignment files do not seem to have the same alignment width! ("
-            << ref_info.sites() << " vs. " << qry_info.sites() << "). Are the query sequences not aligned?"
-            << std::endl;
+    LOG_ERR
+        << "The reference and query alignment files do not seem to have the same alignment width! ("
+        << ref_info.sites() << " vs. " << qry_info.sites()
+        << "). Are the query sequences not aligned?" << std::endl;
     exit_epa(EXIT_FAILURE);
   }
 
@@ -508,7 +494,7 @@ int main(int argc, char** argv)
     ref_msa = build_MSA_from_file(reference_file, ref_info, options.premasking);
     LOG_DBG << "Reference File size: " << ref_msa.size();
     LOG_DBG << "Reference File width: " << ref_msa.num_sites();
-    if (ref_msa.size() == 0 or ref_msa.num_sites() == 0 ) {
+    if (ref_msa.size() == 0 or ref_msa.num_sites() == 0) {
       throw std::runtime_error{"Something went wrong reading the reference file."};
     }
   }
@@ -521,12 +507,15 @@ int main(int argc, char** argv)
   } else {
     // build the full tree with all possible clv's
     if (not *model_option) {
-      LOG_ERR <<  "When using epa-ng like this, a model has to be explicitly specified! \n"
-                  "You may specify it generically (GTR+G), however parameters will not be optimized. \n"
-                  "Instead we reccommend to use RAxML to re-evaluate the parameters and then pass the resulting \n"
-                  "RAxML_info file to the epa-ng --model argument. epa-ng will then auto-parse the parameters.\n"
-                  "( raxmlHPC -f e -s " << reference_file << " -t " << tree_file << " -n info -m GTRGAMMAX )"
-                  << std::endl;
+      LOG_ERR
+          << "When using epa-ng like this, a model has to be explicitly specified! \n"
+             "You may specify it generically (GTR+G), however parameters will not be optimized. \n"
+             "Instead we reccommend to use RAxML to re-evaluate the parameters and then pass the "
+             "resulting \n"
+             "RAxML_info file to the epa-ng --model argument. epa-ng will then auto-parse the "
+             "parameters.\n"
+             "( raxmlHPC -f e -s "
+          << reference_file << " -t " << tree_file << " -n info -m GTRGAMMAX )" << std::endl;
       exit_epa(EXIT_FAILURE);
     }
     tree = Tree(tree_file, ref_msa, model, options);
@@ -534,8 +523,9 @@ int main(int argc, char** argv)
 
   if (not options.dump_binary_mode) {
     if (query_file.empty()) {
-      throw std::runtime_error{"Must supply query file! Combined MSA files not currently supported, please"
-      " split them and specify using -s and -q."};
+      throw std::runtime_error{
+          "Must supply query file! Combined MSA files not currently supported, please"
+          " split them and specify using -s and -q."};
     }
   } else {
     // dump to binary if specified
@@ -549,7 +539,8 @@ int main(int argc, char** argv)
   auto start_place = std::chrono::high_resolution_clock::now();
   simple_mpi(tree, query_file, qry_info, work_dir, options, invocation);
   auto end_place = std::chrono::high_resolution_clock::now();
-  auto placetime = std::chrono::duration_cast<std::chrono::seconds>(end_place - start_place).count();
+  auto placetime =
+      std::chrono::duration_cast<std::chrono::seconds>(end_place - start_place).count();
 
   LOG_INFO << "Time spent placing: " << placetime << "s";
 
@@ -560,5 +551,5 @@ int main(int argc, char** argv)
 
   LOG_INFO << "Elapsed Time: " << alltime << "s";
 
-	return EXIT_SUCCESS;
+  return EXIT_SUCCESS;
 }
