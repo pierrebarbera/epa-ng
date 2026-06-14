@@ -6,17 +6,24 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout repo
-      uses: actions/checkout@v2
-      with:
-        submodules: recursive
-    - name: get flex/bison
-      run: sudo apt-get install flex bison
-    - name: Compile GTest
-      run: |
-        cmake libs/CLI11/extern/googletest/googletest/CMakeLists.txt
-        make -C libs/CLI11/extern/googletest/googletest/
-    - name: make epa
-      run: make -j
-    - name: run tests
-      run: ./test/bin/epa_test
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: get flex/bison
+        run: sudo apt-get install flex bison
+      - name: Compile GTest
+        run: |
+          cmake libs/CLI11/extern/googletest/googletest/CMakeLists.txt
+          make -C libs/CLI11/extern/googletest/googletest/
+      - name: check formatting
+        run: |
+          wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | sudo tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc
+          echo "deb http://apt.llvm.org/noble/ llvm-toolchain-noble-22 main" | sudo tee /etc/apt/sources.list.d/llvm.list
+          sudo apt-get update -q
+          sudo apt-get install -y clang-format-22
+          ./scripts/clang-format.sh
+      - name: make epa
+        run: make -j
+      - name: run tests
+        run: ./test/bin/epa_test

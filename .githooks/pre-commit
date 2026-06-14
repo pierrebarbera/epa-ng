@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+exec "$(git rev-parse --show-toplevel)/scripts/clang-format.sh"
