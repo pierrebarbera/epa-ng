@@ -27,14 +27,18 @@ private:
   }
 
 public:
-  FourBit() : to_fourbit_(128, 128) {
+  FourBit()
+      : to_fourbit_(128, 128)
+  {
     static_assert(NT_MAP_SIZE == 16, "Weird NT map size, go adjust encoder code!");
 
     // both chars are valid characters:
     const auto map_size = static_cast<uchar>(NT_MAP_SIZE);
-    for (uchar i = 0; i < map_size; ++i) {
+    for (uchar i = 0; i < map_size; ++i)
+    {
       assert(NT_MAP[i] == std::toupper(NT_MAP[i]));
-      for (uchar j = 0; j < map_size; ++j) {
+      for (uchar j = 0; j < map_size; ++j)
+      {
         uchar packed_char = pack_(i, j);
 
         // uppercase
@@ -54,7 +58,8 @@ public:
     }
 
     // valid + padding
-    for (uchar i = 0; i < map_size; ++i) {
+    for (uchar i = 0; i < map_size; ++i)
+    {
       uchar packed_char = pack_(i, 0);
 
       // uppercase
@@ -67,10 +72,13 @@ public:
     }
 
     // make the reverse lookup
-    for (size_t i = 0; i < (from_fourbit_.max_size() * 2); i += 2) {
+    for (size_t i = 0; i < (from_fourbit_.max_size() * 2); i += 2)
+    {
       auto pair = unpack_(i / 2);
-      reinterpret_cast<uchar*>(from_fourbit_.data())[i] = NT_MAP[pair.first];
-      reinterpret_cast<uchar*>(from_fourbit_.data())[i + 1u] = NT_MAP[pair.second];
+      reinterpret_cast<uchar *>(from_fourbit_.data())[i] =
+          NT_MAP[pair.first];
+      reinterpret_cast<uchar *>(from_fourbit_.data())[i + 1u] =
+          NT_MAP[pair.second];
     }
   }
   ~FourBit() = default;
@@ -78,25 +86,29 @@ public:
   inline size_t packed_size(const size_t size) { return std::ceil(size / 2.0); }
 
   // conversion functions
-  inline std::basic_string<char> to_fourbit(const std::string& s) {
+  inline std::basic_string<char> to_fourbit(const std::string &s)
+  {
     const size_t p_size = packed_size(s.size());
     std::basic_string<char> res;
     res.reserve(p_size);
 
     size_t i = 0;
-    for (; i + 1 < s.size(); i += 2) {
+    for (; i + 1 < s.size(); i += 2)
+    {
       res.push_back(to_fourbit_.at(s[i], s[i + 1u]));
     }
 
     // original string size not divisible by 2: trailing padding
-    if (i < s.size()) {
+    if (i < s.size())
+    {
       res.push_back(to_fourbit_.at(s[i], NONE_CHAR));
     }
 
     return res;
   }
 
-  std::string from_fourbit(const std::basic_string<char>& s, const size_t n) {
+  std::string from_fourbit(const std::basic_string<char> &s, const size_t n)
+  {
     assert(s.size() > 0);
     assert(n > 0);
 
@@ -105,21 +117,25 @@ public:
     res.resize(n);
 
     // determine whether the packed string has padding
-    const bool padded = (s.size() * 2 < n);
+    const bool padded = (s.size() * 2 > n);
 
     // unpack
     size_t i = 0;
-    for (; i < s.size() - 1u; ++i) {
-      reinterpret_cast<char16_t*>(&res[0])[i] = from_fourbit_[static_cast<uchar>(s[i])];
+    for (; i < s.size() - 1u; ++i)
+    {
+      reinterpret_cast<char16_t *>(&res[0])[i] = from_fourbit_[static_cast<uchar>(s[i])];
     }
 
     // last element is special
     auto char_pair = unpack_(static_cast<uchar>(s[i]));
     res[i * 2] = NT_MAP[char_pair.first];
 
-    if (not padded) {
+    if (not padded)
+    {
       res[i * 2 + 1] = NT_MAP[char_pair.second];
-    } else {
+    }
+    else
+    {
       assert(NT_MAP[char_pair.second] == NONE_CHAR);
     }
 
