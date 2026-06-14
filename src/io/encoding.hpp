@@ -105,7 +105,7 @@ public:
     res.resize(n);
 
     // determine whether the packed string has padding
-    const bool padded = (s.size() * 2 < n);
+    const bool padded = (n % 2 == 1);
 
     // unpack
     size_t i = 0;

@@ -6,17 +6,15 @@ jobs:
   build:
     runs-on: macos-latest
     steps:
-    - name: Checkout repo
-      uses: actions/checkout@v2
-      with:
-        submodules: recursive
-    - name: get libomp
-      run: brew install libomp
-    - name: Compile GTest
-      run: |
-        cmake libs/CLI11/extern/googletest/googletest/CMakeLists.txt
-        make -C libs/CLI11/extern/googletest/googletest/
-    - name: make epa
-      run: make -j
-    - name: run tests
-      run: ./test/bin/epa_test
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: get dependencies
+        run: |
+          brew install libomp bison
+          echo "$(brew --prefix bison)/bin" >> $GITHUB_PATH
+      - name: make epa
+        run: make -j
+      - name: run tests
+        run: ./test/bin/epa_test

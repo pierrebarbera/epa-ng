@@ -5,7 +5,7 @@ all: build/CMakeCache.txt run_make
 build/CMakeCache.txt: CMakeLists.txt
 	@echo "Running cmake"
 	@mkdir -p build
-	@cd build && cmake ..
+	@cd build && cmake -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ..
 
 run_make: build/CMakeCache.txt
 	@echo "Running make"

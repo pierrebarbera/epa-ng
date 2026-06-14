@@ -1,2 +1,51 @@
 #!/usr/bin/env bash
-exec "$(git rev-parse --show-toplevel)/scripts/clang-format.sh"
+set -euo pipefail
+
+ROOT="$(git rev-parse --show-toplevel)"
+
+GREEN='\033[0;32m'; RED='\033[0;31m'; RESET='\033[0m'
+pass() { echo -e "${GREEN}✔${RESET}  $1"; }
+fail() { echo -e "${RED}✘${RESET}  $1"; }
+
+run_step() {
+  local label="$1"; shift
+  local log; log="$(mktemp)"
+  echo -n "   $label... "
+  if "$@" > "${log}" 2>&1; then
+    pass "${label}"
+  else
+    fail "${label}"
+    echo ""
+    cat "${log}"
+    rm -f "${log}"
+    exit 1
+  fi
+  rm -f "${log}"
+}
+
+# macOS ships bison 2.3; prefer brew's newer version if present
+if command -v brew &>/dev/null; then
+  BREW_BISON="$(brew --prefix bison 2>/dev/null)/bin"
+  [[ -d "${BREW_BISON}" ]] && export PATH="${BREW_BISON}:${PATH}"
+fi
+
+# Invalidate cmake cache if it baked in a different bison than what's on PATH now
+CACHE="${ROOT}/build/CMakeCache.txt"
+if [[ -f "${CACHE}" ]]; then
+  CACHED_BISON="$(grep '^BISON_EXECUTABLE:FILEPATH=' "${CACHE}" | cut -d= -f2)"
+  ACTIVE_BISON="$(command -v bison)"
+  if [[ "${CACHED_BISON}" != "${ACTIVE_BISON}" ]]; then
+    echo "   bison changed (${CACHED_BISON} -> ${ACTIVE_BISON}), clearing cmake cache"
+    rm -f "${CACHE}"
+  fi
+fi
+
+run_step "clang-format" "${ROOT}/scripts/clang-format.sh"
+
+if [[ "${SKIP_BUILD:-0}" == "1" ]]; then
+  echo "   skipping build and tests (SKIP_BUILD=1)"
+  exit 0
+fi
+
+run_step "build" make -C "${ROOT}" -j
+run_step "tests" "${ROOT}/test/bin/epa_test"

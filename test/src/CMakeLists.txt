@@ -1,14 +1,5 @@
 set( GTEST_ROOT ${PROJECT_SOURCE_DIR}/libs/CLI11/extern/googletest/googletest )
-find_package( GTest )
-
-if(NOT GTEST_FOUND)
-    message (STATUS "GTest not found")
-    message (WARNING "Skipping building tests. To enable tests:"
-      "\ncmake libs/CLI11/extern/googletest/googletest/CMakeLists.txt"
-      "\nmake -C libs/CLI11/extern/googletest/googletest"
-      "make update")
-    return()
-endif()
+add_subdirectory( ${GTEST_ROOT} ${CMAKE_BINARY_DIR}/googletest EXCLUDE_FROM_ALL )
 
 message (STATUS "Building tests")
 
@@ -29,8 +20,8 @@ target_link_libraries (epa_test_module ${GENESIS_LINK_LIBRARIES} )
 target_link_libraries (epa_test_module ${PLLMODULES_LIBRARIES})
 target_link_libraries (epa_test_module m)
 
-include_directories( ${GTEST_INCLUDE_DIRS} )
-target_link_libraries( epa_test_module ${GTEST_BOTH_LIBRARIES} )
+include_directories( ${GTEST_ROOT}/include )
+target_link_libraries( epa_test_module gtest gtest_main )
 
 # if(ENABLE_PREFETCH)
 target_link_libraries (epa_test_module ${CMAKE_THREAD_LIBS_INIT})
