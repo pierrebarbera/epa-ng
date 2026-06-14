@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.8.7 FATAL_ERROR)
+cmake_minimum_required (VERSION 3.10 FATAL_ERROR)
 
 # add extra cmake modules specifically for Lucas' find_openmp patch under clang/macOS
 set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/libs/genesis/tools/cmake" )

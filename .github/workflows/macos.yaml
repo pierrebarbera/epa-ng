@@ -12,10 +12,6 @@ jobs:
         submodules: recursive
     - name: get libomp
       run: brew install libomp
-    - name: Compile GTest
-      run: |
-        cmake libs/CLI11/extern/googletest/googletest/CMakeLists.txt
-        make -C libs/CLI11/extern/googletest/googletest/
     - name: make epa
       run: make -j
     - name: run tests
